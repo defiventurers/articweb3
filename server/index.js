@@ -152,6 +152,41 @@ function joinRoom(ws, requestId, payload) {
   return broadcast(room);
 }
 
+function devFillRoom(ws, requestId, payload) {
+  const wallet = walletOf(payload.wallet);
+  const roomCode = String(payload.roomCode || "").trim().toUpperCase();
+  if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.");
+  const room = rooms.get(roomCode);
+  if (!room) return fail(ws, requestId, "Room not found.");
+  if (room.status !== "waiting") return fail(ws, requestId, "Room already started.");
+  if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
+
+  const testNames = ["Test Raja", "Test Mantri", "Test Senapati"];
+
+  for (const name of testNames) {
+    if (players(room).length >= 4) break;
+    const fakeWallet = `dev-${room.roomCode}-${players(room).length}`;
+    const pickedTeam = team(room);
+    profiles.set(fakeWallet, {
+      wallet: fakeWallet,
+      name,
+      points: 0,
+      gamesPlayed: 0,
+      wins: 0,
+      createdAt: Date.now()
+    });
+    room.players[fakeWallet] = {
+      wallet: fakeWallet,
+      team: pickedTeam,
+      joinedAt: Date.now()
+    };
+  }
+
+  checkCountdown(room);
+  ok(ws, requestId, "dev_fill_room_result", { room: view(room) });
+  return broadcast(room);
+}
+
 const server = http.createServer((req, res) => {
   if (req.url === "/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
@@ -171,6 +206,7 @@ new WebSocket.Server({ server }).on("connection", (ws) => {
     if (type === "room_list") return list(ws, requestId);
     if (type === "room_create") return createRoom(ws, requestId, payload);
     if (type === "room_join") return joinRoom(ws, requestId, payload);
+    if (type === "dev_fill_room") return devFillRoom(ws, requestId, payload);
     return fail(ws, requestId, `Unknown message type: ${type}`);
   });
 });
