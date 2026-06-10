@@ -4,6 +4,7 @@ import App from "./App.jsx";
 import { Web3Provider } from "./providers/Web3Provider.jsx";
 import "./styles/global.css";
 import "./styles/lobbyModes.css";
+import "./styles/highStakes.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
