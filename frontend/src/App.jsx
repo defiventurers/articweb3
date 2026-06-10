@@ -4,6 +4,8 @@ import { MainMenu } from "./screens/MainMenu.jsx";
 import { ProfileScreen } from "./screens/ProfileScreen.jsx";
 import { LobbyScreen } from "./screens/LobbyScreen.jsx";
 import { WaitingRoomScreen } from "./screens/WaitingRoomScreen.jsx";
+import { GameScreen } from "./screens/GameScreen.jsx";
+import { ResultsScreen } from "./screens/ResultsScreen.jsx";
 
 export default function App() {
   const [screen, setScreen] = useState("cover");
@@ -55,8 +57,28 @@ export default function App() {
         onRoomUpdate={setRoom}
         onGameStart={(startedRoom) => {
           setRoom(startedRoom);
-          alert("Game screen comes next.");
+          setScreen("game");
         }}
+      />
+    );
+  }
+
+  if (screen === "game") {
+    return (
+      <GameScreen
+        room={room}
+        profile={profile}
+        onFinishDemo={() => setScreen("results")}
+        onBackToLobby={() => setScreen("lobby")}
+      />
+    );
+  }
+
+  if (screen === "results") {
+    return (
+      <ResultsScreen
+        room={room}
+        onBackToLobby={() => setScreen("lobby")}
       />
     );
   }
