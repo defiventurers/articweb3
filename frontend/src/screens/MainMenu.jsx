@@ -1,10 +1,25 @@
 export function MainMenu(props) {
   return (
-    <section className="screen">
-      <div className="card">
-        <h1>Artic Web3</h1>
-        <button className="primary-btn" onClick={props.onPlay}>Start Game</button>
-        <button className="secondary-btn" onClick={props.onHowToPlay}>Rules</button>
+    <section className="art-screen" aria-label="Main menu">
+      <div className="art-stage">
+        <img
+          className="screen-art"
+          src="/assets/screens/main-menu.png"
+          alt="Artic Web3 main menu"
+          draggable="false"
+        />
+
+        <button
+          className="menu-hitbox menu-play-hitbox"
+          aria-label="Start Game"
+          onClick={props.onPlay}
+        />
+
+        <button
+          className="menu-hitbox menu-how-hitbox"
+          aria-label="Rules"
+          onClick={props.onHowToPlay}
+        />
       </div>
     </section>
   );
