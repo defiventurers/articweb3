@@ -1,0 +1,32 @@
+.mode-choice-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.mode-choice {
+  min-height: 86px;
+  border-radius: 18px;
+  border: 1px solid #7edfff;
+  background: #12395f;
+  color: white;
+  padding: 12px;
+  text-align: left;
+  display: grid;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.mode-choice strong {
+  font-size: 1.1rem;
+}
+
+.mode-choice span {
+  color: #fff3c7;
+  line-height: 1.3;
+}
+
+.mode-choice.active {
+  background: #0878d8;
+  border-color: white;
+}
