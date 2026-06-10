@@ -1,11 +1,13 @@
 export function CoverScreen({ onContinue }) {
   return (
-    <section className="screen">
-      <button className="cover-screen" onClick={onContinue}>
-        <div>
-          <h1>Artic Web3</h1>
-          <p>Tap to continue</p>
-        </div>
+    <section className="art-screen" aria-label="Cover screen">
+      <button className="art-stage full-hitbox" onClick={onContinue} aria-label="Tap anywhere to continue">
+        <img
+          className="screen-art"
+          src="/assets/screens/cover.png"
+          alt="Artic Web3 cover"
+          draggable="false"
+        />
       </button>
     </section>
   );
