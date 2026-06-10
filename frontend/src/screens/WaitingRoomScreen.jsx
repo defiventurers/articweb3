@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import { devFillRoom } from "../network/socketClient.js";
 
-export function WaitingRoomScreen({ room, onRoomUpdate, onGameStart }) {
+export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) {
   const [currentRoom, setCurrentRoom] = useState(room);
   const [secondsLeft, setSecondsLeft] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     function handlePacket(event) {
@@ -42,6 +45,23 @@ export function WaitingRoomScreen({ room, onRoomUpdate, onGameStart }) {
     return () => clearInterval(timer);
   }, [currentRoom]);
 
+  async function handleDevFillRoom() {
+    try {
+      setBusy(true);
+      setError("");
+      const updatedRoom = await devFillRoom({
+        roomCode: currentRoom.roomCode,
+        profile
+      });
+      setCurrentRoom(updatedRoom);
+      onRoomUpdate(updatedRoom);
+    } catch (err) {
+      setError(err.message || "Could not fill room.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <section className="screen">
       <div className="card">
@@ -65,6 +85,12 @@ export function WaitingRoomScreen({ room, onRoomUpdate, onGameStart }) {
             ? `Starting in ${secondsLeft}`
             : "Waiting for 4 players"}
         </h2>
+
+        <button className="secondary-btn" disabled={busy} onClick={handleDevFillRoom}>
+          {busy ? "Adding test players..." : "Dev Fill Room"}
+        </button>
+
+        {error && <p className="error">{error}</p>}
       </div>
     </section>
   );
