@@ -1,0 +1,22 @@
+.deposit-panel,
+.rules-panel {
+  border-radius: 18px;
+  border: 1px solid #7edfff;
+  background: #12395f;
+  color: white;
+  padding: 12px;
+  display: grid;
+  gap: 7px;
+  text-align: left;
+}
+
+.deposit-panel strong,
+.rules-panel strong {
+  color: white;
+}
+
+.deposit-panel span,
+.rules-panel span {
+  color: #fff3c7;
+  line-height: 1.3;
+}
