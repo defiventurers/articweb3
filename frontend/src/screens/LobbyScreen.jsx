@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DepositPanel } from "../components/DepositPanel.jsx";
 import { createRoom, joinRoom, listRooms } from "../network/socketClient.js";
 
 const ROOM_MODES = {
@@ -98,6 +99,8 @@ export function LobbyScreen({ profile, onJoinRoom, onBack }) {
           {profile.name} · {profile.points} points
         </p>
 
+        <DepositPanel />
+
         <div className="mode-choice-grid">
           <button
             className={roomMode === "open_ice" ? "mode-choice active" : "mode-choice"}
@@ -119,6 +122,18 @@ export function LobbyScreen({ profile, onJoinRoom, onBack }) {
         <p className="note">
           {selectedMode.title}: {selectedMode.description}
         </p>
+
+        {roomMode === "high_stakes" && (
+          <div className="rules-panel">
+            <strong>Entry tiers</strong>
+            <span>$1 · $4 · $16</span>
+            <strong>Placement returns</strong>
+            <span>1st: 3x entry + 100 points</span>
+            <span>2nd: 1x entry + 100 points</span>
+            <span>3rd: 0x entry + 100 points</span>
+            <span>4th: 0x entry + 10 points</span>
+          </div>
+        )}
 
         {highStakesLocked && (
           <p className="error">
