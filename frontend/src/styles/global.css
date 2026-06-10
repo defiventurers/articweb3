@@ -25,7 +25,70 @@ input {
   background: #08213f;
 }
 
-.cover-screen,
+.art-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: #061b3a;
+  overflow: hidden;
+}
+
+.art-stage {
+  position: relative;
+  width: min(100vw, calc(100dvh * 9 / 16));
+  height: min(100dvh, calc(100vw * 16 / 9));
+  aspect-ratio: 9 / 16;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 0;
+  padding: 0;
+  background: #061b3a;
+}
+
+.full-hitbox {
+  cursor: pointer;
+}
+
+.screen-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  object-position: center center;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+.menu-hitbox {
+  position: absolute;
+  z-index: 10;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menu-play-hitbox {
+  left: 13.16%;
+  top: 75.33%;
+  width: 74.41%;
+  height: 12.92%;
+}
+
+.menu-how-hitbox {
+  left: 22.37%;
+  top: 88.93%;
+  width: 54.51%;
+  height: 5.95%;
+}
+
 .card {
   width: min(92vw, 440px);
   border-radius: 24px;
@@ -36,11 +99,6 @@ input {
   display: grid;
   gap: 14px;
   text-align: center;
-}
-
-.cover-screen {
-  min-height: 620px;
-  cursor: pointer;
 }
 
 .primary-btn,
@@ -62,7 +120,8 @@ input {
   background: #12395f;
 }
 
-.primary-btn:disabled {
+.primary-btn:disabled,
+.secondary-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -113,4 +172,12 @@ input {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  .art-stage {
+    width: 100vw;
+    height: 100dvh;
+    aspect-ratio: auto;
+  }
 }
