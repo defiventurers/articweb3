@@ -69,14 +69,15 @@ export async function createProfile({ address, name }) {
   return loginPayload.profile;
 }
 
-export async function listRooms() {
-  const payload = await request("room_list");
+export async function listRooms({ roomMode = "open_ice" } = {}) {
+  const payload = await request("room_list", { roomMode });
   return payload.rooms || [];
 }
 
-export async function createRoom({ visibility, profile }) {
+export async function createRoom({ visibility, roomMode = "open_ice", profile }) {
   const payload = await request("room_create", {
     visibility,
+    roomMode,
     wallet: profile.wallet
   });
 
