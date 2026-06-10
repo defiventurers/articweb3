@@ -54,6 +54,7 @@ export default function App() {
     return (
       <WaitingRoomScreen
         room={room}
+        profile={profile}
         onRoomUpdate={setRoom}
         onGameStart={(startedRoom) => {
           setRoom(startedRoom);
