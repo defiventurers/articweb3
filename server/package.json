@@ -1,1 +1,14 @@
-
+{
+  "name": "artic-web3-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "latest",
+    "viem": "latest",
+    "ws": "latest"
+  }
+}
