@@ -1,1 +1,24 @@
-
+{
+  "name": "artic-web3-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@abstract-foundation/agw-client": "latest",
+    "@abstract-foundation/agw-react": "latest",
+    "@tanstack/react-query": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "viem": "latest",
+    "vite": "latest",
+    "wagmi": "latest"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "latest"
+  }
+}
