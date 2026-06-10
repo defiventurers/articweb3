@@ -14,7 +14,7 @@ export function connectSocket() {
 
     const timer = setTimeout(() => {
       reject(new Error("Lobby server timed out."));
-    }, 12000);
+    }, 20000);
 
     socket.addEventListener("open", () => {
       clearTimeout(timer);
@@ -53,22 +53,17 @@ export async function request(type, payload = {}) {
     const timer = setTimeout(() => {
       pending.delete(requestId);
       reject(new Error("Server request timed out."));
-    }, 12000);
+    }, 20000);
 
     pending.set(requestId, { resolve, reject, timer });
     ws.send(JSON.stringify({ type, requestId, payload }));
   });
 }
 
-export async function createProfile({ address, name, signMessageAsync }) {
-  const noncePayload = await request("profile_nonce", { address });
-  const signature = await signMessageAsync({ message: noncePayload.message });
-
+export async function createProfile({ address, name }) {
   const loginPayload = await request("profile_login", {
     address,
-    name,
-    message: noncePayload.message,
-    signature
+    name
   });
 
   return loginPayload.profile;
