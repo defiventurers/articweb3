@@ -2,7 +2,9 @@ import { useState } from "react";
 import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { MainMenu } from "./screens/MainMenu.jsx";
 import { ProfileScreen } from "./screens/ProfileScreen.jsx";
+import { PlayerHubScreen } from "./screens/PlayerHubScreen.jsx";
 import { LobbyScreen } from "./screens/LobbyScreen.jsx";
+import { HighStakesScreen } from "./screens/HighStakesScreen.jsx";
 import { WaitingRoomScreen } from "./screens/WaitingRoomScreen.jsx";
 import { GameScreen } from "./screens/GameScreen.jsx";
 import { ResultsScreen } from "./screens/ResultsScreen.jsx";
@@ -30,9 +32,29 @@ export default function App() {
       <ProfileScreen
         onComplete={(createdProfile) => {
           setProfile(createdProfile);
-          setScreen("lobby");
+          setScreen("hub");
         }}
         onBack={() => setScreen("menu")}
+      />
+    );
+  }
+
+  if (screen === "hub") {
+    return (
+      <PlayerHubScreen
+        profile={profile}
+        onOpenIce={() => setScreen("lobby")}
+        onHighStakes={() => setScreen("high-stakes")}
+        onBack={() => setScreen("profile")}
+      />
+    );
+  }
+
+  if (screen === "high-stakes") {
+    return (
+      <HighStakesScreen
+        profile={profile}
+        onBack={() => setScreen("hub")}
       />
     );
   }
@@ -45,7 +67,7 @@ export default function App() {
           setRoom(joinedRoom);
           setScreen("waiting");
         }}
-        onBack={() => setScreen("profile")}
+        onBack={() => setScreen("hub")}
       />
     );
   }
