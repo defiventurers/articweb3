@@ -93,6 +93,16 @@ export async function joinRoom({ roomCode, profile }) {
   return payload.room;
 }
 
+export async function selectRoomTeam({ roomCode, profile, team }) {
+  const payload = await request("room_select_team", {
+    roomCode,
+    wallet: profile.wallet,
+    team
+  });
+
+  return payload.room;
+}
+
 export async function devFillRoom({ roomCode, profile }) {
   const payload = await request("dev_fill_room", {
     roomCode,
