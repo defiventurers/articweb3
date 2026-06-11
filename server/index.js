@@ -17,6 +17,13 @@ const {
 const PORT = process.env.PORT || 10000;
 const COUNTDOWN_MS = 5000;
 const BOT_DELAY_MS = 650;
+const TEAM_CODES = ["green", "red", "blue", "yellow"];
+const TEAM_NAME_BY_CODE = {
+  green: "Test Abster",
+  red: "Test Retsba",
+  blue: "Test Pengu",
+  yellow: "Test Polly"
+};
 const ROOM_MODES = {
   OPEN_ICE: "open_ice",
   HIGH_STAKES: "high_stakes"
@@ -55,6 +62,11 @@ function normalizeRoomMode(value) {
 function normalizeEntryTier(value) {
   const tier = ENTRY_TIERS[String(value || "1")];
   return tier || ENTRY_TIERS["1"];
+}
+
+function normalizeTeam(value) {
+  const team = String(value || "").toLowerCase().trim();
+  return TEAM_CODES.includes(team) ? team : null;
 }
 
 function code() {
@@ -105,10 +117,9 @@ function broadcast(room) {
   }
 }
 
-function team(room) {
-  const all = ["green", "red", "blue", "yellow"];
-  const used = new Set(players(room).map((player) => player.team));
-  return all.find((item) => !used.has(item));
+function nextFreeTeam(room) {
+  const used = new Set(players(room).map((player) => player.team).filter(Boolean));
+  return TEAM_CODES.find((item) => !used.has(item));
 }
 
 function teamWallet(room, teamName) {
@@ -119,10 +130,17 @@ function isBotWallet(wallet) {
   return String(wallet || "").startsWith("dev-");
 }
 
+function teamsAreReady(room) {
+  const roomPlayers = players(room);
+  if (roomPlayers.length !== 4) return false;
+  if (roomPlayers.some((player) => !player.team)) return false;
+  return new Set(roomPlayers.map((player) => player.team)).size === 4;
+}
+
 function checkCountdown(room) {
   if (room.status !== "waiting") return;
-  if (players(room).length !== 4) return;
   if (room.roomMode !== ROOM_MODES.OPEN_ICE) return;
+  if (!teamsAreReady(room)) return;
   if (!room.countdownStartTime) {
     room.countdownStartTime = Date.now();
     broadcast(room);
@@ -131,6 +149,11 @@ function checkCountdown(room) {
 
 function checkStart(room) {
   if (room.status !== "waiting" || !room.countdownStartTime) return;
+  if (!teamsAreReady(room)) {
+    room.countdownStartTime = null;
+    broadcast(room);
+    return;
+  }
   if (Date.now() - room.countdownStartTime < COUNTDOWN_MS) return;
   room.status = "playing";
   room.countdownStartTime = null;
@@ -262,7 +285,7 @@ function createRoom(ws, requestId, payload) {
     players: {
       [wallet]: {
         wallet,
-        team: "green",
+        team: null,
         joinedAt: Date.now(),
         entryLocked: roomMode === ROOM_MODES.OPEN_ICE
       }
@@ -289,16 +312,36 @@ function joinRoom(ws, requestId, payload) {
   sockets.set(wallet, ws);
   if (!room.players[wallet]) {
     if (players(room).length >= 4) return fail(ws, requestId, "Room is full.");
-    const pickedTeam = team(room);
     room.players[wallet] = {
       wallet,
-      team: pickedTeam,
+      team: null,
       joinedAt: Date.now(),
       entryLocked: room.roomMode === ROOM_MODES.OPEN_ICE
     };
   }
-  checkCountdown(room);
   ok(ws, requestId, "room_join_result", { room: view(room) });
+  return broadcast(room);
+}
+
+function selectRoomTeam(ws, requestId, payload) {
+  const wallet = walletOf(payload.wallet);
+  const roomCode = String(payload.roomCode || "").trim().toUpperCase();
+  const selectedTeam = normalizeTeam(payload.team);
+  if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.");
+  const room = rooms.get(roomCode);
+  if (!room) return fail(ws, requestId, "Room not found.");
+  if (room.status !== "waiting") return fail(ws, requestId, "Room already started.");
+  if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
+  if (!selectedTeam) return fail(ws, requestId, "Choose a valid team.");
+
+  const taken = players(room).some((player) => player.wallet !== wallet && player.team === selectedTeam);
+  if (taken) return fail(ws, requestId, "That team is already taken.");
+
+  sockets.set(wallet, ws);
+  room.players[wallet].team = selectedTeam;
+  room.countdownStartTime = null;
+  checkCountdown(room);
+  ok(ws, requestId, "room_select_team_result", { room: view(room) });
   return broadcast(room);
 }
 
@@ -311,16 +354,15 @@ function devFillRoom(ws, requestId, payload) {
   if (room.status !== "waiting") return fail(ws, requestId, "Room already started.");
   if (room.roomMode !== ROOM_MODES.OPEN_ICE) return fail(ws, requestId, "Dev fill is only available for Open Ice.");
   if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
+  if (!room.players[wallet].team) return fail(ws, requestId, "Choose your team first.");
 
-  const testNames = ["Test Raja", "Test Mantri", "Test Senapati"];
-
-  for (const name of testNames) {
+  for (const teamCode of TEAM_CODES) {
     if (players(room).length >= 4) break;
-    const fakeWallet = `dev-${room.roomCode}-${players(room).length}`;
-    const pickedTeam = team(room);
+    if (players(room).some((player) => player.team === teamCode)) continue;
+    const fakeWallet = `dev-${room.roomCode}-${teamCode}`;
     profiles.set(fakeWallet, {
       wallet: fakeWallet,
-      name,
+      name: TEAM_NAME_BY_CODE[teamCode],
       points: 0,
       gamesPlayed: 0,
       wins: 0,
@@ -328,7 +370,7 @@ function devFillRoom(ws, requestId, payload) {
     });
     room.players[fakeWallet] = {
       wallet: fakeWallet,
-      team: pickedTeam,
+      team: teamCode,
       joinedAt: Date.now(),
       entryLocked: true
     };
@@ -405,6 +447,7 @@ new WebSocket.Server({ server }).on("connection", (ws) => {
     if (type === "room_list") return list(ws, requestId, payload);
     if (type === "room_create") return createRoom(ws, requestId, payload);
     if (type === "room_join") return joinRoom(ws, requestId, payload);
+    if (type === "room_select_team") return selectRoomTeam(ws, requestId, payload);
     if (type === "dev_fill_room") return devFillRoom(ws, requestId, payload);
     if (type === "game_state") return gameState(ws, requestId, payload);
     if (type === "game_roll_dice") return gameRollDice(ws, requestId, payload);
