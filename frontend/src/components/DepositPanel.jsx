@@ -23,6 +23,14 @@ export function DepositPanel() {
     query: { enabled }
   });
 
+  const lockedQuery = useReadContract({
+    address: VAULT_ADDRESS,
+    abi: vaultAbi,
+    functionName: "lockedBalance",
+    args: address ? [address] : undefined,
+    query: { enabled }
+  });
+
   const allowanceQuery = useReadContract({
     address: TOKEN_ADDRESS,
     abi: tokenAbi,
@@ -32,11 +40,12 @@ export function DepositPanel() {
   });
 
   const availableBalance = balanceQuery.data || 0n;
+  const lockedBalance = lockedQuery.data || 0n;
   const allowance = allowanceQuery.data || 0n;
   const hasEnoughAllowance = parsedAmount > 0n && allowance >= parsedAmount;
 
   async function refresh() {
-    await Promise.all([balanceQuery.refetch(), allowanceQuery.refetch()]);
+    await Promise.all([balanceQuery.refetch(), lockedQuery.refetch(), allowanceQuery.refetch()]);
   }
 
   async function approveToken() {
@@ -103,7 +112,7 @@ export function DepositPanel() {
     <div className="deposit-panel">
       <strong>USDC Game Balance</strong>
       <span>Available: {formatUnits(availableBalance, TOKEN_DECIMALS)} USDC</span>
-      <span>Locked: 0.00 USDC</span>
+      <span>Locked: {formatUnits(lockedBalance, TOKEN_DECIMALS)} USDC</span>
 
       {!CHAIN_TARGETS_READY && (
         <span>Deploy the testnet contract and add VITE_TOKEN_ADDRESS plus VITE_VAULT_ADDRESS.</span>
