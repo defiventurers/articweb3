@@ -38,6 +38,13 @@ export const vaultAbi = [
   },
   {
     type: "function",
+    name: "lockedBalance",
+    stateMutability: "view",
+    inputs: [{ name: "player", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }]
+  },
+  {
+    type: "function",
     name: "deposit",
     stateMutability: "nonpayable",
     inputs: [{ name: "amount", type: "uint256" }],
@@ -48,6 +55,23 @@ export const vaultAbi = [
     name: "withdraw",
     stateMutability: "nonpayable",
     inputs: [{ name: "amount", type: "uint256" }],
+    outputs: []
+  },
+  {
+    type: "function",
+    name: "lockEntry",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "matchId", type: "bytes32" },
+      { name: "amount", type: "uint256" }
+    ],
+    outputs: []
+  },
+  {
+    type: "function",
+    name: "releaseEntry",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "matchId", type: "bytes32" }],
     outputs: []
   }
 ];
