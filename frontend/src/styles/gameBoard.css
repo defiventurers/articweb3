@@ -115,7 +115,8 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.board-cell.selected .game-piece {
+.board-cell.selected .game-piece,
+.board-cell.selected .piece-fallback {
   filter: drop-shadow(0 0 7px rgba(255, 220, 70, 1)) drop-shadow(0 4px 5px rgba(0, 20, 60, .52));
 }
 
@@ -150,6 +151,21 @@
   pointer-events: none;
   user-select: none;
   filter: drop-shadow(0 3px 5px rgba(6, 55, 102, .35));
+}
+
+.piece-fallback {
+  width: 72%;
+  height: 72%;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(5, 25, 52, .68);
+  border: 1px solid rgba(190, 245, 255, .62);
+  color: white;
+  font-size: clamp(11px, 2.9vw, 20px);
+  font-weight: 1000;
+  text-shadow: 0 1px 2px rgba(0, 10, 40, .95);
+  pointer-events: none;
 }
 
 .dice-overlay {
@@ -187,12 +203,19 @@
   height: 100%;
 }
 
-.die-piece img {
+.die-piece img,
+.dice-piece-img {
   display: block;
   width: 62%;
   height: 62%;
   object-fit: contain;
   filter: drop-shadow(0 3px 4px rgba(0, 20, 60, .35));
+}
+
+.die-piece .piece-fallback {
+  width: 48%;
+  height: 48%;
+  font-size: clamp(10px, 2.2vw, 16px);
 }
 
 .game-action-layer {
