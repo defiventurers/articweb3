@@ -1,19 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  DICE_ROLLS,
-  PIECE_NAME,
-  TEAM_COLOR,
-  TEAM_LABEL,
-  applyMove,
-  createInitialGameState,
-  currentTeam,
-  endTurn,
-  getAllLegalMovesForTeam,
-  hasAnyLegalMoveForTeam,
-  pickBotMove,
-  rollDiceForState,
-  selectSquare
-} from "../game/gameRules.js";
+import { DICE_ROLLS, TEAM_COLOR, TEAM_LABEL, createInitialGameState, currentTeam } from "../game/gameRules.js";
+import { endGameTurn, getGameState, rollGameDice, selectGameSquare } from "../network/socketClient.js";
 
 const LOCAL_PIECE_ASSET_BASE = "/assets/arctic/pieces";
 const REMOTE_PIECE_ASSET_BASE =
@@ -42,54 +29,81 @@ const PIECE_LETTER = {
   pawn: "P"
 };
 
-const BOT_DELAY_MS = 650;
-
-export function GameScreen({ room, profile, onFinishDemo, onBackToLobby }) {
-  const [game, setGame] = useState(() => createInitialGameState());
+export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackToLobby }) {
+  const [serverRoom, setServerRoom] = useState(room);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const game = serverRoom?.gameState || createInitialGameState();
   const team = currentTeam(game);
-  const isBotTurn = team !== "green" && !game.gameOver;
-  const statusText = getStatusText(game, team, isBotTurn);
+  const activePlayer = serverRoom?.players?.find((player) => player.team === team);
+  const isMyTurn = activePlayer?.wallet === profile.wallet;
+  const isBotTurn = Boolean(activePlayer?.wallet?.startsWith("dev-"));
+  const statusText = getStatusText({ game, team, isMyTurn, isBotTurn, busy, error });
   const activeLegalSquares = useMemo(
-    () => new Map(game.legalMoves.map((move) => [`${move.toRow},${move.toCol}`, move])),
+    () => new Map((game.legalMoves || []).map((move) => [`${move.toRow},${move.toCol}`, move])),
     [game.legalMoves]
   );
 
   useEffect(() => {
-    setGame(createInitialGameState());
-  }, [room?.roomCode]);
+    setServerRoom(room);
+  }, [room]);
 
   useEffect(() => {
-    if (!isBotTurn) return;
+    let cancelled = false;
 
-    const timer = window.setTimeout(() => {
-      setGame((current) => playBotTurn(current));
-    }, BOT_DELAY_MS);
+    getGameState({ roomCode: room.roomCode, profile })
+      .then((nextRoom) => {
+        if (cancelled) return;
+        updateRoom(nextRoom);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || "Could not load game state.");
+      });
 
-    return () => window.clearTimeout(timer);
-  }, [isBotTurn, game.currentPlayerIndex, game.dice.rolled, game.dice.values[0], game.dice.values[1]]);
+    function handlePacket(event) {
+      const packet = event.detail;
+      const nextRoom = packet?.payload?.room;
+      if (packet?.type !== "room_state" || !nextRoom) return;
+      if (nextRoom.roomCode !== room.roomCode) return;
+      updateRoom(nextRoom);
+    }
+
+    window.addEventListener("server-packet", handlePacket);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("server-packet", handlePacket);
+    };
+  }, [room.roomCode, profile]);
+
+  function updateRoom(nextRoom) {
+    setServerRoom(nextRoom);
+    onRoomUpdate?.(nextRoom);
+  }
+
+  async function runAction(action) {
+    if (busy || !isMyTurn || game.gameOver) return;
+    setBusy(true);
+    setError("");
+    try {
+      const nextRoom = await action();
+      updateRoom(nextRoom);
+    } catch (err) {
+      setError(err.message || "Game action failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   function handleRoll() {
-    if (isBotTurn) return;
-    setGame((current) => {
-      const rolled = rollDiceForState(current);
-      const rolledTeam = currentTeam(rolled);
-      if (rolled.dice.rolled && !hasAnyLegalMoveForTeam(rolled, rolledTeam)) return endTurn(rolled);
-      return rolled;
-    });
+    runAction(() => rollGameDice({ roomCode: serverRoom.roomCode, profile }));
   }
 
   function handleCell(row, col) {
-    if (isBotTurn) return;
-    setGame((current) => selectSquare(current, row, col));
+    runAction(() => selectGameSquare({ roomCode: serverRoom.roomCode, profile, row, col }));
   }
 
   function handleEndTurn() {
-    if (isBotTurn) return;
-    setGame((current) => endTurn(current));
-  }
-
-  function handleNewGame() {
-    setGame(createInitialGameState());
+    runAction(() => endGameTurn({ roomCode: serverRoom.roomCode, profile }));
   }
 
   return (
@@ -101,7 +115,7 @@ export function GameScreen({ room, profile, onFinishDemo, onBackToLobby }) {
               <div className="game-status-turn">{game.gameOver ? winnerText(game) : `${TEAM_LABEL[team]} Turn`}</div>
               <div className="game-status-main">{statusText}</div>
             </div>
-            <div className="game-status-badge">ROOM {room.roomCode}</div>
+            <div className="game-status-badge">ROOM {serverRoom.roomCode}</div>
           </div>
 
           <div className="board-overlay">
@@ -139,13 +153,14 @@ export function GameScreen({ room, profile, onFinishDemo, onBackToLobby }) {
           <div className="game-action-layer">
             <button className="game-action-hitbox roll-hitbox" aria-label="Roll dice" onClick={handleRoll} />
             <button className="game-action-hitbox end-turn-hitbox" aria-label="End turn" onClick={handleEndTurn} />
-            <button className="game-action-hitbox new-game-hitbox" aria-label="New game" onClick={handleNewGame} />
+            <button className="game-action-hitbox new-game-hitbox" aria-label="Finish match" onClick={onFinishDemo} />
             <button className="game-back-button" onClick={onBackToLobby}>Lobby</button>
           </div>
 
-          {game.moveLog.length > 0 && (
+          {(game.moveLog?.length > 0 || error) && (
             <div className="game-log" aria-live="polite">
-              {game.moveLog.slice(0, 3).map((item, index) => (
+              {error && <span>{error}</span>}
+              {(game.moveLog || []).slice(0, 3).map((item, index) => (
                 <span key={`${item}-${index}`}>{item}</span>
               ))}
             </div>
@@ -198,31 +213,14 @@ function PieceImage({ piece, className }) {
   );
 }
 
-function playBotTurn(game) {
-  if (game.gameOver) return game;
-  if (currentTeam(game) === "green") return game;
-
-  let next = game;
-  if (!next.dice.rolled) {
-    next = rollDiceForState(next);
-  }
-
-  const move = pickBotMove(next);
-  if (!move) return endTurn(next);
-  return applyMove(next, move);
-}
-
-function getStatusText(game, team, isBotTurn) {
-  if (game.gameOver) return "Game over · New game to restart";
+function getStatusText({ game, team, isMyTurn, isBotTurn, busy, error }) {
+  if (error) return error;
+  if (game.gameOver) return "Game over";
+  if (busy) return "Waiting for server";
   if (isBotTurn) return "Bot thinking";
-  if (!game.dice.rolled) return `${profileControlLabel(team)} · Roll dice`;
-  const moves = getAllLegalMovesForTeam(game, team);
-  if (!moves.length) return "No legal moves · End turn";
-  return `${profileControlLabel(team)} · Move a piece`;
-}
-
-function profileControlLabel(team) {
-  return team === "green" ? "You" : "Bot";
+  if (!isMyTurn) return "Waiting for opponent";
+  if (!game.dice.rolled) return "You · Roll dice";
+  return "You · Move a piece";
 }
 
 function winnerText(game) {
