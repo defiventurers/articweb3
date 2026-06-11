@@ -3,7 +3,9 @@ import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { MainMenu } from "./screens/MainMenu.jsx";
 import { ProfileScreen } from "./screens/ProfileScreen.jsx";
 import { PlayerHubScreen } from "./screens/PlayerHubScreen.jsx";
-import { LobbyScreen } from "./screens/LobbyScreen.jsx";
+import { OpenIceMenuScreen } from "./screens/OpenIceMenuScreen.jsx";
+import { CreateRoomScreen } from "./screens/CreateRoomScreen.jsx";
+import { JoinRoomScreen } from "./screens/JoinRoomScreen.jsx";
 import { TeamSelectScreen } from "./screens/TeamSelectScreen.jsx";
 import { HighStakesScreen } from "./screens/HighStakesScreen.jsx";
 import { WaitingRoomScreen } from "./screens/WaitingRoomScreen.jsx";
@@ -44,7 +46,7 @@ export default function App() {
     return (
       <PlayerHubScreen
         profile={profile}
-        onOpenIce={() => setScreen("lobby")}
+        onOpenIce={() => setScreen("open-ice-menu")}
         onHighStakes={() => setScreen("high-stakes")}
         onBack={() => setScreen("profile")}
       />
@@ -60,15 +62,39 @@ export default function App() {
     );
   }
 
-  if (screen === "lobby") {
+  if (screen === "open-ice-menu") {
     return (
-      <LobbyScreen
+      <OpenIceMenuScreen
         profile={profile}
-        onJoinRoom={(joinedRoom) => {
+        onCreateRoom={() => setScreen("create-room")}
+        onJoinRoom={() => setScreen("join-room")}
+        onBack={() => setScreen("hub")}
+      />
+    );
+  }
+
+  if (screen === "create-room") {
+    return (
+      <CreateRoomScreen
+        profile={profile}
+        onRoomCreated={(createdRoom) => {
+          setRoom(createdRoom);
+          setScreen("team-select");
+        }}
+        onBack={() => setScreen("open-ice-menu")}
+      />
+    );
+  }
+
+  if (screen === "join-room") {
+    return (
+      <JoinRoomScreen
+        profile={profile}
+        onRoomJoined={(joinedRoom) => {
           setRoom(joinedRoom);
           setScreen("team-select");
         }}
-        onBack={() => setScreen("hub")}
+        onBack={() => setScreen("open-ice-menu")}
       />
     );
   }
@@ -83,7 +109,7 @@ export default function App() {
           setRoom(updatedRoom);
           setScreen("waiting");
         }}
-        onBack={() => setScreen("lobby")}
+        onBack={() => setScreen("open-ice-menu")}
       />
     );
   }
@@ -109,7 +135,7 @@ export default function App() {
         profile={profile}
         onRoomUpdate={setRoom}
         onFinishDemo={() => setScreen("results")}
-        onBackToLobby={() => setScreen("lobby")}
+        onBackToLobby={() => setScreen("open-ice-menu")}
       />
     );
   }
@@ -118,7 +144,7 @@ export default function App() {
     return (
       <ResultsScreen
         room={room}
-        onBackToLobby={() => setScreen("lobby")}
+        onBackToLobby={() => setScreen("open-ice-menu")}
       />
     );
   }
