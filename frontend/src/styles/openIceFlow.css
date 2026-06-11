@@ -1,0 +1,114 @@
+.open-ice-flow-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: linear-gradient(180deg, #061b3a 0%, #0a2d5d 60%, #bdf2ff 100%);
+  color: white;
+}
+
+.open-ice-flow-card {
+  width: min(92vw, 460px);
+  border-radius: 30px;
+  border: 1px solid rgba(211, 247, 255, 0.76);
+  background: rgba(5, 40, 84, 0.86);
+  box-shadow: 0 22px 60px rgba(0, 20, 60, 0.38);
+  padding: 28px;
+  display: grid;
+  gap: 16px;
+  text-align: center;
+}
+
+.open-ice-flow-card h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(42px, 12vw, 68px);
+  line-height: 0.95;
+  color: #f7fdff;
+  text-shadow: 0 2px 0 #2d70c9, 0 5px 16px rgba(0, 20, 70, 0.58);
+}
+
+.open-ice-player,
+.open-ice-note {
+  margin: 0;
+  border-radius: 999px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #eaf9ff;
+  font-weight: 800;
+}
+
+.open-ice-choice {
+  border: 1px solid rgba(205, 246, 255, 0.82);
+  border-radius: 22px;
+  min-height: 92px;
+  padding: 16px;
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+  cursor: pointer;
+}
+
+.open-ice-choice.primary {
+  background: linear-gradient(180deg, rgba(30, 155, 255, 0.92), rgba(15, 88, 214, 0.88));
+}
+
+.open-ice-choice.compact {
+  min-height: 64px;
+  text-align: center;
+  place-items: center;
+}
+
+.open-ice-choice strong {
+  font-size: clamp(23px, 6vw, 34px);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.open-ice-choice span {
+  color: #e7faff;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.open-ice-choice:disabled,
+.open-ice-back:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.open-ice-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(205, 246, 255, 0.82);
+  border-radius: 20px;
+  padding: 18px 20px;
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-align: center;
+  outline: none;
+}
+
+.open-ice-input::placeholder {
+  color: rgba(235, 252, 255, 0.62);
+}
+
+.open-ice-back {
+  border: 1px solid rgba(205, 246, 255, 0.68);
+  border-radius: 999px;
+  padding: 13px 16px;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.open-ice-error {
+  margin: 0;
+  color: #ffd3d3;
+  font-weight: 900;
+}
