@@ -101,3 +101,41 @@ export async function devFillRoom({ roomCode, profile }) {
 
   return payload.room;
 }
+
+export async function getGameState({ roomCode, profile }) {
+  const payload = await request("game_state", {
+    roomCode,
+    wallet: profile.wallet
+  });
+
+  return payload.room;
+}
+
+export async function rollGameDice({ roomCode, profile }) {
+  const payload = await request("game_roll_dice", {
+    roomCode,
+    wallet: profile.wallet
+  });
+
+  return payload.room;
+}
+
+export async function selectGameSquare({ roomCode, profile, row, col }) {
+  const payload = await request("game_select_square", {
+    roomCode,
+    wallet: profile.wallet,
+    row,
+    col
+  });
+
+  return payload.room;
+}
+
+export async function endGameTurn({ roomCode, profile }) {
+  const payload = await request("game_end_turn", {
+    roomCode,
+    wallet: profile.wallet
+  });
+
+  return payload.room;
+}
