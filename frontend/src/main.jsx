@@ -6,6 +6,7 @@ import "./styles/global.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";
 import "./styles/gameBoard.css";
+import "./styles/teamSelect.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
