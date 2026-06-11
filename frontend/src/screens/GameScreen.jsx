@@ -15,7 +15,9 @@ import {
   selectSquare
 } from "../game/gameRules.js";
 
-const PIECE_ASSET_BASE = "/assets/arctic/pieces";
+const LOCAL_PIECE_ASSET_BASE = "/assets/arctic/pieces";
+const REMOTE_PIECE_ASSET_BASE =
+  "https://raw.githubusercontent.com/defiventurers/chaturanga-game/36d8ee9ae33fa08a21ba3d644b6053b9e13273e4/public/assets/arctic/pieces";
 
 const TEAM_ASSET_COLOR = {
   green: "green",
@@ -30,6 +32,14 @@ const PIECE_ASSET_TYPE = {
   horse: "aurora-unicorn",
   ship: "icebreaker",
   pawn: "snow-guard"
+};
+
+const PIECE_LETTER = {
+  king: "K",
+  elephant: "E",
+  horse: "H",
+  ship: "S",
+  pawn: "P"
 };
 
 const BOT_DELAY_MS = 650;
@@ -111,14 +121,7 @@ export function GameScreen({ room, profile, onFinishDemo, onBackToLobby }) {
                     aria-label={piece ? `${piece.team} ${piece.type}` : `empty ${row + 1},${col + 1}`}
                     onClick={() => handleCell(row, col)}
                   >
-                    {piece && (
-                      <img
-                        className="game-piece"
-                        src={pieceImageSrc(piece)}
-                        alt={`${piece.team} ${piece.type}`}
-                        draggable="false"
-                      />
-                    )}
+                    {piece && <PieceImage piece={piece} className="game-piece" />}
                   </button>
                 );
               })}
@@ -165,8 +168,33 @@ function DiceFace({ game, index, team }) {
 
   return (
     <span className="die-piece">
-      <img src={pieceImageSrc({ team, type })} alt={`${value}: ${allowed.join("/")}`} draggable="false" />
+      <PieceImage piece={{ team, type }} className="dice-piece-img" />
     </span>
+  );
+}
+
+function PieceImage({ piece, className }) {
+  const [sourceIndex, setSourceIndex] = useState(0);
+  const sources = pieceImageSources(piece);
+  const src = sources[sourceIndex];
+
+  useEffect(() => {
+    setSourceIndex(0);
+  }, [piece.team, piece.type]);
+
+  if (!src) {
+    return <span className="piece-fallback">{PIECE_LETTER[piece.type] || "?"}</span>;
+  }
+
+  return (
+    <img
+      className={className}
+      src={src}
+      alt=""
+      aria-hidden="true"
+      draggable="false"
+      onError={() => setSourceIndex((current) => current + 1)}
+    />
   );
 }
 
@@ -211,8 +239,13 @@ function renderBoardRows(board) {
   return cells;
 }
 
-function pieceImageSrc(piece) {
+function pieceImageSources(piece) {
   const color = TEAM_ASSET_COLOR[piece.team];
   const type = PIECE_ASSET_TYPE[piece.type];
-  return `${PIECE_ASSET_BASE}/${color}-${type}.png`;
+  if (!color || !type) return [];
+
+  return [
+    `${LOCAL_PIECE_ASSET_BASE}/${color}-${type}.png`,
+    `${REMOTE_PIECE_ASSET_BASE}/${color}-${type}.png`
+  ];
 }
