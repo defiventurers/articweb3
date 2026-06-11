@@ -7,6 +7,9 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  const myPlayer = currentRoom.players.find((player) => player.wallet === profile.wallet);
+  const hasPickedTeam = Boolean(myPlayer?.team);
+
   useEffect(() => {
     function handlePacket(event) {
       const packet = event.detail;
@@ -46,6 +49,11 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
   }, [currentRoom]);
 
   async function handleDevFillRoom() {
+    if (!hasPickedTeam) {
+      setError("Choose your team first.");
+      return;
+    }
+
     try {
       setBusy(true);
       setError("");
@@ -73,7 +81,7 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
           {currentRoom.players.map((player) => (
             <div className="room-row" key={player.wallet}>
               <strong>{player.name}</strong>
-              <span>{player.team}</span>
+              <span>{player.team || "choosing"}</span>
             </div>
           ))}
         </div>
@@ -83,10 +91,10 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
         <h2>
           {secondsLeft !== null
             ? `Starting in ${secondsLeft}`
-            : "Waiting for 4 players"}
+            : "Waiting for 4 players with teams"}
         </h2>
 
-        <button className="secondary-btn" disabled={busy} onClick={handleDevFillRoom}>
+        <button className="secondary-btn" disabled={busy || !hasPickedTeam} onClick={handleDevFillRoom}>
           {busy ? "Adding test players..." : "Dev Fill Room"}
         </button>
 
