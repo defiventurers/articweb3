@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAccount, useSignMessage } from "wagmi";
+import { useAccount, useDisconnect, useSignMessage } from "wagmi";
 import { useLoginWithAbstract } from "@abstract-foundation/agw-react";
 import { createProfile } from "../network/socketClient.js";
 import "../styles/profileScreen.css";
@@ -9,17 +9,31 @@ export function ProfileScreen({ onComplete, onBack }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [notice, setNotice] = useState("");
 
   const { login } = useLoginWithAbstract();
   const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
 
   async function handleConnect() {
     try {
       setError("");
+      setNotice("");
       await login();
     } catch (err) {
       setError(err.message || "Could not connect AGW.");
+    }
+  }
+
+  function handleDisconnect() {
+    try {
+      setError("");
+      setCopied(false);
+      disconnect();
+      setNotice("Wallet disconnected.");
+    } catch (err) {
+      setError(err.message || "Could not disconnect wallet.");
     }
   }
 
@@ -32,6 +46,7 @@ export function ProfileScreen({ onComplete, onBack }) {
     try {
       await navigator.clipboard.writeText(address);
       setCopied(true);
+      setNotice("");
       setTimeout(() => setCopied(false), 1200);
     } catch {
       setError("Could not copy wallet address.");
@@ -42,6 +57,7 @@ export function ProfileScreen({ onComplete, onBack }) {
     try {
       setError("");
       setCopied(false);
+      setNotice("");
 
       if (!address || !isConnected) {
         setError("Connect AGW first.");
@@ -78,7 +94,15 @@ export function ProfileScreen({ onComplete, onBack }) {
           className="profile-hit profile-connect-hit"
           aria-label="Connect AGW"
           onClick={handleConnect}
-          disabled={busy}
+          disabled={busy || isConnected}
+        />
+
+        <button
+          className="profile-hit profile-disconnect-hit"
+          aria-label="Disconnect wallet"
+          onClick={handleDisconnect}
+          disabled={busy || !isConnected}
+          title="Disconnect wallet"
         />
 
         <div className="profile-wallet-display">
@@ -116,9 +140,9 @@ export function ProfileScreen({ onComplete, onBack }) {
           onClick={onBack}
         />
 
-        {(error || busy || copied || isConnected) && (
+        {(error || busy || copied || notice) && (
           <div className={`profile-status ${error ? "error" : ""}`} aria-live="polite">
-            {error || (copied ? "Wallet copied." : busy ? "Creating profile..." : "AGW connected.")}
+            {error || (copied ? "Wallet copied." : busy ? "Creating profile..." : notice)}
           </div>
         )}
       </div>
