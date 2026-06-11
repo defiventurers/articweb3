@@ -91,6 +91,7 @@ export default function App() {
       <GameScreen
         room={room}
         profile={profile}
+        onRoomUpdate={setRoom}
         onFinishDemo={() => setScreen("results")}
         onBackToLobby={() => setScreen("lobby")}
       />
