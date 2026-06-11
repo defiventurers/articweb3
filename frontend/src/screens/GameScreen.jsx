@@ -1,5 +1,4 @@
-const OLD_ASSET_BASE =
-  "https://raw.githubusercontent.com/defiventurers/chaturanga-game/36d8ee9ae33fa08a21ba3d644b6053b9e13273e4/public/assets/arctic/pieces";
+const PIECE_ASSET_BASE = "/assets/arctic/pieces";
 
 const TEAM_ASSET_COLOR = {
   green: "green",
@@ -120,5 +119,5 @@ function piece(team, type) {
 function pieceImageSrc(piece) {
   const color = TEAM_ASSET_COLOR[piece.team];
   const type = PIECE_ASSET_TYPE[piece.type];
-  return `${OLD_ASSET_BASE}/${color}-${type}.png`;
+  return `${PIECE_ASSET_BASE}/${color}-${type}.png`;
 }
