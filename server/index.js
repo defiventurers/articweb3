@@ -3,9 +3,20 @@ require("dotenv").config();
 const http = require("http");
 const WebSocket = require("ws");
 const { randomUUID } = require("crypto");
+const {
+  createInitialGameState,
+  currentTeam,
+  rollDiceForState,
+  selectSquare,
+  endTurn,
+  hasAnyLegalMoveForTeam,
+  pickBotMove,
+  applyMove
+} = require("./gameRules.js");
 
 const PORT = process.env.PORT || 10000;
 const COUNTDOWN_MS = 5000;
+const BOT_DELAY_MS = 650;
 const ROOM_MODES = {
   OPEN_ICE: "open_ice",
   HIGH_STAKES: "high_stakes"
@@ -76,6 +87,7 @@ function view(room) {
     maxPlayers: 4,
     countdownStartTime: room.countdownStartTime,
     countdownDurationMs: room.countdownDurationMs,
+    gameState: room.gameState || null,
     players: players(room).map((player) => ({
       wallet: player.wallet,
       name: profiles.get(player.wallet)?.name || "Player",
@@ -99,6 +111,14 @@ function team(room) {
   return all.find((item) => !used.has(item));
 }
 
+function teamWallet(room, teamName) {
+  return players(room).find((player) => player.team === teamName)?.wallet || null;
+}
+
+function isBotWallet(wallet) {
+  return String(wallet || "").startsWith("dev-");
+}
+
 function checkCountdown(room) {
   if (room.status !== "waiting") return;
   if (players(room).length !== 4) return;
@@ -114,7 +134,75 @@ function checkStart(room) {
   if (Date.now() - room.countdownStartTime < COUNTDOWN_MS) return;
   room.status = "playing";
   room.countdownStartTime = null;
+  room.gameState = createInitialGameState();
   broadcast(room);
+  scheduleBotIfNeeded(room);
+}
+
+function scheduleBotIfNeeded(room) {
+  if (!room || room.status !== "playing" || !room.gameState || room.gameState.gameOver) return;
+  const activeTeam = currentTeam(room.gameState);
+  const activeWallet = teamWallet(room, activeTeam);
+  if (!isBotWallet(activeWallet)) return;
+  if (room.botTimer) return;
+
+  room.botTimer = setTimeout(() => {
+    room.botTimer = null;
+    playBotTurn(room);
+  }, BOT_DELAY_MS);
+}
+
+function playBotTurn(room) {
+  if (!room || room.status !== "playing" || !room.gameState || room.gameState.gameOver) return;
+  const activeTeam = currentTeam(room.gameState);
+  const activeWallet = teamWallet(room, activeTeam);
+  if (!isBotWallet(activeWallet)) return;
+
+  let nextGameState = room.gameState;
+  if (!nextGameState.dice.rolled) {
+    nextGameState = rollDiceForState(nextGameState);
+  }
+
+  const move = pickBotMove(nextGameState);
+  room.gameState = move ? applyMove(nextGameState, move) : endTurn(nextGameState);
+  broadcast(room);
+  scheduleBotIfNeeded(room);
+}
+
+function requirePlayingRoom(ws, requestId, payload) {
+  const wallet = walletOf(payload.wallet);
+  const roomCode = String(payload.roomCode || "").trim().toUpperCase();
+  const room = rooms.get(roomCode);
+
+  if (!profiles.has(wallet)) {
+    fail(ws, requestId, "Create profile first.");
+    return null;
+  }
+
+  if (!room) {
+    fail(ws, requestId, "Room not found.");
+    return null;
+  }
+
+  if (!room.players[wallet]) {
+    fail(ws, requestId, "Join the room first.");
+    return null;
+  }
+
+  if (room.status !== "playing" || !room.gameState) {
+    fail(ws, requestId, "Game has not started yet.");
+    return null;
+  }
+
+  const activeTeam = currentTeam(room.gameState);
+  const activeWallet = teamWallet(room, activeTeam);
+  if (activeWallet !== wallet) {
+    fail(ws, requestId, "It is not your turn.");
+    return null;
+  }
+
+  sockets.set(wallet, ws);
+  return room;
 }
 
 function login(ws, requestId, payload) {
@@ -170,6 +258,7 @@ function createRoom(ws, requestId, payload) {
     tokenUnits: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.tokenUnits : "0",
     visibility: payload.visibility === "private" ? "private" : "public",
     status: "waiting",
+    gameState: null,
     players: {
       [wallet]: {
         wallet,
@@ -250,6 +339,53 @@ function devFillRoom(ws, requestId, payload) {
   return broadcast(room);
 }
 
+function gameRollDice(ws, requestId, payload) {
+  const room = requirePlayingRoom(ws, requestId, payload);
+  if (!room) return;
+  room.gameState = rollDiceForState(room.gameState);
+  const activeTeam = currentTeam(room.gameState);
+  if (room.gameState.dice.rolled && !hasAnyLegalMoveForTeam(room.gameState, activeTeam)) {
+    room.gameState = endTurn(room.gameState);
+  }
+  ok(ws, requestId, "game_action_result", { room: view(room) });
+  broadcast(room);
+  scheduleBotIfNeeded(room);
+}
+
+function gameSelectSquare(ws, requestId, payload) {
+  const room = requirePlayingRoom(ws, requestId, payload);
+  if (!room) return;
+  const row = Number(payload.row);
+  const col = Number(payload.col);
+  if (!Number.isInteger(row) || !Number.isInteger(col) || row < 0 || row > 7 || col < 0 || col > 7) {
+    return fail(ws, requestId, "Invalid square.");
+  }
+  room.gameState = selectSquare(room.gameState, row, col);
+  ok(ws, requestId, "game_action_result", { room: view(room) });
+  broadcast(room);
+  scheduleBotIfNeeded(room);
+}
+
+function gameEndTurn(ws, requestId, payload) {
+  const room = requirePlayingRoom(ws, requestId, payload);
+  if (!room) return;
+  room.gameState = endTurn(room.gameState);
+  ok(ws, requestId, "game_action_result", { room: view(room) });
+  broadcast(room);
+  scheduleBotIfNeeded(room);
+}
+
+function gameState(ws, requestId, payload) {
+  const wallet = walletOf(payload.wallet);
+  const roomCode = String(payload.roomCode || "").trim().toUpperCase();
+  const room = rooms.get(roomCode);
+  if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.");
+  if (!room) return fail(ws, requestId, "Room not found.");
+  if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
+  sockets.set(wallet, ws);
+  return ok(ws, requestId, "game_state_result", { room: view(room) });
+}
+
 const server = http.createServer((req, res) => {
   if (req.url === "/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
@@ -270,6 +406,10 @@ new WebSocket.Server({ server }).on("connection", (ws) => {
     if (type === "room_create") return createRoom(ws, requestId, payload);
     if (type === "room_join") return joinRoom(ws, requestId, payload);
     if (type === "dev_fill_room") return devFillRoom(ws, requestId, payload);
+    if (type === "game_state") return gameState(ws, requestId, payload);
+    if (type === "game_roll_dice") return gameRollDice(ws, requestId, payload);
+    if (type === "game_select_square") return gameSelectSquare(ws, requestId, payload);
+    if (type === "game_end_turn") return gameEndTurn(ws, requestId, payload);
     return fail(ws, requestId, `Unknown message type: ${type}`);
   });
 });
