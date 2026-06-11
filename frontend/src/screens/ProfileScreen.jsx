@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAccount, useSignMessage } from "wagmi";
 import { useLoginWithAbstract } from "@abstract-foundation/agw-react";
 import { createProfile } from "../network/socketClient.js";
+import "../styles/profileScreen.css";
 
 export function ProfileScreen({ onComplete, onBack }) {
   const [name, setName] = useState("");
@@ -80,10 +81,6 @@ export function ProfileScreen({ onComplete, onBack }) {
           disabled={busy}
         />
 
-        <div className={`profile-connected-status ${isConnected ? "" : "disconnected"}`}>
-          {isConnected ? "AGW CONNECTED" : "CONNECT AGW"}
-        </div>
-
         <div className="profile-wallet-display">
           {address ? compactAddress(address) : "Wallet not connected"}
         </div>
@@ -119,9 +116,9 @@ export function ProfileScreen({ onComplete, onBack }) {
           onClick={onBack}
         />
 
-        {(error || busy || copied) && (
+        {(error || busy || copied || isConnected) && (
           <div className={`profile-status ${error ? "error" : ""}`} aria-live="polite">
-            {error || (copied ? "Wallet copied." : "Creating profile...")}
+            {error || (copied ? "Wallet copied." : busy ? "Creating profile..." : "AGW connected.")}
           </div>
         )}
       </div>
