@@ -6,6 +6,17 @@ const { randomUUID } = require("crypto");
 
 const PORT = process.env.PORT || 10000;
 const COUNTDOWN_MS = 5000;
+const ROOM_MODES = {
+  OPEN_ICE: "open_ice",
+  HIGH_STAKES: "high_stakes"
+};
+const ENTRY_TIERS = {
+  "1": { code: "1", label: "$1", entryFeeUsd: 1, tokenUnits: "1000000" },
+  "4": { code: "4", label: "$4", entryFeeUsd: 4, tokenUnits: "4000000" },
+  "16": { code: "16", label: "$16", entryFeeUsd: 16, tokenUnits: "16000000" }
+};
+const HIGH_STAKES_ENABLED = process.env.HIGH_STAKES_ENABLED === "true";
+
 const profiles = new Map();
 const rooms = new Map();
 const sockets = new Map();
@@ -26,11 +37,24 @@ function walletOf(value) {
   return String(value || "").toLowerCase();
 }
 
+function normalizeRoomMode(value) {
+  return value === ROOM_MODES.HIGH_STAKES ? ROOM_MODES.HIGH_STAKES : ROOM_MODES.OPEN_ICE;
+}
+
+function normalizeEntryTier(value) {
+  const tier = ENTRY_TIERS[String(value || "1")];
+  return tier || ENTRY_TIERS["1"];
+}
+
 function code() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let out = "";
   for (let i = 0; i < 4; i += 1) out += chars[Math.floor(Math.random() * chars.length)];
   return rooms.has(out) ? code() : out;
+}
+
+function matchId() {
+  return `match-${randomUUID()}`;
 }
 
 function players(room) {
@@ -40,7 +64,12 @@ function players(room) {
 function view(room) {
   return {
     id: room.id,
+    matchId: room.matchId,
     roomCode: room.roomCode,
+    roomMode: room.roomMode,
+    entryTier: room.entryTier,
+    entryFeeUsd: room.entryFeeUsd,
+    tokenUnits: room.tokenUnits,
     visibility: room.visibility,
     status: room.status,
     playerCount: players(room).length,
@@ -50,7 +79,8 @@ function view(room) {
     players: players(room).map((player) => ({
       wallet: player.wallet,
       name: profiles.get(player.wallet)?.name || "Player",
-      team: player.team
+      team: player.team,
+      entryLocked: Boolean(player.entryLocked)
     }))
   };
 }
@@ -72,6 +102,7 @@ function team(room) {
 function checkCountdown(room) {
   if (room.status !== "waiting") return;
   if (players(room).length !== 4) return;
+  if (room.roomMode !== ROOM_MODES.OPEN_ICE) return;
   if (!room.countdownStartTime) {
     room.countdownStartTime = Date.now();
     broadcast(room);
@@ -105,8 +136,10 @@ function login(ws, requestId, payload) {
   return ok(ws, requestId, "profile_login_result", { profile });
 }
 
-function list(ws, requestId) {
+function list(ws, requestId, payload = {}) {
+  const roomMode = normalizeRoomMode(payload.roomMode);
   const publicRooms = [...rooms.values()]
+    .filter((room) => room.roomMode === roomMode)
     .filter((room) => room.visibility === "public")
     .filter((room) => room.status === "waiting")
     .filter((room) => players(room).length < 4)
@@ -118,13 +151,33 @@ function createRoom(ws, requestId, payload) {
   const wallet = walletOf(payload.wallet);
   if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.");
   sockets.set(wallet, ws);
+
+  const roomMode = normalizeRoomMode(payload.roomMode);
+  const entryTier = normalizeEntryTier(payload.entryTier);
+
+  if (roomMode === ROOM_MODES.HIGH_STAKES && !HIGH_STAKES_ENABLED) {
+    return fail(ws, requestId, "High Stakes rooms are not enabled yet.");
+  }
+
   const roomCode = code();
   const room = {
     id: randomUUID(),
+    matchId: matchId(),
     roomCode,
+    roomMode,
+    entryTier: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.code : null,
+    entryFeeUsd: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.entryFeeUsd : 0,
+    tokenUnits: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.tokenUnits : "0",
     visibility: payload.visibility === "private" ? "private" : "public",
     status: "waiting",
-    players: { [wallet]: { wallet, team: "green", joinedAt: Date.now() } },
+    players: {
+      [wallet]: {
+        wallet,
+        team: "green",
+        joinedAt: Date.now(),
+        entryLocked: roomMode === ROOM_MODES.OPEN_ICE
+      }
+    },
     countdownStartTime: null,
     countdownDurationMs: COUNTDOWN_MS,
     createdAt: Date.now()
@@ -141,11 +194,19 @@ function joinRoom(ws, requestId, payload) {
   const room = rooms.get(roomCode);
   if (!room) return fail(ws, requestId, "Room not found.");
   if (room.status !== "waiting") return fail(ws, requestId, "Room already started.");
+  if (room.roomMode === ROOM_MODES.HIGH_STAKES && !HIGH_STAKES_ENABLED) {
+    return fail(ws, requestId, "High Stakes rooms are not enabled yet.");
+  }
   sockets.set(wallet, ws);
   if (!room.players[wallet]) {
     if (players(room).length >= 4) return fail(ws, requestId, "Room is full.");
     const pickedTeam = team(room);
-    room.players[wallet] = { wallet, team: pickedTeam, joinedAt: Date.now() };
+    room.players[wallet] = {
+      wallet,
+      team: pickedTeam,
+      joinedAt: Date.now(),
+      entryLocked: room.roomMode === ROOM_MODES.OPEN_ICE
+    };
   }
   checkCountdown(room);
   ok(ws, requestId, "room_join_result", { room: view(room) });
@@ -159,6 +220,7 @@ function devFillRoom(ws, requestId, payload) {
   const room = rooms.get(roomCode);
   if (!room) return fail(ws, requestId, "Room not found.");
   if (room.status !== "waiting") return fail(ws, requestId, "Room already started.");
+  if (room.roomMode !== ROOM_MODES.OPEN_ICE) return fail(ws, requestId, "Dev fill is only available for Open Ice.");
   if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
 
   const testNames = ["Test Raja", "Test Mantri", "Test Senapati"];
@@ -178,7 +240,8 @@ function devFillRoom(ws, requestId, payload) {
     room.players[fakeWallet] = {
       wallet: fakeWallet,
       team: pickedTeam,
-      joinedAt: Date.now()
+      joinedAt: Date.now(),
+      entryLocked: true
     };
   }
 
@@ -203,7 +266,7 @@ new WebSocket.Server({ server }).on("connection", (ws) => {
     try { packet = JSON.parse(raw); } catch { return fail(ws, null, "Invalid JSON."); }
     const { type, requestId, payload = {} } = packet;
     if (type === "profile_login") return login(ws, requestId, payload);
-    if (type === "room_list") return list(ws, requestId);
+    if (type === "room_list") return list(ws, requestId, payload);
     if (type === "room_create") return createRoom(ws, requestId, payload);
     if (type === "room_join") return joinRoom(ws, requestId, payload);
     if (type === "dev_fill_room") return devFillRoom(ws, requestId, payload);
