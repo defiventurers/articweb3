@@ -1,0 +1,218 @@
+.game-screen-page {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: #c9f3ff;
+  overflow: hidden;
+}
+
+.game-stage {
+  position: relative;
+  width: min(100vw, 520px);
+  max-width: 100vw;
+  aspect-ratio: 9 / 16;
+  margin-inline: auto;
+  overflow: hidden;
+  isolation: isolate;
+  background-image: url("/assets/screens/arctic-dominion-game-base.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  --status-left: 14.5%;
+  --status-top: 24.95%;
+  --status-width: 71%;
+  --status-height: 4.25%;
+  --board-left: 18.81%;
+  --board-top: 33.50%;
+  --board-size: 66.84%;
+  --piece-size: 84%;
+  --dice-left: 24.80%;
+  --dice-top: 70.71%;
+  --dice-width: 50.04%;
+  --dice-height: 18.58%;
+  --dice-gap: 6.5%;
+}
+
+.game-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.game-status-overlay {
+  position: absolute;
+  left: var(--status-left);
+  top: var(--status-top);
+  width: var(--status-width);
+  height: var(--status-height);
+  z-index: 40;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5.5%;
+}
+
+.game-status-turn,
+.game-status-main {
+  font-size: clamp(9px, 1.75vw, 13px);
+  font-weight: 900;
+  line-height: 1;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 15, 40, .75);
+  white-space: nowrap;
+}
+
+.game-status-turn {
+  color: #75db9e;
+}
+
+.game-status-badge {
+  font-size: clamp(6px, 1.25vw, 9px);
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(7, 55, 102, .72);
+  border: 1px solid rgba(189, 239, 255, .85);
+  color: white;
+}
+
+.board-overlay {
+  position: absolute;
+  left: var(--board-left);
+  top: var(--board-top);
+  width: var(--board-size);
+  aspect-ratio: 1 / 1;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.board-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  pointer-events: auto;
+  gap: 0;
+  border: 0;
+  background: transparent;
+}
+
+.board-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-piece {
+  width: var(--piece-size);
+  height: var(--piece-size);
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 3px 5px rgba(6, 55, 102, .35));
+}
+
+.dice-overlay {
+  position: absolute;
+  left: var(--dice-left);
+  top: var(--dice-top);
+  width: var(--dice-width);
+  height: var(--dice-height);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--dice-gap);
+  align-items: center;
+  justify-items: center;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.dice-slot {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #eaf7ff;
+  font-size: clamp(10px, 2.4vw, 15px);
+  font-weight: 900;
+  text-shadow: 0 1px 2px rgba(0, 30, 80, .8), 0 0 6px rgba(255, 255, 255, .25);
+}
+
+.game-action-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+}
+
+.game-action-hitbox {
+  position: absolute;
+  border: 0;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.roll-hitbox {
+  left: 9.63%;
+  top: 86.49%;
+  width: 39.18%;
+  height: 7.29%;
+}
+
+.end-turn-hitbox {
+  left: 50.31%;
+  top: 86.98%;
+  width: 39.77%;
+  height: 7.07%;
+}
+
+.new-game-hitbox {
+  left: 29.59%;
+  top: 94.51%;
+  width: 39.21%;
+  height: 5.35%;
+}
+
+.game-back-button {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 90;
+  pointer-events: auto;
+  border: 1px solid rgba(190,245,255,.44);
+  border-radius: 999px;
+  background: rgba(0, 20, 40, .56);
+  color: white;
+  padding: 8px 12px;
+  font-weight: 900;
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  .game-stage {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    min-height: 100dvh;
+    aspect-ratio: auto;
+  }
+
+  .game-stage .board-overlay {
+    aspect-ratio: auto;
+    height: 37.5975%;
+  }
+}
