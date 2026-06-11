@@ -4,6 +4,7 @@ import { MainMenu } from "./screens/MainMenu.jsx";
 import { ProfileScreen } from "./screens/ProfileScreen.jsx";
 import { PlayerHubScreen } from "./screens/PlayerHubScreen.jsx";
 import { LobbyScreen } from "./screens/LobbyScreen.jsx";
+import { TeamSelectScreen } from "./screens/TeamSelectScreen.jsx";
 import { HighStakesScreen } from "./screens/HighStakesScreen.jsx";
 import { WaitingRoomScreen } from "./screens/WaitingRoomScreen.jsx";
 import { GameScreen } from "./screens/GameScreen.jsx";
@@ -65,9 +66,24 @@ export default function App() {
         profile={profile}
         onJoinRoom={(joinedRoom) => {
           setRoom(joinedRoom);
-          setScreen("waiting");
+          setScreen("team-select");
         }}
         onBack={() => setScreen("hub")}
+      />
+    );
+  }
+
+  if (screen === "team-select") {
+    return (
+      <TeamSelectScreen
+        room={room}
+        profile={profile}
+        onRoomUpdate={setRoom}
+        onContinue={(updatedRoom) => {
+          setRoom(updatedRoom);
+          setScreen("waiting");
+        }}
+        onBack={() => setScreen("lobby")}
       />
     );
   }
