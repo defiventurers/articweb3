@@ -1,28 +1,29 @@
 import { DepositPanel } from "../components/DepositPanel.jsx";
+import "../styles/playerHub.css";
 
 export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onBack }) {
   return (
-    <section className="screen">
-      <div className="card">
-        <h1>Player Hub</h1>
+    <section className="player-hub-page">
+      <div className="player-hub-card">
+        <h1 className="player-hub-title">Player Hub</h1>
 
-        <p className="note">
+        <div className="player-hub-profile-pill">
           {profile.name} · {profile.points} points
-        </p>
+        </div>
 
         <DepositPanel />
 
-        <button className="mode-choice active" onClick={onOpenIce}>
+        <button className="player-hub-mode open" onClick={onOpenIce}>
           <strong>Open Ice</strong>
-          <span>Play freely with no crypto required.</span>
+          <span>Create or join free rooms. No crypto required.</span>
         </button>
 
-        <button className="mode-choice" onClick={onHighStakes}>
+        <button className="player-hub-mode locked" onClick={onHighStakes}>
           <strong>High Stakes</strong>
-          <span>Risk crypto and compete for the prize pool.</span>
+          <span>Coming after balance checks and settlement testing.</span>
         </button>
 
-        <button className="secondary-btn" onClick={onBack}>
+        <button className="player-hub-back" onClick={onBack}>
           Back
         </button>
       </div>
