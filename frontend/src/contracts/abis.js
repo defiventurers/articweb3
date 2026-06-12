@@ -71,7 +71,83 @@ export const vaultAbi = [
     type: "function",
     name: "releaseEntry",
     stateMutability: "nonpayable",
-    inputs: [{ name: "matchId", type: "bytes32" }],
+    inputs: [
+      { name: "matchId", type: "bytes32" },
+      { name: "player", type: "address" }
+    ],
+    outputs: []
+  },
+  {
+    type: "function",
+    name: "settleMatch",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "matchId", type: "bytes32" },
+      { name: "players", type: "address[4]" },
+      { name: "payouts", type: "uint256[4]" }
+    ],
+    outputs: []
+  }
+];
+
+export const ethVaultAbi = [
+  {
+    type: "function",
+    name: "availableBalance",
+    stateMutability: "view",
+    inputs: [{ name: "player", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }]
+  },
+  {
+    type: "function",
+    name: "lockedBalance",
+    stateMutability: "view",
+    inputs: [{ name: "player", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }]
+  },
+  {
+    type: "function",
+    name: "deposit",
+    stateMutability: "payable",
+    inputs: [],
+    outputs: []
+  },
+  {
+    type: "function",
+    name: "withdraw",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "amount", type: "uint256" }],
+    outputs: []
+  },
+  {
+    type: "function",
+    name: "lockEntry",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "matchId", type: "bytes32" },
+      { name: "amount", type: "uint256" }
+    ],
+    outputs: []
+  },
+  {
+    type: "function",
+    name: "releaseEntry",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "matchId", type: "bytes32" },
+      { name: "player", type: "address" }
+    ],
+    outputs: []
+  },
+  {
+    type: "function",
+    name: "settleMatch",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "matchId", type: "bytes32" },
+      { name: "players", type: "address[4]" },
+      { name: "payouts", type: "uint256[4]" }
+    ],
     outputs: []
   }
 ];
