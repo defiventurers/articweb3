@@ -7,28 +7,46 @@ const __dirname = path.dirname(__filename);
 const contractsRoot = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(contractsRoot, "..");
 
-const candidates = [
-  path.join(contractsRoot, "artifacts-zk/contracts/GameEscrow.sol/GameEscrow.json"),
-  path.join(contractsRoot, "artifacts/contracts/GameEscrow.sol/GameEscrow.json")
-];
+exportArtifact({
+  contractName: "GameEscrow",
+  sourceName: "GameEscrow.sol",
+  abiExport: "GAME_ESCROW_ABI",
+  bytecodeExport: "GAME_ESCROW_BYTECODE",
+  outputFile: "frontend/src/contracts/gameEscrowArtifact.js"
+});
 
-const artifactPath = candidates.find((candidate) => fs.existsSync(candidate));
+exportArtifact({
+  contractName: "EthGameEscrow",
+  sourceName: "EthGameEscrow.sol",
+  abiExport: "ETH_GAME_ESCROW_ABI",
+  bytecodeExport: "ETH_GAME_ESCROW_BYTECODE",
+  outputFile: "frontend/src/contracts/ethGameEscrowArtifact.js"
+});
 
-if (!artifactPath) {
-  console.error("GameEscrow artifact not found. Run npm run compile first.");
-  process.exit(1);
+function exportArtifact({ contractName, sourceName, abiExport, bytecodeExport, outputFile }) {
+  const candidates = [
+    path.join(contractsRoot, `artifacts-zk/contracts/${sourceName}/${contractName}.json`),
+    path.join(contractsRoot, `artifacts/contracts/${sourceName}/${contractName}.json`)
+  ];
+
+  const artifactPath = candidates.find((candidate) => fs.existsSync(candidate));
+
+  if (!artifactPath) {
+    console.error(`${contractName} artifact not found. Run npm run compile first.`);
+    process.exit(1);
+  }
+
+  const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+  const abi = artifact.abi;
+  const bytecode = artifact.bytecode || artifact.bytecodeObject;
+
+  if (!bytecode || bytecode === "0x") {
+    console.error(`${contractName} bytecode missing from artifact.`);
+    process.exit(1);
+  }
+
+  const output = `export const ${abiExport} = ${JSON.stringify(abi, null, 2)};\n\nexport const ${bytecodeExport} = ${JSON.stringify(bytecode)};\n`;
+  const outputPath = path.join(repoRoot, outputFile);
+  fs.writeFileSync(outputPath, output);
+  console.log(`Wrote ${outputFile}`);
 }
-
-const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
-const abi = artifact.abi;
-const bytecode = artifact.bytecode || artifact.bytecodeObject;
-
-if (!bytecode || bytecode === "0x") {
-  console.error("GameEscrow bytecode missing from artifact.");
-  process.exit(1);
-}
-
-const output = `export const GAME_ESCROW_ABI = ${JSON.stringify(abi, null, 2)};\n\nexport const GAME_ESCROW_BYTECODE = ${JSON.stringify(bytecode)};\n`;
-const outputPath = path.join(repoRoot, "frontend/src/contracts/gameEscrowArtifact.js");
-fs.writeFileSync(outputPath, output);
-console.log(`Wrote ${path.relative(repoRoot, outputPath)}`);
