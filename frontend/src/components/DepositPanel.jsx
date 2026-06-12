@@ -9,11 +9,20 @@ export function DepositPanel() {
   const [amount, setAmount] = useState("1");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("info");
   const { address, isConnected } = useAccount();
   const { data: abstractClient } = useAbstractClient();
 
   const enabled = Boolean(address && CHAIN_TARGETS_READY);
   const parsedAmount = parseSafeAmount(amount);
+
+  const walletQuery = useReadContract({
+    address: TOKEN_ADDRESS,
+    abi: tokenAbi,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+    query: { enabled }
+  });
 
   const balanceQuery = useReadContract({
     address: VAULT_ADDRESS,
@@ -39,112 +48,139 @@ export function DepositPanel() {
     query: { enabled }
   });
 
+  const walletBalance = walletQuery.data || 0n;
   const availableBalance = balanceQuery.data || 0n;
   const lockedBalance = lockedQuery.data || 0n;
   const allowance = allowanceQuery.data || 0n;
   const hasEnoughAllowance = parsedAmount > 0n && allowance >= parsedAmount;
+  const hasEnoughWalletBalance = parsedAmount > 0n && walletBalance >= parsedAmount;
+  const canUseContracts = Boolean(isConnected && abstractClient && enabled);
 
   async function refresh() {
-    await Promise.all([balanceQuery.refetch(), lockedQuery.refetch(), allowanceQuery.refetch()]);
+    if (!enabled) return;
+    await Promise.all([
+      walletQuery.refetch(),
+      balanceQuery.refetch(),
+      lockedQuery.refetch(),
+      allowanceQuery.refetch()
+    ]);
   }
 
   async function approveToken() {
-    if (!abstractClient || parsedAmount <= 0n) return;
-    setBusy(true);
-    setMessage("");
-    try {
-      await abstractClient.writeContract({
+    if (!canUseContracts || parsedAmount <= 0n) return;
+    await runTransaction("Approval", async () => {
+      return abstractClient.writeContract({
         address: TOKEN_ADDRESS,
         abi: tokenAbi,
         functionName: "approve",
         args: [VAULT_ADDRESS, parsedAmount]
       });
-      setMessage("Approval submitted. Refresh after it confirms.");
-      await refresh();
-    } catch (err) {
-      setMessage(err.message || "Approval failed.");
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   async function depositToken() {
-    if (!abstractClient || parsedAmount <= 0n) return;
-    setBusy(true);
-    setMessage("");
-    try {
-      await abstractClient.writeContract({
+    if (!canUseContracts || parsedAmount <= 0n || !hasEnoughAllowance) return;
+    await runTransaction("Deposit", async () => {
+      return abstractClient.writeContract({
         address: VAULT_ADDRESS,
         abi: vaultAbi,
         functionName: "deposit",
         args: [parsedAmount]
       });
-      setMessage("Deposit submitted. Refresh after it confirms.");
-      await refresh();
-    } catch (err) {
-      setMessage(err.message || "Deposit failed.");
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   async function withdrawToken() {
-    if (!abstractClient || parsedAmount <= 0n) return;
-    setBusy(true);
-    setMessage("");
-    try {
-      await abstractClient.writeContract({
+    if (!canUseContracts || parsedAmount <= 0n || availableBalance < parsedAmount) return;
+    await runTransaction("Withdraw", async () => {
+      return abstractClient.writeContract({
         address: VAULT_ADDRESS,
         abi: vaultAbi,
         functionName: "withdraw",
         args: [parsedAmount]
       });
-      setMessage("Withdraw submitted. Refresh after it confirms.");
+    });
+  }
+
+  async function runTransaction(label, action) {
+    setBusy(true);
+    setMessage("");
+    setMessageType("info");
+
+    try {
+      const hash = await action();
+      setMessage(`${label} submitted: ${compactHash(hash)}. Refresh after confirmation.`);
       await refresh();
     } catch (err) {
-      setMessage(err.message || "Withdraw failed.");
+      setMessage(err.shortMessage || err.message || `${label} failed.`);
+      setMessageType("error");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="deposit-panel">
-      <strong>USDC Game Balance</strong>
-      <span>Available: {formatUnits(availableBalance, TOKEN_DECIMALS)} USDC</span>
-      <span>Locked: {formatUnits(lockedBalance, TOKEN_DECIMALS)} USDC</span>
+    <div className="wallet-panel">
+      <div className="wallet-panel-header">
+        <strong>USDC Game Balance</strong>
+        <span className={`wallet-status-pill ${CHAIN_TARGETS_READY ? "ready" : ""}`}>
+          {CHAIN_TARGETS_READY ? "Testnet Ready" : "Open Ice Ready"}
+        </span>
+      </div>
+
+      <div className="wallet-balance-grid">
+        <div className="wallet-balance-box">
+          <span>Wallet</span>
+          <strong>{formatAmount(walletBalance)} USDC</strong>
+        </div>
+        <div className="wallet-balance-box">
+          <span>Available</span>
+          <strong>{formatAmount(availableBalance)} USDC</strong>
+        </div>
+        <div className="wallet-balance-box">
+          <span>Locked</span>
+          <strong>{formatAmount(lockedBalance)} USDC</strong>
+        </div>
+      </div>
 
       {!CHAIN_TARGETS_READY && (
-        <span>Deploy the testnet contract and add VITE_TOKEN_ADDRESS plus VITE_VAULT_ADDRESS.</span>
+        <p className="wallet-info-note">
+          Open Ice is fully playable. Deposits unlock after the testnet token and vault addresses are deployed in Vercel.
+        </p>
       )}
 
-      {CHAIN_TARGETS_READY && !isConnected && <span>Connect AGW first.</span>}
+      {CHAIN_TARGETS_READY && !isConnected && (
+        <p className="wallet-info-note">Connect AGW from the profile screen before using deposits.</p>
+      )}
 
       <input
-        className="text-input"
+        className="wallet-amount-input"
         placeholder="Amount"
         inputMode="decimal"
         value={amount}
         onChange={(event) => setAmount(event.target.value)}
       />
 
-      <button className="secondary-btn" disabled={!enabled || busy || parsedAmount <= 0n} onClick={refresh}>
-        Refresh Balance
-      </button>
+      <div className="wallet-action-row">
+        <button className="wallet-btn" disabled={!enabled || busy} onClick={refresh}>
+          Refresh
+        </button>
+        <button className="wallet-btn" disabled={!canUseContracts || busy || parsedAmount <= 0n} onClick={approveToken}>
+          Approve
+        </button>
+        <button className="wallet-btn primary" disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={depositToken}>
+          Deposit
+        </button>
+        <button className="wallet-btn" disabled={!canUseContracts || busy || parsedAmount <= 0n || availableBalance < parsedAmount} onClick={withdrawToken}>
+          Withdraw
+        </button>
+      </div>
 
-      <button className="secondary-btn" disabled={!enabled || busy || parsedAmount <= 0n} onClick={approveToken}>
-        Approve USDC
-      </button>
+      {CHAIN_TARGETS_READY && parsedAmount > 0n && !hasEnoughAllowance && (
+        <p className="wallet-info-note">Approve this amount before depositing.</p>
+      )}
 
-      <button className="secondary-btn" disabled={!enabled || busy || !hasEnoughAllowance} onClick={depositToken}>
-        Deposit USDC
-      </button>
-
-      <button className="secondary-btn" disabled={!enabled || busy || parsedAmount <= 0n || availableBalance < parsedAmount} onClick={withdrawToken}>
-        Withdraw USDC
-      </button>
-
-      {message && <span>{message}</span>}
+      {message && <p className={`wallet-message ${messageType === "error" ? "error" : ""}`}>{message}</p>}
     </div>
   );
 }
@@ -156,4 +192,16 @@ function parseSafeAmount(value) {
   } catch {
     return 0n;
   }
+}
+
+function formatAmount(value) {
+  const formatted = formatUnits(value || 0n, TOKEN_DECIMALS);
+  const [whole, decimal = ""] = formatted.split(".");
+  const cleanDecimal = decimal.slice(0, 2).replace(/0+$/, "");
+  return cleanDecimal ? `${whole}.${cleanDecimal}` : whole;
+}
+
+function compactHash(hash) {
+  if (!hash) return "transaction sent";
+  return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
 }
