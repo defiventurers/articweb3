@@ -15,6 +15,7 @@
     "@matterlabs/hardhat-zksync": "latest",
     "ethers": "^6.13.5",
     "hardhat": "^2.22.19",
+    "ts-node": "^10.9.2",
     "typescript": "^5.7.3",
     "zksync-ethers": "^6.15.0"
   }
