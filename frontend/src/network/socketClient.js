@@ -74,10 +74,11 @@ export async function listRooms({ roomMode = "open_ice" } = {}) {
   return payload.rooms || [];
 }
 
-export async function createRoom({ visibility, roomMode = "open_ice", profile }) {
+export async function createRoom({ visibility, roomMode = "open_ice", entryTier = "1", profile }) {
   const payload = await request("room_create", {
     visibility,
     roomMode,
+    entryTier,
     wallet: profile.wallet
   });
 
@@ -88,6 +89,16 @@ export async function joinRoom({ roomCode, profile }) {
   const payload = await request("room_join", {
     roomCode,
     wallet: profile.wallet
+  });
+
+  return payload.room;
+}
+
+export async function confirmEntryLock({ roomCode, profile, txHash }) {
+  const payload = await request("room_confirm_entry", {
+    roomCode,
+    wallet: profile.wallet,
+    txHash
   });
 
   return payload.room;
