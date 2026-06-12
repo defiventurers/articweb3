@@ -11,6 +11,7 @@ import { HighStakesScreen } from "./screens/HighStakesScreen.jsx";
 import { WaitingRoomScreen } from "./screens/WaitingRoomScreen.jsx";
 import { GameScreen } from "./screens/GameScreen.jsx";
 import { ResultsScreen } from "./screens/ResultsScreen.jsx";
+import { VaultDeployerScreen } from "./screens/VaultDeployerScreen.jsx";
 
 export default function App() {
   const [screen, setScreen] = useState("cover");
@@ -48,9 +49,14 @@ export default function App() {
         profile={profile}
         onOpenIce={() => setScreen("open-ice-menu")}
         onHighStakes={() => setScreen("high-stakes")}
+        onVaultDeployer={() => setScreen("vault-deployer")}
         onBack={() => setScreen("profile")}
       />
     );
+  }
+
+  if (screen === "vault-deployer") {
+    return <VaultDeployerScreen onBack={() => setScreen("hub")} />;
   }
 
   if (screen === "high-stakes") {
