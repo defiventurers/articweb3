@@ -2,7 +2,7 @@ require("@matterlabs/hardhat-zksync");
 
 module.exports = {
   zksolc: {
-    version: "latest"
+    version: "1.5.16"
   },
   defaultNetwork: "abstractTestnet",
   networks: {
