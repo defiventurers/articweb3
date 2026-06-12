@@ -6,6 +6,8 @@
   "scripts": {
     "clean": "hardhat clean",
     "compile": "hardhat compile --network abstractTestnet",
+    "export:frontend": "node scripts/export-game-escrow-artifact.mjs",
+    "build:frontend-artifact": "npm run compile && npm run export:frontend",
     "deploy:testnet": "hardhat deploy-zksync --script deploy.ts --network abstractTestnet",
     "verify:testnet": "hardhat verify --network abstractTestnet"
   },
