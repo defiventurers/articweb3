@@ -7,7 +7,7 @@ on:
       - "contracts/contracts/**"
       - "contracts/scripts/**"
       - "contracts/package.json"
-      - "contracts/hardhat.config.ts"
+      - "contracts/hardhat.config.js"
 
 permissions:
   contents: write
