@@ -15,6 +15,7 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
+  const isEscrowTestRoom = currentRoom.roomMode === "high_stakes";
   const myPlayer = currentRoom.players.find((player) => player.wallet === profile.wallet);
   const hasPickedTeam = Boolean(myPlayer?.team);
   const realPlayers = useMemo(
@@ -23,11 +24,11 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
   );
   const emptySeats = Math.max(0, 4 - currentRoom.playerCount);
   const readyTeams = currentRoom.players.filter((player) => player.team).length;
+  const lockedPlayers = currentRoom.players.filter((player) => player.entryLocked).length;
 
   useEffect(() => {
     function handlePacket(event) {
       const packet = event.detail;
-
       if (packet.type !== "room_state") return;
 
       const updatedRoom = packet.payload.room;
@@ -73,6 +74,11 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
   }
 
   async function handleStartWithBots() {
+    if (isEscrowTestRoom) {
+      setError("Bots are disabled in this mode.");
+      return;
+    }
+
     if (!hasPickedTeam) {
       setError("Choose your team first.");
       return;
@@ -100,7 +106,9 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
         <h1>Room {currentRoom.roomCode}</h1>
 
         <p className="note">
-          Share this code on the other device, then choose different teams.
+          {isEscrowTestRoom
+            ? "Share this code with three real players. All four players must confirm before countdown."
+            : "Share this code on the other device, then choose different teams."}
         </p>
 
         <button className="secondary-btn" onClick={handleCopyCode}>
@@ -112,6 +120,7 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
             <div className="room-row" key={player.wallet}>
               <strong>{player.name}</strong>
               <span>{player.team ? TEAM_LABELS[player.team] || player.team : "choosing"}</span>
+              {isEscrowTestRoom && <span>{player.entryLocked ? "confirmed" : "pending"}</span>}
             </div>
           ))}
         </div>
@@ -119,9 +128,11 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
         <h2>{currentRoom.playerCount}/4 seats filled</h2>
 
         <p className="note">
-          {realPlayers.length >= 2
-            ? `${realPlayers.length} real players joined. Press Start With Bots to fill ${emptySeats} empty seat${emptySeats === 1 ? "" : "s"}.`
-            : "Waiting for another real player, or start with bots now."}
+          {isEscrowTestRoom
+            ? `${realPlayers.length}/4 real players · ${lockedPlayers}/4 confirmations · ${readyTeams}/4 teams ready`
+            : realPlayers.length >= 2
+              ? `${realPlayers.length} real players joined. Press Start With Bots to fill ${emptySeats} empty seat${emptySeats === 1 ? "" : "s"}.`
+              : "Waiting for another real player, or start with bots now."}
         </p>
 
         <h2>
@@ -130,10 +141,13 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
             : `${readyTeams}/4 teams ready`}
         </h2>
 
-        <button className="primary-btn" disabled={busy || !hasPickedTeam} onClick={handleStartWithBots}>
-          {busy ? "Adding bots..." : "Start With Bots"}
-        </button>
+        {!isEscrowTestRoom && (
+          <button className="primary-btn" disabled={busy || !hasPickedTeam} onClick={handleStartWithBots}>
+            {busy ? "Adding bots..." : "Start With Bots"}
+          </button>
+        )}
 
+        {isEscrowTestRoom && <p className="note">Bots are disabled here. Wait for four confirmed real players.</p>}
         {error && <p className="error">{error}</p>}
       </div>
     </section>
