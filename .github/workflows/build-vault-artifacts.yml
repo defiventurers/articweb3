@@ -1,0 +1,39 @@
+name: Build Vault Artifacts
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "contracts/contracts/**"
+      - "contracts/scripts/**"
+      - "contracts/package.json"
+      - "contracts/hardhat.config.ts"
+
+permissions:
+  contents: write
+
+jobs:
+  build-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install contracts dependencies
+        working-directory: contracts
+        run: npm install
+
+      - name: Build frontend contract artifacts
+        working-directory: contracts
+        run: npm run build:frontend-artifact
+
+      - name: Commit artifact updates
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Build vault frontend artifacts"
+          file_pattern: "frontend/src/contracts/gameEscrowArtifact.js frontend/src/contracts/ethGameEscrowArtifact.js"
