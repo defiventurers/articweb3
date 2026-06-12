@@ -11,6 +11,10 @@ export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onBack }) {
           {profile.name} · {profile.points} points
         </div>
 
+        <button className="player-hub-play-now" onClick={onOpenIce}>
+          Play Open Ice Now
+        </button>
+
         <DepositPanel />
 
         <button className="player-hub-mode open" onClick={onOpenIce}>
