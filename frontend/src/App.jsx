@@ -18,6 +18,10 @@ export default function App() {
   const [profile, setProfile] = useState(null);
   const [room, setRoom] = useState(null);
 
+  function roomLobbyScreen(targetRoom = room) {
+    return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu";
+  }
+
   if (screen === "cover") {
     return <CoverScreen onContinue={() => setScreen("menu")} />;
   }
@@ -63,6 +67,10 @@ export default function App() {
     return (
       <HighStakesScreen
         profile={profile}
+        onRoomReady={(readyRoom) => {
+          setRoom(readyRoom);
+          setScreen("team-select");
+        }}
         onBack={() => setScreen("hub")}
       />
     );
@@ -115,7 +123,7 @@ export default function App() {
           setRoom(updatedRoom);
           setScreen("waiting");
         }}
-        onBack={() => setScreen("open-ice-menu")}
+        onBack={() => setScreen(roomLobbyScreen())}
       />
     );
   }
@@ -141,7 +149,7 @@ export default function App() {
         profile={profile}
         onRoomUpdate={setRoom}
         onFinishDemo={() => setScreen("results")}
-        onBackToLobby={() => setScreen("open-ice-menu")}
+        onBackToLobby={() => setScreen(roomLobbyScreen())}
       />
     );
   }
@@ -150,7 +158,7 @@ export default function App() {
     return (
       <ResultsScreen
         room={room}
-        onBackToLobby={() => setScreen("open-ice-menu")}
+        onBackToLobby={() => setScreen(roomLobbyScreen())}
       />
     );
   }
