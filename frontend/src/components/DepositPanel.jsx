@@ -124,7 +124,7 @@ export function DepositPanel() {
       <div className="wallet-panel-header">
         <strong>USDC Game Balance</strong>
         <span className={`wallet-status-pill ${CHAIN_TARGETS_READY ? "ready" : ""}`}>
-          {CHAIN_TARGETS_READY ? "Testnet Ready" : "Open Ice Ready"}
+          {CHAIN_TARGETS_READY ? "Testnet Ready" : "Open Ice Free"}
         </span>
       </div>
 
@@ -143,41 +143,43 @@ export function DepositPanel() {
         </div>
       </div>
 
-      {!CHAIN_TARGETS_READY && (
+      {!CHAIN_TARGETS_READY ? (
         <p className="wallet-info-note">
-          Open Ice is fully playable. Deposits unlock after the testnet token and vault addresses are deployed in Vercel.
+          Deposits are not active yet. Open Ice does not need crypto — press Play Open Ice below to start.
         </p>
-      )}
+      ) : (
+        <>
+          {!isConnected && (
+            <p className="wallet-info-note">Connect AGW from the profile screen before using deposits.</p>
+          )}
 
-      {CHAIN_TARGETS_READY && !isConnected && (
-        <p className="wallet-info-note">Connect AGW from the profile screen before using deposits.</p>
-      )}
+          <input
+            className="wallet-amount-input"
+            placeholder="Amount"
+            inputMode="decimal"
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
+          />
 
-      <input
-        className="wallet-amount-input"
-        placeholder="Amount"
-        inputMode="decimal"
-        value={amount}
-        onChange={(event) => setAmount(event.target.value)}
-      />
+          <div className="wallet-action-row">
+            <button className="wallet-btn" disabled={!enabled || busy} onClick={refresh}>
+              Refresh
+            </button>
+            <button className="wallet-btn" disabled={!canUseContracts || busy || parsedAmount <= 0n} onClick={approveToken}>
+              Approve
+            </button>
+            <button className="wallet-btn primary" disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={depositToken}>
+              Deposit
+            </button>
+            <button className="wallet-btn" disabled={!canUseContracts || busy || parsedAmount <= 0n || availableBalance < parsedAmount} onClick={withdrawToken}>
+              Withdraw
+            </button>
+          </div>
 
-      <div className="wallet-action-row">
-        <button className="wallet-btn" disabled={!enabled || busy} onClick={refresh}>
-          Refresh
-        </button>
-        <button className="wallet-btn" disabled={!canUseContracts || busy || parsedAmount <= 0n} onClick={approveToken}>
-          Approve
-        </button>
-        <button className="wallet-btn primary" disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={depositToken}>
-          Deposit
-        </button>
-        <button className="wallet-btn" disabled={!canUseContracts || busy || parsedAmount <= 0n || availableBalance < parsedAmount} onClick={withdrawToken}>
-          Withdraw
-        </button>
-      </div>
-
-      {CHAIN_TARGETS_READY && parsedAmount > 0n && !hasEnoughAllowance && (
-        <p className="wallet-info-note">Approve this amount before depositing.</p>
+          {parsedAmount > 0n && !hasEnoughAllowance && (
+            <p className="wallet-info-note">Approve this amount before depositing.</p>
+          )}
+        </>
       )}
 
       {message && <p className={`wallet-message ${messageType === "error" ? "error" : ""}`}>{message}</p>}
