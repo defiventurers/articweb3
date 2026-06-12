@@ -68,6 +68,15 @@ contract EthGameEscrow {
         _deposit(msg.sender, msg.value);
     }
 
+    function depositAndLock(bytes32 matchId) external payable {
+        if (msg.value == 0) revert ZeroAmount();
+        if (lockedEntry[matchId][msg.sender] != 0) revert EntryAlreadyLocked();
+        lockedBalance[msg.sender] += msg.value;
+        lockedEntry[matchId][msg.sender] = msg.value;
+        emit Deposited(msg.sender, msg.value);
+        emit EntryLocked(matchId, msg.sender, msg.value);
+    }
+
     function withdraw(uint256 amount) external {
         if (amount == 0) revert ZeroAmount();
         if (availableBalance[msg.sender] < amount) revert InsufficientAvailableBalance();
