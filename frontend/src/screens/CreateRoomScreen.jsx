@@ -5,7 +5,9 @@ export function CreateRoomScreen({ profile, onRoomCreated, onBack }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleCreate(visibility) {
+  async function createOpenIceRoom(visibility) {
+    if (busy) return;
+
     try {
       setBusy(true);
       setError("");
@@ -23,37 +25,19 @@ export function CreateRoomScreen({ profile, onRoomCreated, onBack }) {
   }
 
   return (
-    <section className="open-ice-flow-page">
-      <div className="open-ice-flow-card">
-        <h1>Create Room</h1>
+    <section className="open-ice-image-page">
+      <div className="open-ice-image-stage create-room-stage">
+        <img className="open-ice-screen-art" src="/assets/screens/openice-createroom.png" alt="Create Room" />
 
-        <p className="open-ice-note">
-          Choose how players should enter this Open Ice match.
-        </p>
+        <button className="open-ice-hit create-public-hit" disabled={busy} onClick={() => createOpenIceRoom("public")} />
+        <button className="open-ice-hit create-private-hit" disabled={busy} onClick={() => createOpenIceRoom("private")} />
+        <button className="open-ice-hit create-back-hit" disabled={busy} onClick={onBack} />
 
-        <button
-          className="open-ice-choice primary"
-          disabled={busy}
-          onClick={() => handleCreate("public")}
-        >
-          <strong>Public Room</strong>
-          <span>Creates a normal room with a shareable code.</span>
-        </button>
-
-        <button
-          className="open-ice-choice"
-          disabled={busy}
-          onClick={() => handleCreate("private")}
-        >
-          <strong>Private Room</strong>
-          <span>Code-only room for friends and testing.</span>
-        </button>
-
-        <button className="open-ice-back" disabled={busy} onClick={onBack}>
-          Back
-        </button>
-
-        {error && <p className="open-ice-error">{error}</p>}
+        {(error || busy) && (
+          <div className={`open-ice-image-status ${error ? "error" : ""}`}>
+            {error || "Creating room..."}
+          </div>
+        )}
       </div>
     </section>
   );
