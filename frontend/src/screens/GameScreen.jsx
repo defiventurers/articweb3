@@ -49,6 +49,12 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackTo
   }, [room]);
 
   useEffect(() => {
+    if (serverRoom?.status !== "finished") return;
+    const timer = setTimeout(() => onFinishDemo?.(), 1000);
+    return () => clearTimeout(timer);
+  }, [serverRoom?.status, onFinishDemo]);
+
+  useEffect(() => {
     let cancelled = false;
 
     getGameState({ roomCode: room.roomCode, profile })
@@ -113,7 +119,7 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackTo
           <div className="game-status-overlay" aria-live="polite">
             <div>
               <div className="game-status-turn">{game.gameOver ? winnerText(game) : `${TEAM_LABEL[team]} Turn`}</div>
-              <div className="game-status-main">{statusText}</div>
+              <div className="game-status-main">{serverRoom?.status === "finished" ? "Match complete. Loading results..." : statusText}</div>
             </div>
             <div className="game-status-badge">ROOM {serverRoom.roomCode}</div>
           </div>
@@ -153,7 +159,7 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackTo
           <div className="game-action-layer">
             <button className="game-action-hitbox roll-hitbox" aria-label="Roll dice" onClick={handleRoll} />
             <button className="game-action-hitbox end-turn-hitbox" aria-label="End turn" onClick={handleEndTurn} />
-            <button className="game-action-hitbox new-game-hitbox" aria-label="Finish match" onClick={onFinishDemo} />
+            <button className="game-action-hitbox new-game-hitbox" aria-label="Results" onClick={onFinishDemo} />
             <button className="game-back-button" onClick={onBackToLobby}>Lobby</button>
           </div>
 
@@ -173,77 +179,60 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackTo
 
 function DiceFace({ game, index, team }) {
   const value = game.dice.values[index];
-  const used = game.dice.used[index];
+  const used = game.dice.used;
 
   if (!value) return <span className="die-piece">{index === 0 ? "ROLL" : "DICE"}</span>;
-  if (used) return <span className="die-piece">USED</span>;
+  if (used[index]) return <span className="die-piece">USED</span>;
 
-  const allowed = DICE_ROLLS[value];
-  const type = allowed[0];
-
+  const pieces = DICE_ROLLS[value] || [];
   return (
     <span className="die-piece">
-      <PieceImage piece={{ team, type }} className="dice-piece-img" />
+      {value}: {pieces.map((piece) => piece.toUpperCase()).join("/")}
     </span>
   );
 }
 
 function PieceImage({ piece, className }) {
-  const [sourceIndex, setSourceIndex] = useState(0);
-  const sources = pieceImageSources(piece);
-  const src = sources[sourceIndex];
+  const color = TEAM_ASSET_COLOR[piece.team];
+  const type = PIECE_ASSET_TYPE[piece.type];
+  if (!color || !type) return <span>{PIECE_LETTER[piece.type] || "?"}</span>;
 
-  useEffect(() => {
-    setSourceIndex(0);
-  }, [piece.team, piece.type]);
-
-  if (!src) {
-    return <span className="piece-fallback">{PIECE_LETTER[piece.type] || "?"}</span>;
-  }
+  const filename = `${color}-${type}.png`;
+  const localSrc = `${LOCAL_PIECE_ASSET_BASE}/${filename}`;
+  const remoteSrc = `${REMOTE_PIECE_ASSET_BASE}/${filename}`;
 
   return (
     <img
+      src={localSrc}
+      alt={`${TEAM_LABEL[piece.team]} ${piece.type}`}
       className={className}
-      src={src}
-      alt=""
-      aria-hidden="true"
       draggable="false"
-      onError={() => setSourceIndex((current) => current + 1)}
+      onError={(event) => {
+        if (event.currentTarget.src !== remoteSrc) event.currentTarget.src = remoteSrc;
+      }}
     />
   );
 }
 
-function getStatusText({ game, team, isMyTurn, isBotTurn, busy, error }) {
-  if (error) return error;
-  if (game.gameOver) return "Game over";
-  if (busy) return "Waiting for server";
-  if (isBotTurn) return "Bot thinking";
-  if (!isMyTurn) return "Waiting for opponent";
-  if (!game.dice.rolled) return "You · Roll dice";
-  return "You · Move a piece";
-}
-
-function winnerText(game) {
-  return game.winner ? `${TEAM_LABEL[game.winner]} Wins` : "No Winner";
-}
-
 function renderBoardRows(board) {
   const cells = [];
-  for (let row = 7; row >= 0; row -= 1) {
-    for (let col = 0; col < 8; col += 1) {
-      cells.push({ piece: board[row][col], row, col });
-    }
-  }
+  board.forEach((rowItems, row) => {
+    rowItems.forEach((piece, col) => cells.push({ piece, row, col }));
+  });
   return cells;
 }
 
-function pieceImageSources(piece) {
-  const color = TEAM_ASSET_COLOR[piece.team];
-  const type = PIECE_ASSET_TYPE[piece.type];
-  if (!color || !type) return [];
+function getStatusText({ game, team, isMyTurn, isBotTurn, busy, error }) {
+  if (error) return error;
+  if (game.gameOver) return "Match complete.";
+  if (isBotTurn) return "Bot is moving...";
+  if (!isMyTurn) return "Waiting for your turn.";
+  if (busy) return "Submitting move...";
+  if (!game.dice.rolled) return "Roll dice.";
+  return `${TEAM_LABEL[team]} rolled ${game.dice.values.join(" and ")}. Choose a legal move.`;
+}
 
-  return [
-    `${LOCAL_PIECE_ASSET_BASE}/${color}-${type}.png`,
-    `${REMOTE_PIECE_ASSET_BASE}/${color}-${type}.png`
-  ];
+function winnerText(game) {
+  if (!game.winner) return "Draw";
+  return `${TEAM_LABEL[game.winner]} Wins`;
 }
