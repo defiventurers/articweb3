@@ -2,7 +2,9 @@ require("dotenv").config();
 
 const http = require("http");
 const WebSocket = require("ws");
-const { randomUUID } = require("crypto");
+const { randomUUID, randomBytes } = require("crypto");
+const { createPublicClient, createWalletClient, http: viemHttp, parseAbi } = require("viem");
+const { privateKeyToAccount } = require("viem/accounts");
 const {
   createInitialGameState,
   currentTeam,
@@ -11,7 +13,8 @@ const {
   endTurn,
   hasAnyLegalMoveForTeam,
   pickBotMove,
-  applyMove
+  applyMove,
+  getPlacements
 } = require("./gameRules.js");
 
 const PORT = process.env.PORT || 10000;
@@ -28,12 +31,45 @@ const ROOM_MODES = {
   OPEN_ICE: "open_ice",
   HIGH_STAKES: "high_stakes"
 };
+const ETH_VAULT_ADDRESS = process.env.ETH_VAULT_ADDRESS || process.env.VITE_ETH_VAULT_ADDRESS || "";
+const ABSTRACT_RPC_URL = process.env.ABSTRACT_RPC_URL || "https://api.testnet.abs.xyz";
+const HIGH_STAKES_ENABLED = process.env.HIGH_STAKES_ENABLED === "true" || Boolean(ETH_VAULT_ADDRESS);
 const ENTRY_TIERS = {
-  "1": { code: "1", label: "$1", entryFeeUsd: 1, tokenUnits: "1000000" },
-  "4": { code: "4", label: "$4", entryFeeUsd: 4, tokenUnits: "4000000" },
-  "16": { code: "16", label: "$16", entryFeeUsd: 16, tokenUnits: "16000000" }
+  "1": {
+    code: "1",
+    label: "$1",
+    entryFeeUsd: 1,
+    entryWei: process.env.ETH_ENTRY_1_WEI || "1000000000000000",
+    pointMultiplier: 1
+  },
+  "4": {
+    code: "4",
+    label: "$4",
+    entryFeeUsd: 4,
+    entryWei: process.env.ETH_ENTRY_4_WEI || "4000000000000000",
+    pointMultiplier: 4
+  },
+  "16": {
+    code: "16",
+    label: "$16",
+    entryFeeUsd: 16,
+    entryWei: process.env.ETH_ENTRY_16_WEI || "16000000000000000",
+    pointMultiplier: 16
+  }
 };
-const HIGH_STAKES_ENABLED = process.env.HIGH_STAKES_ENABLED === "true";
+const ABSTRACT_TESTNET_CHAIN = {
+  id: 11124,
+  name: "Abstract Testnet",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: [ABSTRACT_RPC_URL] } }
+};
+const ETH_VAULT_ABI = parseAbi([
+  "function lockedEntry(bytes32 matchId, address player) view returns (uint256)",
+  "function settleMatch(bytes32 matchId, address[4] players, uint256[4] payouts)"
+]);
+const ethPublicClient = ETH_VAULT_ADDRESS
+  ? createPublicClient({ chain: ABSTRACT_TESTNET_CHAIN, transport: viemHttp(ABSTRACT_RPC_URL) })
+  : null;
 
 const profiles = new Map();
 const rooms = new Map();
@@ -80,6 +116,10 @@ function matchId() {
   return `match-${randomUUID()}`;
 }
 
+function contractMatchId() {
+  return `0x${randomBytes(32).toString("hex")}`;
+}
+
 function players(room) {
   return Object.values(room.players);
 }
@@ -88,13 +128,20 @@ function view(room) {
   return {
     id: room.id,
     matchId: room.matchId,
+    contractMatchId: room.contractMatchId,
     roomCode: room.roomCode,
     roomMode: room.roomMode,
+    currency: room.currency || null,
     entryTier: room.entryTier,
     entryFeeUsd: room.entryFeeUsd,
+    entryWei: room.entryWei || "0",
     tokenUnits: room.tokenUnits,
     visibility: room.visibility,
     status: room.status,
+    settlementStatus: room.settlementStatus || null,
+    settlementTxHash: room.settlementTxHash || null,
+    placements: room.placements || [],
+    payoutPlan: room.payoutPlan || [],
     playerCount: players(room).length,
     maxPlayers: 4,
     countdownStartTime: room.countdownStartTime,
@@ -104,7 +151,8 @@ function view(room) {
       wallet: player.wallet,
       name: profiles.get(player.wallet)?.name || "Player",
       team: player.team,
-      entryLocked: Boolean(player.entryLocked)
+      entryLocked: Boolean(player.entryLocked),
+      entryTxHash: player.entryTxHash || null
     }))
   };
 }
@@ -117,17 +165,16 @@ function broadcast(room) {
   }
 }
 
-function nextFreeTeam(room) {
-  const used = new Set(players(room).map((player) => player.team).filter(Boolean));
-  return TEAM_CODES.find((item) => !used.has(item));
-}
-
 function teamWallet(room, teamName) {
   return players(room).find((player) => player.team === teamName)?.wallet || null;
 }
 
 function isBotWallet(wallet) {
   return String(wallet || "").startsWith("dev-");
+}
+
+function realPlayers(room) {
+  return players(room).filter((player) => !isBotWallet(player.wallet));
 }
 
 function teamsAreReady(room) {
@@ -137,10 +184,23 @@ function teamsAreReady(room) {
   return new Set(roomPlayers.map((player) => player.team)).size === 4;
 }
 
+function highStakesReady(room) {
+  const roomPlayers = players(room);
+  if (roomPlayers.length !== 4) return false;
+  if (realPlayers(room).length !== 4) return false;
+  if (roomPlayers.some((player) => !player.entryLocked)) return false;
+  return teamsAreReady(room);
+}
+
+function roomCanCountdown(room) {
+  if (room.roomMode === ROOM_MODES.OPEN_ICE) return teamsAreReady(room);
+  if (room.roomMode === ROOM_MODES.HIGH_STAKES) return highStakesReady(room);
+  return false;
+}
+
 function checkCountdown(room) {
   if (room.status !== "waiting") return;
-  if (room.roomMode !== ROOM_MODES.OPEN_ICE) return;
-  if (!teamsAreReady(room)) return;
+  if (!roomCanCountdown(room)) return;
   if (!room.countdownStartTime) {
     room.countdownStartTime = Date.now();
     broadcast(room);
@@ -149,7 +209,7 @@ function checkCountdown(room) {
 
 function checkStart(room) {
   if (room.status !== "waiting" || !room.countdownStartTime) return;
-  if (!teamsAreReady(room)) {
+  if (!roomCanCountdown(room)) {
     room.countdownStartTime = null;
     broadcast(room);
     return;
@@ -163,7 +223,8 @@ function checkStart(room) {
 }
 
 function scheduleBotIfNeeded(room) {
-  if (!room || room.status !== "playing" || !room.gameState || room.gameState.gameOver) return;
+  if (!room || room.roomMode !== ROOM_MODES.OPEN_ICE) return;
+  if (room.status !== "playing" || !room.gameState || room.gameState.gameOver) return;
   const activeTeam = currentTeam(room.gameState);
   const activeWallet = teamWallet(room, activeTeam);
   if (!isBotWallet(activeWallet)) return;
@@ -188,6 +249,7 @@ function playBotTurn(room) {
 
   const move = pickBotMove(nextGameState);
   room.gameState = move ? applyMove(nextGameState, move) : endTurn(nextGameState);
+  finalizeGameIfOver(room);
   broadcast(room);
   scheduleBotIfNeeded(room);
 }
@@ -226,6 +288,110 @@ function requirePlayingRoom(ws, requestId, payload) {
 
   sockets.set(wallet, ws);
   return room;
+}
+
+function profileFor(wallet) {
+  return profiles.get(wallet);
+}
+
+function addPoints(wallet, points, won) {
+  const profile = profileFor(wallet);
+  if (!profile) return;
+  profile.points += points;
+  profile.gamesPlayed += 1;
+  if (won) profile.wins += 1;
+  profiles.set(wallet, profile);
+}
+
+function buildPayoutPlan(room, placements) {
+  const entry = BigInt(room.entryWei || "0");
+  const pool = entry * 4n;
+  const first = (pool * 50n) / 100n;
+  const second = (pool * 30n) / 100n;
+  const third = (pool * 20n) / 100n;
+  const fourth = 0n;
+  const remainder = pool - first - second - third - fourth;
+  const payouts = [first + remainder, second, third, fourth];
+  const basePoints = [10, 6, 3, 0];
+  const multiplier = normalizeEntryTier(room.entryTier).pointMultiplier;
+
+  return placements.map((team, index) => {
+    const wallet = teamWallet(room, team);
+    return {
+      position: index + 1,
+      team,
+      wallet,
+      payoutWei: payouts[index].toString(),
+      points: basePoints[index] * multiplier
+    };
+  });
+}
+
+async function settleHighStakesIfPossible(room) {
+  if (room.roomMode !== ROOM_MODES.HIGH_STAKES || !ETH_VAULT_ADDRESS) return;
+  if (!process.env.ETH_SETTLEMENT_SIGNER) {
+    room.settlementStatus = "needs_settlement_signer";
+    return;
+  }
+
+  try {
+    const account = privateKeyToAccount(normalizeSecret(process.env.ETH_SETTLEMENT_SIGNER));
+    const walletClient = createWalletClient({ account, chain: ABSTRACT_TESTNET_CHAIN, transport: viemHttp(ABSTRACT_RPC_URL) });
+    const orderedWallets = room.payoutPlan.map((item) => item.wallet);
+    const payouts = room.payoutPlan.map((item) => BigInt(item.payoutWei));
+    room.settlementStatus = "submitting";
+    const hash = await walletClient.writeContract({
+      address: ETH_VAULT_ADDRESS,
+      abi: ETH_VAULT_ABI,
+      functionName: "settleMatch",
+      args: [room.contractMatchId, orderedWallets, payouts]
+    });
+    room.settlementTxHash = hash;
+    room.settlementStatus = "submitted";
+  } catch (err) {
+    room.settlementStatus = "failed";
+    room.settlementError = err.shortMessage || err.message || "Settlement failed.";
+  }
+}
+
+function normalizeSecret(value) {
+  const secret = String(value || "").trim();
+  return secret.startsWith("0x") ? secret : `0x${secret}`;
+}
+
+function finalizeGameIfOver(room) {
+  if (!room.gameState?.gameOver || room.finalizedAt) return;
+  room.finalizedAt = Date.now();
+  room.status = "finished";
+  const placements = getPlacements(room.gameState);
+  room.placements = placements.map((team, index) => {
+    const wallet = teamWallet(room, team);
+    return {
+      position: index + 1,
+      team,
+      wallet,
+      name: profileFor(wallet)?.name || "Player"
+    };
+  });
+
+  if (room.roomMode === ROOM_MODES.HIGH_STAKES) {
+    room.payoutPlan = buildPayoutPlan(room, placements);
+    room.payoutPlan.forEach((item, index) => addPoints(item.wallet, item.points, index === 0));
+    room.settlementStatus = "pending";
+    settleHighStakesIfPossible(room).then(() => broadcast(room));
+  } else {
+    room.placements.forEach((item, index) => addPoints(item.wallet, [10, 6, 3, 0][index] || 0, index === 0));
+  }
+}
+
+async function readLockedEntry(room, wallet) {
+  if (!ethPublicClient || !ETH_VAULT_ADDRESS) return 0n;
+  return ethPublicClient.readContract({
+    address: ETH_VAULT_ADDRESS,
+    abi: ETH_VAULT_ABI,
+    functionName: "lockedEntry",
+    args: [room.contractMatchId, wallet]
+  });
 }
 
 function login(ws, requestId, payload) {
@@ -274,11 +440,14 @@ function createRoom(ws, requestId, payload) {
   const room = {
     id: randomUUID(),
     matchId: matchId(),
+    contractMatchId: contractMatchId(),
     roomCode,
     roomMode,
+    currency: roomMode === ROOM_MODES.HIGH_STAKES ? "ETH" : null,
     entryTier: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.code : null,
     entryFeeUsd: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.entryFeeUsd : 0,
-    tokenUnits: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.tokenUnits : "0",
+    entryWei: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.entryWei : "0",
+    tokenUnits: "0",
     visibility: payload.visibility === "private" ? "private" : "public",
     status: "waiting",
     gameState: null,
@@ -287,7 +456,8 @@ function createRoom(ws, requestId, payload) {
         wallet,
         team: null,
         joinedAt: Date.now(),
-        entryLocked: roomMode === ROOM_MODES.OPEN_ICE
+        entryLocked: roomMode === ROOM_MODES.OPEN_ICE,
+        entryTxHash: null
       }
     },
     countdownStartTime: null,
@@ -316,11 +486,38 @@ function joinRoom(ws, requestId, payload) {
       wallet,
       team: null,
       joinedAt: Date.now(),
-      entryLocked: room.roomMode === ROOM_MODES.OPEN_ICE
+      entryLocked: room.roomMode === ROOM_MODES.OPEN_ICE,
+      entryTxHash: null
     };
   }
   ok(ws, requestId, "room_join_result", { room: view(room) });
   return broadcast(room);
+}
+
+async function confirmEntryLock(ws, requestId, payload) {
+  const wallet = walletOf(payload.wallet);
+  const roomCode = String(payload.roomCode || "").trim().toUpperCase();
+  const room = rooms.get(roomCode);
+  if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.");
+  if (!room) return fail(ws, requestId, "Room not found.");
+  if (room.roomMode !== ROOM_MODES.HIGH_STAKES) return fail(ws, requestId, "Entry locking is only for High Stakes.");
+  if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
+  if (!ETH_VAULT_ADDRESS) return fail(ws, requestId, "ETH vault is not configured on the server.");
+
+  try {
+    const locked = await readLockedEntry(room, wallet);
+    if (locked < BigInt(room.entryWei)) {
+      return fail(ws, requestId, "Entry lock not confirmed on-chain yet.");
+    }
+    room.players[wallet].entryLocked = true;
+    room.players[wallet].entryTxHash = payload.txHash || room.players[wallet].entryTxHash;
+    room.countdownStartTime = null;
+    checkCountdown(room);
+    ok(ws, requestId, "room_confirm_entry_result", { room: view(room) });
+    return broadcast(room);
+  } catch (err) {
+    return fail(ws, requestId, err.shortMessage || err.message || "Could not verify entry lock.");
+  }
 }
 
 function selectRoomTeam(ws, requestId, payload) {
@@ -332,6 +529,7 @@ function selectRoomTeam(ws, requestId, payload) {
   if (!room) return fail(ws, requestId, "Room not found.");
   if (room.status !== "waiting") return fail(ws, requestId, "Room already started.");
   if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
+  if (room.roomMode === ROOM_MODES.HIGH_STAKES && !room.players[wallet].entryLocked) return fail(ws, requestId, "Lock your entry first.");
   if (!selectedTeam) return fail(ws, requestId, "Choose a valid team.");
 
   const taken = players(room).some((player) => player.wallet !== wallet && player.team === selectedTeam);
@@ -352,7 +550,7 @@ function devFillRoom(ws, requestId, payload) {
   const room = rooms.get(roomCode);
   if (!room) return fail(ws, requestId, "Room not found.");
   if (room.status !== "waiting") return fail(ws, requestId, "Room already started.");
-  if (room.roomMode !== ROOM_MODES.OPEN_ICE) return fail(ws, requestId, "Dev fill is only available for Open Ice.");
+  if (room.roomMode !== ROOM_MODES.OPEN_ICE) return fail(ws, requestId, "Bots are only available for Open Ice.");
   if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
   if (!room.players[wallet].team) return fail(ws, requestId, "Choose your team first.");
 
@@ -389,6 +587,7 @@ function gameRollDice(ws, requestId, payload) {
   if (room.gameState.dice.rolled && !hasAnyLegalMoveForTeam(room.gameState, activeTeam)) {
     room.gameState = endTurn(room.gameState);
   }
+  finalizeGameIfOver(room);
   ok(ws, requestId, "game_action_result", { room: view(room) });
   broadcast(room);
   scheduleBotIfNeeded(room);
@@ -403,6 +602,7 @@ function gameSelectSquare(ws, requestId, payload) {
     return fail(ws, requestId, "Invalid square.");
   }
   room.gameState = selectSquare(room.gameState, row, col);
+  finalizeGameIfOver(room);
   ok(ws, requestId, "game_action_result", { room: view(room) });
   broadcast(room);
   scheduleBotIfNeeded(room);
@@ -412,6 +612,7 @@ function gameEndTurn(ws, requestId, payload) {
   const room = requirePlayingRoom(ws, requestId, payload);
   if (!room) return;
   room.gameState = endTurn(room.gameState);
+  finalizeGameIfOver(room);
   ok(ws, requestId, "game_action_result", { room: view(room) });
   broadcast(room);
   scheduleBotIfNeeded(room);
@@ -431,7 +632,7 @@ function gameState(ws, requestId, payload) {
 const server = http.createServer((req, res) => {
   if (req.url === "/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ ok: true, profiles: profiles.size, rooms: rooms.size }));
+    res.end(JSON.stringify({ ok: true, profiles: profiles.size, rooms: rooms.size, highStakesEnabled: HIGH_STAKES_ENABLED, ethVaultConfigured: Boolean(ETH_VAULT_ADDRESS) }));
     return;
   }
   res.writeHead(200, { "Content-Type": "text/plain" });
@@ -447,6 +648,7 @@ new WebSocket.Server({ server }).on("connection", (ws) => {
     if (type === "room_list") return list(ws, requestId, payload);
     if (type === "room_create") return createRoom(ws, requestId, payload);
     if (type === "room_join") return joinRoom(ws, requestId, payload);
+    if (type === "room_confirm_entry") return confirmEntryLock(ws, requestId, payload);
     if (type === "room_select_team") return selectRoomTeam(ws, requestId, payload);
     if (type === "dev_fill_room") return devFillRoom(ws, requestId, payload);
     if (type === "game_state") return gameState(ws, requestId, payload);
