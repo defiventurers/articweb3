@@ -53,6 +53,7 @@ function createInitialGameState() {
     legalMoves: [],
     dice: { values: [null, null], used: [false, false], rolled: false },
     moveLog: [],
+    eliminatedTeams: [],
     gameOver: false,
     winner: null,
     updatedAt: Date.now()
@@ -198,6 +199,7 @@ function applyMove(state, move) {
   dice.used[move.dieIndex] = true;
 
   const moveLog = [...state.moveLog];
+  const eliminatedTeams = [...(state.eliminatedTeams || [])];
   if (captured) moveLog.unshift(`${TEAM_LABEL[piece.team]} captured ${TEAM_LABEL[captured.team]} ${PIECE_NAME[captured.type]}`);
   else moveLog.unshift(`${TEAM_LABEL[piece.team]} moved ${PIECE_NAME[piece.type]}`);
 
@@ -205,10 +207,11 @@ function applyMove(state, move) {
 
   if (captured?.type === "king") {
     removeTeamPieces(board, captured.team);
+    if (!eliminatedTeams.includes(captured.team)) eliminatedTeams.push(captured.team);
     moveLog.unshift(`${TEAM_LABEL[captured.team]} eliminated`);
   }
 
-  let next = touch({ ...state, board, dice, selected: null, legalMoves: [], moveLog: moveLog.slice(0, 8) });
+  let next = touch({ ...state, board, dice, selected: null, legalMoves: [], eliminatedTeams, moveLog: moveLog.slice(0, 8) });
   next = checkWinner(next);
   if (next.gameOver) return next;
 
@@ -218,8 +221,6 @@ function applyMove(state, move) {
 }
 
 function endTurn(state) {
-  if (state.gameOver) return state;
-
   let nextIndex = state.currentPlayerIndex;
   for (let i = 0; i < PLAYERS.length; i += 1) {
     nextIndex = (nextIndex + 1) % PLAYERS.length;
@@ -335,6 +336,21 @@ function checkWinner(state) {
   return touch({ ...state, gameOver: true, winner: alive[0] || null, selected: null, legalMoves: [] });
 }
 
+function getPlacements(state) {
+  const eliminated = state.eliminatedTeams || [];
+  const alive = PLAYERS.filter((team) => teamHasKing(state.board, team));
+  const winner = state.winner || alive[0] || null;
+  const ordered = [];
+  if (winner) ordered.push(winner);
+  [...eliminated].reverse().forEach((team) => {
+    if (!ordered.includes(team)) ordered.push(team);
+  });
+  PLAYERS.forEach((team) => {
+    if (!ordered.includes(team)) ordered.push(team);
+  });
+  return ordered.slice(0, 4);
+}
+
 function teamHasKing(board, team) {
   return board.some((row) => row.some((piece) => piece && piece.team === team && piece.type === "king"));
 }
@@ -377,5 +393,6 @@ module.exports = {
   endTurn,
   applyMove,
   hasAnyLegalMoveForTeam,
-  pickBotMove
+  pickBotMove,
+  getPlacements
 };
