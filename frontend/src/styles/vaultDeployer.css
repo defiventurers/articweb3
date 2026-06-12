@@ -1,0 +1,128 @@
+.vault-deployer-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: linear-gradient(180deg, #061b3a, #0a2d5d 60%, #071b39);
+  color: white;
+}
+
+.vault-deployer-card {
+  width: min(94vw, 540px);
+  border-radius: 28px;
+  border: 1px solid rgba(190, 245, 255, .74);
+  background: rgba(7, 43, 86, .92);
+  box-shadow: 0 26px 70px rgba(0, 12, 40, .42);
+  padding: 22px;
+  display: grid;
+  gap: 14px;
+}
+
+.vault-deployer-card h1 {
+  margin: 0;
+  text-align: center;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(34px, 9vw, 54px);
+  line-height: 1;
+}
+
+.vault-note {
+  margin: 0;
+  color: #d8f6ff;
+  line-height: 1.4;
+  font-size: 14px;
+}
+
+.vault-note.small {
+  font-size: 12px;
+}
+
+.vault-row,
+.vault-result {
+  border-radius: 16px;
+  background: rgba(255,255,255,.10);
+  padding: 11px 12px;
+  display: grid;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.vault-row span,
+.vault-result span,
+.vault-label {
+  color: #ccefff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.vault-row strong,
+.vault-result strong {
+  color: white;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.vault-label {
+  display: grid;
+  gap: 7px;
+}
+
+.vault-label input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(190,245,255,.72);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(0, 15, 35, .44);
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+  outline: none;
+}
+
+.vault-primary,
+.vault-secondary {
+  border: 1px solid rgba(190,245,255,.72);
+  border-radius: 16px;
+  padding: 13px;
+  color: white;
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.vault-primary {
+  background: linear-gradient(180deg, rgba(30,155,255,.94), rgba(15,88,214,.90));
+}
+
+.vault-secondary {
+  background: rgba(255,255,255,.12);
+}
+
+.vault-primary:disabled {
+  opacity: .52;
+  cursor: not-allowed;
+}
+
+.vault-error {
+  margin: 0;
+  color: #ffd0d0;
+  line-height: 1.35;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.vault-env-box {
+  display: grid;
+  gap: 10px;
+}
+
+.vault-env-box pre {
+  margin: 0;
+  border-radius: 16px;
+  background: rgba(0, 15, 35, .54);
+  border: 1px solid rgba(190,245,255,.26);
+  padding: 12px;
+  color: #eaf9ff;
+  overflow-x: auto;
+  font-size: 12px;
+}
