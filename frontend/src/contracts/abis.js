@@ -114,6 +114,13 @@ export const ethVaultAbi = [
   },
   {
     type: "function",
+    name: "depositAndLock",
+    stateMutability: "payable",
+    inputs: [{ name: "matchId", type: "bytes32" }],
+    outputs: []
+  },
+  {
+    type: "function",
     name: "withdraw",
     stateMutability: "nonpayable",
     inputs: [{ name: "amount", type: "uint256" }],
