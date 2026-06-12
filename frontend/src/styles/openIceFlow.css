@@ -159,6 +159,27 @@
   cursor: not-allowed;
 }
 
+.open-ice-menu-create-hit {
+  left: 11.4%;
+  top: 53.7%;
+  width: 77.2%;
+  height: 15.0%;
+}
+
+.open-ice-menu-join-hit {
+  left: 12.0%;
+  top: 71.3%;
+  width: 76.0%;
+  height: 12.4%;
+}
+
+.open-ice-menu-back-hit {
+  left: 25.5%;
+  top: 88.1%;
+  width: 49.0%;
+  height: 7.2%;
+}
+
 .create-public-hit {
   left: 13.0%;
   top: 54.0%;
