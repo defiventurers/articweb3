@@ -1,14 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { devFillRoom } from "../network/socketClient.js";
+
+const TEAM_LABELS = {
+  green: "Abster",
+  red: "Retsba",
+  blue: "Pengu",
+  yellow: "Polly"
+};
 
 export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) {
   const [currentRoom, setCurrentRoom] = useState(room);
   const [secondsLeft, setSecondsLeft] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const myPlayer = currentRoom.players.find((player) => player.wallet === profile.wallet);
   const hasPickedTeam = Boolean(myPlayer?.team);
+  const realPlayers = useMemo(
+    () => currentRoom.players.filter((player) => !String(player.wallet).startsWith("dev-")),
+    [currentRoom.players]
+  );
+  const emptySeats = Math.max(0, 4 - currentRoom.playerCount);
+  const readyTeams = currentRoom.players.filter((player) => player.team).length;
 
   useEffect(() => {
     function handlePacket(event) {
@@ -48,7 +62,17 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
     return () => clearInterval(timer);
   }, [currentRoom]);
 
-  async function handleDevFillRoom() {
+  async function handleCopyCode() {
+    try {
+      await navigator.clipboard.writeText(currentRoom.roomCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {
+      setError("Could not copy room code.");
+    }
+  }
+
+  async function handleStartWithBots() {
     if (!hasPickedTeam) {
       setError("Choose your team first.");
       return;
@@ -64,7 +88,7 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
       setCurrentRoom(updatedRoom);
       onRoomUpdate(updatedRoom);
     } catch (err) {
-      setError(err.message || "Could not fill room.");
+      setError(err.message || "Could not start with bots.");
     } finally {
       setBusy(false);
     }
@@ -75,27 +99,39 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
       <div className="card">
         <h1>Room {currentRoom.roomCode}</h1>
 
-        <p className="note">Share this code with friends.</p>
+        <p className="note">
+          Share this code on the other device, then choose different teams.
+        </p>
+
+        <button className="secondary-btn" onClick={handleCopyCode}>
+          {copied ? "Copied" : "Copy Room Code"}
+        </button>
 
         <div className="room-list">
           {currentRoom.players.map((player) => (
             <div className="room-row" key={player.wallet}>
               <strong>{player.name}</strong>
-              <span>{player.team || "choosing"}</span>
+              <span>{player.team ? TEAM_LABELS[player.team] || player.team : "choosing"}</span>
             </div>
           ))}
         </div>
 
-        <h2>{currentRoom.playerCount}/4 players</h2>
+        <h2>{currentRoom.playerCount}/4 seats filled</h2>
+
+        <p className="note">
+          {realPlayers.length >= 2
+            ? `${realPlayers.length} real players joined. Press Start With Bots to fill ${emptySeats} empty seat${emptySeats === 1 ? "" : "s"}.`
+            : "Waiting for another real player, or start with bots now."}
+        </p>
 
         <h2>
           {secondsLeft !== null
             ? `Starting in ${secondsLeft}`
-            : "Waiting for 4 players with teams"}
+            : `${readyTeams}/4 teams ready`}
         </h2>
 
-        <button className="secondary-btn" disabled={busy || !hasPickedTeam} onClick={handleDevFillRoom}>
-          {busy ? "Adding test players..." : "Dev Fill Room"}
+        <button className="primary-btn" disabled={busy || !hasPickedTeam} onClick={handleStartWithBots}>
+          {busy ? "Adding bots..." : "Start With Bots"}
         </button>
 
         {error && <p className="error">{error}</p>}
