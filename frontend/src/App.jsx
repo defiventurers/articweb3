@@ -11,7 +11,7 @@ import { HighStakesScreen } from "./screens/HighStakesScreen.jsx";
 import { WaitingRoomScreen } from "./screens/WaitingRoomScreen.jsx";
 import { GameScreen } from "./screens/GameScreen.jsx";
 import { ResultsScreen } from "./screens/ResultsScreen.jsx";
-import { VaultDeployerScreen } from "./screens/VaultDeployerScreen.jsx";
+import { EthVaultDeployerScreen } from "./screens/EthVaultDeployerScreen.jsx";
 
 export default function App() {
   const [screen, setScreen] = useState("cover");
@@ -56,7 +56,7 @@ export default function App() {
   }
 
   if (screen === "vault-deployer") {
-    return <VaultDeployerScreen onBack={() => setScreen("hub")} />;
+    return <EthVaultDeployerScreen onBack={() => setScreen("hub")} />;
   }
 
   if (screen === "high-stakes") {
