@@ -17,7 +17,6 @@ export function DepositPanel({ variant = "panel" }) {
   const [currency, setCurrency] = useState("ETH");
   const [amount, setAmount] = useState("0.001");
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
@@ -27,7 +26,7 @@ export function DepositPanel({ variant = "panel" }) {
   const isEth = currency === "ETH";
   const decimals = isEth ? ETH_DECIMALS : TOKEN_DECIMALS;
   const parsedDepositAmount = parseSafeAmount(amount, decimals);
-  const parsedWithdrawAmount = parseSafeAmount(withdrawAmount, decimals);
+  const parsedWithdrawAmount = parseSafeAmount(variant === "art" ? amount : withdrawAmount, decimals);
   const enabled = Boolean(address && (isEth ? ETH_TARGETS_READY : CHAIN_TARGETS_READY));
   const canUseContracts = Boolean(isConnected && abstractClient && enabled);
 
@@ -52,7 +51,6 @@ export function DepositPanel({ variant = "panel" }) {
     setCurrency(nextCurrency);
     setMessage("");
     setWithdrawAmount("");
-    setWithdrawDialogOpen(false);
   }
 
   async function refresh() {
@@ -75,13 +73,6 @@ export function DepositPanel({ variant = "panel" }) {
     await runTransaction("USDC deposit", async () => abstractClient.writeContract({ address: VAULT_ADDRESS, abi: vaultAbi, functionName: "deposit", args: [parsedDepositAmount] }));
   }
 
-  function openWithdrawDialog() {
-    setMessage("");
-    setMessageType("info");
-    setWithdrawAmount(formatInputAmount(availableBalance, decimals));
-    setWithdrawDialogOpen(true);
-  }
-
   function fillMaxWithdraw() {
     setWithdrawAmount(formatInputAmount(availableBalance, decimals));
   }
@@ -89,7 +80,6 @@ export function DepositPanel({ variant = "panel" }) {
   async function withdraw() {
     if (!canWithdraw) return;
     await runTransaction(`${currency} withdraw`, async () => abstractClient.writeContract({ address: isEth ? ETH_VAULT_ADDRESS : VAULT_ADDRESS, abi: isEth ? ethVaultAbi : vaultAbi, functionName: "withdraw", args: [parsedWithdrawAmount] }));
-    setWithdrawDialogOpen(false);
   }
 
   async function runTransaction(label, action) {
@@ -108,31 +98,6 @@ export function DepositPanel({ variant = "panel" }) {
     }
   }
 
-  function renderWithdrawDialog() {
-    if (!withdrawDialogOpen) return null;
-    return (
-      <div className={variant === "art" ? "ph-modal" : "wallet-modal"} role="dialog" aria-modal="true" aria-label={`Withdraw ${currency}`}>
-        <div className={variant === "art" ? "ph-modal-card" : "wallet-modal-card"}>
-          <h3>Custom Withdraw</h3>
-          <p>Available: {formatInputAmount(availableBalance, decimals)} {currency}</p>
-          <input
-            className={variant === "art" ? "ph-withdraw-input" : "wallet-amount-input"}
-            inputMode="decimal"
-            placeholder={`Amount in ${currency}`}
-            value={withdrawAmount}
-            onChange={(event) => setWithdrawAmount(event.target.value)}
-          />
-          <div className={variant === "art" ? "ph-modal-actions" : "wallet-action-row"}>
-            <button type="button" className={variant === "art" ? "ph-modal-btn" : "wallet-btn"} disabled={busy || availableBalance <= 0n} onClick={fillMaxWithdraw}>Max</button>
-            <button type="button" className={variant === "art" ? "ph-modal-btn primary" : "wallet-btn primary"} disabled={busy || !canWithdraw} onClick={withdraw}>Withdraw</button>
-            <button type="button" className={variant === "art" ? "ph-modal-btn" : "wallet-btn"} disabled={busy} onClick={() => setWithdrawDialogOpen(false)}>Cancel</button>
-          </div>
-          {parsedWithdrawAmount > availableBalance && <p className="wallet-info-note">Amount is higher than your available balance.</p>}
-        </div>
-      </div>
-    );
-  }
-
   if (variant === "art") {
     return (
       <>
@@ -144,7 +109,7 @@ export function DepositPanel({ variant = "panel" }) {
           className="playerhub-amount-input"
           inputMode="decimal"
           autoComplete="off"
-          aria-label={`Deposit amount in ${currency}`}
+          aria-label={`Amount in ${currency}`}
           value={amount}
           onChange={(event) => setAmount(event.target.value)}
         />
@@ -153,10 +118,9 @@ export function DepositPanel({ variant = "panel" }) {
         <button id="usdcTabBtn" className={`screen-hitbox usdc-tab-hitbox ${!isEth ? "active" : ""}`} aria-label="USDC" onClick={() => selectCurrency("USDC")} />
         <button id="refreshBalanceBtn" className="screen-hitbox refresh-hitbox" aria-label="Refresh" disabled={busy} onClick={refresh} />
         <button id="depositBtn" className="screen-hitbox deposit-hitbox" aria-label="Deposit" disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={deposit} />
-        <button id="withdrawBtn" className="screen-hitbox withdraw-hitbox" aria-label="Custom withdraw" disabled={!canUseContracts || busy || availableBalance <= 0n} onClick={openWithdrawDialog} />
+        <button id="withdrawBtn" className="screen-hitbox withdraw-hitbox" aria-label="Withdraw" disabled={!canUseContracts || busy || !canWithdraw} onClick={withdraw} />
         <div className={`ph-toast ${messageType === "error" ? "error" : ""}`}>{message}</div>
         {!isEth && parsedDepositAmount > 0n && !hasEnoughAllowance && <button className="ph-hit ph-approve" aria-label="Approve USDC" disabled={!canUseContracts || busy} onClick={approveToken}>Approve</button>}
-        {renderWithdrawDialog()}
       </>
     );
   }
