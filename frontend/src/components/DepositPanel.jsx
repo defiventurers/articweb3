@@ -136,16 +136,25 @@ export function DepositPanel({ variant = "panel" }) {
   if (variant === "art") {
     return (
       <>
-        <button className={`ph-hit ph-eth ${isEth ? "active" : ""}`} aria-label="Use ETH" onClick={() => selectCurrency("ETH")} />
-        <button className={`ph-hit ph-usdc ${!isEth ? "active" : ""}`} aria-label="Use USDC" onClick={() => selectCurrency("USDC")} />
-        <div className="ph-dyn ph-status">{isConfigured ? `${currency} READY` : "FREE PLAY"}</div>
-        <div className="ph-dyn ph-wallet-value">{formatAmount(walletBalance, decimals)} {currency}</div>
-        <div className="ph-dyn ph-available-value">{formatAmount(availableBalance, decimals)} {currency}</div>
-        <div className="ph-dyn ph-locked-value">{formatAmount(lockedBalance, decimals)} {currency}</div>
-        <button className="ph-hit ph-refresh" aria-label="Refresh balance" disabled={busy} onClick={refresh} />
-        <button className="ph-hit ph-deposit" aria-label={`Deposit ${amount} ${currency}`} disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={deposit} />
-        <button className="ph-hit ph-withdraw" aria-label="Custom withdraw" disabled={!canUseContracts || busy || availableBalance <= 0n} onClick={openWithdrawDialog} />
-        <div className={`ph-toast ${messageType === "error" ? "error" : ""}`}>{message || `Deposit amount: ${amount} ${currency}`}</div>
+        <div id="playerHubWalletBalance" className="playerhub-balance-value wallet-value">{formatAmount(walletBalance, decimals)} {currency}</div>
+        <div id="playerHubAvailableBalance" className="playerhub-balance-value available-value">{formatAmount(availableBalance, decimals)} {currency}</div>
+        <div id="playerHubLockedBalance" className="playerhub-balance-value locked-value">{formatAmount(lockedBalance, decimals)} {currency}</div>
+        <input
+          id="playerHubAmountInput"
+          className="playerhub-amount-input"
+          inputMode="decimal"
+          autoComplete="off"
+          aria-label={`Deposit amount in ${currency}`}
+          value={amount}
+          onChange={(event) => setAmount(event.target.value)}
+        />
+
+        <button id="ethTabBtn" className={`screen-hitbox eth-tab-hitbox ${isEth ? "active" : ""}`} aria-label="ETH" onClick={() => selectCurrency("ETH")} />
+        <button id="usdcTabBtn" className={`screen-hitbox usdc-tab-hitbox ${!isEth ? "active" : ""}`} aria-label="USDC" onClick={() => selectCurrency("USDC")} />
+        <button id="refreshBalanceBtn" className="screen-hitbox refresh-hitbox" aria-label="Refresh" disabled={busy} onClick={refresh} />
+        <button id="depositBtn" className="screen-hitbox deposit-hitbox" aria-label="Deposit" disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={deposit} />
+        <button id="withdrawBtn" className="screen-hitbox withdraw-hitbox" aria-label="Custom withdraw" disabled={!canUseContracts || busy || availableBalance <= 0n} onClick={openWithdrawDialog} />
+        <div className={`ph-toast ${messageType === "error" ? "error" : ""}`}>{message}</div>
         {!isEth && parsedDepositAmount > 0n && !hasEnoughAllowance && <button className="ph-hit ph-approve" aria-label="Approve USDC" disabled={!canUseContracts || busy} onClick={approveToken}>Approve</button>}
         {renderWithdrawDialog()}
       </>
