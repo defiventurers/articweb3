@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/health",
+      "destination": "https://articweb3.onrender.com/health"
+    }
+  ]
+}
