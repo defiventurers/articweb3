@@ -163,7 +163,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     const slotRoom = visibleRooms[slotIndex];
     const globalIndex = roomPage * ROOM_PAGE_SIZE + slotIndex;
     return (
-      <div className={`highstakes-room-card hs-room-${slotIndex}`} aria-hidden="true" key={`slot-${slotIndex}`}>
+      <div className={`highstakes-room-card hs-room-${slotIndex}`} key={`slot-${slotIndex}`}>
         {slotRoom && (
           <>
             <div className="hs-room-code">{slotRoom.roomCode}</div>
@@ -185,7 +185,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
         <div className="art-stage highstakes-stage">
           <img className="screen-art" src="/assets/screens/highstakes.png" alt="High Stakes Lab" draggable="false" />
 
-          <div className="highstakes-overlay" aria-hidden="true">
+          <div className="highstakes-overlay">
             <div id="highStakesWalletText" className="highstakes-wallet-text">{profile.name}</div>
             <div id="highStakesPointsText" className="highstakes-points-text">{profile.points} pts</div>
             <div id="highStakesAvailableBalance" className="highstakes-lock-value available-lock-value">{formatAmount(availableBalance)} ETH</div>
