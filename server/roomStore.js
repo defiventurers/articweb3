@@ -58,7 +58,8 @@ async function initRoomStore() {
 
 async function saveRoom(room) {
   if (!room || !(await initRoomStore())) return;
-  const roomJson = JSON.stringify(room);
+  const serializableRoom = sanitizeRoom(room);
+  const roomJson = JSON.stringify(serializableRoom);
   await getPool().query(
     `INSERT INTO rooms (room_code, room_mode, status, match_id, contract_match_id, visibility, room_json, created_at, updated_at)
      VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,to_timestamp($8 / 1000.0),NOW())
@@ -89,7 +90,12 @@ async function saveRoom(room) {
 async function loadRooms() {
   if (!(await initRoomStore())) return [];
   const result = await getPool().query(`SELECT room_json FROM rooms WHERE status IN ('waiting','playing','finished') ORDER BY updated_at DESC LIMIT 200`);
-  return result.rows.map((row) => row.room_json).filter(Boolean);
+  return result.rows.map((row) => row.room_json).filter(Boolean).map(sanitizeRoom);
+}
+
+function sanitizeRoom(room) {
+  const { botTimer, ...safeRoom } = room || {};
+  return safeRoom;
 }
 
 function roomStoreStatus() {
