@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { isAddress } from "viem";
+import { useAccount } from "wagmi";
 import { useAbstractClient } from "@abstract-foundation/agw-react";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
 
 export function SettlementAdminScreen({ onBack }) {
+  const { address } = useAccount();
   const { data: abstractClient } = useAbstractClient();
   const [serverWallet, setServerWallet] = useState(import.meta.env.VITE_SETTLEMENT_WALLET_ADDRESS || "");
   const [owner, setOwner] = useState("");
@@ -12,6 +14,9 @@ export function SettlementAdminScreen({ onBack }) {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
+
+  const connectedWallet = address || "";
+  const ownerMatches = owner && connectedWallet && owner.toLowerCase() === connectedWallet.toLowerCase();
 
   useEffect(() => {
     refreshVaultAdmin();
@@ -40,15 +45,19 @@ export function SettlementAdminScreen({ onBack }) {
   async function setSettlementServer() {
     const target = serverWallet.trim();
     if (!isAddress(target)) {
-      setError("Enter a valid backend settlement wallet address.");
+      setError("Paste the fresh backend wallet public address.");
       return;
     }
     if (!abstractClient) {
-      setError("Connect AGW first.");
+      setError("Connect the vault-owner AGW first.");
       return;
     }
     if (!ETH_TARGETS_READY) {
       setError("ETH vault address is not configured.");
+      return;
+    }
+    if (owner && connectedWallet && !ownerMatches) {
+      setError("Wrong connected wallet. Connect the vault-owner AGW, then paste the backend wallet address here.");
       return;
     }
 
@@ -65,9 +74,9 @@ export function SettlementAdminScreen({ onBack }) {
       setStatus(`Submitted ${shortHash(txHash)}. Refreshing vault state...`);
       await delay(3500);
       await refreshVaultAdmin();
-      setStatus("Settlement wallet set. Now put the matching private key in Render only.");
+      setStatus("Backend settlement wallet set. Put that wallet private key in Render only.");
     } catch (err) {
-      setError(err.shortMessage || err.message || "Could not set settlement wallet.");
+      setError(err.shortMessage || err.message || "Could not set backend settlement wallet.");
     } finally {
       setBusy(false);
     }
@@ -81,27 +90,35 @@ export function SettlementAdminScreen({ onBack }) {
         <div className="rules-panel">
           <strong>Vault</strong>
           <span>{ETH_VAULT_ADDRESS || "Not configured"}</span>
+          <strong>Connected wallet</strong>
+          <span>{connectedWallet || "Not connected"}</span>
           <strong>Vault owner</strong>
           <span>{owner || "Connect AGW to read"}</span>
           <strong>Current game server</strong>
           <span>{gameServer || "Connect AGW to read"}</span>
         </div>
 
+        {owner && connectedWallet && !ownerMatches && (
+          <p className="error">
+            Wrong connected wallet. Switch to the vault-owner AGW before setting the backend wallet.
+          </p>
+        )}
+
         <p className="note">
-          Use a fresh backend-only wallet. Never use your main AGW private key here.
+          Connect the vault-owner AGW. Paste the fresh backend wallet address below. Do not connect as the backend wallet here.
         </p>
 
         <input
           className="input"
           value={serverWallet}
-          placeholder="Backend settlement wallet address"
+          placeholder="Fresh backend wallet public address"
           onChange={(event) => {
             setServerWallet(event.target.value.trim());
             setError("");
           }}
         />
 
-        <button className="primary-btn" disabled={busy || !ETH_TARGETS_READY} onClick={setSettlementServer}>
+        <button className="primary-btn" disabled={busy || !ETH_TARGETS_READY || Boolean(owner && connectedWallet && !ownerMatches)} onClick={setSettlementServer}>
           {busy ? "Updating..." : "Set Backend Settlement Wallet"}
         </button>
 
@@ -114,7 +131,7 @@ export function SettlementAdminScreen({ onBack }) {
 
         <div className="rules-panel">
           <strong>Render env after this</strong>
-          <span>ETH_SETTLEMENT_SIGNER = private key for this backend wallet</span>
+          <span>ETH_SETTLEMENT_SIGNER = private key for the backend wallet</span>
           <span>ETH_VAULT_ADDRESS = this same upgraded vault address</span>
           <span>HIGH_STAKES_ENABLED = true</span>
         </div>
