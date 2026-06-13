@@ -144,6 +144,75 @@
   color: #ffd0d0;
 }
 
+.ph-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 5%;
+  background: rgba(2, 11, 28, .58);
+}
+
+.ph-modal-card {
+  width: min(78%, 380px);
+  border-radius: 22px;
+  border: 1px solid rgba(190, 245, 255, .86);
+  background: rgba(7, 37, 78, .96);
+  box-shadow: 0 14px 35px rgba(0,0,0,.45), 0 0 24px rgba(110,220,255,.2) inset;
+  color: white;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+  text-align: center;
+}
+
+.ph-modal-card h3,
+.ph-modal-card p {
+  margin: 0;
+}
+
+.ph-modal-card p {
+  color: #fff3c7;
+  font-size: clamp(10px, 1.8vw, 14px);
+}
+
+.ph-withdraw-input {
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid #bff6ff;
+  background: #061b3a;
+  color: white;
+  padding: 0 12px;
+  text-align: center;
+  width: 100%;
+}
+
+.ph-modal-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.ph-modal-btn {
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid #bff6ff;
+  background: #0b355d;
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.ph-modal-btn.primary {
+  background: #0878d8;
+}
+
+.ph-modal-btn:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
 .ph-dev-rail {
   position: absolute;
   z-index: 20;
@@ -172,7 +241,7 @@
   background: rgba(15,95,175,.82);
 }
 
-.wallet-panel {
+.player-hub-art-stage .wallet-panel {
   display: contents;
 }
 
@@ -204,5 +273,14 @@
 
   .ph-toast {
     font-size: 7px;
+  }
+
+  .ph-modal-card {
+    width: 86%;
+    padding: 14px;
+  }
+
+  .ph-modal-actions {
+    grid-template-columns: 1fr;
   }
 }
