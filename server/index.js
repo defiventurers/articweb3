@@ -20,6 +20,7 @@ const {
 const PORT = process.env.PORT || 10000;
 const COUNTDOWN_MS = 5000;
 const BOT_DELAY_MS = 650;
+const MAX_HISTORY_PER_WALLET = 50;
 const TEAM_CODES = ["green", "red", "blue", "yellow"];
 const TEAM_NAME_BY_CODE = {
   green: "Test Abster",
@@ -79,6 +80,8 @@ const ethPublicClient = ETH_VAULT_ADDRESS
 const profiles = new Map();
 const rooms = new Map();
 const sockets = new Map();
+const historyEntries = new Map();
+const historyByWallet = new Map();
 
 function send(ws, packet) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(packet));
@@ -333,12 +336,70 @@ function buildPayoutPlan(room, placements) {
   });
 }
 
+function pushHistory(wallet, entry) {
+  const key = walletOf(wallet);
+  if (!key) return;
+  historyEntries.set(entry.id, entry);
+  const ids = historyByWallet.get(key) || [];
+  const nextIds = [entry.id, ...ids.filter((id) => id !== entry.id)].slice(0, MAX_HISTORY_PER_WALLET);
+  historyByWallet.set(key, nextIds);
+}
+
+function recordMatchHistory(room) {
+  if (room.historyEntryIds?.length) return;
+  const payoutByWallet = new Map((room.payoutPlan || []).map((item) => [walletOf(item.wallet), item]));
+  const positionByWallet = new Map((room.placements || []).map((item) => [walletOf(item.wallet), item.position]));
+  room.historyEntryIds = [];
+
+  players(room).forEach((player) => {
+    if (isBotWallet(player.wallet)) return;
+    const wallet = walletOf(player.wallet);
+    const payout = payoutByWallet.get(wallet);
+    const profile = profileFor(wallet);
+    const entry = {
+      id: `${room.roomCode}-${wallet}-${room.finalizedAt || Date.now()}`,
+      roomCode: room.roomCode,
+      matchId: room.matchId,
+      contractMatchId: room.contractMatchId,
+      roomMode: room.roomMode,
+      currency: room.currency || null,
+      entryTier: room.entryTier,
+      entryWei: room.entryWei || "0",
+      entryTxHash: player.entryTxHash || null,
+      wallet,
+      playerName: profile?.name || "Player",
+      team: player.team,
+      position: positionByWallet.get(wallet) || null,
+      won: positionByWallet.get(wallet) === 1,
+      payoutWei: payout?.payoutWei || "0",
+      points: payout?.points || 0,
+      settlementStatus: room.settlementStatus || null,
+      settlementTxHash: room.settlementTxHash || null,
+      settlementError: room.settlementError || null,
+      finishedAt: room.finalizedAt || Date.now()
+    };
+    room.historyEntryIds.push(entry.id);
+    pushHistory(wallet, entry);
+  });
+}
+
+function updateHistorySettlement(room) {
+  (room.historyEntryIds || []).forEach((id) => {
+    const entry = historyEntries.get(id);
+    if (!entry) return;
+    entry.settlementStatus = room.settlementStatus || null;
+    entry.settlementTxHash = room.settlementTxHash || null;
+    entry.settlementError = room.settlementError || null;
+  });
+}
+
 async function settleHighStakesIfPossible(room) {
   if (room.roomMode !== ROOM_MODES.HIGH_STAKES || !ETH_VAULT_ADDRESS) return;
   const signerSecret = process.env.ETH_SETTLEMENT_SIGNER;
   if (!signerSecret) {
     room.settlementStatus = "needs_settlement_signer";
     room.settlementError = "ETH_SETTLEMENT_SIGNER is not configured on Render.";
+    updateHistorySettlement(room);
     console.error(`[settlement] missing signer room=${room.roomCode}`);
     return;
   }
@@ -352,12 +413,14 @@ async function settleHighStakesIfPossible(room) {
     const contract = new Contract(ETH_VAULT_ADDRESS, ETH_VAULT_WRITE_ABI, wallet);
     room.settlementStatus = "submitting";
     room.settlementError = null;
+    updateHistorySettlement(room);
     console.log(`[settlement] submitting room=${room.roomCode} match=${room.contractMatchId} signer=${wallet.address} vault=${ETH_VAULT_ADDRESS}`);
     console.log(`[settlement] players=${orderedWallets.join(",")} payouts=${payouts.map((value) => value.toString()).join(",")}`);
 
     const tx = await contract.settleMatch(room.contractMatchId, orderedWallets, payouts);
     room.settlementTxHash = tx.hash;
     room.settlementStatus = "submitted";
+    updateHistorySettlement(room);
     console.log(`[settlement] submitted room=${room.roomCode} tx=${tx.hash}`);
 
     tx.wait().then((receipt) => {
@@ -368,16 +431,19 @@ async function settleHighStakesIfPossible(room) {
         room.settlementStatus = "submitted";
         console.log(`[settlement] tx mined without success flag room=${room.roomCode} tx=${tx.hash}`);
       }
+      updateHistorySettlement(room);
       broadcast(room);
     }).catch((err) => {
       room.settlementStatus = "failed";
       room.settlementError = settlementErrorMessage(err);
+      updateHistorySettlement(room);
       console.error(`[settlement] wait failed room=${room.roomCode}: ${room.settlementError}`);
       broadcast(room);
     });
   } catch (err) {
     room.settlementStatus = "failed";
     room.settlementError = settlementErrorMessage(err);
+    updateHistorySettlement(room);
     console.error(`[settlement] failed room=${room.roomCode}: ${room.settlementError}`);
   }
 }
@@ -420,9 +486,11 @@ function finalizeGameIfOver(room) {
     room.payoutPlan = buildPayoutPlan(room, placements);
     room.payoutPlan.forEach((item, index) => addPoints(item.wallet, item.points, index === 0));
     room.settlementStatus = "pending";
+    recordMatchHistory(room);
     settleHighStakesIfPossible(room).then(() => broadcast(room));
   } else {
     room.placements.forEach((item, index) => addPoints(item.wallet, [10, 6, 3, 0][index] || 0, index === 0));
+    recordMatchHistory(room);
   }
 }
 
@@ -464,6 +532,15 @@ function list(ws, requestId, payload = {}) {
     .filter((room) => players(room).length < 4)
     .map(view);
   return ok(ws, requestId, "room_list_result", { rooms: publicRooms });
+}
+
+function history(ws, requestId, payload = {}) {
+  const wallet = walletOf(payload.wallet);
+  if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.");
+  sockets.set(wallet, ws);
+  const ids = historyByWallet.get(wallet) || [];
+  const entries = ids.map((id) => historyEntries.get(id)).filter(Boolean);
+  return ok(ws, requestId, "game_history_result", { history: entries });
 }
 
 function createRoom(ws, requestId, payload) {
@@ -678,6 +755,7 @@ const server = http.createServer((req, res) => {
       ok: true,
       profiles: profiles.size,
       rooms: rooms.size,
+      historyEntries: historyEntries.size,
       highStakesEnabled: HIGH_STAKES_ENABLED,
       ethVaultConfigured: Boolean(ETH_VAULT_ADDRESS),
       settlementSignerConfigured: Boolean(process.env.ETH_SETTLEMENT_SIGNER),
@@ -696,6 +774,7 @@ new WebSocket.Server({ server }).on("connection", (ws) => {
     const { type, requestId, payload = {} } = packet;
     if (type === "profile_login") return login(ws, requestId, payload);
     if (type === "room_list") return list(ws, requestId, payload);
+    if (type === "game_history") return history(ws, requestId, payload);
     if (type === "room_create") return createRoom(ws, requestId, payload);
     if (type === "room_join") return joinRoom(ws, requestId, payload);
     if (type === "room_confirm_entry") return confirmEntryLock(ws, requestId, payload);
