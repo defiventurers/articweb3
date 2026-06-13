@@ -26,6 +26,9 @@ async function initHistoryStore() {
       await getPool().query(`ALTER TABLE match_history ADD COLUMN IF NOT EXISTS final_state_json TEXT`);
       await getPool().query(`ALTER TABLE match_history ADD COLUMN IF NOT EXISTS audit_log_json TEXT`);
       await getPool().query(`ALTER TABLE match_history ADD COLUMN IF NOT EXISTS proof_hash TEXT`);
+      await getPool().query(`ALTER TABLE match_history ADD COLUMN IF NOT EXISTS randomness_json TEXT`);
+      await getPool().query(`ALTER TABLE match_history ADD COLUMN IF NOT EXISTS withdrawal_tx_hash TEXT`);
+      await getPool().query(`ALTER TABLE match_history ADD COLUMN IF NOT EXISTS withdrawal_status TEXT`);
       await getPool().query(`CREATE INDEX IF NOT EXISTS match_history_wallet_finished_idx ON match_history (wallet, finished_at DESC)`);
       ready = true;
       initError = null;
@@ -44,9 +47,9 @@ async function saveHistoryEntry(entry) {
   saveMemory(entry);
   if (!(await initHistoryStore())) return;
   await getPool().query(
-    `INSERT INTO match_history (id,wallet,room_code,match_id,contract_match_id,room_mode,currency,entry_tier,entry_wei,entry_tx_hash,player_name,team,position,won,payout_wei,points,settlement_status,settlement_tx_hash,settlement_error,players_json,final_state_json,audit_log_json,proof_hash,finished_at,updated_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,to_timestamp($24 / 1000.0),NOW())
-     ON CONFLICT (id) DO UPDATE SET settlement_status=EXCLUDED.settlement_status, settlement_tx_hash=EXCLUDED.settlement_tx_hash, settlement_error=EXCLUDED.settlement_error, players_json=EXCLUDED.players_json, final_state_json=EXCLUDED.final_state_json, audit_log_json=EXCLUDED.audit_log_json, proof_hash=EXCLUDED.proof_hash, updated_at=NOW()`,
+    `INSERT INTO match_history (id,wallet,room_code,match_id,contract_match_id,room_mode,currency,entry_tier,entry_wei,entry_tx_hash,player_name,team,position,won,payout_wei,points,settlement_status,settlement_tx_hash,settlement_error,players_json,final_state_json,audit_log_json,proof_hash,randomness_json,withdrawal_tx_hash,withdrawal_status,finished_at,updated_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,to_timestamp($27 / 1000.0),NOW())
+     ON CONFLICT (id) DO UPDATE SET settlement_status=EXCLUDED.settlement_status, settlement_tx_hash=EXCLUDED.settlement_tx_hash, settlement_error=EXCLUDED.settlement_error, players_json=EXCLUDED.players_json, final_state_json=EXCLUDED.final_state_json, audit_log_json=EXCLUDED.audit_log_json, proof_hash=EXCLUDED.proof_hash, randomness_json=EXCLUDED.randomness_json, withdrawal_tx_hash=COALESCE(EXCLUDED.withdrawal_tx_hash, match_history.withdrawal_tx_hash), withdrawal_status=COALESCE(EXCLUDED.withdrawal_status, match_history.withdrawal_status), updated_at=NOW()`,
     entryToParams(entry)
   );
 }
@@ -57,7 +60,10 @@ async function updateHistoryEntries(ids, patch) {
     if (existing) memoryEntries.set(id, { ...existing, ...patch });
   });
   if (!ids.length || !(await initHistoryStore())) return;
-  await getPool().query(`UPDATE match_history SET settlement_status=$2, settlement_tx_hash=$3, settlement_error=$4, updated_at=NOW() WHERE id=ANY($1::text[])`, [ids, patch.settlementStatus || null, patch.settlementTxHash || null, patch.settlementError || null]);
+  await getPool().query(
+    `UPDATE match_history SET settlement_status=COALESCE($2, settlement_status), settlement_tx_hash=COALESCE($3, settlement_tx_hash), settlement_error=$4, withdrawal_tx_hash=COALESCE($5, withdrawal_tx_hash), withdrawal_status=COALESCE($6, withdrawal_status), updated_at=NOW() WHERE id=ANY($1::text[])`,
+    [ids, patch.settlementStatus || null, patch.settlementTxHash || null, patch.settlementError || null, patch.withdrawalTxHash || null, patch.withdrawalStatus || null]
+  );
 }
 
 async function getHistoryForWallet(wallet) {
@@ -72,9 +78,9 @@ async function getHistoryForWallet(wallet) {
 
 function historyStoreStatus() { return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError }; }
 function saveMemory(entry) { const key = normalizeWallet(entry.wallet); const normalized = { ...entry, wallet: key }; memoryEntries.set(normalized.id, normalized); const ids = memoryByWallet.get(key) || []; memoryByWallet.set(key, [normalized.id, ...ids.filter((id) => id !== normalized.id)].slice(0, MAX_HISTORY_PER_WALLET)); }
-function entryToParams(entry) { return [entry.id, normalizeWallet(entry.wallet), entry.roomCode, entry.matchId, entry.contractMatchId || null, entry.roomMode, entry.currency || null, entry.entryTier || null, entry.entryWei || "0", entry.entryTxHash || null, entry.playerName || null, entry.team || null, entry.position || null, Boolean(entry.won), entry.payoutWei || "0", Number(entry.points || 0), entry.settlementStatus || null, entry.settlementTxHash || null, entry.settlementError || null, JSON.stringify(entry.players || []), JSON.stringify(entry.finalBoardState || null), JSON.stringify(entry.auditLog || []), entry.proofHash || null, Number(entry.finishedAt || Date.now())]; }
+function entryToParams(entry) { return [entry.id, normalizeWallet(entry.wallet), entry.roomCode, entry.matchId, entry.contractMatchId || null, entry.roomMode, entry.currency || null, entry.entryTier || null, entry.entryWei || "0", entry.entryTxHash || null, entry.playerName || null, entry.team || null, entry.position || null, Boolean(entry.won), entry.payoutWei || "0", Number(entry.points || 0), entry.settlementStatus || null, entry.settlementTxHash || null, entry.settlementError || null, JSON.stringify(entry.players || []), JSON.stringify(entry.finalBoardState || null), JSON.stringify(entry.auditLog || []), entry.proofHash || null, JSON.stringify(entry.randomness || null), entry.withdrawalTxHash || null, entry.withdrawalStatus || null, Number(entry.finishedAt || Date.now())]; }
 function parseJson(value, fallback) { try { return value ? JSON.parse(value) : fallback; } catch { return fallback; } }
-function rowToEntry(row) { return { id: row.id, wallet: row.wallet, roomCode: row.room_code, matchId: row.match_id, contractMatchId: row.contract_match_id, roomMode: row.room_mode, currency: row.currency, entryTier: row.entry_tier, entryWei: row.entry_wei || "0", entryTxHash: row.entry_tx_hash, playerName: row.player_name, team: row.team, position: row.position, won: row.won, payoutWei: row.payout_wei || "0", points: row.points || 0, settlementStatus: row.settlement_status, settlementTxHash: row.settlement_tx_hash, settlementError: row.settlement_error, players: parseJson(row.players_json, []), finalBoardState: parseJson(row.final_state_json, null), auditLog: parseJson(row.audit_log_json, []), proofHash: row.proof_hash, finishedAt: row.finished_at ? new Date(row.finished_at).getTime() : null }; }
+function rowToEntry(row) { return { id: row.id, wallet: row.wallet, roomCode: row.room_code, matchId: row.match_id, contractMatchId: row.contract_match_id, roomMode: row.room_mode, currency: row.currency, entryTier: row.entry_tier, entryWei: row.entry_wei || "0", entryTxHash: row.entry_tx_hash, playerName: row.player_name, team: row.team, position: row.position, won: row.won, payoutWei: row.payout_wei || "0", points: row.points || 0, settlementStatus: row.settlement_status, settlementTxHash: row.settlement_tx_hash, settlementError: row.settlement_error, players: parseJson(row.players_json, []), finalBoardState: parseJson(row.final_state_json, null), auditLog: parseJson(row.audit_log_json, []), proofHash: row.proof_hash, randomness: parseJson(row.randomness_json, null), withdrawalTxHash: row.withdrawal_tx_hash, withdrawalStatus: row.withdrawal_status, finishedAt: row.finished_at ? new Date(row.finished_at).getTime() : null }; }
 function normalizeWallet(wallet) { return String(wallet || "").toLowerCase(); }
 
 module.exports = { initHistoryStore, saveHistoryEntry, updateHistoryEntries, getHistoryForWallet, historyStoreStatus };
