@@ -16,6 +16,8 @@ import { ethVaultAbi, tokenAbi, vaultAbi } from "../contracts/abis.js";
 export function DepositPanel({ variant = "panel" }) {
   const [currency, setCurrency] = useState("ETH");
   const [amount, setAmount] = useState("0.001");
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
@@ -24,7 +26,8 @@ export function DepositPanel({ variant = "panel" }) {
 
   const isEth = currency === "ETH";
   const decimals = isEth ? ETH_DECIMALS : TOKEN_DECIMALS;
-  const parsedAmount = parseSafeAmount(amount, decimals);
+  const parsedDepositAmount = parseSafeAmount(amount, decimals);
+  const parsedWithdrawAmount = parseSafeAmount(withdrawAmount, decimals);
   const enabled = Boolean(address && (isEth ? ETH_TARGETS_READY : CHAIN_TARGETS_READY));
   const canUseContracts = Boolean(isConnected && abstractClient && enabled);
 
@@ -40,9 +43,17 @@ export function DepositPanel({ variant = "panel" }) {
   const availableBalance = isEth ? ethAvailableQuery.data || 0n : usdcAvailableQuery.data || 0n;
   const lockedBalance = isEth ? ethLockedQuery.data || 0n : usdcLockedQuery.data || 0n;
   const allowance = allowanceQuery.data || 0n;
-  const hasEnoughAllowance = isEth || (parsedAmount > 0n && allowance >= parsedAmount);
-  const hasEnoughWalletBalance = parsedAmount > 0n && walletBalance >= parsedAmount;
+  const hasEnoughAllowance = isEth || (parsedDepositAmount > 0n && allowance >= parsedDepositAmount);
+  const hasEnoughWalletBalance = parsedDepositAmount > 0n && walletBalance >= parsedDepositAmount;
   const isConfigured = isEth ? ETH_TARGETS_READY : CHAIN_TARGETS_READY;
+  const canWithdraw = canUseContracts && parsedWithdrawAmount > 0n && availableBalance >= parsedWithdrawAmount;
+
+  function selectCurrency(nextCurrency) {
+    setCurrency(nextCurrency);
+    setMessage("");
+    setWithdrawAmount("");
+    setWithdrawDialogOpen(false);
+  }
 
   async function refresh() {
     await Promise.all([
@@ -51,22 +62,34 @@ export function DepositPanel({ variant = "panel" }) {
   }
 
   async function approveToken() {
-    if (isEth || !canUseContracts || parsedAmount <= 0n) return;
-    await runTransaction("Approval", async () => abstractClient.writeContract({ address: TOKEN_ADDRESS, abi: tokenAbi, functionName: "approve", args: [VAULT_ADDRESS, parsedAmount] }));
+    if (isEth || !canUseContracts || parsedDepositAmount <= 0n) return;
+    await runTransaction("Approval", async () => abstractClient.writeContract({ address: TOKEN_ADDRESS, abi: tokenAbi, functionName: "approve", args: [VAULT_ADDRESS, parsedDepositAmount] }));
   }
 
   async function deposit() {
-    if (!canUseContracts || parsedAmount <= 0n || !hasEnoughWalletBalance || !hasEnoughAllowance) return;
+    if (!canUseContracts || parsedDepositAmount <= 0n || !hasEnoughWalletBalance || !hasEnoughAllowance) return;
     if (isEth) {
-      await runTransaction("ETH deposit", async () => abstractClient.writeContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "deposit", value: parsedAmount }));
+      await runTransaction("ETH deposit", async () => abstractClient.writeContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "deposit", value: parsedDepositAmount }));
       return;
     }
-    await runTransaction("USDC deposit", async () => abstractClient.writeContract({ address: VAULT_ADDRESS, abi: vaultAbi, functionName: "deposit", args: [parsedAmount] }));
+    await runTransaction("USDC deposit", async () => abstractClient.writeContract({ address: VAULT_ADDRESS, abi: vaultAbi, functionName: "deposit", args: [parsedDepositAmount] }));
+  }
+
+  function openWithdrawDialog() {
+    setMessage("");
+    setMessageType("info");
+    setWithdrawAmount(formatInputAmount(availableBalance, decimals));
+    setWithdrawDialogOpen(true);
+  }
+
+  function fillMaxWithdraw() {
+    setWithdrawAmount(formatInputAmount(availableBalance, decimals));
   }
 
   async function withdraw() {
-    if (!canUseContracts || parsedAmount <= 0n || availableBalance < parsedAmount) return;
-    await runTransaction(`${currency} withdraw`, async () => abstractClient.writeContract({ address: isEth ? ETH_VAULT_ADDRESS : VAULT_ADDRESS, abi: isEth ? ethVaultAbi : vaultAbi, functionName: "withdraw", args: [parsedAmount] }));
+    if (!canWithdraw) return;
+    await runTransaction(`${currency} withdraw`, async () => abstractClient.writeContract({ address: isEth ? ETH_VAULT_ADDRESS : VAULT_ADDRESS, abi: isEth ? ethVaultAbi : vaultAbi, functionName: "withdraw", args: [parsedWithdrawAmount] }));
+    setWithdrawDialogOpen(false);
   }
 
   async function runTransaction(label, action) {
@@ -85,20 +108,46 @@ export function DepositPanel({ variant = "panel" }) {
     }
   }
 
+  function renderWithdrawDialog() {
+    if (!withdrawDialogOpen) return null;
+    return (
+      <div className={variant === "art" ? "ph-modal" : "wallet-modal"} role="dialog" aria-modal="true" aria-label={`Withdraw ${currency}`}>
+        <div className={variant === "art" ? "ph-modal-card" : "wallet-modal-card"}>
+          <h3>Custom Withdraw</h3>
+          <p>Available: {formatInputAmount(availableBalance, decimals)} {currency}</p>
+          <input
+            className={variant === "art" ? "ph-withdraw-input" : "wallet-amount-input"}
+            inputMode="decimal"
+            placeholder={`Amount in ${currency}`}
+            value={withdrawAmount}
+            onChange={(event) => setWithdrawAmount(event.target.value)}
+          />
+          <div className={variant === "art" ? "ph-modal-actions" : "wallet-action-row"}>
+            <button type="button" className={variant === "art" ? "ph-modal-btn" : "wallet-btn"} disabled={busy || availableBalance <= 0n} onClick={fillMaxWithdraw}>Max</button>
+            <button type="button" className={variant === "art" ? "ph-modal-btn primary" : "wallet-btn primary"} disabled={busy || !canWithdraw} onClick={withdraw}>Withdraw</button>
+            <button type="button" className={variant === "art" ? "ph-modal-btn" : "wallet-btn"} disabled={busy} onClick={() => setWithdrawDialogOpen(false)}>Cancel</button>
+          </div>
+          {parsedWithdrawAmount > availableBalance && <p className="wallet-info-note">Amount is higher than your available balance.</p>}
+        </div>
+      </div>
+    );
+  }
+
   if (variant === "art") {
     return (
       <>
-        <button className={`ph-hit ph-eth ${isEth ? "active" : ""}`} aria-label="Use ETH" onClick={() => setCurrency("ETH")} />
-        <button className={`ph-hit ph-usdc ${!isEth ? "active" : ""}`} aria-label="Use USDC" onClick={() => setCurrency("USDC")} />
+        <button className={`ph-hit ph-eth ${isEth ? "active" : ""}`} aria-label="Use ETH" onClick={() => selectCurrency("ETH")} />
+        <button className={`ph-hit ph-usdc ${!isEth ? "active" : ""}`} aria-label="Use USDC" onClick={() => selectCurrency("USDC")} />
         <div className="ph-dyn ph-status">{isConfigured ? `${currency} READY` : "FREE PLAY"}</div>
         <div className="ph-dyn ph-wallet-value">{formatAmount(walletBalance, decimals)} {currency}</div>
         <div className="ph-dyn ph-available-value">{formatAmount(availableBalance, decimals)} {currency}</div>
         <div className="ph-dyn ph-locked-value">{formatAmount(lockedBalance, decimals)} {currency}</div>
         <button className="ph-hit ph-refresh" aria-label="Refresh balance" disabled={busy} onClick={refresh} />
-        <button className="ph-hit ph-deposit" aria-label="Deposit 0.001" disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={deposit} />
-        <button className="ph-hit ph-withdraw" aria-label="Withdraw 0.001" disabled={!canUseContracts || busy || parsedAmount <= 0n || availableBalance < parsedAmount} onClick={withdraw} />
-        <div className={`ph-toast ${messageType === "error" ? "error" : ""}`}>{message || `Amount: ${amount} ${currency}`}</div>
-        {!isEth && parsedAmount > 0n && !hasEnoughAllowance && <button className="ph-hit ph-approve" aria-label="Approve USDC" disabled={!canUseContracts || busy} onClick={approveToken}>Approve</button>}
+        <button className="ph-hit ph-deposit" aria-label={`Deposit ${amount} ${currency}`} disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={deposit} />
+        <button className="ph-hit ph-withdraw" aria-label="Custom withdraw" disabled={!canUseContracts || busy || availableBalance <= 0n} onClick={openWithdrawDialog} />
+        <div className={`ph-toast ${messageType === "error" ? "error" : ""}`}>{message || `Deposit amount: ${amount} ${currency}`}</div>
+        {!isEth && parsedDepositAmount > 0n && !hasEnoughAllowance && <button className="ph-hit ph-approve" aria-label="Approve USDC" disabled={!canUseContracts || busy} onClick={approveToken}>Approve</button>}
+        {renderWithdrawDialog()}
       </>
     );
   }
@@ -106,9 +155,9 @@ export function DepositPanel({ variant = "panel" }) {
   return (
     <div className="wallet-panel">
       <div className="wallet-panel-header"><strong>Game Balance</strong><span className={`wallet-status-pill ${isConfigured ? "ready" : ""}`}>{isConfigured ? `${currency} Ready` : "Open Ice Free"}</span></div>
-      <div className="wallet-action-row"><button className={`wallet-btn ${isEth ? "primary" : ""}`} onClick={() => setCurrency("ETH")}>ETH</button><button className={`wallet-btn ${!isEth ? "primary" : ""}`} onClick={() => setCurrency("USDC")}>USDC</button></div>
+      <div className="wallet-action-row"><button className={`wallet-btn ${isEth ? "primary" : ""}`} onClick={() => selectCurrency("ETH")}>ETH</button><button className={`wallet-btn ${!isEth ? "primary" : ""}`} onClick={() => selectCurrency("USDC")}>USDC</button></div>
       <div className="wallet-balance-grid"><div className="wallet-balance-box"><span>Wallet</span><strong>{formatAmount(walletBalance, decimals)} {currency}</strong></div><div className="wallet-balance-box"><span>Available</span><strong>{formatAmount(availableBalance, decimals)} {currency}</strong></div><div className="wallet-balance-box"><span>Locked</span><strong>{formatAmount(lockedBalance, decimals)} {currency}</strong></div></div>
-      {!isConfigured ? <p className="wallet-info-note">{currency} vault is not deployed yet. Open Ice does not need crypto.</p> : <><input className="wallet-amount-input" placeholder="Amount" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} /><div className="wallet-action-row"><button className="wallet-btn" disabled={busy} onClick={refresh}>Refresh</button>{!isEth && <button className="wallet-btn" disabled={!canUseContracts || busy || parsedAmount <= 0n} onClick={approveToken}>Approve</button>}<button className="wallet-btn primary" disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={deposit}>Deposit</button><button className="wallet-btn" disabled={!canUseContracts || busy || parsedAmount <= 0n || availableBalance < parsedAmount} onClick={withdraw}>Withdraw</button></div>{!isConnected && <p className="wallet-info-note">Connect AGW from the profile screen before using deposits.</p>}{!isEth && parsedAmount > 0n && !hasEnoughAllowance && <p className="wallet-info-note">Approve this amount before depositing USDC.</p>}</>}
+      {!isConfigured ? <p className="wallet-info-note">{currency} vault is not deployed yet. Open Ice does not need crypto.</p> : <><label className="wallet-field-label">Deposit amount</label><input className="wallet-amount-input" placeholder="Deposit amount" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} /><div className="wallet-action-row"><button className="wallet-btn" disabled={busy} onClick={refresh}>Refresh</button>{!isEth && <button className="wallet-btn" disabled={!canUseContracts || busy || parsedDepositAmount <= 0n} onClick={approveToken}>Approve</button>}<button className="wallet-btn primary" disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={deposit}>Deposit</button></div><label className="wallet-field-label">Withdraw from available</label><div className="wallet-withdraw-row"><input className="wallet-amount-input" placeholder={`Up to ${formatInputAmount(availableBalance, decimals)} ${currency}`} inputMode="decimal" value={withdrawAmount} onChange={(event) => setWithdrawAmount(event.target.value)} /><button className="wallet-btn" disabled={busy || availableBalance <= 0n} onClick={fillMaxWithdraw}>Max</button><button className="wallet-btn" disabled={busy || !canWithdraw} onClick={withdraw}>Withdraw</button></div>{!isConnected && <p className="wallet-info-note">Connect AGW from the profile screen before using deposits.</p>}{!isEth && parsedDepositAmount > 0n && !hasEnoughAllowance && <p className="wallet-info-note">Approve this deposit amount before depositing USDC.</p>}{parsedWithdrawAmount > availableBalance && <p className="wallet-info-note">Withdraw amount is higher than your available balance.</p>}</>}
       {message && <p className={`wallet-message ${messageType === "error" ? "error" : ""}`}>{message}</p>}
     </div>
   );
@@ -116,4 +165,5 @@ export function DepositPanel({ variant = "panel" }) {
 
 function parseSafeAmount(value, decimals) { try { if (!value || Number(value) <= 0) return 0n; return parseUnits(value, decimals); } catch { return 0n; } }
 function formatAmount(value, decimals) { const formatted = formatUnits(value || 0n, decimals); const [whole, decimal = ""] = formatted.split("."); const cleanDecimal = decimal.slice(0, decimals === 18 ? 5 : 2).replace(/0+$/, ""); return cleanDecimal ? `${whole}.${cleanDecimal}` : whole; }
+function formatInputAmount(value, decimals) { const formatted = formatUnits(value || 0n, decimals); return formatted.includes(".") ? formatted.replace(/(\.\d*?[1-9])0+$/, "$1").replace(/\.0+$/, "").replace(/\.$/, "") : formatted; }
 function compactHash(hash) { if (!hash) return "transaction sent"; return `${hash.slice(0, 6)}...${hash.slice(-4)}`; }
