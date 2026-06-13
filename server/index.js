@@ -13,6 +13,19 @@ const {
   historyStoreStatus
 } = require("./historyStore.js");
 const {
+  initProfileStore,
+  upsertProfile,
+  addProfileStats,
+  getLeaderboard,
+  profileStoreStatus
+} = require("./profileStore.js");
+const {
+  initVaultActivityStore,
+  saveVaultActivity,
+  getVaultActivityForWallet,
+  vaultActivityStoreStatus
+} = require("./vaultActivityStore.js");
+const {
   createInitialGameState,
   currentTeam,
   rollDiceForState,
@@ -42,27 +55,9 @@ const ETH_VAULT_ADDRESS = process.env.ETH_VAULT_ADDRESS || process.env.VITE_ETH_
 const ABSTRACT_RPC_URL = process.env.ABSTRACT_RPC_URL || "https://api.testnet.abs.xyz";
 const HIGH_STAKES_ENABLED = process.env.HIGH_STAKES_ENABLED === "true" || Boolean(ETH_VAULT_ADDRESS);
 const ENTRY_TIERS = {
-  "1": {
-    code: "1",
-    label: "$1",
-    entryFeeUsd: 1,
-    entryWei: process.env.ETH_ENTRY_1_WEI || "1000000000000000",
-    pointMultiplier: 1
-  },
-  "4": {
-    code: "4",
-    label: "$4",
-    entryFeeUsd: 4,
-    entryWei: process.env.ETH_ENTRY_4_WEI || "4000000000000000",
-    pointMultiplier: 4
-  },
-  "16": {
-    code: "16",
-    label: "$16",
-    entryFeeUsd: 16,
-    entryWei: process.env.ETH_ENTRY_16_WEI || "16000000000000000",
-    pointMultiplier: 16
-  }
+  "1": { code: "1", label: "$1", entryFeeUsd: 1, entryWei: process.env.ETH_ENTRY_1_WEI || "1000000000000000", pointMultiplier: 1 },
+  "4": { code: "4", label: "$4", entryFeeUsd: 4, entryWei: process.env.ETH_ENTRY_4_WEI || "4000000000000000", pointMultiplier: 4 },
+  "16": { code: "16", label: "$16", entryFeeUsd: 16, entryWei: process.env.ETH_ENTRY_16_WEI || "16000000000000000", pointMultiplier: 16 }
 };
 const ABSTRACT_TESTNET_CHAIN = {
   id: 11124,
@@ -87,54 +82,17 @@ const profiles = new Map();
 const rooms = new Map();
 const sockets = new Map();
 
-function send(ws, packet) {
-  if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(packet));
-}
-
-function ok(ws, requestId, type, payload) {
-  send(ws, { type, requestId, payload });
-}
-
-function fail(ws, requestId, message) {
-  send(ws, { type: "error", requestId, payload: { message } });
-}
-
-function walletOf(value) {
-  return String(value || "").toLowerCase();
-}
-
-function normalizeRoomMode(value) {
-  return value === ROOM_MODES.HIGH_STAKES ? ROOM_MODES.HIGH_STAKES : ROOM_MODES.OPEN_ICE;
-}
-
-function normalizeEntryTier(value) {
-  const tier = ENTRY_TIERS[String(value || "1")];
-  return tier || ENTRY_TIERS["1"];
-}
-
-function normalizeTeam(value) {
-  const team = String(value || "").toLowerCase().trim();
-  return TEAM_CODES.includes(team) ? team : null;
-}
-
-function code() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let out = "";
-  for (let i = 0; i < 4; i += 1) out += chars[Math.floor(Math.random() * chars.length)];
-  return rooms.has(out) ? code() : out;
-}
-
-function matchId() {
-  return `match-${randomUUID()}`;
-}
-
-function contractMatchId() {
-  return `0x${randomBytes(32).toString("hex")}`;
-}
-
-function players(room) {
-  return Object.values(room.players);
-}
+function send(ws, packet) { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(packet)); }
+function ok(ws, requestId, type, payload) { send(ws, { type, requestId, payload }); }
+function fail(ws, requestId, message) { send(ws, { type: "error", requestId, payload: { message } }); }
+function walletOf(value) { return String(value || "").toLowerCase(); }
+function normalizeRoomMode(value) { return value === ROOM_MODES.HIGH_STAKES ? ROOM_MODES.HIGH_STAKES : ROOM_MODES.OPEN_ICE; }
+function normalizeEntryTier(value) { return ENTRY_TIERS[String(value || "1")] || ENTRY_TIERS["1"]; }
+function normalizeTeam(value) { const team = String(value || "").toLowerCase().trim(); return TEAM_CODES.includes(team) ? team : null; }
+function code() { const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let out = ""; for (let i = 0; i < 4; i += 1) out += chars[Math.floor(Math.random() * chars.length)]; return rooms.has(out) ? code() : out; }
+function matchId() { return `match-${randomUUID()}`; }
+function contractMatchId() { return `0x${randomBytes(32).toString("hex")}`; }
+function players(room) { return Object.values(room.players); }
 
 function view(room) {
   return {
@@ -178,61 +136,34 @@ function broadcast(room) {
   }
 }
 
-function teamWallet(room, teamName) {
-  return players(room).find((player) => player.team === teamName)?.wallet || null;
-}
-
-function isBotWallet(wallet) {
-  return String(wallet || "").startsWith("dev-");
-}
-
-function realPlayers(room) {
-  return players(room).filter((player) => !isBotWallet(player.wallet));
-}
-
-function teamsAreReady(room) {
-  const roomPlayers = players(room);
-  if (roomPlayers.length !== 4) return false;
-  if (roomPlayers.some((player) => !player.team)) return false;
-  return new Set(roomPlayers.map((player) => player.team)).size === 4;
-}
-
-function highStakesReady(room) {
-  const roomPlayers = players(room);
-  if (roomPlayers.length !== 4) return false;
-  if (realPlayers(room).length !== 4) return false;
-  if (roomPlayers.some((player) => !player.entryLocked)) return false;
-  return teamsAreReady(room);
-}
-
-function roomCanCountdown(room) {
-  if (room.roomMode === ROOM_MODES.OPEN_ICE) return teamsAreReady(room);
-  if (room.roomMode === ROOM_MODES.HIGH_STAKES) return highStakesReady(room);
-  return false;
-}
+function teamWallet(room, teamName) { return players(room).find((player) => player.team === teamName)?.wallet || null; }
+function isBotWallet(wallet) { return String(wallet || "").startsWith("dev-"); }
+function realPlayers(room) { return players(room).filter((player) => !isBotWallet(player.wallet)); }
+function teamsAreReady(room) { const roomPlayers = players(room); if (roomPlayers.length !== 4) return false; if (roomPlayers.some((player) => !player.team)) return false; return new Set(roomPlayers.map((player) => player.team)).size === 4; }
+function highStakesReady(room) { const roomPlayers = players(room); if (roomPlayers.length !== 4) return false; if (realPlayers(room).length !== 4) return false; if (roomPlayers.some((player) => !player.entryLocked)) return false; return teamsAreReady(room); }
+function roomCanCountdown(room) { if (room.roomMode === ROOM_MODES.OPEN_ICE) return teamsAreReady(room); if (room.roomMode === ROOM_MODES.HIGH_STAKES) return highStakesReady(room); return false; }
 
 function checkCountdown(room) {
   if (room.status !== "waiting") return;
   if (!roomCanCountdown(room)) return;
-  if (!room.countdownStartTime) {
-    room.countdownStartTime = Date.now();
-    broadcast(room);
-  }
+  if (!room.countdownStartTime) { room.countdownStartTime = Date.now(); broadcast(room); }
 }
 
 function checkStart(room) {
   if (room.status !== "waiting" || !room.countdownStartTime) return;
-  if (!roomCanCountdown(room)) {
-    room.countdownStartTime = null;
-    broadcast(room);
-    return;
-  }
+  if (!roomCanCountdown(room)) { room.countdownStartTime = null; broadcast(room); return; }
   if (Date.now() - room.countdownStartTime < COUNTDOWN_MS) return;
   room.status = "playing";
   room.countdownStartTime = null;
   room.gameState = createInitialGameState();
+  room.auditLog = [{ type: "game_started", at: Date.now(), players: players(room).map((p) => ({ wallet: p.wallet, team: p.team })) }];
   broadcast(room);
   scheduleBotIfNeeded(room);
+}
+
+function audit(room, event) {
+  room.auditLog = room.auditLog || [];
+  room.auditLog.push({ at: Date.now(), ...event });
 }
 
 function scheduleBotIfNeeded(room) {
@@ -242,11 +173,7 @@ function scheduleBotIfNeeded(room) {
   const activeWallet = teamWallet(room, activeTeam);
   if (!isBotWallet(activeWallet)) return;
   if (room.botTimer) return;
-
-  room.botTimer = setTimeout(() => {
-    room.botTimer = null;
-    playBotTurn(room);
-  }, BOT_DELAY_MS);
+  room.botTimer = setTimeout(() => { room.botTimer = null; playBotTurn(room); }, BOT_DELAY_MS);
 }
 
 function playBotTurn(room) {
@@ -254,14 +181,11 @@ function playBotTurn(room) {
   const activeTeam = currentTeam(room.gameState);
   const activeWallet = teamWallet(room, activeTeam);
   if (!isBotWallet(activeWallet)) return;
-
   let nextGameState = room.gameState;
-  if (!nextGameState.dice.rolled) {
-    nextGameState = rollDiceForState(nextGameState);
-  }
-
+  if (!nextGameState.dice.rolled) nextGameState = rollDiceForState(nextGameState);
   const move = pickBotMove(nextGameState);
   room.gameState = move ? applyMove(nextGameState, move) : endTurn(nextGameState);
+  audit(room, { type: "bot_turn", team: activeTeam, move: move || null });
   finalizeGameIfOver(room);
   broadcast(room);
   scheduleBotIfNeeded(room);
@@ -271,49 +195,22 @@ function requirePlayingRoom(ws, requestId, payload) {
   const wallet = walletOf(payload.wallet);
   const roomCode = String(payload.roomCode || "").trim().toUpperCase();
   const room = rooms.get(roomCode);
-
-  if (!profiles.has(wallet)) {
-    fail(ws, requestId, "Create profile first.");
-    return null;
-  }
-
-  if (!room) {
-    fail(ws, requestId, "Room not found.");
-    return null;
-  }
-
-  if (!room.players[wallet]) {
-    fail(ws, requestId, "Join the room first.");
-    return null;
-  }
-
-  if (room.status !== "playing" || !room.gameState) {
-    fail(ws, requestId, "Game has not started yet.");
-    return null;
-  }
-
+  if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.") || null;
+  if (!room) return fail(ws, requestId, "Room not found.") || null;
+  if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.") || null;
+  if (room.status !== "playing" || !room.gameState) return fail(ws, requestId, "Game has not started yet.") || null;
   const activeTeam = currentTeam(room.gameState);
   const activeWallet = teamWallet(room, activeTeam);
-  if (activeWallet !== wallet) {
-    fail(ws, requestId, "It is not your turn.");
-    return null;
-  }
-
+  if (activeWallet !== wallet) return fail(ws, requestId, "It is not your turn.") || null;
   sockets.set(wallet, ws);
   return room;
 }
 
-function profileFor(wallet) {
-  return profiles.get(wallet);
-}
-
+function profileFor(wallet) { return profiles.get(wallet); }
 function addPoints(wallet, points, won) {
   const profile = profileFor(wallet);
-  if (!profile) return;
-  profile.points += points;
-  profile.gamesPlayed += 1;
-  if (won) profile.wins += 1;
-  profiles.set(wallet, profile);
+  if (profile) { profile.points += points; profile.gamesPlayed += 1; if (won) profile.wins += 1; profiles.set(wallet, profile); }
+  addProfileStats(wallet, points, won).catch((err) => console.error(`[profile-db] stat update failed wallet=${wallet}: ${err.message}`));
 }
 
 function buildPayoutPlan(room, placements) {
@@ -327,25 +224,15 @@ function buildPayoutPlan(room, placements) {
   const payouts = [first + remainder, second, third, fourth];
   const basePoints = [10, 6, 3, 0];
   const multiplier = normalizeEntryTier(room.entryTier).pointMultiplier;
-
-  return placements.map((team, index) => {
-    const wallet = teamWallet(room, team);
-    return {
-      position: index + 1,
-      team,
-      wallet,
-      payoutWei: payouts[index].toString(),
-      points: basePoints[index] * multiplier
-    };
-  });
+  return placements.map((team, index) => ({ position: index + 1, team, wallet: teamWallet(room, team), payoutWei: payouts[index].toString(), points: basePoints[index] * multiplier }));
 }
 
 function recordMatchHistory(room) {
   if (room.historyEntryIds?.length) return;
   const payoutByWallet = new Map((room.payoutPlan || []).map((item) => [walletOf(item.wallet), item]));
   const positionByWallet = new Map((room.placements || []).map((item) => [walletOf(item.wallet), item.position]));
+  const playerSummary = players(room).filter((p) => !isBotWallet(p.wallet)).map((p) => ({ wallet: p.wallet, name: profileFor(p.wallet)?.name || "Player", team: p.team, position: positionByWallet.get(walletOf(p.wallet)) || null, entryTxHash: p.entryTxHash || null }));
   room.historyEntryIds = [];
-
   players(room).forEach((player) => {
     if (isBotWallet(player.wallet)) return;
     const wallet = walletOf(player.wallet);
@@ -371,6 +258,9 @@ function recordMatchHistory(room) {
       settlementStatus: room.settlementStatus || null,
       settlementTxHash: room.settlementTxHash || null,
       settlementError: room.settlementError || null,
+      players: playerSummary,
+      finalBoardState: room.gameState || null,
+      auditLog: room.auditLog || [],
       finishedAt: room.finalizedAt || Date.now()
     };
     room.historyEntryIds.push(entry.id);
@@ -379,28 +269,16 @@ function recordMatchHistory(room) {
 }
 
 function updateHistorySettlement(room) {
-  const patch = {
-    settlementStatus: room.settlementStatus || null,
-    settlementTxHash: room.settlementTxHash || null,
-    settlementError: room.settlementError || null
-  };
+  const patch = { settlementStatus: room.settlementStatus || null, settlementTxHash: room.settlementTxHash || null, settlementError: room.settlementError || null };
   updateHistoryEntries(room.historyEntryIds || [], patch).catch((err) => console.error(`[history-db] update failed room=${room.roomCode}: ${err.message}`));
 }
 
 async function settleHighStakesIfPossible(room) {
   if (room.roomMode !== ROOM_MODES.HIGH_STAKES || !ETH_VAULT_ADDRESS) return;
   const signerSecret = process.env.ETH_SETTLEMENT_SIGNER;
-  if (!signerSecret) {
-    room.settlementStatus = "needs_settlement_signer";
-    room.settlementError = "ETH_SETTLEMENT_SIGNER is not configured on Render.";
-    updateHistorySettlement(room);
-    console.error(`[settlement] missing signer room=${room.roomCode}`);
-    return;
-  }
-
+  if (!signerSecret) { room.settlementStatus = "needs_settlement_signer"; room.settlementError = "ETH_SETTLEMENT_SIGNER is not configured on Render."; updateHistorySettlement(room); console.error(`[settlement] missing signer room=${room.roomCode}`); return; }
   const orderedWallets = room.payoutPlan.map((item) => item.wallet);
   const payouts = room.payoutPlan.map((item) => BigInt(item.payoutWei));
-
   try {
     const provider = new Provider(ABSTRACT_RPC_URL);
     const wallet = new Wallet(normalizeSecret(signerSecret), provider);
@@ -409,31 +287,19 @@ async function settleHighStakesIfPossible(room) {
     room.settlementError = null;
     updateHistorySettlement(room);
     console.log(`[settlement] submitting room=${room.roomCode} match=${room.contractMatchId} signer=${wallet.address} vault=${ETH_VAULT_ADDRESS}`);
-    console.log(`[settlement] players=${orderedWallets.join(",")} payouts=${payouts.map((value) => value.toString()).join(",")}`);
-
     const tx = await contract.settleMatch(room.contractMatchId, orderedWallets, payouts);
     room.settlementTxHash = tx.hash;
     room.settlementStatus = "submitted";
     updateHistorySettlement(room);
-    console.log(`[settlement] submitted room=${room.roomCode} tx=${tx.hash}`);
-
-    tx.wait().then((receipt) => {
-      if (receipt?.status === 1 || receipt?.status === "success") {
-        room.settlementStatus = "settled";
-        console.log(`[settlement] settled room=${room.roomCode} tx=${tx.hash}`);
-      } else {
-        room.settlementStatus = "submitted";
-        console.log(`[settlement] tx mined without success flag room=${room.roomCode} tx=${tx.hash}`);
-      }
-      updateHistorySettlement(room);
-      broadcast(room);
-    }).catch((err) => {
-      room.settlementStatus = "failed";
-      room.settlementError = settlementErrorMessage(err);
-      updateHistorySettlement(room);
-      console.error(`[settlement] wait failed room=${room.roomCode}: ${room.settlementError}`);
-      broadcast(room);
+    room.payoutPlan.forEach((item) => {
+      saveVaultActivity({ type: "payout_settlement", wallet: item.wallet, currency: "ETH", amountWei: item.payoutWei, roomCode: room.roomCode, matchId: room.matchId, contractMatchId: room.contractMatchId, txHash: tx.hash, status: "submitted", note: `Placement #${item.position}` }).catch((err) => console.error(`[vault-activity-db] payout save failed: ${err.message}`));
     });
+    console.log(`[settlement] submitted room=${room.roomCode} tx=${tx.hash}`);
+    tx.wait().then((receipt) => {
+      room.settlementStatus = receipt?.status === 1 || receipt?.status === "success" ? "settled" : "submitted";
+      updateHistorySettlement(room);
+      broadcast(room);
+    }).catch((err) => { room.settlementStatus = "failed"; room.settlementError = settlementErrorMessage(err); updateHistorySettlement(room); console.error(`[settlement] wait failed room=${room.roomCode}: ${room.settlementError}`); broadcast(room); });
   } catch (err) {
     room.settlementStatus = "failed";
     room.settlementError = settlementErrorMessage(err);
@@ -442,40 +308,17 @@ async function settleHighStakesIfPossible(room) {
   }
 }
 
-function normalizeSecret(value) {
-  const secret = String(value || "").trim();
-  return secret.startsWith("0x") ? secret : `0x${secret}`;
-}
-
-function settlementErrorMessage(err) {
-  return err?.shortMessage || err?.reason || err?.message || "Settlement failed.";
-}
-
-function settlementSignerAddress() {
-  if (!process.env.ETH_SETTLEMENT_SIGNER) return null;
-  try {
-    const provider = new Provider(ABSTRACT_RPC_URL);
-    return new Wallet(normalizeSecret(process.env.ETH_SETTLEMENT_SIGNER), provider).address;
-  } catch {
-    return "invalid";
-  }
-}
+function normalizeSecret(value) { const secret = String(value || "").trim(); return secret.startsWith("0x") ? secret : `0x${secret}`; }
+function settlementErrorMessage(err) { return err?.shortMessage || err?.reason || err?.message || "Settlement failed."; }
+function settlementSignerAddress() { if (!process.env.ETH_SETTLEMENT_SIGNER) return null; try { const provider = new Provider(ABSTRACT_RPC_URL); return new Wallet(normalizeSecret(process.env.ETH_SETTLEMENT_SIGNER), provider).address; } catch { return "invalid"; } }
 
 function finalizeGameIfOver(room) {
   if (!room.gameState?.gameOver || room.finalizedAt) return;
   room.finalizedAt = Date.now();
   room.status = "finished";
   const placements = getPlacements(room.gameState);
-  room.placements = placements.map((team, index) => {
-    const wallet = teamWallet(room, team);
-    return {
-      position: index + 1,
-      team,
-      wallet,
-      name: profileFor(wallet)?.name || "Player"
-    };
-  });
-
+  room.placements = placements.map((team, index) => ({ position: index + 1, team, wallet: teamWallet(room, team), name: profileFor(teamWallet(room, team))?.name || "Player" }));
+  audit(room, { type: "game_finished", placements: room.placements });
   if (room.roomMode === ROOM_MODES.HIGH_STAKES) {
     room.payoutPlan = buildPayoutPlan(room, placements);
     room.payoutPlan.forEach((item, index) => addPoints(item.wallet, item.points, index === 0));
@@ -488,99 +331,39 @@ function finalizeGameIfOver(room) {
   }
 }
 
-async function readLockedEntry(room, wallet) {
-  if (!ethPublicClient || !ETH_VAULT_ADDRESS) return 0n;
-  return ethPublicClient.readContract({
-    address: ETH_VAULT_ADDRESS,
-    abi: ETH_VAULT_READ_ABI,
-    functionName: "lockedEntry",
-    args: [room.contractMatchId, wallet]
-  });
-}
+async function readLockedEntry(room, wallet) { if (!ethPublicClient || !ETH_VAULT_ADDRESS) return 0n; return ethPublicClient.readContract({ address: ETH_VAULT_ADDRESS, abi: ETH_VAULT_READ_ABI, functionName: "lockedEntry", args: [room.contractMatchId, wallet] }); }
 
-function login(ws, requestId, payload) {
+async function login(ws, requestId, payload) {
   const wallet = walletOf(payload.address);
   const name = String(payload.name || "").trim().slice(0, 20);
   if (!wallet) return fail(ws, requestId, "Missing wallet address.");
   if (name.length < 3) return fail(ws, requestId, "Name must be at least 3 characters.");
-  const old = profiles.get(wallet);
-  const profile = {
-    wallet,
-    name,
-    points: old?.points || 0,
-    gamesPlayed: old?.gamesPlayed || 0,
-    wins: old?.wins || 0,
-    createdAt: old?.createdAt || Date.now()
-  };
-  profiles.set(wallet, profile);
-  sockets.set(wallet, ws);
-  return ok(ws, requestId, "profile_login_result", { profile });
-}
-
-function list(ws, requestId, payload = {}) {
-  const roomMode = normalizeRoomMode(payload.roomMode);
-  const publicRooms = [...rooms.values()]
-    .filter((room) => room.roomMode === roomMode)
-    .filter((room) => room.visibility === "public")
-    .filter((room) => room.status === "waiting")
-    .filter((room) => players(room).length < 4)
-    .map(view);
-  return ok(ws, requestId, "room_list_result", { rooms: publicRooms });
-}
-
-async function history(ws, requestId, payload = {}) {
-  const wallet = walletOf(payload.wallet);
-  if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.");
-  sockets.set(wallet, ws);
   try {
-    const entries = await getHistoryForWallet(wallet);
-    return ok(ws, requestId, "game_history_result", { history: entries });
+    const profile = await upsertProfile({ wallet, name });
+    profiles.set(wallet, profile);
+    sockets.set(wallet, ws);
+    return ok(ws, requestId, "profile_login_result", { profile });
   } catch (err) {
-    console.error(`[history-db] read failed wallet=${wallet}: ${err.message}`);
-    return fail(ws, requestId, "Could not load match history.");
+    return fail(ws, requestId, err.message || "Could not save profile.");
   }
 }
+
+function list(ws, requestId, payload = {}) { const roomMode = normalizeRoomMode(payload.roomMode); const publicRooms = [...rooms.values()].filter((room) => room.roomMode === roomMode).filter((room) => room.visibility === "public").filter((room) => room.status === "waiting").filter((room) => players(room).length < 4).map(view); return ok(ws, requestId, "room_list_result", { rooms: publicRooms }); }
+async function history(ws, requestId, payload = {}) { const wallet = walletOf(payload.wallet); if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first."); sockets.set(wallet, ws); try { const entries = await getHistoryForWallet(wallet); return ok(ws, requestId, "game_history_result", { history: entries }); } catch (err) { console.error(`[history-db] read failed wallet=${wallet}: ${err.message}`); return fail(ws, requestId, "Could not load match history."); } }
+async function leaderboard(ws, requestId) { try { const leaders = await getLeaderboard(); return ok(ws, requestId, "leaderboard_result", { leaderboard: leaders }); } catch (err) { return fail(ws, requestId, err.message || "Could not load leaderboard."); } }
+function myRooms(ws, requestId, payload = {}) { const wallet = walletOf(payload.wallet); if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first."); sockets.set(wallet, ws); const roomList = [...rooms.values()].filter((room) => room.players[wallet]).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).map(view); return ok(ws, requestId, "my_rooms_result", { rooms: roomList }); }
+async function listVaultActivity(ws, requestId, payload = {}) { const wallet = walletOf(payload.wallet); if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first."); try { const activity = await getVaultActivityForWallet(wallet); return ok(ws, requestId, "vault_activity_result", { activity }); } catch (err) { return fail(ws, requestId, err.message || "Could not load vault activity."); } }
+async function recordVaultActivity(ws, requestId, payload = {}) { const wallet = walletOf(payload.wallet); if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first."); try { const activity = await saveVaultActivity({ ...payload, wallet }); return ok(ws, requestId, "vault_activity_record_result", { activity }); } catch (err) { return fail(ws, requestId, err.message || "Could not record vault activity."); } }
 
 function createRoom(ws, requestId, payload) {
   const wallet = walletOf(payload.wallet);
   if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.");
   sockets.set(wallet, ws);
-
   const roomMode = normalizeRoomMode(payload.roomMode);
   const entryTier = normalizeEntryTier(payload.entryTier);
-
-  if (roomMode === ROOM_MODES.HIGH_STAKES && !HIGH_STAKES_ENABLED) {
-    return fail(ws, requestId, "High Stakes rooms are not enabled yet.");
-  }
-
+  if (roomMode === ROOM_MODES.HIGH_STAKES && !HIGH_STAKES_ENABLED) return fail(ws, requestId, "High Stakes rooms are not enabled yet.");
   const roomCode = code();
-  const room = {
-    id: randomUUID(),
-    matchId: matchId(),
-    contractMatchId: contractMatchId(),
-    roomCode,
-    roomMode,
-    currency: roomMode === ROOM_MODES.HIGH_STAKES ? "ETH" : null,
-    entryTier: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.code : null,
-    entryFeeUsd: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.entryFeeUsd : 0,
-    entryWei: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.entryWei : "0",
-    tokenUnits: "0",
-    visibility: payload.visibility === "private" ? "private" : "public",
-    status: "waiting",
-    gameState: null,
-    players: {
-      [wallet]: {
-        wallet,
-        team: null,
-        joinedAt: Date.now(),
-        entryLocked: roomMode === ROOM_MODES.OPEN_ICE,
-        entryTxHash: null
-      }
-    },
-    countdownStartTime: null,
-    countdownDurationMs: COUNTDOWN_MS,
-    createdAt: Date.now()
-  };
+  const room = { id: randomUUID(), matchId: matchId(), contractMatchId: contractMatchId(), roomCode, roomMode, currency: roomMode === ROOM_MODES.HIGH_STAKES ? "ETH" : null, entryTier: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.code : null, entryFeeUsd: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.entryFeeUsd : 0, entryWei: roomMode === ROOM_MODES.HIGH_STAKES ? entryTier.entryWei : "0", tokenUnits: "0", visibility: payload.visibility === "private" ? "private" : "public", status: "waiting", gameState: null, players: { [wallet]: { wallet, team: null, joinedAt: Date.now(), entryLocked: roomMode === ROOM_MODES.OPEN_ICE, entryTxHash: null } }, countdownStartTime: null, countdownDurationMs: COUNTDOWN_MS, createdAt: Date.now(), auditLog: [] };
   rooms.set(roomCode, room);
   ok(ws, requestId, "room_create_result", { room: view(room) });
   return broadcast(room);
@@ -593,20 +376,9 @@ function joinRoom(ws, requestId, payload) {
   const room = rooms.get(roomCode);
   if (!room) return fail(ws, requestId, "Room not found.");
   if (room.status !== "waiting") return fail(ws, requestId, "Room already started.");
-  if (room.roomMode === ROOM_MODES.HIGH_STAKES && !HIGH_STAKES_ENABLED) {
-    return fail(ws, requestId, "High Stakes rooms are not enabled yet.");
-  }
+  if (room.roomMode === ROOM_MODES.HIGH_STAKES && !HIGH_STAKES_ENABLED) return fail(ws, requestId, "High Stakes rooms are not enabled yet.");
   sockets.set(wallet, ws);
-  if (!room.players[wallet]) {
-    if (players(room).length >= 4) return fail(ws, requestId, "Room is full.");
-    room.players[wallet] = {
-      wallet,
-      team: null,
-      joinedAt: Date.now(),
-      entryLocked: room.roomMode === ROOM_MODES.OPEN_ICE,
-      entryTxHash: null
-    };
-  }
+  if (!room.players[wallet]) { if (players(room).length >= 4) return fail(ws, requestId, "Room is full."); room.players[wallet] = { wallet, team: null, joinedAt: Date.now(), entryLocked: room.roomMode === ROOM_MODES.OPEN_ICE, entryTxHash: null }; audit(room, { type: "player_joined", wallet }); }
   ok(ws, requestId, "room_join_result", { room: view(room) });
   return broadcast(room);
 }
@@ -620,21 +392,18 @@ async function confirmEntryLock(ws, requestId, payload) {
   if (room.roomMode !== ROOM_MODES.HIGH_STAKES) return fail(ws, requestId, "Entry locking is only for High Stakes.");
   if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
   if (!ETH_VAULT_ADDRESS) return fail(ws, requestId, "ETH vault is not configured on the server.");
-
   try {
     const locked = await readLockedEntry(room, wallet);
-    if (locked < BigInt(room.entryWei)) {
-      return fail(ws, requestId, "Entry lock not confirmed on-chain yet.");
-    }
+    if (locked < BigInt(room.entryWei)) return fail(ws, requestId, "Entry lock not confirmed on-chain yet.");
     room.players[wallet].entryLocked = true;
     room.players[wallet].entryTxHash = payload.txHash || room.players[wallet].entryTxHash;
+    audit(room, { type: "entry_locked", wallet, txHash: room.players[wallet].entryTxHash, amountWei: room.entryWei });
+    saveVaultActivity({ type: "entry_lock", wallet, currency: "ETH", amountWei: room.entryWei, roomCode: room.roomCode, matchId: room.matchId, contractMatchId: room.contractMatchId, txHash: room.players[wallet].entryTxHash, status: "confirmed" }).catch((err) => console.error(`[vault-activity-db] entry save failed: ${err.message}`));
     room.countdownStartTime = null;
     checkCountdown(room);
     ok(ws, requestId, "room_confirm_entry_result", { room: view(room) });
     return broadcast(room);
-  } catch (err) {
-    return fail(ws, requestId, err.shortMessage || err.message || "Could not verify entry lock.");
-  }
+  } catch (err) { return fail(ws, requestId, err.shortMessage || err.message || "Could not verify entry lock."); }
 }
 
 function selectRoomTeam(ws, requestId, payload) {
@@ -648,117 +417,28 @@ function selectRoomTeam(ws, requestId, payload) {
   if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
   if (room.roomMode === ROOM_MODES.HIGH_STAKES && !room.players[wallet].entryLocked) return fail(ws, requestId, "Lock your entry first.");
   if (!selectedTeam) return fail(ws, requestId, "Choose a valid team.");
-
   const taken = players(room).some((player) => player.wallet !== wallet && player.team === selectedTeam);
   if (taken) return fail(ws, requestId, "That team is already taken.");
-
   sockets.set(wallet, ws);
   room.players[wallet].team = selectedTeam;
+  audit(room, { type: "team_selected", wallet, team: selectedTeam });
   room.countdownStartTime = null;
   checkCountdown(room);
   ok(ws, requestId, "room_select_team_result", { room: view(room) });
   return broadcast(room);
 }
 
-function devFillRoom(ws, requestId, payload) {
-  const wallet = walletOf(payload.wallet);
-  const roomCode = String(payload.roomCode || "").trim().toUpperCase();
-  if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.");
-  const room = rooms.get(roomCode);
-  if (!room) return fail(ws, requestId, "Room not found.");
-  if (room.status !== "waiting") return fail(ws, requestId, "Room already started.");
-  if (room.roomMode !== ROOM_MODES.OPEN_ICE) return fail(ws, requestId, "Bots are only available for Open Ice.");
-  if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
-  if (!room.players[wallet].team) return fail(ws, requestId, "Choose your team first.");
+function devFillRoom(ws, requestId, payload) { const wallet = walletOf(payload.wallet); const roomCode = String(payload.roomCode || "").trim().toUpperCase(); if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first."); const room = rooms.get(roomCode); if (!room) return fail(ws, requestId, "Room not found."); if (room.status !== "waiting") return fail(ws, requestId, "Room already started."); if (room.roomMode !== ROOM_MODES.OPEN_ICE) return fail(ws, requestId, "Bots are only available for Open Ice."); if (!room.players[wallet]) return fail(ws, requestId, "Join the room first."); if (!room.players[wallet].team) return fail(ws, requestId, "Choose your team first."); for (const teamCode of TEAM_CODES) { if (players(room).length >= 4) break; if (players(room).some((player) => player.team === teamCode)) continue; const fakeWallet = `dev-${room.roomCode}-${teamCode}`; profiles.set(fakeWallet, { wallet: fakeWallet, name: TEAM_NAME_BY_CODE[teamCode], points: 0, gamesPlayed: 0, wins: 0, createdAt: Date.now() }); room.players[fakeWallet] = { wallet: fakeWallet, team: teamCode, joinedAt: Date.now(), entryLocked: true }; } checkCountdown(room); ok(ws, requestId, "dev_fill_room_result", { room: view(room) }); return broadcast(room); }
 
-  for (const teamCode of TEAM_CODES) {
-    if (players(room).length >= 4) break;
-    if (players(room).some((player) => player.team === teamCode)) continue;
-    const fakeWallet = `dev-${room.roomCode}-${teamCode}`;
-    profiles.set(fakeWallet, {
-      wallet: fakeWallet,
-      name: TEAM_NAME_BY_CODE[teamCode],
-      points: 0,
-      gamesPlayed: 0,
-      wins: 0,
-      createdAt: Date.now()
-    });
-    room.players[fakeWallet] = {
-      wallet: fakeWallet,
-      team: teamCode,
-      joinedAt: Date.now(),
-      entryLocked: true
-    };
-  }
-
-  checkCountdown(room);
-  ok(ws, requestId, "dev_fill_room_result", { room: view(room) });
-  return broadcast(room);
-}
-
-function gameRollDice(ws, requestId, payload) {
-  const room = requirePlayingRoom(ws, requestId, payload);
-  if (!room) return;
-  room.gameState = rollDiceForState(room.gameState);
-  const activeTeam = currentTeam(room.gameState);
-  if (room.gameState.dice.rolled && !hasAnyLegalMoveForTeam(room.gameState, activeTeam)) {
-    room.gameState = endTurn(room.gameState);
-  }
-  finalizeGameIfOver(room);
-  ok(ws, requestId, "game_action_result", { room: view(room) });
-  broadcast(room);
-  scheduleBotIfNeeded(room);
-}
-
-function gameSelectSquare(ws, requestId, payload) {
-  const room = requirePlayingRoom(ws, requestId, payload);
-  if (!room) return;
-  const row = Number(payload.row);
-  const col = Number(payload.col);
-  if (!Number.isInteger(row) || !Number.isInteger(col) || row < 0 || row > 7 || col < 0 || col > 7) {
-    return fail(ws, requestId, "Invalid square.");
-  }
-  room.gameState = selectSquare(room.gameState, row, col);
-  finalizeGameIfOver(room);
-  ok(ws, requestId, "game_action_result", { room: view(room) });
-  broadcast(room);
-  scheduleBotIfNeeded(room);
-}
-
-function gameEndTurn(ws, requestId, payload) {
-  const room = requirePlayingRoom(ws, requestId, payload);
-  if (!room) return;
-  room.gameState = endTurn(room.gameState);
-  finalizeGameIfOver(room);
-  ok(ws, requestId, "game_action_result", { room: view(room) });
-  broadcast(room);
-  scheduleBotIfNeeded(room);
-}
-
-function gameState(ws, requestId, payload) {
-  const wallet = walletOf(payload.wallet);
-  const roomCode = String(payload.roomCode || "").trim().toUpperCase();
-  const room = rooms.get(roomCode);
-  if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.");
-  if (!room) return fail(ws, requestId, "Room not found.");
-  if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");
-  sockets.set(wallet, ws);
-  return ok(ws, requestId, "game_state_result", { room: view(room) });
-}
+function gameRollDice(ws, requestId, payload) { const room = requirePlayingRoom(ws, requestId, payload); if (!room) return; room.gameState = rollDiceForState(room.gameState); audit(room, { type: "dice_rolled", wallet: walletOf(payload.wallet), dice: room.gameState.dice }); const activeTeam = currentTeam(room.gameState); if (room.gameState.dice.rolled && !hasAnyLegalMoveForTeam(room.gameState, activeTeam)) room.gameState = endTurn(room.gameState); finalizeGameIfOver(room); ok(ws, requestId, "game_action_result", { room: view(room) }); broadcast(room); scheduleBotIfNeeded(room); }
+function gameSelectSquare(ws, requestId, payload) { const room = requirePlayingRoom(ws, requestId, payload); if (!room) return; const row = Number(payload.row); const col = Number(payload.col); if (!Number.isInteger(row) || !Number.isInteger(col) || row < 0 || row > 7 || col < 0 || col > 7) return fail(ws, requestId, "Invalid square."); room.gameState = selectSquare(room.gameState, row, col); audit(room, { type: "square_selected", wallet: walletOf(payload.wallet), row, col }); finalizeGameIfOver(room); ok(ws, requestId, "game_action_result", { room: view(room) }); broadcast(room); scheduleBotIfNeeded(room); }
+function gameEndTurn(ws, requestId, payload) { const room = requirePlayingRoom(ws, requestId, payload); if (!room) return; audit(room, { type: "turn_ended", wallet: walletOf(payload.wallet), team: currentTeam(room.gameState) }); room.gameState = endTurn(room.gameState); finalizeGameIfOver(room); ok(ws, requestId, "game_action_result", { room: view(room) }); broadcast(room); scheduleBotIfNeeded(room); }
+function gameState(ws, requestId, payload) { const wallet = walletOf(payload.wallet); const roomCode = String(payload.roomCode || "").trim().toUpperCase(); const room = rooms.get(roomCode); if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first."); if (!room) return fail(ws, requestId, "Room not found."); if (!room.players[wallet]) return fail(ws, requestId, "Join the room first."); sockets.set(wallet, ws); return ok(ws, requestId, "game_state_result", { room: view(room) }); }
 
 const server = http.createServer((req, res) => {
   if (req.url === "/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({
-      ok: true,
-      profiles: profiles.size,
-      rooms: rooms.size,
-      highStakesEnabled: HIGH_STAKES_ENABLED,
-      ethVaultConfigured: Boolean(ETH_VAULT_ADDRESS),
-      settlementSignerConfigured: Boolean(process.env.ETH_SETTLEMENT_SIGNER),
-      settlementSignerAddress: settlementSignerAddress(),
-      historyStore: historyStoreStatus()
-    }));
+    res.end(JSON.stringify({ ok: true, profiles: profiles.size, rooms: rooms.size, highStakesEnabled: HIGH_STAKES_ENABLED, ethVaultConfigured: Boolean(ETH_VAULT_ADDRESS), settlementSignerConfigured: Boolean(process.env.ETH_SETTLEMENT_SIGNER), settlementSignerAddress: settlementSignerAddress(), historyStore: historyStoreStatus(), profileStore: profileStoreStatus(), vaultActivityStore: vaultActivityStoreStatus() }));
     return;
   }
   res.writeHead(200, { "Content-Type": "text/plain" });
@@ -773,6 +453,10 @@ new WebSocket.Server({ server }).on("connection", (ws) => {
     if (type === "profile_login") return login(ws, requestId, payload);
     if (type === "room_list") return list(ws, requestId, payload);
     if (type === "game_history") return history(ws, requestId, payload);
+    if (type === "leaderboard") return leaderboard(ws, requestId, payload);
+    if (type === "my_rooms") return myRooms(ws, requestId, payload);
+    if (type === "vault_activity") return listVaultActivity(ws, requestId, payload);
+    if (type === "vault_activity_record") return recordVaultActivity(ws, requestId, payload);
     if (type === "room_create") return createRoom(ws, requestId, payload);
     if (type === "room_join") return joinRoom(ws, requestId, payload);
     if (type === "room_confirm_entry") return confirmEntryLock(ws, requestId, payload);
@@ -786,12 +470,6 @@ new WebSocket.Server({ server }).on("connection", (ws) => {
   });
 });
 
-setInterval(() => {
-  for (const room of rooms.values()) checkStart(room);
-}, 250);
-
-initHistoryStore().then((databaseReady) => {
-  console.log(`[history-db] ${databaseReady ? "Postgres ready" : "using in-memory fallback"}`);
-});
-
+setInterval(() => { for (const room of rooms.values()) checkStart(room); }, 250);
+Promise.all([initHistoryStore(), initProfileStore(), initVaultActivityStore()]).then(([historyReady, profileReady, activityReady]) => { console.log(`[db] history=${historyReady ? "ready" : "memory"} profiles=${profileReady ? "ready" : "memory"} activity=${activityReady ? "ready" : "memory"}`); });
 server.listen(PORT, () => console.log(`Artic Web3 lobby server running on port ${PORT}`));
