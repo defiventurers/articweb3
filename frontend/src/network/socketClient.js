@@ -61,11 +61,7 @@ export async function request(type, payload = {}) {
 }
 
 export async function createProfile({ address, name }) {
-  const loginPayload = await request("profile_login", {
-    address,
-    name
-  });
-
+  const loginPayload = await request("profile_login", { address, name });
   return loginPayload.profile;
 }
 
@@ -75,96 +71,71 @@ export async function listRooms({ roomMode = "open_ice" } = {}) {
 }
 
 export async function getGameHistory({ profile }) {
-  const payload = await request("game_history", {
-    wallet: profile.wallet
-  });
-
+  const payload = await request("game_history", { wallet: profile.wallet });
   return payload.history || [];
 }
 
-export async function createRoom({ visibility, roomMode = "open_ice", entryTier = "1", profile }) {
-  const payload = await request("room_create", {
-    visibility,
-    roomMode,
-    entryTier,
-    wallet: profile.wallet
-  });
+export async function getLeaderboard() {
+  const payload = await request("leaderboard", {});
+  return payload.leaderboard || [];
+}
 
+export async function getMyRooms({ profile }) {
+  const payload = await request("my_rooms", { wallet: profile.wallet });
+  return payload.rooms || [];
+}
+
+export async function getVaultActivity({ profile }) {
+  const payload = await request("vault_activity", { wallet: profile.wallet });
+  return payload.activity || [];
+}
+
+export async function recordVaultActivity({ profile, activity }) {
+  const payload = await request("vault_activity_record", { wallet: profile.wallet, ...activity });
+  return payload.activity;
+}
+
+export async function createRoom({ visibility, roomMode = "open_ice", entryTier = "1", profile }) {
+  const payload = await request("room_create", { visibility, roomMode, entryTier, wallet: profile.wallet });
   return payload.room;
 }
 
 export async function joinRoom({ roomCode, profile }) {
-  const payload = await request("room_join", {
-    roomCode,
-    wallet: profile.wallet
-  });
-
+  const payload = await request("room_join", { roomCode, wallet: profile.wallet });
   return payload.room;
 }
 
 export async function confirmEntryLock({ roomCode, profile, txHash }) {
-  const payload = await request("room_confirm_entry", {
-    roomCode,
-    wallet: profile.wallet,
-    txHash
-  });
-
+  const payload = await request("room_confirm_entry", { roomCode, wallet: profile.wallet, txHash });
   return payload.room;
 }
 
 export async function selectRoomTeam({ roomCode, profile, team }) {
-  const payload = await request("room_select_team", {
-    roomCode,
-    wallet: profile.wallet,
-    team
-  });
-
+  const payload = await request("room_select_team", { roomCode, wallet: profile.wallet, team });
   return payload.room;
 }
 
 export async function devFillRoom({ roomCode, profile }) {
-  const payload = await request("dev_fill_room", {
-    roomCode,
-    wallet: profile.wallet
-  });
-
+  const payload = await request("dev_fill_room", { roomCode, wallet: profile.wallet });
   return payload.room;
 }
 
 export async function getGameState({ roomCode, profile }) {
-  const payload = await request("game_state", {
-    roomCode,
-    wallet: profile.wallet
-  });
-
+  const payload = await request("game_state", { roomCode, wallet: profile.wallet });
   return payload.room;
 }
 
 export async function rollGameDice({ roomCode, profile }) {
-  const payload = await request("game_roll_dice", {
-    roomCode,
-    wallet: profile.wallet
-  });
-
+  const payload = await request("game_roll_dice", { roomCode, wallet: profile.wallet });
   return payload.room;
 }
 
 export async function selectGameSquare({ roomCode, profile, row, col }) {
-  const payload = await request("game_select_square", {
-    roomCode,
-    wallet: profile.wallet,
-    row,
-    col
-  });
-
+  const payload = await request("game_select_square", { roomCode, wallet: profile.wallet, row, col });
   return payload.room;
 }
 
 export async function endGameTurn({ roomCode, profile }) {
-  const payload = await request("game_end_turn", {
-    roomCode,
-    wallet: profile.wallet
-  });
-
+  const payload = await request("game_end_turn", { roomCode, wallet: profile.wallet });
   return payload.room;
 }
