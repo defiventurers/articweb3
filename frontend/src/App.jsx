@@ -12,6 +12,7 @@ import { WaitingRoomScreen } from "./screens/WaitingRoomScreen.jsx";
 import { GameScreen } from "./screens/GameScreen.jsx";
 import { ResultsScreen } from "./screens/ResultsScreen.jsx";
 import { EthVaultDeployerScreen } from "./screens/EthVaultDeployerScreen.jsx";
+import { SettlementAdminScreen } from "./screens/SettlementAdminScreen.jsx";
 
 export default function App() {
   const [screen, setScreen] = useState("cover");
@@ -54,6 +55,7 @@ export default function App() {
         onOpenIce={() => setScreen("open-ice-menu")}
         onHighStakes={() => setScreen("high-stakes")}
         onVaultDeployer={() => setScreen("vault-deployer")}
+        onSettlementAdmin={() => setScreen("settlement-admin")}
         onBack={() => setScreen("profile")}
       />
     );
@@ -61,6 +63,10 @@ export default function App() {
 
   if (screen === "vault-deployer") {
     return <EthVaultDeployerScreen onBack={() => setScreen("hub")} />;
+  }
+
+  if (screen === "settlement-admin") {
+    return <SettlementAdminScreen onBack={() => setScreen("hub")} />;
   }
 
   if (screen === "high-stakes") {
