@@ -74,6 +74,14 @@ export async function listRooms({ roomMode = "open_ice" } = {}) {
   return payload.rooms || [];
 }
 
+export async function getGameHistory({ profile }) {
+  const payload = await request("game_history", {
+    wallet: profile.wallet
+  });
+
+  return payload.history || [];
+}
+
 export async function createRoom({ visibility, roomMode = "open_ice", entryTier = "1", profile }) {
   const payload = await request("room_create", {
     visibility,
