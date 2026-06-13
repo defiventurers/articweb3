@@ -1,0 +1,231 @@
+const { Pool } = require("pg");
+
+const MAX_HISTORY_PER_WALLET = 50;
+const DATABASE_URL = process.env.DATABASE_URL || "";
+const DATABASE_SSL = process.env.DATABASE_SSL === "true" || /sslmode=require/i.test(DATABASE_URL);
+
+const memoryEntries = new Map();
+const memoryByWallet = new Map();
+let pool = null;
+let ready = false;
+let initPromise = null;
+let initError = null;
+
+function getPool() {
+  if (!DATABASE_URL) return null;
+  if (!pool) {
+    pool = new Pool({
+      connectionString: DATABASE_URL,
+      ssl: DATABASE_SSL ? { rejectUnauthorized: false } : undefined
+    });
+  }
+  return pool;
+}
+
+async function initHistoryStore() {
+  if (!DATABASE_URL) {
+    ready = false;
+    return false;
+  }
+
+  if (initPromise) return initPromise;
+
+  initPromise = (async () => {
+    try {
+      await getPool().query(`
+        CREATE TABLE IF NOT EXISTS match_history (
+          id TEXT PRIMARY KEY,
+          wallet TEXT NOT NULL,
+          room_code TEXT NOT NULL,
+          match_id TEXT NOT NULL,
+          contract_match_id TEXT,
+          room_mode TEXT NOT NULL,
+          currency TEXT,
+          entry_tier TEXT,
+          entry_wei TEXT NOT NULL DEFAULT '0',
+          entry_tx_hash TEXT,
+          player_name TEXT,
+          team TEXT,
+          position INTEGER,
+          won BOOLEAN NOT NULL DEFAULT false,
+          payout_wei TEXT NOT NULL DEFAULT '0',
+          points INTEGER NOT NULL DEFAULT 0,
+          settlement_status TEXT,
+          settlement_tx_hash TEXT,
+          settlement_error TEXT,
+          finished_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `);
+      await getPool().query(`
+        CREATE INDEX IF NOT EXISTS match_history_wallet_finished_idx
+        ON match_history (wallet, finished_at DESC)
+      `);
+      ready = true;
+      initError = null;
+      return true;
+    } catch (err) {
+      ready = false;
+      initError = err.message || "Database initialization failed.";
+      console.error(`[history-db] init failed: ${initError}`);
+      return false;
+    }
+  })();
+
+  return initPromise;
+}
+
+async function saveHistoryEntry(entry) {
+  saveMemory(entry);
+
+  if (!(await initHistoryStore())) return;
+
+  await getPool().query(
+    `INSERT INTO match_history (
+      id, wallet, room_code, match_id, contract_match_id, room_mode, currency,
+      entry_tier, entry_wei, entry_tx_hash, player_name, team, position, won,
+      payout_wei, points, settlement_status, settlement_tx_hash, settlement_error, finished_at, updated_at
+    ) VALUES (
+      $1, $2, $3, $4, $5, $6, $7,
+      $8, $9, $10, $11, $12, $13, $14,
+      $15, $16, $17, $18, $19, to_timestamp($20 / 1000.0), NOW()
+    )
+    ON CONFLICT (id) DO UPDATE SET
+      wallet = EXCLUDED.wallet,
+      room_code = EXCLUDED.room_code,
+      match_id = EXCLUDED.match_id,
+      contract_match_id = EXCLUDED.contract_match_id,
+      room_mode = EXCLUDED.room_mode,
+      currency = EXCLUDED.currency,
+      entry_tier = EXCLUDED.entry_tier,
+      entry_wei = EXCLUDED.entry_wei,
+      entry_tx_hash = EXCLUDED.entry_tx_hash,
+      player_name = EXCLUDED.player_name,
+      team = EXCLUDED.team,
+      position = EXCLUDED.position,
+      won = EXCLUDED.won,
+      payout_wei = EXCLUDED.payout_wei,
+      points = EXCLUDED.points,
+      settlement_status = EXCLUDED.settlement_status,
+      settlement_tx_hash = EXCLUDED.settlement_tx_hash,
+      settlement_error = EXCLUDED.settlement_error,
+      finished_at = EXCLUDED.finished_at,
+      updated_at = NOW()`,
+    entryToParams(entry)
+  );
+}
+
+async function updateHistoryEntries(ids, patch) {
+  ids.forEach((id) => {
+    const existing = memoryEntries.get(id);
+    if (existing) memoryEntries.set(id, { ...existing, ...patch });
+  });
+
+  if (!ids.length || !(await initHistoryStore())) return;
+
+  await getPool().query(
+    `UPDATE match_history
+     SET settlement_status = $2,
+         settlement_tx_hash = $3,
+         settlement_error = $4,
+         updated_at = NOW()
+     WHERE id = ANY($1::text[])`,
+    [ids, patch.settlementStatus || null, patch.settlementTxHash || null, patch.settlementError || null]
+  );
+}
+
+async function getHistoryForWallet(wallet) {
+  const key = normalizeWallet(wallet);
+
+  if (await initHistoryStore()) {
+    const result = await getPool().query(
+      `SELECT * FROM match_history
+       WHERE wallet = $1
+       ORDER BY finished_at DESC
+       LIMIT $2`,
+      [key, MAX_HISTORY_PER_WALLET]
+    );
+    return result.rows.map(rowToEntry);
+  }
+
+  const ids = memoryByWallet.get(key) || [];
+  return ids.map((id) => memoryEntries.get(id)).filter(Boolean);
+}
+
+function historyStoreStatus() {
+  return {
+    databaseConfigured: Boolean(DATABASE_URL),
+    databaseReady: ready,
+    databaseError: initError
+  };
+}
+
+function saveMemory(entry) {
+  const key = normalizeWallet(entry.wallet);
+  const normalized = { ...entry, wallet: key };
+  memoryEntries.set(normalized.id, normalized);
+  const ids = memoryByWallet.get(key) || [];
+  memoryByWallet.set(key, [normalized.id, ...ids.filter((id) => id !== normalized.id)].slice(0, MAX_HISTORY_PER_WALLET));
+}
+
+function entryToParams(entry) {
+  return [
+    entry.id,
+    normalizeWallet(entry.wallet),
+    entry.roomCode,
+    entry.matchId,
+    entry.contractMatchId || null,
+    entry.roomMode,
+    entry.currency || null,
+    entry.entryTier || null,
+    entry.entryWei || "0",
+    entry.entryTxHash || null,
+    entry.playerName || null,
+    entry.team || null,
+    entry.position || null,
+    Boolean(entry.won),
+    entry.payoutWei || "0",
+    Number(entry.points || 0),
+    entry.settlementStatus || null,
+    entry.settlementTxHash || null,
+    entry.settlementError || null,
+    Number(entry.finishedAt || Date.now())
+  ];
+}
+
+function rowToEntry(row) {
+  return {
+    id: row.id,
+    wallet: row.wallet,
+    roomCode: row.room_code,
+    matchId: row.match_id,
+    contractMatchId: row.contract_match_id,
+    roomMode: row.room_mode,
+    currency: row.currency,
+    entryTier: row.entry_tier,
+    entryWei: row.entry_wei || "0",
+    entryTxHash: row.entry_tx_hash,
+    playerName: row.player_name,
+    team: row.team,
+    position: row.position,
+    won: row.won,
+    payoutWei: row.payout_wei || "0",
+    points: row.points || 0,
+    settlementStatus: row.settlement_status,
+    settlementTxHash: row.settlement_tx_hash,
+    settlementError: row.settlement_error,
+    finishedAt: row.finished_at ? new Date(row.finished_at).getTime() : null
+  };
+}
+
+function normalizeWallet(wallet) {
+  return String(wallet || "").toLowerCase();
+}
+
+module.exports = {
+  initHistoryStore,
+  saveHistoryEntry,
+  updateHistoryEntries,
+  getHistoryForWallet,
+  historyStoreStatus
+};
