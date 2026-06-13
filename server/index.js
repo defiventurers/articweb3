@@ -6,6 +6,13 @@ const { randomUUID, randomBytes } = require("crypto");
 const { createPublicClient, http: viemHttp, parseAbi } = require("viem");
 const { Contract, Provider, Wallet } = require("zksync-ethers");
 const {
+  initHistoryStore,
+  saveHistoryEntry,
+  updateHistoryEntries,
+  getHistoryForWallet,
+  historyStoreStatus
+} = require("./historyStore.js");
+const {
   createInitialGameState,
   currentTeam,
   rollDiceForState,
@@ -20,7 +27,6 @@ const {
 const PORT = process.env.PORT || 10000;
 const COUNTDOWN_MS = 5000;
 const BOT_DELAY_MS = 650;
-const MAX_HISTORY_PER_WALLET = 50;
 const TEAM_CODES = ["green", "red", "blue", "yellow"];
 const TEAM_NAME_BY_CODE = {
   green: "Test Abster",
@@ -80,8 +86,6 @@ const ethPublicClient = ETH_VAULT_ADDRESS
 const profiles = new Map();
 const rooms = new Map();
 const sockets = new Map();
-const historyEntries = new Map();
-const historyByWallet = new Map();
 
 function send(ws, packet) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(packet));
@@ -336,15 +340,6 @@ function buildPayoutPlan(room, placements) {
   });
 }
 
-function pushHistory(wallet, entry) {
-  const key = walletOf(wallet);
-  if (!key) return;
-  historyEntries.set(entry.id, entry);
-  const ids = historyByWallet.get(key) || [];
-  const nextIds = [entry.id, ...ids.filter((id) => id !== entry.id)].slice(0, MAX_HISTORY_PER_WALLET);
-  historyByWallet.set(key, nextIds);
-}
-
 function recordMatchHistory(room) {
   if (room.historyEntryIds?.length) return;
   const payoutByWallet = new Map((room.payoutPlan || []).map((item) => [walletOf(item.wallet), item]));
@@ -379,18 +374,17 @@ function recordMatchHistory(room) {
       finishedAt: room.finalizedAt || Date.now()
     };
     room.historyEntryIds.push(entry.id);
-    pushHistory(wallet, entry);
+    saveHistoryEntry(entry).catch((err) => console.error(`[history-db] save failed room=${room.roomCode}: ${err.message}`));
   });
 }
 
 function updateHistorySettlement(room) {
-  (room.historyEntryIds || []).forEach((id) => {
-    const entry = historyEntries.get(id);
-    if (!entry) return;
-    entry.settlementStatus = room.settlementStatus || null;
-    entry.settlementTxHash = room.settlementTxHash || null;
-    entry.settlementError = room.settlementError || null;
-  });
+  const patch = {
+    settlementStatus: room.settlementStatus || null,
+    settlementTxHash: room.settlementTxHash || null,
+    settlementError: room.settlementError || null
+  };
+  updateHistoryEntries(room.historyEntryIds || [], patch).catch((err) => console.error(`[history-db] update failed room=${room.roomCode}: ${err.message}`));
 }
 
 async function settleHighStakesIfPossible(room) {
@@ -534,13 +528,17 @@ function list(ws, requestId, payload = {}) {
   return ok(ws, requestId, "room_list_result", { rooms: publicRooms });
 }
 
-function history(ws, requestId, payload = {}) {
+async function history(ws, requestId, payload = {}) {
   const wallet = walletOf(payload.wallet);
   if (!profiles.has(wallet)) return fail(ws, requestId, "Create profile first.");
   sockets.set(wallet, ws);
-  const ids = historyByWallet.get(wallet) || [];
-  const entries = ids.map((id) => historyEntries.get(id)).filter(Boolean);
-  return ok(ws, requestId, "game_history_result", { history: entries });
+  try {
+    const entries = await getHistoryForWallet(wallet);
+    return ok(ws, requestId, "game_history_result", { history: entries });
+  } catch (err) {
+    console.error(`[history-db] read failed wallet=${wallet}: ${err.message}`);
+    return fail(ws, requestId, "Could not load match history.");
+  }
 }
 
 function createRoom(ws, requestId, payload) {
@@ -755,11 +753,11 @@ const server = http.createServer((req, res) => {
       ok: true,
       profiles: profiles.size,
       rooms: rooms.size,
-      historyEntries: historyEntries.size,
       highStakesEnabled: HIGH_STAKES_ENABLED,
       ethVaultConfigured: Boolean(ETH_VAULT_ADDRESS),
       settlementSignerConfigured: Boolean(process.env.ETH_SETTLEMENT_SIGNER),
-      settlementSignerAddress: settlementSignerAddress()
+      settlementSignerAddress: settlementSignerAddress(),
+      historyStore: historyStoreStatus()
     }));
     return;
   }
@@ -791,5 +789,9 @@ new WebSocket.Server({ server }).on("connection", (ws) => {
 setInterval(() => {
   for (const room of rooms.values()) checkStart(room);
 }, 250);
+
+initHistoryStore().then((databaseReady) => {
+  console.log(`[history-db] ${databaseReady ? "Postgres ready" : "using in-memory fallback"}`);
+});
 
 server.listen(PORT, () => console.log(`Artic Web3 lobby server running on port ${PORT}`));
