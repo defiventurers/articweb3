@@ -1,13 +1,26 @@
-import { useEffect, useState } from "react";
-import { isAddress } from "viem";
+import { useEffect, useMemo, useState } from "react";
+import { createPublicClient, http, isAddress } from "viem";
 import { useAccount } from "wagmi";
 import { useAbstractClient } from "@abstract-foundation/agw-react";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
 
+const ABSTRACT_TESTNET = {
+  id: 11124,
+  name: "Abstract Testnet",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: {
+    default: { http: [import.meta.env.VITE_ABSTRACT_RPC_URL || "https://api.testnet.abs.xyz"] }
+  }
+};
+
 export function SettlementAdminScreen({ onBack }) {
   const { address } = useAccount();
   const { data: abstractClient } = useAbstractClient();
+  const publicClient = useMemo(
+    () => createPublicClient({ chain: ABSTRACT_TESTNET, transport: http(ABSTRACT_TESTNET.rpcUrls.default.http[0]) }),
+    []
+  );
   const [serverWallet, setServerWallet] = useState(import.meta.env.VITE_SETTLEMENT_WALLET_ADDRESS || "");
   const [owner, setOwner] = useState("");
   const [gameServer, setGameServer] = useState("");
@@ -20,17 +33,18 @@ export function SettlementAdminScreen({ onBack }) {
 
   useEffect(() => {
     refreshVaultAdmin();
-  }, [abstractClient]);
+  }, [publicClient]);
 
   async function refreshVaultAdmin() {
-    if (!abstractClient || !ETH_TARGETS_READY) return;
+    if (!ETH_TARGETS_READY) return;
     try {
-      const currentOwner = await abstractClient.readContract({
+      setError("");
+      const currentOwner = await publicClient.readContract({
         address: ETH_VAULT_ADDRESS,
         abi: ethVaultAbi,
         functionName: "owner"
       });
-      const currentGameServer = await abstractClient.readContract({
+      const currentGameServer = await publicClient.readContract({
         address: ETH_VAULT_ADDRESS,
         abi: ethVaultAbi,
         functionName: "gameServer"
@@ -93,9 +107,9 @@ export function SettlementAdminScreen({ onBack }) {
           <strong>Connected wallet</strong>
           <span>{connectedWallet || "Not connected"}</span>
           <strong>Vault owner</strong>
-          <span>{owner || "Connect AGW to read"}</span>
+          <span>{owner || "Reading from chain..."}</span>
           <strong>Current game server</strong>
-          <span>{gameServer || "Connect AGW to read"}</span>
+          <span>{gameServer || "Reading from chain..."}</span>
         </div>
 
         {owner && connectedWallet && !ownerMatches && (
