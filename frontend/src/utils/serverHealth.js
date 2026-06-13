@@ -1,6 +1,6 @@
 const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:10000";
 
-export const SERVER_HEALTH_URL = import.meta.env.VITE_API_URL || toHttpUrl(WS_URL);
+export const SERVER_HEALTH_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "/api" : toHttpUrl(WS_URL));
 
 export async function fetchServerHealth() {
   const response = await fetch(`${SERVER_HEALTH_URL.replace(/\/$/, "")}/health`, { cache: "no-store" });
