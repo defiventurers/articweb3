@@ -43,6 +43,36 @@
   font-weight: 900;
 }
 
+.verify-pill,
+.verify-line {
+  border-radius: 14px;
+  padding: 9px 11px;
+  border: 1px solid rgba(190,245,255,.35);
+  background: rgba(255,255,255,.08);
+  font-weight: 900;
+}
+
+.verify-pill.valid,
+.verify-line.valid {
+  border-color: rgba(89,255,168,.68);
+  background: rgba(44,190,116,.18);
+  color: #dffff0;
+}
+
+.verify-pill.invalid,
+.verify-line.invalid {
+  border-color: rgba(255,105,105,.74);
+  background: rgba(190,44,44,.20);
+  color: #ffe1e1;
+}
+
+.verify-pill.waiting,
+.verify-line.waiting {
+  border-color: rgba(255,224,130,.62);
+  background: rgba(180,135,20,.18);
+  color: #fff3c7;
+}
+
 .spectator-board-grid {
   width: min(92vw, 520px);
   margin: 8px auto 0;
