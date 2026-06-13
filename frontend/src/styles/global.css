@@ -174,10 +174,135 @@ input {
   gap: 8px;
 }
 
+.wallet-panel {
+  border-radius: 18px;
+  border: 1px solid #7edfff;
+  background: #12395f;
+  color: white;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+  text-align: left;
+}
+
+.wallet-panel-header,
+.wallet-action-row,
+.wallet-withdraw-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.wallet-panel-header {
+  justify-content: space-between;
+}
+
+.wallet-action-row,
+.wallet-withdraw-row {
+  width: 100%;
+}
+
+.wallet-withdraw-row .wallet-amount-input {
+  flex: 1;
+}
+
+.wallet-status-pill {
+  border-radius: 999px;
+  border: 1px solid rgba(190, 245, 255, .45);
+  padding: 5px 8px;
+  color: #fff3c7;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.wallet-status-pill.ready {
+  color: #c9ffdc;
+}
+
+.wallet-balance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.wallet-balance-box {
+  border-radius: 14px;
+  background: rgba(6, 27, 58, .68);
+  border: 1px solid rgba(126, 223, 255, .35);
+  padding: 9px;
+  display: grid;
+  gap: 4px;
+}
+
+.wallet-balance-box span,
+.wallet-field-label,
+.wallet-info-note {
+  color: #fff3c7;
+  font-size: 12px;
+}
+
+.wallet-balance-box strong {
+  overflow-wrap: anywhere;
+}
+
+.wallet-field-label {
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.wallet-amount-input {
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid #bff6ff;
+  background: #061b3a;
+  color: white;
+  padding: 0 12px;
+  width: 100%;
+}
+
+.wallet-btn {
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1px solid #bff6ff;
+  background: #0b355d;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0 12px;
+}
+
+.wallet-btn.primary {
+  background: #0878d8;
+}
+
+.wallet-btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.wallet-message {
+  margin: 0;
+  color: #fff3c7;
+  overflow-wrap: anywhere;
+}
+
+.wallet-message.error {
+  color: #ffb3b3;
+}
+
 @media (max-width: 768px) and (orientation: portrait) {
   .art-stage {
     width: 100vw;
     height: 100dvh;
     aspect-ratio: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .wallet-balance-grid,
+  .wallet-action-row,
+  .wallet-withdraw-row {
+    grid-template-columns: 1fr;
+    display: grid;
   }
 }
