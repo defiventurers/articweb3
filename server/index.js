@@ -3,8 +3,8 @@ require("dotenv").config();
 const http = require("http");
 const WebSocket = require("ws");
 const { randomUUID, randomBytes } = require("crypto");
-const { createPublicClient, createWalletClient, http: viemHttp, parseAbi } = require("viem");
-const { privateKeyToAccount } = require("viem/accounts");
+const { createPublicClient, http: viemHttp, parseAbi } = require("viem");
+const { Contract, Provider, Wallet } = require("zksync-ethers");
 const {
   createInitialGameState,
   currentTeam,
@@ -63,10 +63,15 @@ const ABSTRACT_TESTNET_CHAIN = {
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: { default: { http: [ABSTRACT_RPC_URL] } }
 };
-const ETH_VAULT_ABI = parseAbi([
+const ETH_VAULT_READ_ABI = parseAbi([
   "function lockedEntry(bytes32 matchId, address player) view returns (uint256)",
-  "function settleMatch(bytes32 matchId, address[4] players, uint256[4] payouts)"
+  "function gameServer() view returns (address)"
 ]);
+const ETH_VAULT_WRITE_ABI = [
+  "function settleMatch(bytes32 matchId, address[4] players, uint256[4] payouts)",
+  "function lockedEntry(bytes32 matchId, address player) view returns (uint256)",
+  "function gameServer() view returns (address)"
+];
 const ethPublicClient = ETH_VAULT_ADDRESS
   ? createPublicClient({ chain: ABSTRACT_TESTNET_CHAIN, transport: viemHttp(ABSTRACT_RPC_URL) })
   : null;
@@ -140,6 +145,7 @@ function view(room) {
     status: room.status,
     settlementStatus: room.settlementStatus || null,
     settlementTxHash: room.settlementTxHash || null,
+    settlementError: room.settlementError || null,
     placements: room.placements || [],
     payoutPlan: room.payoutPlan || [],
     playerCount: players(room).length,
@@ -329,34 +335,70 @@ function buildPayoutPlan(room, placements) {
 
 async function settleHighStakesIfPossible(room) {
   if (room.roomMode !== ROOM_MODES.HIGH_STAKES || !ETH_VAULT_ADDRESS) return;
-  if (!process.env.ETH_SETTLEMENT_SIGNER) {
+  const signerSecret = process.env.ETH_SETTLEMENT_SIGNER;
+  if (!signerSecret) {
     room.settlementStatus = "needs_settlement_signer";
+    room.settlementError = "ETH_SETTLEMENT_SIGNER is not configured on Render.";
+    console.error(`[settlement] missing signer room=${room.roomCode}`);
     return;
   }
 
+  const orderedWallets = room.payoutPlan.map((item) => item.wallet);
+  const payouts = room.payoutPlan.map((item) => BigInt(item.payoutWei));
+
   try {
-    const account = privateKeyToAccount(normalizeSecret(process.env.ETH_SETTLEMENT_SIGNER));
-    const walletClient = createWalletClient({ account, chain: ABSTRACT_TESTNET_CHAIN, transport: viemHttp(ABSTRACT_RPC_URL) });
-    const orderedWallets = room.payoutPlan.map((item) => item.wallet);
-    const payouts = room.payoutPlan.map((item) => BigInt(item.payoutWei));
+    const provider = new Provider(ABSTRACT_RPC_URL);
+    const wallet = new Wallet(normalizeSecret(signerSecret), provider);
+    const contract = new Contract(ETH_VAULT_ADDRESS, ETH_VAULT_WRITE_ABI, wallet);
     room.settlementStatus = "submitting";
-    const hash = await walletClient.writeContract({
-      address: ETH_VAULT_ADDRESS,
-      abi: ETH_VAULT_ABI,
-      functionName: "settleMatch",
-      args: [room.contractMatchId, orderedWallets, payouts]
-    });
-    room.settlementTxHash = hash;
+    room.settlementError = null;
+    console.log(`[settlement] submitting room=${room.roomCode} match=${room.contractMatchId} signer=${wallet.address} vault=${ETH_VAULT_ADDRESS}`);
+    console.log(`[settlement] players=${orderedWallets.join(",")} payouts=${payouts.map((value) => value.toString()).join(",")}`);
+
+    const tx = await contract.settleMatch(room.contractMatchId, orderedWallets, payouts);
+    room.settlementTxHash = tx.hash;
     room.settlementStatus = "submitted";
+    console.log(`[settlement] submitted room=${room.roomCode} tx=${tx.hash}`);
+
+    tx.wait().then((receipt) => {
+      if (receipt?.status === 1 || receipt?.status === "success") {
+        room.settlementStatus = "settled";
+        console.log(`[settlement] settled room=${room.roomCode} tx=${tx.hash}`);
+      } else {
+        room.settlementStatus = "submitted";
+        console.log(`[settlement] tx mined without success flag room=${room.roomCode} tx=${tx.hash}`);
+      }
+      broadcast(room);
+    }).catch((err) => {
+      room.settlementStatus = "failed";
+      room.settlementError = settlementErrorMessage(err);
+      console.error(`[settlement] wait failed room=${room.roomCode}: ${room.settlementError}`);
+      broadcast(room);
+    });
   } catch (err) {
     room.settlementStatus = "failed";
-    room.settlementError = err.shortMessage || err.message || "Settlement failed.";
+    room.settlementError = settlementErrorMessage(err);
+    console.error(`[settlement] failed room=${room.roomCode}: ${room.settlementError}`);
   }
 }
 
 function normalizeSecret(value) {
   const secret = String(value || "").trim();
   return secret.startsWith("0x") ? secret : `0x${secret}`;
+}
+
+function settlementErrorMessage(err) {
+  return err?.shortMessage || err?.reason || err?.message || "Settlement failed.";
+}
+
+function settlementSignerAddress() {
+  if (!process.env.ETH_SETTLEMENT_SIGNER) return null;
+  try {
+    const provider = new Provider(ABSTRACT_RPC_URL);
+    return new Wallet(normalizeSecret(process.env.ETH_SETTLEMENT_SIGNER), provider).address;
+  } catch {
+    return "invalid";
+  }
 }
 
 function finalizeGameIfOver(room) {
@@ -388,7 +430,7 @@ async function readLockedEntry(room, wallet) {
   if (!ethPublicClient || !ETH_VAULT_ADDRESS) return 0n;
   return ethPublicClient.readContract({
     address: ETH_VAULT_ADDRESS,
-    abi: ETH_VAULT_ABI,
+    abi: ETH_VAULT_READ_ABI,
     functionName: "lockedEntry",
     args: [room.contractMatchId, wallet]
   });
@@ -632,7 +674,15 @@ function gameState(ws, requestId, payload) {
 const server = http.createServer((req, res) => {
   if (req.url === "/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ ok: true, profiles: profiles.size, rooms: rooms.size, highStakesEnabled: HIGH_STAKES_ENABLED, ethVaultConfigured: Boolean(ETH_VAULT_ADDRESS) }));
+    res.end(JSON.stringify({
+      ok: true,
+      profiles: profiles.size,
+      rooms: rooms.size,
+      highStakesEnabled: HIGH_STAKES_ENABLED,
+      ethVaultConfigured: Boolean(ETH_VAULT_ADDRESS),
+      settlementSignerConfigured: Boolean(process.env.ETH_SETTLEMENT_SIGNER),
+      settlementSignerAddress: settlementSignerAddress()
+    }));
     return;
   }
   res.writeHead(200, { "Content-Type": "text/plain" });
