@@ -93,6 +93,27 @@ export const vaultAbi = [
 export const ethVaultAbi = [
   {
     type: "function",
+    name: "owner",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }]
+  },
+  {
+    type: "function",
+    name: "gameServer",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }]
+  },
+  {
+    type: "function",
+    name: "setGameServer",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "newGameServer", type: "address" }],
+    outputs: []
+  },
+  {
+    type: "function",
     name: "availableBalance",
     stateMutability: "view",
     inputs: [{ name: "player", type: "address" }],
