@@ -18,6 +18,7 @@ import { LeaderboardScreen } from "./screens/LeaderboardScreen.jsx";
 import { MyRoomsScreen } from "./screens/MyRoomsScreen.jsx";
 import { AccountActivityScreen } from "./screens/AccountActivityScreen.jsx";
 import { SpectatorScreen } from "./screens/SpectatorScreen.jsx";
+import { DevQAScreen } from "./screens/DevQAScreen.jsx";
 import "./styles/mobileProof.css";
 
 export default function App() {
@@ -31,7 +32,8 @@ export default function App() {
   if (screen === "menu") return <MainMenu onPlay={() => setScreen("profile")} onSpectate={() => setScreen("spectator")} onHowToPlay={() => alert("How to play comes after the lobby works.")} />;
   if (screen === "spectator") return <SpectatorScreen initialRoomCode={initialSpectateCode} onBack={() => setScreen(profile ? "hub" : "menu")} />;
   if (screen === "profile") return <ProfileScreen onComplete={(createdProfile) => { setProfile(createdProfile); setScreen("hub"); }} onBack={() => setScreen("menu")} />;
-  if (screen === "hub") return <PlayerHubScreen profile={profile} onOpenIce={() => setScreen("open-ice-menu")} onHighStakes={() => setScreen("high-stakes")} onMatchHistory={() => setScreen("match-history")} onLeaderboard={() => setScreen("leaderboard")} onAccountActivity={() => setScreen("activity")} onMyRooms={() => setScreen("my-rooms")} onVaultDeployer={() => setScreen("vault-deployer")} onSettlementAdmin={() => setScreen("settlement-admin")} onBack={() => setScreen("profile")} />;
+  if (screen === "hub") return <PlayerHubScreen profile={profile} onOpenIce={() => setScreen("open-ice-menu")} onHighStakes={() => setScreen("high-stakes")} onMatchHistory={() => setScreen("match-history")} onLeaderboard={() => setScreen("leaderboard")} onAccountActivity={() => setScreen("activity")} onMyRooms={() => setScreen("my-rooms")} onDevQA={() => setScreen("dev-qa")} onVaultDeployer={() => setScreen("vault-deployer")} onSettlementAdmin={() => setScreen("settlement-admin")} onBack={() => setScreen("profile")} />;
+  if (screen === "dev-qa") return <DevQAScreen onBack={() => setScreen("hub")} />;
   if (screen === "match-history") return <MatchHistoryScreen profile={profile} onBack={() => setScreen("hub")} />;
   if (screen === "leaderboard") return <LeaderboardScreen onBack={() => setScreen("hub")} />;
   if (screen === "activity") return <AccountActivityScreen profile={profile} onBack={() => setScreen("hub")} />;
