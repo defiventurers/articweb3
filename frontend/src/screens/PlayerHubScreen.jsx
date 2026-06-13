@@ -2,8 +2,9 @@ import { DepositPanel } from "../components/DepositPanel.jsx";
 import "../styles/playerHub.css";
 
 const SHOW_VAULT_DEPLOYER = import.meta.env.VITE_ENABLE_VAULT_DEPLOYER === "true";
+const SHOW_SETTLEMENT_ADMIN = import.meta.env.VITE_ENABLE_SETTLEMENT_ADMIN === "true";
 
-export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onVaultDeployer, onBack }) {
+export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onVaultDeployer, onSettlementAdmin, onBack }) {
   return (
     <section className="player-hub-page">
       <div className="player-hub-card">
@@ -27,13 +28,20 @@ export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onVaultDeplo
 
         <button className="player-hub-mode locked" onClick={onHighStakes}>
           <strong>High Stakes</strong>
-          <span>Coming after balance checks and settlement testing.</span>
+          <span>Testnet lock lab and settlement testing.</span>
         </button>
 
         {SHOW_VAULT_DEPLOYER && (
           <button className="player-hub-mode locked" onClick={onVaultDeployer}>
             <strong>Deploy Vault</strong>
             <span>Local admin tool for AGW deployment.</span>
+          </button>
+        )}
+
+        {SHOW_SETTLEMENT_ADMIN && (
+          <button className="player-hub-mode locked" onClick={onSettlementAdmin}>
+            <strong>Settlement Admin</strong>
+            <span>Set backend wallet as vault game server.</span>
           </button>
         )}
 
