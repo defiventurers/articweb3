@@ -14,6 +14,8 @@ import { ResultsScreen } from "./screens/ResultsScreen.jsx";
 import { EthVaultDeployerScreen } from "./screens/EthVaultDeployerScreen.jsx";
 import { SettlementAdminScreen } from "./screens/SettlementAdminScreen.jsx";
 import { MatchHistoryScreen } from "./screens/MatchHistoryScreen.jsx";
+import { LeaderboardScreen } from "./screens/LeaderboardScreen.jsx";
+import { MyRoomsScreen } from "./screens/MyRoomsScreen.jsx";
 
 export default function App() {
   const [screen, setScreen] = useState("cover");
@@ -24,156 +26,34 @@ export default function App() {
     return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu";
   }
 
-  if (screen === "cover") {
-    return <CoverScreen onContinue={() => setScreen("menu")} />;
+  function resumeRoom(nextRoom) {
+    setRoom(nextRoom);
+    if (nextRoom.status === "finished") return setScreen("results");
+    if (nextRoom.status === "playing") return setScreen("game");
+    if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return setScreen("waiting");
+    return setScreen("team-select");
   }
 
-  if (screen === "menu") {
-    return (
-      <MainMenu
-        onPlay={() => setScreen("profile")}
-        onHowToPlay={() => alert("How to play comes after the lobby works.")}
-      />
-    );
-  }
-
-  if (screen === "profile") {
-    return (
-      <ProfileScreen
-        onComplete={(createdProfile) => {
-          setProfile(createdProfile);
-          setScreen("hub");
-        }}
-        onBack={() => setScreen("menu")}
-      />
-    );
-  }
+  if (screen === "cover") return <CoverScreen onContinue={() => setScreen("menu")} />;
+  if (screen === "menu") return <MainMenu onPlay={() => setScreen("profile")} onHowToPlay={() => alert("How to play comes after the lobby works.")} />;
+  if (screen === "profile") return <ProfileScreen onComplete={(createdProfile) => { setProfile(createdProfile); setScreen("hub"); }} onBack={() => setScreen("menu")} />;
 
   if (screen === "hub") {
-    return (
-      <PlayerHubScreen
-        profile={profile}
-        onOpenIce={() => setScreen("open-ice-menu")}
-        onHighStakes={() => setScreen("high-stakes")}
-        onMatchHistory={() => setScreen("match-history")}
-        onVaultDeployer={() => setScreen("vault-deployer")}
-        onSettlementAdmin={() => setScreen("settlement-admin")}
-        onBack={() => setScreen("profile")}
-      />
-    );
+    return <PlayerHubScreen profile={profile} onOpenIce={() => setScreen("open-ice-menu")} onHighStakes={() => setScreen("high-stakes")} onMatchHistory={() => setScreen("match-history")} onLeaderboard={() => setScreen("leaderboard")} onMyRooms={() => setScreen("my-rooms")} onVaultDeployer={() => setScreen("vault-deployer")} onSettlementAdmin={() => setScreen("settlement-admin")} onBack={() => setScreen("profile")} />;
   }
 
-  if (screen === "match-history") {
-    return <MatchHistoryScreen profile={profile} onBack={() => setScreen("hub")} />;
-  }
-
-  if (screen === "vault-deployer") {
-    return <EthVaultDeployerScreen onBack={() => setScreen("hub")} />;
-  }
-
-  if (screen === "settlement-admin") {
-    return <SettlementAdminScreen onBack={() => setScreen("hub")} />;
-  }
-
-  if (screen === "high-stakes") {
-    return (
-      <HighStakesScreen
-        profile={profile}
-        onRoomReady={(readyRoom) => {
-          setRoom(readyRoom);
-          setScreen("team-select");
-        }}
-        onBack={() => setScreen("hub")}
-      />
-    );
-  }
-
-  if (screen === "open-ice-menu") {
-    return (
-      <OpenIceMenuScreen
-        profile={profile}
-        onCreateRoom={() => setScreen("create-room")}
-        onJoinRoom={() => setScreen("join-room")}
-        onBack={() => setScreen("hub")}
-      />
-    );
-  }
-
-  if (screen === "create-room") {
-    return (
-      <CreateRoomScreen
-        profile={profile}
-        onRoomCreated={(createdRoom) => {
-          setRoom(createdRoom);
-          setScreen("team-select");
-        }}
-        onBack={() => setScreen("open-ice-menu")}
-      />
-    );
-  }
-
-  if (screen === "join-room") {
-    return (
-      <JoinRoomScreen
-        profile={profile}
-        onRoomJoined={(joinedRoom) => {
-          setRoom(joinedRoom);
-          setScreen("team-select");
-        }}
-        onBack={() => setScreen("open-ice-menu")}
-      />
-    );
-  }
-
-  if (screen === "team-select") {
-    return (
-      <TeamSelectScreen
-        room={room}
-        profile={profile}
-        onRoomUpdate={setRoom}
-        onContinue={(updatedRoom) => {
-          setRoom(updatedRoom);
-          setScreen("waiting");
-        }}
-        onBack={() => setScreen(roomLobbyScreen())}
-      />
-    );
-  }
-
-  if (screen === "waiting") {
-    return (
-      <WaitingRoomScreen
-        room={room}
-        profile={profile}
-        onRoomUpdate={setRoom}
-        onGameStart={(startedRoom) => {
-          setRoom(startedRoom);
-          setScreen("game");
-        }}
-      />
-    );
-  }
-
-  if (screen === "game") {
-    return (
-      <GameScreen
-        room={room}
-        profile={profile}
-        onRoomUpdate={setRoom}
-        onFinishDemo={() => setScreen("results")}
-        onBackToLobby={() => setScreen(roomLobbyScreen())}
-      />
-    );
-  }
-
-  if (screen === "results") {
-    return (
-      <ResultsScreen
-        room={room}
-        onBackToLobby={() => setScreen(roomLobbyScreen())}
-      />
-    );
-  }
-
+  if (screen === "match-history") return <MatchHistoryScreen profile={profile} onBack={() => setScreen("hub")} />;
+  if (screen === "leaderboard") return <LeaderboardScreen onBack={() => setScreen("hub")} />;
+  if (screen === "my-rooms") return <MyRoomsScreen profile={profile} onResumeRoom={resumeRoom} onBack={() => setScreen("hub")} />;
+  if (screen === "vault-deployer") return <EthVaultDeployerScreen onBack={() => setScreen("hub")} />;
+  if (screen === "settlement-admin") return <SettlementAdminScreen onBack={() => setScreen("hub")} />;
+  if (screen === "high-stakes") return <HighStakesScreen profile={profile} onRoomReady={(readyRoom) => { setRoom(readyRoom); setScreen("team-select"); }} onBack={() => setScreen("hub")} />;
+  if (screen === "open-ice-menu") return <OpenIceMenuScreen profile={profile} onCreateRoom={() => setScreen("create-room")} onJoinRoom={() => setScreen("join-room")} onBack={() => setScreen("hub")} />;
+  if (screen === "create-room") return <CreateRoomScreen profile={profile} onRoomCreated={(createdRoom) => { setRoom(createdRoom); setScreen("team-select"); }} onBack={() => setScreen("open-ice-menu")} />;
+  if (screen === "join-room") return <JoinRoomScreen profile={profile} onRoomJoined={(joinedRoom) => { setRoom(joinedRoom); setScreen("team-select"); }} onBack={() => setScreen("open-ice-menu")} />;
+  if (screen === "team-select") return <TeamSelectScreen room={room} profile={profile} onRoomUpdate={setRoom} onContinue={(updatedRoom) => { setRoom(updatedRoom); setScreen("waiting"); }} onBack={() => setScreen(roomLobbyScreen())} />;
+  if (screen === "waiting") return <WaitingRoomScreen room={room} profile={profile} onRoomUpdate={setRoom} onGameStart={(startedRoom) => { setRoom(startedRoom); setScreen("game"); }} />;
+  if (screen === "game") return <GameScreen room={room} profile={profile} onRoomUpdate={setRoom} onFinishDemo={() => setScreen("results")} onBackToLobby={() => setScreen(roomLobbyScreen())} />;
+  if (screen === "results") return <ResultsScreen room={room} onBackToLobby={() => setScreen(roomLobbyScreen())} />;
   return null;
 }
