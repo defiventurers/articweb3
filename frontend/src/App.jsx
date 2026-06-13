@@ -17,15 +17,19 @@ import { MatchHistoryScreen } from "./screens/MatchHistoryScreen.jsx";
 import { LeaderboardScreen } from "./screens/LeaderboardScreen.jsx";
 import { MyRoomsScreen } from "./screens/MyRoomsScreen.jsx";
 import { AccountActivityScreen } from "./screens/AccountActivityScreen.jsx";
+import { SpectatorScreen } from "./screens/SpectatorScreen.jsx";
+import "./styles/mobileProof.css";
 
 export default function App() {
-  const [screen, setScreen] = useState("cover");
+  const initialSpectateCode = new URLSearchParams(window.location.search).get("spectate") || "";
+  const [screen, setScreen] = useState(initialSpectateCode ? "spectator" : "cover");
   const [profile, setProfile] = useState(null);
   const [room, setRoom] = useState(null);
   function roomLobbyScreen(targetRoom = room) { return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu"; }
   function resumeRoom(nextRoom) { setRoom(nextRoom); if (nextRoom.status === "finished") return setScreen("results"); if (nextRoom.status === "playing") return setScreen("game"); if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return setScreen("waiting"); return setScreen("team-select"); }
   if (screen === "cover") return <CoverScreen onContinue={() => setScreen("menu")} />;
-  if (screen === "menu") return <MainMenu onPlay={() => setScreen("profile")} onHowToPlay={() => alert("How to play comes after the lobby works.")} />;
+  if (screen === "menu") return <MainMenu onPlay={() => setScreen("profile")} onSpectate={() => setScreen("spectator")} onHowToPlay={() => alert("How to play comes after the lobby works.")} />;
+  if (screen === "spectator") return <SpectatorScreen initialRoomCode={initialSpectateCode} onBack={() => setScreen(profile ? "hub" : "menu")} />;
   if (screen === "profile") return <ProfileScreen onComplete={(createdProfile) => { setProfile(createdProfile); setScreen("hub"); }} onBack={() => setScreen("menu")} />;
   if (screen === "hub") return <PlayerHubScreen profile={profile} onOpenIce={() => setScreen("open-ice-menu")} onHighStakes={() => setScreen("high-stakes")} onMatchHistory={() => setScreen("match-history")} onLeaderboard={() => setScreen("leaderboard")} onAccountActivity={() => setScreen("activity")} onMyRooms={() => setScreen("my-rooms")} onVaultDeployer={() => setScreen("vault-deployer")} onSettlementAdmin={() => setScreen("settlement-admin")} onBack={() => setScreen("profile")} />;
   if (screen === "match-history") return <MatchHistoryScreen profile={profile} onBack={() => setScreen("hub")} />;
@@ -41,6 +45,6 @@ export default function App() {
   if (screen === "team-select") return <TeamSelectScreen room={room} profile={profile} onRoomUpdate={setRoom} onContinue={(updatedRoom) => { setRoom(updatedRoom); setScreen("waiting"); }} onBack={() => setScreen(roomLobbyScreen())} />;
   if (screen === "waiting") return <WaitingRoomScreen room={room} profile={profile} onRoomUpdate={setRoom} onGameStart={(startedRoom) => { setRoom(startedRoom); setScreen("game"); }} />;
   if (screen === "game") return <GameScreen room={room} profile={profile} onRoomUpdate={setRoom} onFinishDemo={() => setScreen("results")} onBackToLobby={() => setScreen(roomLobbyScreen())} />;
-  if (screen === "results") return <ResultsScreen room={room} onBackToLobby={() => setScreen(roomLobbyScreen())} />;
+  if (screen === "results") return <ResultsScreen room={room} profile={profile} onBackToLobby={() => setScreen(roomLobbyScreen())} />;
   return null;
 }
