@@ -66,7 +66,6 @@ function createEmptyBoard() {
 
 function createStartingBoard() {
   const board = createEmptyBoard();
-
   board[0][0] = makePiece("yellow", "ship");
   board[0][1] = makePiece("yellow", "horse");
   board[0][2] = makePiece("yellow", "elephant");
@@ -75,7 +74,6 @@ function createStartingBoard() {
   board[1][1] = makePiece("yellow", "pawn");
   board[1][2] = makePiece("yellow", "pawn");
   board[1][3] = makePiece("yellow", "pawn");
-
   board[7][0] = makePiece("red", "ship");
   board[6][0] = makePiece("red", "horse");
   board[5][0] = makePiece("red", "elephant");
@@ -84,7 +82,6 @@ function createStartingBoard() {
   board[6][1] = makePiece("red", "pawn");
   board[5][1] = makePiece("red", "pawn");
   board[4][1] = makePiece("red", "pawn");
-
   board[7][4] = makePiece("green", "king", true);
   board[7][5] = makePiece("green", "elephant");
   board[7][6] = makePiece("green", "horse");
@@ -93,7 +90,6 @@ function createStartingBoard() {
   board[6][5] = makePiece("green", "pawn");
   board[6][6] = makePiece("green", "pawn");
   board[6][7] = makePiece("green", "pawn");
-
   board[3][7] = makePiece("blue", "king", true);
   board[2][7] = makePiece("blue", "elephant");
   board[1][7] = makePiece("blue", "horse");
@@ -102,59 +98,50 @@ function createStartingBoard() {
   board[2][6] = makePiece("blue", "pawn");
   board[1][6] = makePiece("blue", "pawn");
   board[0][6] = makePiece("blue", "pawn");
-
   return board;
 }
 
-function makePiece(team, type, isRoyal = false) {
-  return { team, type, isRoyal };
-}
+function makePiece(team, type, isRoyal = false) { return { team, type, isRoyal }; }
+function currentTeam(state) { return PLAYERS[state.currentPlayerIndex]; }
 
-function currentTeam(state) {
-  return PLAYERS[state.currentPlayerIndex];
-}
-
-function rollDiceForState(state) {
+function rollDiceForState(state, forcedValues = null) {
   if (state.gameOver || state.dice.rolled) return state;
+  const values = normalizeDiceValues(forcedValues) || [rollD6(), rollD6()];
   return touch({
     ...state,
     selected: null,
     legalMoves: [],
-    dice: {
-      values: [rollD6(), rollD6()],
-      used: [false, false],
-      rolled: true
-    }
+    dice: { values, used: [false, false], rolled: true }
   });
+}
+
+function normalizeDiceValues(values) {
+  if (!Array.isArray(values) || values.length !== 2) return null;
+  const normalized = values.map((value) => Number(value));
+  if (normalized.some((value) => !Number.isInteger(value) || value < 1 || value > 6)) return null;
+  return normalized;
 }
 
 function selectSquare(state, row, col) {
   if (state.gameOver || !state.dice.rolled) return state;
-
   const chosenMove = state.legalMoves.find((move) => move.toRow === row && move.toCol === col);
   if (chosenMove) return applyMove(state, chosenMove);
-
   const team = currentTeam(state);
   const piece = state.board[row]?.[col];
   if (!piece || piece.team !== team) return touch({ ...state, selected: null, legalMoves: [] });
-
   const legalMoves = getLegalMovesForPiece(state, row, col);
   if (!legalMoves.length) return touch({ ...state, selected: null, legalMoves: [] });
-
   return touch({ ...state, selected: { row, col }, legalMoves });
 }
 
 function getLegalMovesForPiece(state, row, col) {
   const piece = state.board[row]?.[col];
   if (!piece || state.gameOver || !state.dice.rolled) return [];
-
   const activeDieIndexes = [0, 1].filter((dieIndex) => {
     const value = state.dice.values[dieIndex];
     return value && !state.dice.used[dieIndex] && DICE_ROLLS[value].includes(piece.type);
   });
-
   if (!activeDieIndexes.length) return [];
-
   const moves = [];
   activeDieIndexes.forEach((dieIndex) => {
     getPossibleTargets(state, row, col, piece).forEach(([toRow, toCol]) => {
@@ -163,7 +150,6 @@ function getLegalMovesForPiece(state, row, col) {
       moves.push({ fromRow: row, fromCol: col, toRow, toCol, dieIndex, captured: target || null });
     });
   });
-
   return dedupeMoves(moves);
 }
 
@@ -178,43 +164,30 @@ function getAllLegalMovesForTeam(state, team = currentTeam(state)) {
   return moves;
 }
 
-function hasAnyLegalMoveForTeam(state, team = currentTeam(state)) {
-  return getAllLegalMovesForTeam(state, team).length > 0;
-}
+function hasAnyLegalMoveForTeam(state, team = currentTeam(state)) { return getAllLegalMovesForTeam(state, team).length > 0; }
 
 function applyMove(state, move) {
   const board = cloneBoard(state.board);
   const piece = board[move.fromRow][move.fromCol];
   if (!piece) return state;
-
   const captured = board[move.toRow][move.toCol];
   board[move.toRow][move.toCol] = { ...piece };
   board[move.fromRow][move.fromCol] = null;
-
-  const dice = {
-    values: [...state.dice.values],
-    used: [...state.dice.used],
-    rolled: state.dice.rolled
-  };
+  const dice = { values: [...state.dice.values], used: [...state.dice.used], rolled: state.dice.rolled };
   dice.used[move.dieIndex] = true;
-
   const moveLog = [...state.moveLog];
   const eliminatedTeams = [...(state.eliminatedTeams || [])];
   if (captured) moveLog.unshift(`${TEAM_LABEL[piece.team]} captured ${TEAM_LABEL[captured.team]} ${PIECE_NAME[captured.type]}`);
   else moveLog.unshift(`${TEAM_LABEL[piece.team]} moved ${PIECE_NAME[piece.type]}`);
-
   maybePromotePawn(board[move.toRow][move.toCol], move.toRow, move.toCol, moveLog);
-
   if (captured?.type === "king") {
     removeTeamPieces(board, captured.team);
     if (!eliminatedTeams.includes(captured.team)) eliminatedTeams.push(captured.team);
     moveLog.unshift(`${TEAM_LABEL[captured.team]} eliminated`);
   }
-
   let next = touch({ ...state, board, dice, selected: null, legalMoves: [], eliminatedTeams, moveLog: moveLog.slice(0, 8) });
   next = checkWinner(next);
   if (next.gameOver) return next;
-
   const team = currentTeam(next);
   if (next.dice.used.every(Boolean) || !hasAnyLegalMoveForTeam(next, team)) return endTurn(next);
   return next;
@@ -226,14 +199,7 @@ function endTurn(state) {
     nextIndex = (nextIndex + 1) % PLAYERS.length;
     if (teamHasKing(state.board, PLAYERS[nextIndex])) break;
   }
-
-  return touch({
-    ...state,
-    currentPlayerIndex: nextIndex,
-    selected: null,
-    legalMoves: [],
-    dice: { values: [null, null], used: [false, false], rolled: false }
-  });
+  return touch({ ...state, currentPlayerIndex: nextIndex, selected: null, legalMoves: [], dice: { values: [null, null], used: [false, false], rolled: false } });
 }
 
 function pickBotMove(state) {
@@ -262,13 +228,11 @@ function pawnMoves(state, row, col, team) {
   };
   const spec = directions[team];
   if (!spec) return [];
-
   const out = [];
   const [fr, fc] = spec.forward;
   const fRow = row + fr;
   const fCol = col + fc;
   if (inBounds(fRow, fCol) && !state.board[fRow][fCol]) out.push([fRow, fCol]);
-
   spec.captures.forEach(([dr, dc]) => {
     const r = row + dr;
     const c = col + dc;
@@ -279,120 +243,20 @@ function pawnMoves(state, row, col, team) {
   return out;
 }
 
-function kingMoves(row, col) {
-  return oneStepMoves(row, col, [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]);
-}
+function kingMoves(row, col) { return oneStepMoves(row, col, [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]); }
+function horseMoves(row, col) { return [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]].map(([dr, dc]) => [row + dr, col + dc]).filter(([r, c]) => inBounds(r, c)); }
+function shipMoves(row, col) { return [[2, 2], [2, -2], [-2, 2], [-2, -2]].map(([dr, dc]) => [row + dr, col + dc]).filter(([r, c]) => inBounds(r, c)); }
+function oneStepMoves(row, col, dirs) { return dirs.map(([dr, dc]) => [row + dr, col + dc]).filter(([r, c]) => inBounds(r, c)); }
+function slideMoves(state, row, col, dirs) { const out = []; for (const [dr, dc] of dirs) { for (let step = 1; step < 8; step += 1) { const r = row + dr * step; const c = col + dc * step; if (!inBounds(r, c)) break; out.push([r, c]); if (state.board[r][c]) break; } } return out; }
+function maybePromotePawn(piece, row, col, moveLog) { if (!piece || piece.type !== "pawn") return; const promotionType = PROMOTION_PIECES[piece.team]?.[`${row},${col}`]; if (!promotionType) return; piece.type = promotionType; piece.isRoyal = false; moveLog.unshift(`${TEAM_LABEL[piece.team]} pawn promoted to ${PIECE_NAME[promotionType]}`); }
+function removeTeamPieces(board, team) { for (let row = 0; row < ROWS; row += 1) { for (let col = 0; col < COLS; col += 1) { if (board[row][col]?.team === team) board[row][col] = null; } } }
+function checkWinner(state) { const alive = PLAYERS.filter((team) => teamHasKing(state.board, team)); if (alive.length > 1) return state; return touch({ ...state, gameOver: true, winner: alive[0] || null, selected: null, legalMoves: [] }); }
+function getPlacements(state) { const eliminated = state.eliminatedTeams || []; const alive = PLAYERS.filter((team) => teamHasKing(state.board, team)); const winner = state.winner || alive[0] || null; const ordered = []; if (winner) ordered.push(winner); [...eliminated].reverse().forEach((team) => { if (!ordered.includes(team)) ordered.push(team); }); PLAYERS.forEach((team) => { if (!ordered.includes(team)) ordered.push(team); }); return ordered.slice(0, 4); }
+function teamHasKing(board, team) { return board.some((row) => row.some((piece) => piece && piece.team === team && piece.type === "king")); }
+function inBounds(row, col) { return row >= 0 && row < ROWS && col >= 0 && col < COLS; }
+function dedupeMoves(moves) { const seen = new Set(); return moves.filter((move) => { const key = `${move.fromRow},${move.fromCol},${move.toRow},${move.toCol},${move.dieIndex}`; if (seen.has(key)) return false; seen.add(key); return true; }); }
+function cloneBoard(board) { return board.map((row) => row.map((piece) => (piece ? { ...piece } : null))); }
+function rollD6() { return Math.floor(Math.random() * 6) + 1; }
+function touch(state) { return { ...state, updatedAt: Date.now() }; }
 
-function horseMoves(row, col) {
-  return [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]]
-    .map(([dr, dc]) => [row + dr, col + dc])
-    .filter(([r, c]) => inBounds(r, c));
-}
-
-function shipMoves(row, col) {
-  return [[2, 2], [2, -2], [-2, 2], [-2, -2]]
-    .map(([dr, dc]) => [row + dr, col + dc])
-    .filter(([r, c]) => inBounds(r, c));
-}
-
-function oneStepMoves(row, col, dirs) {
-  return dirs.map(([dr, dc]) => [row + dr, col + dc]).filter(([r, c]) => inBounds(r, c));
-}
-
-function slideMoves(state, row, col, dirs) {
-  const out = [];
-  for (const [dr, dc] of dirs) {
-    for (let step = 1; step < 8; step += 1) {
-      const r = row + dr * step;
-      const c = col + dc * step;
-      if (!inBounds(r, c)) break;
-      out.push([r, c]);
-      if (state.board[r][c]) break;
-    }
-  }
-  return out;
-}
-
-function maybePromotePawn(piece, row, col, moveLog) {
-  if (!piece || piece.type !== "pawn") return;
-  const promotionType = PROMOTION_PIECES[piece.team]?.[`${row},${col}`];
-  if (!promotionType) return;
-  piece.type = promotionType;
-  piece.isRoyal = false;
-  moveLog.unshift(`${TEAM_LABEL[piece.team]} pawn promoted to ${PIECE_NAME[promotionType]}`);
-}
-
-function removeTeamPieces(board, team) {
-  for (let row = 0; row < ROWS; row += 1) {
-    for (let col = 0; col < COLS; col += 1) {
-      if (board[row][col]?.team === team) board[row][col] = null;
-    }
-  }
-}
-
-function checkWinner(state) {
-  const alive = PLAYERS.filter((team) => teamHasKing(state.board, team));
-  if (alive.length > 1) return state;
-  return touch({ ...state, gameOver: true, winner: alive[0] || null, selected: null, legalMoves: [] });
-}
-
-function getPlacements(state) {
-  const eliminated = state.eliminatedTeams || [];
-  const alive = PLAYERS.filter((team) => teamHasKing(state.board, team));
-  const winner = state.winner || alive[0] || null;
-  const ordered = [];
-  if (winner) ordered.push(winner);
-  [...eliminated].reverse().forEach((team) => {
-    if (!ordered.includes(team)) ordered.push(team);
-  });
-  PLAYERS.forEach((team) => {
-    if (!ordered.includes(team)) ordered.push(team);
-  });
-  return ordered.slice(0, 4);
-}
-
-function teamHasKing(board, team) {
-  return board.some((row) => row.some((piece) => piece && piece.team === team && piece.type === "king"));
-}
-
-function inBounds(row, col) {
-  return row >= 0 && row < ROWS && col >= 0 && col < COLS;
-}
-
-function dedupeMoves(moves) {
-  const seen = new Set();
-  return moves.filter((move) => {
-    const key = `${move.fromRow},${move.fromCol},${move.toRow},${move.toCol},${move.dieIndex}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-function cloneBoard(board) {
-  return board.map((row) => row.map((piece) => (piece ? { ...piece } : null)));
-}
-
-function rollD6() {
-  return Math.floor(Math.random() * 6) + 1;
-}
-
-function touch(state) {
-  return { ...state, updatedAt: Date.now() };
-}
-
-module.exports = {
-  DICE_ROLLS,
-  PLAYERS,
-  TEAM_LABEL,
-  PIECE_NAME,
-  createInitialGameState,
-  currentTeam,
-  rollDiceForState,
-  selectSquare,
-  endTurn,
-  applyMove,
-  hasAnyLegalMoveForTeam,
-  pickBotMove,
-  getPlacements
-};
+module.exports = { DICE_ROLLS, PLAYERS, TEAM_LABEL, PIECE_NAME, createInitialGameState, currentTeam, rollDiceForState, selectSquare, endTurn, applyMove, hasAnyLegalMoveForTeam, pickBotMove, getPlacements };
