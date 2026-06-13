@@ -13,6 +13,7 @@ import { GameScreen } from "./screens/GameScreen.jsx";
 import { ResultsScreen } from "./screens/ResultsScreen.jsx";
 import { EthVaultDeployerScreen } from "./screens/EthVaultDeployerScreen.jsx";
 import { SettlementAdminScreen } from "./screens/SettlementAdminScreen.jsx";
+import { MatchHistoryScreen } from "./screens/MatchHistoryScreen.jsx";
 
 export default function App() {
   const [screen, setScreen] = useState("cover");
@@ -54,11 +55,16 @@ export default function App() {
         profile={profile}
         onOpenIce={() => setScreen("open-ice-menu")}
         onHighStakes={() => setScreen("high-stakes")}
+        onMatchHistory={() => setScreen("match-history")}
         onVaultDeployer={() => setScreen("vault-deployer")}
         onSettlementAdmin={() => setScreen("settlement-admin")}
         onBack={() => setScreen("profile")}
       />
     );
+  }
+
+  if (screen === "match-history") {
+    return <MatchHistoryScreen profile={profile} onBack={() => setScreen("hub")} />;
   }
 
   if (screen === "vault-deployer") {
