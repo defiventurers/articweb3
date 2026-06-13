@@ -1,102 +1,125 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { formatEther } from "viem";
 import { useAbstractClient } from "@abstract-foundation/agw-react";
 import { ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
+import { recordVaultActivity } from "../network/socketClient.js";
+import { addressUrl, txUrl, shortHash, shortAddress } from "../utils/explorerLinks.js";
 
-const TEAM_LABELS = {
-  green: "Abster",
-  red: "Retsba",
-  blue: "Pengu",
-  yellow: "Polly"
-};
+const TEAM_LABELS = { green: "Abster", red: "Retsba", blue: "Pengu", yellow: "Polly" };
 
-export function ResultsScreen({ room, onBackToLobby }) {
+export function ResultsScreen({ room, profile, onBackToLobby }) {
   const { data: abstractClient } = useAbstractClient();
-  const [manualStatus, setManualStatus] = useState("");
-  const [manualError, setManualError] = useState("");
+  const [claimStatus, setClaimStatus] = useState("");
+  const [claimError, setClaimError] = useState("");
   const [busy, setBusy] = useState(false);
   const placements = room.placements?.length ? room.placements : fallbackPlacements(room);
-  const payoutByWallet = new Map((room.payoutPlan || []).map((item) => [item.wallet, item]));
+  const payoutByWallet = new Map((room.payoutPlan || []).map((item) => [String(item.wallet || "").toLowerCase(), item]));
+  const myPayout = profile?.wallet ? payoutByWallet.get(String(profile.wallet).toLowerCase()) : null;
+  const myPayoutWei = BigInt(myPayout?.payoutWei || "0");
   const isEscrowTestRoom = room.roomMode === "high_stakes";
-  const canManualSettle = isEscrowTestRoom && room.settlementStatus === "failed" && !room.settlementTxHash && room.payoutPlan?.length === 4;
+  const canClaim = isEscrowTestRoom && myPayoutWei > 0n && room.settlementStatus === "settled";
+  const shareUrl = useMemo(() => `${window.location.origin}${window.location.pathname}?spectate=${room.roomCode}`, [room.roomCode]);
 
-  async function manualSettle() {
-    if (!abstractClient) {
-      setManualError("Connect the wallet currently set as vault gameServer.");
+  async function claimPayout() {
+    if (!abstractClient || !profile) {
+      setClaimError("Connect the winning player wallet first.");
       return;
     }
     try {
       setBusy(true);
-      setManualError("");
-      setManualStatus("Open AGW and confirm manual settlement.");
-      const orderedWallets = room.payoutPlan.map((item) => item.wallet);
-      const payoutAmounts = room.payoutPlan.map((item) => BigInt(item.payoutWei || "0"));
+      setClaimError("");
+      setClaimStatus("Open AGW and confirm payout withdrawal.");
       const txHash = await abstractClient.writeContract({
         address: ETH_VAULT_ADDRESS,
         abi: ethVaultAbi,
-        functionName: "settleMatch",
-        args: [room.contractMatchId, orderedWallets, payoutAmounts]
+        functionName: "withdraw",
+        args: [myPayoutWei]
       });
-      setManualStatus(`Manual settlement submitted: ${txHash.slice(0, 10)}...${txHash.slice(-6)}`);
+      await recordVaultActivity({
+        profile,
+        activity: {
+          type: "withdraw",
+          currency: "ETH",
+          amountWei: myPayoutWei.toString(),
+          roomCode: room.roomCode,
+          matchId: room.matchId,
+          contractMatchId: room.contractMatchId,
+          txHash,
+          status: "submitted",
+          note: "Winner payout withdrawal"
+        }
+      });
+      setClaimStatus(`Withdrawal submitted: ${shortHash(txHash)}`);
     } catch (err) {
-      setManualError(err.shortMessage || err.message || "Manual settlement failed.");
+      setClaimError(err.shortMessage || err.message || "Payout withdrawal failed.");
     } finally {
       setBusy(false);
     }
   }
 
+  async function shareMatch() {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setClaimStatus("Spectator link copied.");
+    } catch {
+      setClaimStatus(shareUrl);
+    }
+  }
+
   return (
-    <section className="screen">
-      <div className="card">
+    <section className="screen proof-screen">
+      <div className="card proof-card">
         <h1>Match Complete</h1>
+        <p className="note">Room {room.roomCode} · {isEscrowTestRoom ? "Testnet Lock Lab" : "Open Ice"}</p>
 
-        <p className="note">
-          Room {room.roomCode} · {isEscrowTestRoom ? "Testnet escrow result" : "Open Ice result"}
-        </p>
+        <div className="proof-actions">
+          <button className="primary-btn" onClick={shareMatch}>Share Match</button>
+          <button className="primary-btn" disabled={!canClaim || busy} onClick={claimPayout}>{busy ? "Claiming..." : "Claim / Withdraw Payout"}</button>
+        </div>
 
-        <div className="room-list">
+        {myPayout && <p className="note">Your payout: {formatEth(myPayout.payoutWei)} ETH · +{myPayout.points} points</p>}
+        {claimStatus && <p className="note">{claimStatus}</p>}
+        {claimError && <p className="error-text">{claimError}</p>}
+
+        <div className="room-list proof-list">
           {placements.map((player, index) => {
-            const payout = payoutByWallet.get(player.wallet);
+            const payout = payoutByWallet.get(String(player.wallet || "").toLowerCase());
             return (
-              <div className="room-row" key={player.wallet || `${player.team}-${index}`}>
-                <strong>{player.position || index + 1}. {player.name || "Player"}</strong>
+              <div className="room-row proof-row" key={player.wallet || `${player.team}-${index}`}>
+                <strong>#{player.position || index + 1} · {player.name || "Player"}</strong>
                 <span>{TEAM_LABELS[player.team] || player.team}</span>
-                {payout && <span>{formatEther(BigInt(payout.payoutWei || "0"))} ETH · +{payout.points} pts</span>}
+                <span>{shortAddress(player.wallet)}</span>
+                {payout && <span>{formatEth(payout.payoutWei)} ETH · +{payout.points} pts</span>}
               </div>
             );
           })}
         </div>
 
         {isEscrowTestRoom && (
-          <div className="rules-panel">
-            <strong>Settlement</strong>
+          <div className="rules-panel proof-grid">
+            <strong>Settlement Proof</strong>
             <span>Status: {room.settlementStatus || "pending"}</span>
-            {room.settlementTxHash && <span>Tx: {room.settlementTxHash.slice(0, 10)}...{room.settlementTxHash.slice(-6)}</span>}
-            {room.settlementStatus === "needs_settlement_signer" && <span>Render is missing the settlement signer.</span>}
-            {room.settlementStatus === "failed" && <span>Backend auto-settlement failed before a tx was submitted. Use manual fallback with the current vault gameServer wallet.</span>}
-            {!room.settlementTxHash && !["failed", "needs_settlement_signer"].includes(room.settlementStatus) && <span>Waiting for settlement.</span>}
-            {canManualSettle && (
-              <button className="primary-btn" disabled={busy} onClick={manualSettle}>
-                {busy ? "Submitting..." : "Manual Settle With AGW"}
-              </button>
-            )}
-            {manualStatus && <span>{manualStatus}</span>}
-            {manualError && <span>{manualError}</span>}
+            <span>Contract Match ID: {shortHash(room.contractMatchId)}</span>
+            <span>Proof Hash: {room.proofHash ? shortHash(room.proofHash) : "—"}</span>
+            {ETH_VAULT_ADDRESS && <a href={addressUrl(ETH_VAULT_ADDRESS)} target="_blank" rel="noreferrer">View Vault Contract</a>}
+            {room.settlementTxHash ? <a href={txUrl(room.settlementTxHash)} target="_blank" rel="noreferrer">View Settlement Tx: {shortHash(room.settlementTxHash)}</a> : <span>Settlement Tx: waiting</span>}
+            {myPayout?.entryTxHash ? <a href={txUrl(myPayout.entryTxHash)} target="_blank" rel="noreferrer">View Entry Lock Tx</a> : null}
+            {room.settlementError && <span>Settlement Error: {room.settlementError}</span>}
+            {!canClaim && myPayoutWei > 0n && room.settlementStatus !== "settled" && <span>Claim unlocks after settlement is confirmed.</span>}
           </div>
         )}
 
-        <button className="primary-btn" onClick={onBackToLobby}>
-          Back To Lobby
-        </button>
+        <button className="primary-btn" onClick={onBackToLobby}>Back To Lobby</button>
       </div>
     </section>
   );
 }
 
+function formatEth(value) {
+  try { return formatEther(BigInt(value || "0")); } catch { return "0"; }
+}
+
 function fallbackPlacements(room) {
-  return (room.players || []).map((player, index) => ({
-    ...player,
-    position: index + 1
-  }));
+  return (room.players || []).map((player, index) => ({ ...player, position: index + 1 }));
 }
