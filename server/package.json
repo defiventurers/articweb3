@@ -9,6 +9,7 @@
   "dependencies": {
     "dotenv": "latest",
     "ethers": "latest",
+    "pg": "latest",
     "viem": "latest",
     "ws": "latest",
     "zksync-ethers": "latest"
