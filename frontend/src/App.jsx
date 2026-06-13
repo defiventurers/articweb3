@@ -16,6 +16,7 @@ import { SettlementAdminScreen } from "./screens/SettlementAdminScreen.jsx";
 import { MatchHistoryScreen } from "./screens/MatchHistoryScreen.jsx";
 import { LeaderboardScreen } from "./screens/LeaderboardScreen.jsx";
 import { MyRoomsScreen } from "./screens/MyRoomsScreen.jsx";
+import { AccountActivityScreen } from "./screens/AccountActivityScreen.jsx";
 
 export default function App() {
   const [screen, setScreen] = useState("cover");
@@ -26,9 +27,10 @@ export default function App() {
   if (screen === "cover") return <CoverScreen onContinue={() => setScreen("menu")} />;
   if (screen === "menu") return <MainMenu onPlay={() => setScreen("profile")} onHowToPlay={() => alert("How to play comes after the lobby works.")} />;
   if (screen === "profile") return <ProfileScreen onComplete={(createdProfile) => { setProfile(createdProfile); setScreen("hub"); }} onBack={() => setScreen("menu")} />;
-  if (screen === "hub") return <PlayerHubScreen profile={profile} onOpenIce={() => setScreen("open-ice-menu")} onHighStakes={() => setScreen("high-stakes")} onMatchHistory={() => setScreen("match-history")} onLeaderboard={() => setScreen("leaderboard")} onAccountActivity={() => setScreen("match-history")} onMyRooms={() => setScreen("my-rooms")} onVaultDeployer={() => setScreen("vault-deployer")} onSettlementAdmin={() => setScreen("settlement-admin")} onBack={() => setScreen("profile")} />;
+  if (screen === "hub") return <PlayerHubScreen profile={profile} onOpenIce={() => setScreen("open-ice-menu")} onHighStakes={() => setScreen("high-stakes")} onMatchHistory={() => setScreen("match-history")} onLeaderboard={() => setScreen("leaderboard")} onAccountActivity={() => setScreen("activity")} onMyRooms={() => setScreen("my-rooms")} onVaultDeployer={() => setScreen("vault-deployer")} onSettlementAdmin={() => setScreen("settlement-admin")} onBack={() => setScreen("profile")} />;
   if (screen === "match-history") return <MatchHistoryScreen profile={profile} onBack={() => setScreen("hub")} />;
   if (screen === "leaderboard") return <LeaderboardScreen onBack={() => setScreen("hub")} />;
+  if (screen === "activity") return <AccountActivityScreen profile={profile} onBack={() => setScreen("hub")} />;
   if (screen === "my-rooms") return <MyRoomsScreen profile={profile} onResumeRoom={resumeRoom} onBack={() => setScreen("hub")} />;
   if (screen === "vault-deployer") return <EthVaultDeployerScreen onBack={() => setScreen("hub")} />;
   if (screen === "settlement-admin") return <SettlementAdminScreen onBack={() => setScreen("hub")} />;
