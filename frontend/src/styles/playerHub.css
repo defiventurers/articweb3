@@ -1,62 +1,260 @@
-.player-hub-art-screen {
+.playerhub-screen {
   background: #061b3a;
 }
 
-.player-hub-art-stage {
-  width: min(100vw, calc(100dvh * 941 / 1672));
-  height: min(100dvh, calc(100vw * 1672 / 941));
-  aspect-ratio: 941 / 1672;
+.menu-screen-shell {
+  width: min(100vw, calc(100dvh * 9 / 16));
+  height: min(100dvh, calc(100vw * 16 / 9));
+  aspect-ratio: 9 / 16;
+}
+
+.playerhub-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 9 / 16;
   background: #061b3a;
 }
 
-.ph-hit {
+.playerhub-overlay,
+.playerhub-hitboxes,
+.hitbox-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.playerhub-overlay {
+  z-index: 10;
+  pointer-events: none;
+}
+
+.playerhub-overlay > * {
+  position: absolute;
+  pointer-events: none;
+}
+
+.screen-hitbox {
   position: absolute;
   z-index: 12;
   border: 0;
+  background: transparent;
   padding: 0;
   margin: 0;
-  background: transparent;
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
-.ph-hit:focus-visible {
-  outline: 3px solid rgba(255,255,255,.86);
-  outline-offset: -3px;
-  border-radius: 16px;
-}
-
-.ph-hit:disabled {
+.screen-hitbox:disabled {
   cursor: not-allowed;
-  opacity: .45;
 }
 
-.ph-hit.active {
-  border: 2px solid rgba(255,255,255,.68);
-  border-radius: 18px;
-  box-shadow: 0 0 18px rgba(123,235,255,.55) inset, 0 0 18px rgba(123,235,255,.4);
+.screen-hitbox:focus-visible,
+.playerhub-amount-input:focus-visible,
+.ph-withdraw-input:focus-visible {
+  outline: 2px solid rgba(220, 250, 255, .86);
+  outline-offset: -2px;
+  border-radius: 14px;
 }
 
-.ph-play-open { left: 15.9%; top: 20.8%; width: 34.4%; height: 18.9%; }
-.ph-high-stakes { left: 52.4%; top: 20.8%; width: 34.4%; height: 18.9%; }
-.ph-eth { left: 14.5%; top: 43.6%; width: 34.4%; height: 6.4%; }
-.ph-usdc { left: 51.8%; top: 43.6%; width: 34.4%; height: 6.4%; }
-.ph-refresh { left: 15.1%; top: 62.7%; width: 23.1%; height: 7.2%; }
-.ph-deposit { left: 39.4%; top: 62.7%; width: 23.1%; height: 7.2%; }
-.ph-withdraw { left: 63.6%; top: 62.7%; width: 23.1%; height: 7.2%; }
-.ph-match-history { left: 15.4%; top: 76.4%; width: 34.4%; height: 7.5%; }
-.ph-leaderboard { left: 51.7%; top: 76.4%; width: 34.4%; height: 7.5%; }
-.ph-account-activity { left: 15.4%; top: 85.9%; width: 34.4%; height: 7.5%; }
-.ph-my-rooms { left: 51.7%; top: 85.9%; width: 34.4%; height: 7.5%; }
-.ph-back { left: 20.8%; top: 94.4%; width: 58.4%; height: 4.8%; }
+.playerhub-wallet-text,
+.playerhub-points-text,
+.playerhub-balance-value,
+.playerhub-amount-input {
+  position: absolute;
+  z-index: 14;
+  color: #f7fdff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 1000;
+  text-shadow: 0 2px 6px rgba(0, 80, 180, .85), 0 0 10px rgba(130, 235, 255, .5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playerhub-wallet-text {
+  left: 68.8%;
+  top: 3.4%;
+  width: 19.2%;
+  height: 2.5%;
+  display: grid;
+  align-items: center;
+  font-size: clamp(8px, 1.65vw, 14px);
+  letter-spacing: .02em;
+}
+
+.playerhub-points-text {
+  left: 88.8%;
+  top: 3.25%;
+  width: 8.4%;
+  height: 3.2%;
+  display: grid;
+  place-items: center;
+  font-size: clamp(7px, 1.25vw, 11px);
+  text-align: center;
+}
+
+.wallet-value {
+  left: 39.1%;
+  top: 69.15%;
+  width: 46.8%;
+  height: 2.7%;
+}
+
+.available-value {
+  left: 39.1%;
+  top: 72.62%;
+  width: 46.8%;
+  height: 2.7%;
+}
+
+.locked-value {
+  left: 39.1%;
+  top: 75.96%;
+  width: 46.8%;
+  height: 2.7%;
+}
+
+.playerhub-balance-value {
+  display: grid;
+  align-items: center;
+  font-size: clamp(9px, 1.95vw, 17px);
+  text-align: left;
+}
+
+.playerhub-amount-input {
+  left: 24.3%;
+  top: 79.75%;
+  width: 64.3%;
+  height: 3.35%;
+  background: transparent;
+  border: 0;
+  outline: none;
+  padding: 0 4.2%;
+  font-size: clamp(12px, 2.35vw, 21px);
+  text-align: left;
+}
+
+.playerhub-amount-input::placeholder,
+.ph-withdraw-input::placeholder {
+  color: rgba(230, 250, 255, .5);
+}
+
+.open-ice-hitbox {
+  left: 7.4%;
+  top: 19.7%;
+  width: 41.4%;
+  height: 14.9%;
+}
+
+.high-stakes-hitbox {
+  left: 50.8%;
+  top: 19.7%;
+  width: 42.3%;
+  height: 14.9%;
+}
+
+.match-history-hitbox {
+  left: 10.2%;
+  top: 39.7%;
+  width: 39.1%;
+  height: 9.9%;
+}
+
+.leaderboard-hitbox {
+  left: 50.4%;
+  top: 39.7%;
+  width: 39.1%;
+  height: 9.9%;
+}
+
+.account-activity-hitbox {
+  left: 10.2%;
+  top: 50.0%;
+  width: 39.1%;
+  height: 9.9%;
+}
+
+.my-rooms-hitbox {
+  left: 50.4%;
+  top: 50.0%;
+  width: 39.1%;
+  height: 9.9%;
+}
+
+.eth-tab-hitbox {
+  left: 10.5%;
+  top: 64.75%;
+  width: 38.8%;
+  height: 3.25%;
+}
+
+.usdc-tab-hitbox {
+  left: 50.0%;
+  top: 64.75%;
+  width: 39.0%;
+  height: 3.25%;
+}
+
+.refresh-hitbox {
+  left: 9.4%;
+  top: 84.25%;
+  width: 25.2%;
+  height: 5.0%;
+}
+
+.deposit-hitbox {
+  left: 36.4%;
+  top: 84.25%;
+  width: 26.4%;
+  height: 5.0%;
+}
+
+.withdraw-hitbox {
+  left: 64.2%;
+  top: 84.25%;
+  width: 25.2%;
+  height: 5.0%;
+}
+
+.playerhub-back-hitbox {
+  left: 25.4%;
+  top: 90.05%;
+  width: 49.2%;
+  height: 7.2%;
+}
+
+.ph-toast {
+  position: absolute;
+  z-index: 14;
+  left: 13.4%;
+  top: 83.05%;
+  width: 73.2%;
+  min-height: 1.5%;
+  color: #fff3c7;
+  font-size: clamp(7px, 1.35vw, 12px);
+  line-height: 1.1;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0,0,0,.72);
+  pointer-events: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ph-toast.error {
+  color: #ffd0d0;
+}
 
 .ph-approve {
-  left: 51.8%;
-  top: 50.3%;
-  width: 34.4%;
-  height: 3.6%;
+  position: absolute;
   z-index: 16;
+  left: 51.2%;
+  top: 67.95%;
+  width: 37.8%;
+  height: 2.4%;
   color: #fff;
   font-size: clamp(8px, 1.5vw, 12px);
   font-weight: 1000;
@@ -64,84 +262,6 @@
   border-radius: 12px;
   background: rgba(0,40,90,.55);
   border: 1px solid rgba(210,245,255,.7);
-}
-
-.ph-dyn {
-  position: absolute;
-  z-index: 14;
-  pointer-events: none;
-  color: white;
-  text-align: center;
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 1000;
-  text-shadow: 0 2px 3px rgba(0,0,0,.8), 0 0 10px rgba(110,220,255,.85);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ph-profile-text {
-  position: absolute;
-  z-index: 14;
-  left: 66.8%;
-  top: 7.3%;
-  width: 20.2%;
-  height: 4.1%;
-  display: grid;
-  place-items: center;
-  color: #effbff;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(8px, 1.75vw, 16px);
-  font-weight: 1000;
-  letter-spacing: .04em;
-  text-align: center;
-  text-shadow: 0 2px 4px rgba(0,0,0,.75), 0 0 10px rgba(120,225,255,.75);
-  pointer-events: none;
-  white-space: normal;
-  line-height: 1.08;
-}
-
-.ph-status {
-  left: 70.2%;
-  top: 41.7%;
-  width: 15.2%;
-  height: 2.3%;
-  display: grid;
-  place-items: center;
-  font-size: clamp(8px, 1.45vw, 13px);
-  color: #efffe8;
-}
-
-.ph-wallet-value,
-.ph-available-value,
-.ph-locked-value {
-  top: 56.8%;
-  width: 17.7%;
-  font-size: clamp(8px, 1.6vw, 16px);
-  line-height: 1.05;
-}
-
-.ph-wallet-value { left: 16.8%; }
-.ph-available-value { left: 41.2%; }
-.ph-locked-value { left: 65.4%; }
-
-.ph-toast {
-  position: absolute;
-  z-index: 14;
-  left: 18.4%;
-  top: 59.7%;
-  width: 63.2%;
-  min-height: 2.1%;
-  color: #fff3c7;
-  font-size: clamp(7px, 1.35vw, 12px);
-  line-height: 1.1;
-  text-align: center;
-  text-shadow: 0 2px 4px rgba(0,0,0,.72);
-  pointer-events: none;
-}
-
-.ph-toast.error {
-  color: #ffd0d0;
 }
 
 .ph-modal {
@@ -241,12 +361,24 @@
   background: rgba(15,95,175,.82);
 }
 
-.player-hub-art-stage .wallet-panel {
+.playerhub-stage .wallet-panel {
   display: contents;
 }
 
+/*
+.screen-hitbox {
+  outline: 1px solid rgba(255, 0, 0, .45);
+}
+.playerhub-overlay > *,
+.playerhub-balance-value,
+.playerhub-amount-input {
+  outline: 1px solid rgba(0, 255, 255, .45);
+}
+*/
+
 @media (max-width: 768px) and (orientation: portrait) {
-  .player-hub-art-stage {
+  .menu-screen-shell,
+  .playerhub-stage {
     width: 100vw;
     height: 100dvh;
     aspect-ratio: auto;
@@ -261,14 +393,17 @@
 }
 
 @media (max-width: 430px) {
-  .ph-profile-text {
+  .playerhub-wallet-text {
     font-size: 9px;
   }
 
-  .ph-wallet-value,
-  .ph-available-value,
-  .ph-locked-value {
-    font-size: 8px;
+  .playerhub-points-text {
+    font-size: 7px;
+  }
+
+  .playerhub-balance-value,
+  .playerhub-amount-input {
+    font-size: 11px;
   }
 
   .ph-toast {
