@@ -26,6 +26,8 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   const [status, setStatus] = useState("");
   const [tierPickerMode, setTierPickerMode] = useState(null);
 
+  const displayName = getDisplayName(profile, address);
+
   const availableQuery = useReadContract({
     address: ETH_VAULT_ADDRESS,
     abi: ethVaultAbi,
@@ -169,7 +171,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
             <div className="hs-room-code">{slotRoom.roomCode}</div>
             <div className={`hs-room-tier tier-${slotRoom.entryTier || "1"}`}>{tierLabel(slotRoom.entryTier)}</div>
             <div className="hs-room-count">{slotRoom.playerCount || 0}/4</div>
-            <div className="hs-room-fee">{formatEntry(slotRoom.entryWei)}</div>
+            <div className="hs-room-fee">{formatEntry(slotRoom.entryWei)} ETH</div>
             <div className={`hs-room-status ${roomStatus(slotRoom).toLowerCase()}`}>{roomStatus(slotRoom)}</div>
           </>
         )}
@@ -186,10 +188,14 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
           <img className="screen-art" src="/assets/screens/highstakes.png" alt="High Stakes Lab" draggable="false" />
 
           <div className="highstakes-overlay">
-            <div id="highStakesWalletText" className="highstakes-wallet-text">{profile.name}</div>
-            <div id="highStakesPointsText" className="highstakes-points-text">{profile.points} pts</div>
-            <div id="highStakesAvailableBalance" className="highstakes-lock-value available-lock-value">{formatAmount(availableBalance)} ETH</div>
-            <div id="highStakesLockedBalance" className="highstakes-lock-value locked-lock-value">{formatAmount(lockedBalance)} ETH</div>
+            <div id="highStakesWalletText" className="highstakes-wallet-text">{displayName}</div>
+            <div id="highStakesPointsText" className="highstakes-points-text">{profile?.points ?? 0}</div>
+            <div id="highStakesAvailableBalance" className="highstakes-lock-value available-lock-value">
+              {formatAmount(availableBalance)} ETH
+            </div>
+            <div id="highStakesLockedBalance" className="highstakes-lock-value locked-lock-value">
+              {formatAmount(lockedBalance)} ETH
+            </div>
             <div className="highstakes-page-text">{publicRooms.length > ROOM_PAGE_SIZE ? `Page ${roomPage + 1}` : ""}</div>
             {Array.from({ length: ROOM_PAGE_SIZE }, (_, index) => roomSlot(index))}
             {(status || error) && <div className={`highstakes-toast ${error ? "error" : ""}`}>{error || status}</div>}
@@ -274,6 +280,12 @@ function clampPage(page, totalRooms) {
 
 function tierLabel(code) {
   return TIERS.find((tier) => tier.code === String(code || "1"))?.label || "Tier A";
+}
+
+function getDisplayName(profile, address) {
+  if (profile?.name && String(profile.name).trim()) return String(profile.name).trim();
+  if (!address) return "Player";
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 function formatEntry(value) {
