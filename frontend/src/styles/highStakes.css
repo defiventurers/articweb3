@@ -52,9 +52,9 @@
 
 .highstakes-stage .screen-hitbox:focus-visible,
 .highstakes-private-input:focus-visible {
-  outline: 2px solid rgba(220, 250, 255, .9);
+  outline: 2px solid rgba(225, 248, 255, 0.95);
   outline-offset: -2px;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .highstakes-wallet-text,
@@ -69,10 +69,14 @@
 .hs-room-empty,
 .highstakes-page-text,
 .highstakes-toast {
-  color: #f7fdff;
+  color: #ffffff;
   font-family: Georgia, "Times New Roman", serif;
-  font-weight: 1000;
-  text-shadow: 0 2px 6px rgba(0, 80, 180, .85), 0 0 10px rgba(130, 235, 255, .45);
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.18),
+    0 2px 4px rgba(0, 50, 130, 0.95),
+    0 0 10px rgba(120, 225, 255, 0.35);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -80,188 +84,152 @@
 
 .highstakes-wallet-text {
   left: 69.1%;
-  top: 3.2%;
-  width: 18.5%;
-  height: 2.6%;
-  display: grid;
+  top: 2.65%;
+  width: 18.6%;
+  height: 3.2%;
+  display: flex;
   align-items: center;
-  font-size: clamp(8px, 1.65vw, 14px);
+  justify-content: flex-start;
+  padding-left: 1.2%;
+  font-size: clamp(9px, 1.65vw, 14px);
+  line-height: 1;
+  color: #f7fdff;
 }
 
 .highstakes-points-text {
-  left: 88.6%;
-  top: 3.0%;
-  width: 8.2%;
-  height: 3.3%;
-  display: grid;
-  place-items: center;
-  font-size: clamp(7px, 1.25vw, 11px);
-}
-
-.available-lock-value {
-  left: 21.5%;
-  top: 85.42%;
-  width: 21.5%;
-  height: 3.0%;
-}
-
-.locked-lock-value {
-  left: 52.0%;
-  top: 85.42%;
-  width: 20.0%;
-  height: 3.0%;
-  color: #ffc6ff;
-}
-
-.highstakes-lock-value {
-  display: grid;
+  left: 89.2%;
+  top: 2.55%;
+  width: 6.9%;
+  height: 3.4%;
+  display: flex;
   align-items: center;
-  font-size: clamp(13px, 2.7vw, 24px);
-  text-align: left;
-}
-
-.highstakes-private-input {
-  position: absolute;
-  z-index: 15;
-  left: 20.2%;
-  top: 76.0%;
-  width: 31.9%;
-  height: 3.35%;
-  background: transparent;
-  border: 0;
-  outline: none;
-  padding: 0 3%;
-  text-transform: uppercase;
-  font-size: clamp(14px, 2.6vw, 23px);
-  letter-spacing: .08em;
-}
-
-.highstakes-private-input::placeholder {
-  color: rgba(230, 250, 255, .5);
-}
-
-.hs-create-room-hitbox {
-  left: 30.0%;
-  top: 25.6%;
-  width: 42.0%;
-  height: 4.8%;
-}
-
-.hs-refresh-rooms-hitbox {
-  left: 72.8%;
-  top: 33.25%;
-  width: 18.0%;
-  height: 3.45%;
-}
-
-.hs-next-page-hitbox {
-  left: 37.5%;
-  top: 65.05%;
-  width: 25.0%;
-  height: 3.0%;
-}
-
-.hs-join-private-hitbox {
-  left: 54.5%;
-  top: 75.55%;
-  width: 29.2%;
-  height: 4.2%;
-}
-
-.hs-deposit-hitbox {
-  left: 72.0%;
-  top: 85.2%;
-  width: 21.0%;
-  height: 4.4%;
-}
-
-.hs-back-hitbox {
-  left: 23.4%;
-  top: 91.95%;
-  width: 53.2%;
-  height: 6.0%;
-}
-
-.highstakes-page-text {
-  left: 37.5%;
-  top: 63.7%;
-  width: 25%;
-  text-align: center;
-  font-size: clamp(7px, 1.3vw, 11px);
-  color: #dffaff;
+  justify-content: center;
+  font-size: clamp(8px, 1.35vw, 11px);
+  line-height: 1;
+  color: #ffe38c;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.16),
+    0 2px 4px rgba(120, 70, 0, 0.85),
+    0 0 8px rgba(255, 220, 120, 0.4);
 }
 
 .highstakes-room-card {
   position: absolute;
-  width: 26.5%;
-  height: 8.5%;
+  width: 26.2%;
+  height: 8.45%;
 }
 
-.hs-room-0 { left: 10.1%; top: 36.1%; }
-.hs-room-1 { left: 37.0%; top: 36.1%; }
-.hs-room-2 { left: 63.9%; top: 36.1%; }
-.hs-room-3 { left: 10.1%; top: 46.0%; }
-.hs-room-4 { left: 37.0%; top: 46.0%; }
-.hs-room-5 { left: 63.9%; top: 46.0%; }
-.hs-room-6 { left: 10.1%; top: 55.7%; }
-.hs-room-7 { left: 37.0%; top: 55.7%; }
-.hs-room-8 { left: 63.9%; top: 55.7%; }
+.hs-room-0 { left: 9.9%; top: 35.95%; }
+.hs-room-1 { left: 37.0%; top: 35.95%; }
+.hs-room-2 { left: 64.0%; top: 35.95%; }
+
+.hs-room-3 { left: 9.9%; top: 45.85%; }
+.hs-room-4 { left: 37.0%; top: 45.85%; }
+.hs-room-5 { left: 64.0%; top: 45.85%; }
+
+.hs-room-6 { left: 9.9%; top: 55.75%; }
+.hs-room-7 { left: 37.0%; top: 55.75%; }
+.hs-room-8 { left: 64.0%; top: 55.75%; }
 
 .hs-room-code {
   position: absolute;
-  left: 8.6%;
-  top: 9.5%;
+  left: 8.4%;
+  top: 8.6%;
   width: 43%;
-  font-size: clamp(12px, 2.4vw, 22px);
-  letter-spacing: .04em;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: clamp(13px, 2.45vw, 23px);
+  letter-spacing: 0.03em;
+  color: #ffffff;
 }
 
 .hs-room-tier {
   position: absolute;
-  right: 6.2%;
-  top: 12%;
-  width: 34%;
+  right: 6.4%;
+  top: 10.4%;
+  width: 33.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-size: clamp(7px, 1.25vw, 11px);
+  line-height: 1;
   text-transform: uppercase;
+  color: #eaf6ff;
 }
 
-.hs-room-tier.tier-4,
+.hs-room-tier.tier-1 {
+  color: #dff0ff;
+}
+
+.hs-room-tier.tier-4 {
+  color: #d5ffe1;
+}
+
 .hs-room-tier.tier-16 {
-  color: #ebd5ff;
+  color: #f0d9ff;
 }
 
 .hs-room-count {
   position: absolute;
-  left: 9%;
-  top: 45%;
-  width: 31%;
+  left: 18.2%;
+  top: 39.7%;
+  width: 19%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   font-size: clamp(8px, 1.55vw, 14px);
+  color: #ffffff;
 }
 
 .hs-room-fee {
   position: absolute;
-  left: 43%;
-  top: 45%;
-  width: 49%;
-  font-size: clamp(8px, 1.55vw, 14px);
+  left: 56.0%;
+  top: 39.7%;
+  width: 34%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: clamp(8px, 1.5vw, 13px);
+  color: #ffffff;
 }
 
 .hs-room-status {
   position: absolute;
-  left: 9%;
-  top: 72%;
-  width: 47%;
-  font-size: clamp(7px, 1.35vw, 12px);
-  color: #9fff4b;
+  left: 10.6%;
+  top: 72.6%;
+  width: 43%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: clamp(7px, 1.3vw, 12px);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.hs-room-status.waiting {
+  color: #bfff52;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.12),
+    0 2px 5px rgba(52, 90, 0, 0.9),
+    0 0 8px rgba(180, 255, 90, 0.25);
 }
 
 .hs-room-status.starting {
-  color: #ffd34d;
+  color: #ffd34b;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.12),
+    0 2px 5px rgba(120, 80, 0, 0.9),
+    0 0 8px rgba(255, 208, 85, 0.25);
 }
 
 .hs-room-status.full {
-  color: #ff6e68;
+  color: #ff5b4f;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.1),
+    0 2px 5px rgba(120, 0, 0, 0.9),
+    0 0 8px rgba(255, 110, 110, 0.25);
 }
 
 .hs-room-empty {
@@ -269,29 +237,133 @@
   inset: 0;
   display: grid;
   place-items: center;
-  color: rgba(230, 250, 255, .75);
-  font-size: clamp(8px, 1.5vw, 12px);
+  color: rgba(230, 250, 255, 0.75);
+  font-size: clamp(8px, 1.45vw, 12px);
+  text-align: center;
 }
 
 .hs-room-join-hitbox {
-  left: 58.4%;
-  top: 62.0%;
-  width: 36.0%;
-  height: 34.0%;
+  left: 58.2%;
+  top: 61.1%;
+  width: 35.8%;
+  height: 30.4%;
+}
+
+.highstakes-page-text {
+  left: 38%;
+  top: 64.12%;
+  width: 24%;
+  text-align: center;
+  font-size: clamp(8px, 1.3vw, 11px);
+  color: #dff8ff;
 }
 
 .highstakes-toast {
-  left: 14%;
-  top: 81.2%;
-  width: 72%;
+  left: 13%;
+  top: 80.4%;
+  width: 74%;
   min-height: 1.8%;
   text-align: center;
-  color: #fff3c7;
   font-size: clamp(8px, 1.45vw, 12px);
+  color: #fff3c7;
 }
 
 .highstakes-toast.error {
-  color: #ffd0d0;
+  color: #ffd7d7;
+}
+
+.highstakes-private-input {
+  position: absolute;
+  z-index: 15;
+  left: 20.0%;
+  top: 75.85%;
+  width: 31.9%;
+  height: 3.55%;
+  background: transparent;
+  border: 0;
+  outline: none;
+  padding: 0 2.8%;
+  text-transform: uppercase;
+  font-size: clamp(14px, 2.5vw, 22px);
+  line-height: 1;
+  color: #ffffff;
+  letter-spacing: 0.08em;
+}
+
+.highstakes-private-input::placeholder {
+  color: rgba(232, 246, 255, 0.45);
+}
+
+.highstakes-lock-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(13px, 2.7vw, 24px);
+  line-height: 1;
+}
+
+.available-lock-value {
+  left: 19.1%;
+  top: 85.65%;
+  width: 20.8%;
+  height: 2.9%;
+  text-align: center;
+  color: #e9f8ff;
+}
+
+.locked-lock-value {
+  left: 51.8%;
+  top: 85.65%;
+  width: 17.7%;
+  height: 2.9%;
+  text-align: center;
+  color: #f1c6ff;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.18),
+    0 2px 4px rgba(80, 20, 100, 0.95),
+    0 0 10px rgba(215, 160, 255, 0.28);
+}
+
+.hs-create-room-hitbox {
+  left: 30.0%;
+  top: 25.5%;
+  width: 42.0%;
+  height: 4.9%;
+}
+
+.hs-refresh-rooms-hitbox {
+  left: 72.6%;
+  top: 33.2%;
+  width: 18.3%;
+  height: 3.55%;
+}
+
+.hs-next-page-hitbox {
+  left: 37.2%;
+  top: 65.1%;
+  width: 25.8%;
+  height: 3.2%;
+}
+
+.hs-join-private-hitbox {
+  left: 54.3%;
+  top: 75.45%;
+  width: 29.6%;
+  height: 4.35%;
+}
+
+.hs-deposit-hitbox {
+  left: 71.2%;
+  top: 85.15%;
+  width: 22.2%;
+  height: 4.55%;
+}
+
+.hs-back-hitbox {
+  left: 23.0%;
+  top: 91.8%;
+  width: 54.5%;
+  height: 6.1%;
 }
 
 .highstakes-modal {
@@ -301,15 +373,17 @@
   display: grid;
   place-items: center;
   padding: 5%;
-  background: rgba(2, 11, 28, .58);
+  background: rgba(2, 11, 28, 0.62);
 }
 
 .highstakes-modal-card {
   width: min(82%, 390px);
   border-radius: 22px;
-  border: 1px solid rgba(190, 245, 255, .88);
-  background: rgba(7, 37, 78, .97);
-  box-shadow: 0 14px 35px rgba(0,0,0,.45), 0 0 24px rgba(110,220,255,.2) inset;
+  border: 1px solid rgba(190, 245, 255, 0.9);
+  background: rgba(7, 37, 78, 0.97);
+  box-shadow:
+    0 14px 35px rgba(0,0,0,0.45),
+    0 0 24px rgba(110,220,255,0.2) inset;
   color: white;
   padding: 16px;
   display: grid;
@@ -320,6 +394,10 @@
 .highstakes-modal-card h3,
 .highstakes-modal-card p {
   margin: 0;
+}
+
+.highstakes-modal-card h3 {
+  color: #ffffff;
 }
 
 .highstakes-modal-card p {
@@ -375,19 +453,9 @@
 .highstakes-tier-btn:disabled,
 .highstakes-modal-primary:disabled,
 .highstakes-modal-cancel:disabled {
-  opacity: .5;
+  opacity: 0.5;
   cursor: not-allowed;
 }
-
-/*
-.highstakes-stage .screen-hitbox {
-  outline: 1px solid rgba(255, 0, 0, .45);
-}
-.highstakes-overlay > *,
-.highstakes-private-input {
-  outline: 1px solid rgba(0, 255, 255, .45);
-}
-*/
 
 .deposit-panel,
 .rules-panel {
@@ -411,6 +479,16 @@
   color: #fff3c7;
   line-height: 1.3;
 }
+
+/*
+.highstakes-stage .screen-hitbox {
+  outline: 1px solid rgba(255, 0, 0, .45);
+}
+.highstakes-overlay > *,
+.highstakes-private-input {
+  outline: 1px solid rgba(0, 255, 255, .45);
+}
+*/
 
 @media (max-width: 768px) and (orientation: portrait) {
   .highstakes-shell,
