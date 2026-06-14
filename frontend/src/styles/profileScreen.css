@@ -201,11 +201,25 @@
 .profile-page.is-calibrating [data-calibrate] {
   outline: 1px solid rgba(0, 255, 255, .65);
   background-color: rgba(0, 180, 255, .08);
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
 }
 
 .profile-page.is-calibrating .profile-hit[data-calibrate] {
   outline: 1px solid rgba(255, 0, 0, .6);
   background-color: rgba(255, 0, 0, .10);
+  cursor: move;
+}
+
+.profile-page.is-calibrating .profile-connect-disabled,
+.profile-page.is-calibrating .profile-wallet-display {
+  pointer-events: auto;
+}
+
+.profile-page.is-calibrating .profile-name-input {
+  caret-color: transparent;
 }
 
 .profile-calibrator {
@@ -225,6 +239,11 @@
   color: white;
   font: 700 12px system-ui, sans-serif;
   box-shadow: 0 12px 26px rgba(0,0,0,.35);
+}
+
+.profile-calibrator small {
+  color: rgba(220, 245, 255, .82);
+  line-height: 1.25;
 }
 
 .profile-calibrator select,
