@@ -6,6 +6,7 @@ import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js"
 import { ethVaultAbi } from "../contracts/abis.js";
 import { confirmEntryLock, createRoom, joinRoom, listRooms } from "../network/socketClient.js";
 import "../styles/highStakes.css";
+import "../styles/highStakesCalibration.css";
 
 const TIERS = [
   { code: "1", label: "$1 Entry", fallbackWei: "1000000000000000" },
@@ -290,6 +291,16 @@ function HighstakesCalibrator({ enabled, targetIds, overrides, setOverrides }) {
   const [draft, setDraft] = useState({ left: "", top: "", width: "", height: "", fontSize: "" });
 
   useEffect(() => {
+    if (!enabled) return;
+    document.querySelectorAll("[data-calibration-selected]").forEach((element) => element.removeAttribute("data-calibration-selected"));
+    const element = document.querySelector(`[data-calibrate="${selected}"]`);
+    if (element) element.setAttribute("data-calibration-selected", "true");
+    return () => {
+      if (element) element.removeAttribute("data-calibration-selected");
+    };
+  }, [enabled, selected]);
+
+  useEffect(() => {
     if (!enabled || !selected) return;
     const element = document.querySelector(`[data-calibrate="${selected}"]`);
     const stage = document.querySelector(".highstakes-stage");
@@ -307,7 +318,7 @@ function HighstakesCalibrator({ enabled, targetIds, overrides, setOverrides }) {
       height: override.height || toPercent(rect.height, stageRect.height),
       fontSize: override.fontSize || computed.fontSize || ""
     });
-  }, [enabled, selected]);
+  }, [enabled, selected, overrides]);
 
   if (!enabled) return null;
 
@@ -315,6 +326,20 @@ function HighstakesCalibrator({ enabled, targetIds, overrides, setOverrides }) {
     const nextDraft = { ...draft, [field]: value };
     setDraft(nextDraft);
     setOverrides((current) => ({ ...current, [selected]: compactStyle(nextDraft) }));
+  }
+
+  function nudge(field, amount) {
+    const current = readCssNumber(draft[field], field === "fontSize" ? 1.5 : 0);
+    const unit = field === "fontSize" ? readCssUnit(draft[field], "cqw") : "%";
+    updateField(field, `${roundCss(current + amount)}${unit}`);
+  }
+
+  function resetSelected() {
+    setOverrides((current) => {
+      const next = { ...current };
+      delete next[selected];
+      return next;
+    });
   }
 
   function exportPositions() {
@@ -342,10 +367,33 @@ function HighstakesCalibrator({ enabled, targetIds, overrides, setOverrides }) {
 
   return (
     <div className="highstakes-calibrator">
-      <strong>High Stakes Calibration</strong>
+      <div className="highstakes-calibrator-header">
+        <strong>High Stakes Calibration</strong>
+        <button type="button" className="secondary" onClick={resetSelected}>Reset</button>
+      </div>
+      <p className="highstakes-calibrator-hint">Panel is outside the art. Select a zone, then move/resize with buttons or type exact values. Export copies JSON.</p>
       <select value={selected} onChange={(event) => setSelected(event.target.value)}>
         {targetIds.map((targetId) => <option key={targetId} value={targetId}>{targetId}</option>)}
       </select>
+      <div className="highstakes-calibrator-controls" aria-label="Move selected zone">
+        <span className="cal-spacer" />
+        <button type="button" onClick={() => nudge("top", -0.2)}>↑</button>
+        <span className="cal-spacer" />
+        <button type="button" onClick={() => nudge("left", -0.2)}>←</button>
+        <button type="button" onClick={() => nudge("top", 0.2)}>↓</button>
+        <button type="button" onClick={() => nudge("left", 0.2)}>→</button>
+      </div>
+      <div className="highstakes-calibrator-size" aria-label="Resize selected zone">
+        <button type="button" onClick={() => nudge("width", -0.2)}>Width −</button>
+        <button type="button" onClick={() => nudge("width", 0.2)}>Width +</button>
+        <button type="button" onClick={() => nudge("height", -0.2)}>Height −</button>
+        <button type="button" onClick={() => nudge("height", 0.2)}>Height +</button>
+      </div>
+      <div className="highstakes-calibrator-font" aria-label="Change text size">
+        <button type="button" onClick={() => nudge("fontSize", -0.1)}>Text −</button>
+        <button type="button" onClick={() => nudge("fontSize", 0.1)}>Text +</button>
+      </div>
+      <hr />
       {["left", "top", "width", "height", "fontSize"].map((field) => (
         <label key={field}>
           <span>{field}</span>
@@ -458,4 +506,18 @@ function toPercent(value, total) {
 
 function compactStyle(style) {
   return Object.fromEntries(Object.entries(style).filter(([, value]) => String(value || "").trim()));
+}
+
+function readCssNumber(value, fallback = 0) {
+  const parsed = Number.parseFloat(String(value || ""));
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function readCssUnit(value, fallback = "%") {
+  const match = String(value || "").trim().match(/[a-z%]+$/i);
+  return match?.[0] || fallback;
+}
+
+function roundCss(value) {
+  return Math.round(value * 100) / 100;
 }
