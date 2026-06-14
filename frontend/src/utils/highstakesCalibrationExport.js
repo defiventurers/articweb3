@@ -2,7 +2,10 @@ const CALIBRATION_QUERY_KEY = "calibrateHighstakes";
 const DOCK_ID = "highstakes-calibration-export-dock";
 const TEXTAREA_ID = "highstakes-calibration-export-output";
 const STYLE_ID = "highstakes-calibration-export-style";
+const DRAG_LAYER_ID = "highstakes-calibration-drag-layer";
 const STORAGE_KEY = "highstakesCalibrationLatestCss";
+
+let dragState = null;
 
 if (typeof window !== "undefined") {
   window.addEventListener("DOMContentLoaded", startHighstakesCalibrationExportDock);
@@ -17,10 +20,18 @@ function startHighstakesCalibrationExportDock() {
     const stage = document.querySelector(".highstakes-stage");
     if (!stage) return;
     ensureDock();
+    ensureDragLayer();
+    if (!dragState) updateDragBoxes();
     updateOutput();
-  }, 350);
+  }, 180);
 
-  window.addEventListener("beforeunload", () => window.clearInterval(timer), { once: true });
+  window.addEventListener("pointermove", onGlobalPointerMove, { passive: false });
+  window.addEventListener("pointerup", onGlobalPointerUp);
+  window.addEventListener("beforeunload", () => {
+    window.clearInterval(timer);
+    window.removeEventListener("pointermove", onGlobalPointerMove);
+    window.removeEventListener("pointerup", onGlobalPointerUp);
+  }, { once: true });
 }
 
 function isEnabled() {
@@ -38,7 +49,7 @@ function ensureDock() {
       <strong>Calibration Export</strong>
       <button type="button" data-hs-cal-minimize>−</button>
     </div>
-    <p>Copy this CSS after moving boxes. It updates live.</p>
+    <p>Drag red boxes to move text. Drag yellow handles to resize. CSS updates live below.</p>
     <div class="hs-cal-export-actions">
       <button type="button" data-hs-cal-copy>Copy CSS</button>
       <button type="button" data-hs-cal-select>Select All</button>
@@ -55,6 +66,133 @@ function ensureDock() {
   dock.querySelector("[data-hs-cal-minimize]")?.addEventListener("click", () => dock.classList.toggle("minimized"));
 }
 
+function ensureDragLayer() {
+  const stage = document.querySelector(".highstakes-stage");
+  if (!stage) return;
+  if (document.getElementById(DRAG_LAYER_ID)) return;
+
+  const layer = document.createElement("div");
+  layer.id = DRAG_LAYER_ID;
+  layer.className = "hs-cal-drag-layer";
+  stage.appendChild(layer);
+}
+
+function updateDragBoxes() {
+  const layer = document.getElementById(DRAG_LAYER_ID);
+  const stage = document.querySelector(".highstakes-stage");
+  if (!layer || !stage) return;
+
+  const stageRect = stage.getBoundingClientRect();
+  const activeIds = new Set();
+
+  getTargets().forEach((target) => {
+    const targetId = target.getAttribute("data-calibrate");
+    if (!targetId) return;
+    activeIds.add(targetId);
+
+    let box = layer.querySelector(`[data-hs-cal-box="${cssEscape(targetId)}"]`);
+    if (!box) {
+      box = document.createElement("div");
+      box.className = "hs-cal-box";
+      box.setAttribute("data-hs-cal-box", targetId);
+      box.innerHTML = `<span class="hs-cal-label"></span><span class="hs-cal-resize" data-hs-cal-resize="true"></span>`;
+      box.addEventListener("pointerdown", (event) => startDrag(event, targetId, event.target?.hasAttribute("data-hs-cal-resize") ? "resize" : "move"));
+      layer.appendChild(box);
+    }
+
+    const rect = target.getBoundingClientRect();
+    box.style.left = `${rect.left - stageRect.left}px`;
+    box.style.top = `${rect.top - stageRect.top}px`;
+    box.style.width = `${Math.max(6, rect.width)}px`;
+    box.style.height = `${Math.max(6, rect.height)}px`;
+    box.querySelector(".hs-cal-label").textContent = targetId;
+  });
+
+  layer.querySelectorAll("[data-hs-cal-box]").forEach((box) => {
+    if (!activeIds.has(box.getAttribute("data-hs-cal-box"))) box.remove();
+  });
+}
+
+function startDrag(event, targetId, mode) {
+  const target = getTargetById(targetId);
+  const stage = document.querySelector(".highstakes-stage");
+  if (!target || !stage) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const context = getPositionContext(target, stage);
+  const contextRect = context.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  const computed = window.getComputedStyle(target);
+
+  dragState = {
+    target,
+    targetId,
+    mode,
+    originX: event.clientX,
+    originY: event.clientY,
+    contextRect,
+    startLeft: targetRect.left - contextRect.left,
+    startTop: targetRect.top - contextRect.top,
+    startWidth: targetRect.width,
+    startHeight: targetRect.height,
+    fontSize: computed.fontSize || ""
+  };
+
+  document.body.classList.add("hs-cal-is-dragging");
+  setStatus(mode === "resize" ? `Resizing ${targetId}` : `Moving ${targetId}`);
+}
+
+function onGlobalPointerMove(event) {
+  if (!dragState) return;
+  event.preventDefault();
+
+  const dx = event.clientX - dragState.originX;
+  const dy = event.clientY - dragState.originY;
+
+  const nextLeft = dragState.mode === "move" ? dragState.startLeft + dx : dragState.startLeft;
+  const nextTop = dragState.mode === "move" ? dragState.startTop + dy : dragState.startTop;
+  const nextWidth = dragState.mode === "resize" ? Math.max(6, dragState.startWidth + dx) : dragState.startWidth;
+  const nextHeight = dragState.mode === "resize" ? Math.max(6, dragState.startHeight + dy) : dragState.startHeight;
+
+  dragState.target.style.left = toPercent(nextLeft, dragState.contextRect.width);
+  dragState.target.style.top = toPercent(nextTop, dragState.contextRect.height);
+  dragState.target.style.width = toPercent(nextWidth, dragState.contextRect.width);
+  dragState.target.style.height = toPercent(nextHeight, dragState.contextRect.height);
+  if (dragState.fontSize) dragState.target.style.fontSize = dragState.fontSize;
+
+  updateDragBoxes();
+  updateOutput();
+}
+
+function onGlobalPointerUp() {
+  if (!dragState) return;
+  setStatus(`Updated ${dragState.targetId}`);
+  dragState = null;
+  document.body.classList.remove("hs-cal-is-dragging");
+  updateDragBoxes();
+  updateOutput();
+}
+
+function getTargets() {
+  const seen = new Set();
+  return Array.from(document.querySelectorAll(".highstakes-stage [data-calibrate]")).filter((element) => {
+    const id = element.getAttribute("data-calibrate");
+    if (!id || seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+}
+
+function getTargetById(targetId) {
+  return document.querySelector(`.highstakes-stage [data-calibrate="${cssEscape(targetId)}"]`);
+}
+
+function getPositionContext(element, stage) {
+  return element.closest(".highstakes-room-card") || element.closest(".highstakes-hitboxes") || stage;
+}
+
 function updateOutput() {
   const textarea = document.getElementById(TEXTAREA_ID);
   if (!textarea) return;
@@ -69,21 +207,19 @@ function updateOutput() {
 function buildCurrentCalibrationCss() {
   const stage = document.querySelector(".highstakes-stage");
   if (!stage) return "";
-  const stageRect = stage.getBoundingClientRect();
   const entries = [];
-  const seen = new Set();
 
-  document.querySelectorAll(".highstakes-stage [data-calibrate]").forEach((element) => {
+  getTargets().forEach((element) => {
     const targetId = element.getAttribute("data-calibrate");
-    if (!targetId || seen.has(targetId)) return;
-    seen.add(targetId);
+    const context = getPositionContext(element, stage);
+    const contextRect = context.getBoundingClientRect();
     const rect = element.getBoundingClientRect();
     const computed = window.getComputedStyle(element);
     entries.push([targetId, {
-      left: toPercent(rect.left - stageRect.left, stageRect.width),
-      top: toPercent(rect.top - stageRect.top, stageRect.height),
-      width: toPercent(rect.width, stageRect.width),
-      height: toPercent(rect.height, stageRect.height),
+      left: toPercent(rect.left - contextRect.left, contextRect.width),
+      top: toPercent(rect.top - contextRect.top, contextRect.height),
+      width: toPercent(rect.width, contextRect.width),
+      height: toPercent(rect.height, contextRect.height),
       fontSize: computed.fontSize || ""
     }]);
   });
@@ -170,6 +306,7 @@ function cssSelectorForTarget(targetId) {
     "page-text": ".highstakes-page-text",
     "create-room-hitbox": ".hs-create-room-hitbox",
     "refresh-rooms-hitbox": ".hs-refresh-rooms-hitbox",
+    "prev-page-hitbox": ".hs-prev-page-hitbox",
     "next-page-hitbox": ".hs-next-page-hitbox",
     "private-room-input": ".highstakes-private-input",
     "join-private-hitbox": ".hs-join-private-hitbox",
@@ -179,11 +316,67 @@ function cssSelectorForTarget(targetId) {
   return map[targetId] || `[data-calibrate="${targetId}"]`;
 }
 
+function cssEscape(value) {
+  if (window.CSS?.escape) return window.CSS.escape(value);
+  return String(value).replace(/"/g, "\\\"");
+}
+
 function injectDockStyles() {
   if (document.getElementById(STYLE_ID)) return;
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `
+    .hs-cal-drag-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 99990;
+      pointer-events: none;
+    }
+    .hs-cal-box {
+      position: absolute;
+      pointer-events: auto;
+      border: 2px solid rgba(255, 45, 45, .82);
+      background: rgba(255, 0, 0, .06);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.25), 0 0 12px rgba(255,45,45,.25);
+      cursor: move;
+      touch-action: none;
+      user-select: none;
+    }
+    .hs-cal-box:hover {
+      border-color: rgba(255, 230, 65, .98);
+      background: rgba(255, 230, 65, .10);
+    }
+    .hs-cal-label {
+      position: absolute;
+      left: 0;
+      top: -17px;
+      max-width: 220px;
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: rgba(0, 10, 30, .94);
+      color: white;
+      font: 800 10px/1 system-ui, sans-serif;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+    .hs-cal-resize {
+      position: absolute;
+      right: -8px;
+      bottom: -8px;
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.75);
+      background: #ffe640;
+      cursor: nwse-resize;
+      pointer-events: auto;
+      touch-action: none;
+    }
+    .hs-cal-is-dragging * {
+      user-select: none !important;
+    }
     .hs-cal-export-dock {
       position: fixed;
       right: 10px;
