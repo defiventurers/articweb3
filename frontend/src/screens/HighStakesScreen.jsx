@@ -5,6 +5,7 @@ import { useAbstractClient } from "@abstract-foundation/agw-react";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
 import { confirmEntryLock, createRoom, joinRoom, listRooms } from "../network/socketClient.js";
+import "../styles/highStakes.css";
 
 const TIERS = [
   { code: "1", label: "Tier A", fallbackWei: "1000000000000000" },
@@ -257,7 +258,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
 }
 
 function mergeRoomList(current, nextRoom) {
-  const roomStillListed = nextRoom.status === "waiting" && !nextRoom.countdownStartTime && nextRoom.playerCount < 4;
+  const roomStillListed = nextRoom.visibility === "public" && nextRoom.status === "waiting";
   const filtered = current.filter((item) => item.roomCode !== nextRoom.roomCode);
   return roomStillListed ? [nextRoom, ...filtered] : filtered;
 }
