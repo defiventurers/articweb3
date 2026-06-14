@@ -8,9 +8,9 @@ import { confirmEntryLock, createRoom, joinRoom, listRooms } from "../network/so
 import "../styles/highStakes.css";
 
 const TIERS = [
-  { code: "1", label: "$1 Entry", fallbackWei: "1000000000000000" },
-  { code: "4", label: "$4 Entry", fallbackWei: "4000000000000000" },
-  { code: "16", label: "$16 Entry", fallbackWei: "16000000000000000" }
+  { code: "1", label: "1 USD Entry", fallbackWei: "1000000000000000" },
+  { code: "4", label: "4 USD Entry", fallbackWei: "4000000000000000" },
+  { code: "16", label: "16 USD Entry", fallbackWei: "16000000000000000" }
 ];
 
 const ROOM_PAGE_SIZE = 9;
@@ -38,6 +38,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     args: address ? [address] : undefined,
     query: { enabled: Boolean(address && ETH_TARGETS_READY) }
   });
+
   const lockedQuery = useReadContract({
     address: ETH_VAULT_ADDRESS,
     abi: ethVaultAbi,
@@ -292,26 +293,23 @@ function getDisplayName(profile, address) {
 function getCalibrationRoom(index) {
   const samples = [
     { roomCode: "YS3B", entryWei: "1000000000000000", playerCount: 2, maxPlayers: 4 },
-    { roomCode: "A352", entryWei: "4000000000000000", playerCount: 1, maxPlayers: 4 },
-    { roomCode: "FTY2", entryWei: "16000000000000000", playerCount: 3, maxPlayers: 4 },
-    { roomCode: "J4VE", entryWei: "1000000000000000", playerCount: 2, maxPlayers: 4 },
-    { roomCode: "T6RK", entryWei: "4000000000000000", playerCount: 4, maxPlayers: 4 },
-    { roomCode: "H9CY", entryWei: "16000000000000000", playerCount: 1, maxPlayers: 4 },
-    { roomCode: "B3UA", entryWei: "1000000000000000", playerCount: 3, maxPlayers: 4 },
+    { roomCode: "A352", entryWei: "2000000000000000", playerCount: 1, maxPlayers: 4 },
+    { roomCode: "FTY2", entryWei: "3000000000000000", playerCount: 3, maxPlayers: 4 },
+    { roomCode: "J4VE", entryWei: "4000000000000000", playerCount: 2, maxPlayers: 4 },
+    { roomCode: "T6RK", entryWei: "1000000000000000", playerCount: 4, maxPlayers: 4 },
+    { roomCode: "H9CY", entryWei: "2000000000000000", playerCount: 1, maxPlayers: 4 },
+    { roomCode: "B3UA", entryWei: "3000000000000000", playerCount: 3, maxPlayers: 4 },
     { roomCode: "W5DN", entryWei: "4000000000000000", playerCount: 1, maxPlayers: 4 },
-    { roomCode: "Z1GF", entryWei: "16000000000000000", playerCount: 2, maxPlayers: 4 }
+    { roomCode: "Z1GF", entryWei: "1000000000000000", playerCount: 2, maxPlayers: 4 }
   ];
   return samples[index] || null;
 }
 
 function getUsdEntryLabel(entryEth) {
-  const value = Number(entryEth).toFixed(3);
-  const map = {
-    "0.001": "$1",
-    "0.004": "$4",
-    "0.016": "$16"
-  };
-  return map[value] || "";
+  const ethAmount = Number(entryEth);
+  if (!Number.isFinite(ethAmount) || ethAmount <= 0) return "";
+  const usdAmount = Math.round(ethAmount * 1000);
+  return `${usdAmount} USD`;
 }
 
 function getUsdEntryLabelFromWei(value) {
