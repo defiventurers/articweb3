@@ -9,6 +9,7 @@ import "./styles/gameBoard.css";
 import "./styles/teamSelect.css";
 import "./styles/profileScreen.css";
 import "./styles/openIceFlow.css";
+import "./utils/highstakesCalibrationExport.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
