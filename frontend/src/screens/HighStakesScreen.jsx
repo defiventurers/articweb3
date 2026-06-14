@@ -199,7 +199,18 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     <section id="screenHighStakes" className={`art-screen highstakes-screen ${calibrateHighstakes ? "is-calibrating" : ""}`} aria-label="High Stakes Lab">
       <div className="highstakes-shell">
         <div className="art-stage highstakes-stage">
-          <img className="screen-art" src="/assets/screens/highstakes-lab.png" alt="High Stakes Lab" draggable="false" />
+          <img
+            className="screen-art"
+            src="/assets/screens/highstakes-lab.png"
+            alt="High Stakes Lab"
+            draggable="false"
+            onError={(event) => {
+              if (!event.currentTarget.dataset.fallbackApplied) {
+                event.currentTarget.dataset.fallbackApplied = "1";
+                event.currentTarget.src = "/assets/screens/highstakes.png";
+              }
+            }}
+          />
 
           <div className="highstakes-overlay">
             <div id="highStakesWalletText" className="highstakes-wallet-text" data-calibrate="wallet-text" style={calibrationStyle("wallet-text")}>{displayName}</div>
