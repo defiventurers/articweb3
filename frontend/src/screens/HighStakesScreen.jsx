@@ -8,12 +8,13 @@ import { confirmEntryLock, createRoom, joinRoom, listRooms } from "../network/so
 import "../styles/highStakes.css";
 
 const TIERS = [
-  { code: "1", label: "Tier A", fallbackWei: "1000000000000000" },
-  { code: "4", label: "Tier B", fallbackWei: "4000000000000000" },
-  { code: "16", label: "Tier C", fallbackWei: "16000000000000000" }
+  { code: "1", label: "$1 Entry", fallbackWei: "1000000000000000" },
+  { code: "4", label: "$4 Entry", fallbackWei: "2000000000000000" },
+  { code: "16", label: "$16 Entry", fallbackWei: "3000000000000000" }
 ];
 
 const ROOM_PAGE_SIZE = 9;
+const CALIBRATION_QUERY_KEY = "calibrateHighstakes";
 
 export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   const { address } = useAccount();
@@ -26,7 +27,10 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [tierPickerMode, setTierPickerMode] = useState(null);
+  const [calibrationOverrides, setCalibrationOverrides] = useState({});
 
+  const calibrateHighstakes = useMemo(() => isHighstakesCalibrationEnabled(), []);
+  const calibrationTargets = useMemo(() => getCalibrationTargets(), []);
   const displayName = getDisplayName(profile, address);
 
   const availableQuery = useReadContract({
@@ -65,6 +69,10 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     return () => window.removeEventListener("server-packet", onPacket);
   }, []);
 
+  function calibrationStyle(targetId) {
+    return calibrateHighstakes ? calibrationOverrides[targetId] : undefined;
+  }
+
   async function refreshBalances() {
     await Promise.all([availableQuery.refetch?.(), lockedQuery.refetch?.()]);
   }
@@ -92,7 +100,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     if (!abstractClient) return setError("Wallet client is not ready. Reconnect AGW and try again.");
     await run(async () => {
       const value = BigInt(tier.fallbackWei || "0");
-      setStatus(`Open AGW to deposit ${formatEntry(value.toString())}.`);
+      setStatus(`Open AGW to deposit ${formatEntry(value.toString())} ETH.`);
       await abstractClient.writeContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "deposit", value });
       setTierPickerMode(null);
       await refreshBalances();
@@ -165,54 +173,61 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   function roomSlot(slotIndex) {
     const slotRoom = visibleRooms[slotIndex];
     const globalIndex = roomPage * ROOM_PAGE_SIZE + slotIndex;
+    const roomCodeTarget = `room-${slotIndex}-code`;
+    const usersTarget = `room-${slotIndex}-users`;
+    const ethTarget = `room-${slotIndex}-eth`;
+    const usdTarget = `room-${slotIndex}-usd`;
+    const joinTarget = `room-${slotIndex}-join`;
+
     return (
       <div className={`highstakes-room-card hs-room-${slotIndex}`} key={`slot-${slotIndex}`}>
         {slotRoom && (
           <>
-            <div className="hs-room-code">{slotRoom.roomCode}</div>
-            <div className={`hs-room-tier tier-${slotRoom.entryTier || "1"}`}>{tierLabel(slotRoom.entryTier)}</div>
-            <div className="hs-room-count">{slotRoom.playerCount || 0}/4</div>
-            <div className="hs-room-fee">{formatEntry(slotRoom.entryWei)} ETH</div>
-            <div className={`hs-room-status ${roomStatus(slotRoom).toLowerCase()}`}>{roomStatus(slotRoom)}</div>
+            <div className="hs-room-code" data-calibrate={roomCodeTarget} style={calibrationStyle(roomCodeTarget)}>{slotRoom.roomCode}</div>
+            <div className="hs-room-count" data-calibrate={usersTarget} style={calibrationStyle(usersTarget)}>{slotRoom.playerCount || 0}/{slotRoom.maxPlayers || 4}</div>
+            <div className="hs-room-fee" data-calibrate={ethTarget} style={calibrationStyle(ethTarget)}>{formatEntry(slotRoom.entryWei)} ETH</div>
+            <div className="hs-room-usd" data-calibrate={usdTarget} style={calibrationStyle(usdTarget)}>{getUsdEntryLabelFromWei(slotRoom.entryWei)}</div>
           </>
         )}
-        {slotRoom && <button className="screen-hitbox hs-room-join-hitbox" aria-label={`Join room ${slotRoom.roomCode}`} disabled={busy || !canJoin(slotRoom)} onClick={() => enterRoom(slotRoom.roomCode)} />}
+        {slotRoom && <button className="screen-hitbox hs-room-join-hitbox" data-calibrate={joinTarget} style={calibrationStyle(joinTarget)} aria-label={`Join room ${slotRoom.roomCode}`} disabled={busy || !canJoin(slotRoom)} onClick={() => enterRoom(slotRoom.roomCode)} />}
         {!slotRoom && <div className="hs-room-empty">{globalIndex === 0 ? "No public rooms" : ""}</div>}
       </div>
     );
   }
 
   return (
-    <section id="screenHighStakes" className="art-screen highstakes-screen" aria-label="High Stakes Lab">
+    <section id="screenHighStakes" className={`art-screen highstakes-screen ${calibrateHighstakes ? "is-calibrating" : ""}`} aria-label="High Stakes Lab">
       <div className="highstakes-shell">
         <div className="art-stage highstakes-stage">
-          <img className="screen-art" src="/assets/screens/highstakes.png" alt="High Stakes Lab" draggable="false" />
+          <img className="screen-art" src="/assets/screens/highstakes-lab.png" alt="High Stakes Lab" draggable="false" />
 
           <div className="highstakes-overlay">
-            <div id="highStakesWalletText" className="highstakes-wallet-text">{displayName}</div>
-            <div id="highStakesPointsText" className="highstakes-points-text">{profile?.points ?? 0}</div>
-            <div id="highStakesAvailableBalance" className="highstakes-lock-value available-lock-value">
+            <div id="highStakesWalletText" className="highstakes-wallet-text" data-calibrate="wallet-text" style={calibrationStyle("wallet-text")}>{displayName}</div>
+            <div id="highStakesPointsText" className="highstakes-points-text" data-calibrate="points-text" style={calibrationStyle("points-text")}>{profile?.points ?? ""}</div>
+            <div id="highStakesAvailableBalance" className="highstakes-lock-value available-lock-value" data-calibrate="available-lock" style={calibrationStyle("available-lock")}>
               {formatAmount(availableBalance)} ETH
             </div>
-            <div id="highStakesLockedBalance" className="highstakes-lock-value locked-lock-value">
+            <div id="highStakesLockedBalance" className="highstakes-lock-value locked-lock-value" data-calibrate="locked-lock" style={calibrationStyle("locked-lock")}>
               {formatAmount(lockedBalance)} ETH
             </div>
-            <div className="highstakes-page-text">{publicRooms.length > ROOM_PAGE_SIZE ? `Page ${roomPage + 1}` : ""}</div>
+            <div className="highstakes-page-text" data-calibrate="page-text" style={calibrationStyle("page-text")}>{publicRooms.length > ROOM_PAGE_SIZE ? `Page ${roomPage + 1}` : ""}</div>
             {Array.from({ length: ROOM_PAGE_SIZE }, (_, index) => roomSlot(index))}
             {(status || error) && <div className={`highstakes-toast ${error ? "error" : ""}`}>{error || status}</div>}
           </div>
 
           <div className="hitbox-layer highstakes-hitboxes">
-            <button id="highStakesCreateRoomBtn" className="screen-hitbox hs-create-room-hitbox" aria-label="Create Room" disabled={busy} onClick={() => setTierPickerMode("create")} />
-            <button id="highStakesRefreshRoomsBtn" className="screen-hitbox hs-refresh-rooms-hitbox" aria-label="Refresh Rooms" disabled={busy} onClick={refreshRooms} />
-            <button id="highStakesNextPageBtn" className="screen-hitbox hs-next-page-hitbox" aria-label="Next Page" disabled={busy || publicRooms.length <= ROOM_PAGE_SIZE} onClick={nextPage} />
-            <button id="highStakesDepositBtn" className="screen-hitbox hs-deposit-hitbox" aria-label="Deposit" disabled={busy || !ETH_TARGETS_READY} onClick={() => setTierPickerMode("deposit")} />
-            <button id="highStakesBackBtn" className="screen-hitbox hs-back-hitbox" aria-label="Back To Hub" disabled={busy} onClick={onBack} />
+            <button id="highStakesCreateRoomBtn" className="screen-hitbox hs-create-room-hitbox" data-calibrate="create-room-hitbox" style={calibrationStyle("create-room-hitbox")} aria-label="Create Room" disabled={busy} onClick={() => setTierPickerMode("create")} />
+            <button id="highStakesRefreshRoomsBtn" className="screen-hitbox hs-refresh-rooms-hitbox" data-calibrate="refresh-rooms-hitbox" style={calibrationStyle("refresh-rooms-hitbox")} aria-label="Refresh Rooms" disabled={busy} onClick={refreshRooms} />
+            <button id="highStakesNextPageBtn" className="screen-hitbox hs-next-page-hitbox" data-calibrate="next-page-hitbox" style={calibrationStyle("next-page-hitbox")} aria-label="Next Page" disabled={busy || publicRooms.length <= ROOM_PAGE_SIZE} onClick={nextPage} />
+            <button id="highStakesDepositBtn" className="screen-hitbox hs-deposit-hitbox" data-calibrate="deposit-hitbox" style={calibrationStyle("deposit-hitbox")} aria-label="Deposit" disabled={busy || !ETH_TARGETS_READY} onClick={() => setTierPickerMode("deposit")} />
+            <button id="highStakesBackBtn" className="screen-hitbox hs-back-hitbox" data-calibrate="back-hitbox" style={calibrationStyle("back-hitbox")} aria-label="Back To Hub" disabled={busy} onClick={onBack} />
           </div>
 
           <input
             id="highStakesPrivateRoomInput"
             className="highstakes-private-input"
+            data-calibrate="private-room-input"
+            style={calibrationStyle("private-room-input")}
             inputMode="text"
             autoComplete="off"
             maxLength={4}
@@ -220,16 +235,18 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
             value={joinCode}
             onChange={(event) => setJoinCode(clean(event.target.value))}
           />
-          <button id="highStakesJoinPrivateBtn" className="screen-hitbox hs-join-private-hitbox" aria-label="Join Private Room" disabled={busy} onClick={() => enterRoom()} />
+          <button id="highStakesJoinPrivateBtn" className="screen-hitbox hs-join-private-hitbox" data-calibrate="join-private-hitbox" style={calibrationStyle("join-private-hitbox")} aria-label="Join Private Room" disabled={busy} onClick={() => enterRoom()} />
+
+          <HighstakesCalibrator enabled={calibrateHighstakes} targetIds={calibrationTargets} overrides={calibrationOverrides} setOverrides={setCalibrationOverrides} />
 
           {tierPickerMode && (
-            <div className="highstakes-modal" role="dialog" aria-modal="true" aria-label={tierPickerMode === "create" ? "Choose room tier" : "Choose deposit amount"}>
+            <div className="highstakes-modal" role="dialog" aria-modal="true" aria-label={tierPickerMode === "create" ? "Choose entry amount" : "Choose deposit amount"}>
               <div className="highstakes-modal-card">
-                <h3>{tierPickerMode === "create" ? "Choose Room Tier" : "Deposit Testnet ETH"}</h3>
-                <p>{tierPickerMode === "create" ? "Pick the testnet lock tier for the new room." : "Pick how much testnet ETH to deposit into available balance."}</p>
+                <h3>{tierPickerMode === "create" ? "Choose Entry" : "Deposit Testnet ETH"}</h3>
+                <p>{tierPickerMode === "create" ? "Pick the testnet lock amount for the new room." : "Pick how much testnet ETH to deposit into available balance."}</p>
                 <div className="highstakes-tier-grid">
                   {TIERS.map((tier) => (
-                    <button key={tier.code} type="button" className={`highstakes-tier-btn tier-${tier.code}`} disabled={busy} onClick={() => tierPickerMode === "create" ? makeRoom(tier) : depositTier(tier)}>
+                    <button key={tier.code} type="button" className={`highstakes-tier-btn entry-${tier.code}`} disabled={busy} onClick={() => tierPickerMode === "create" ? makeRoom(tier) : depositTier(tier)}>
                       <strong>{tier.label}</strong>
                       <span>{formatEntry(tier.fallbackWei)} ETH</span>
                     </button>
@@ -244,7 +261,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
             <div className="highstakes-modal" role="dialog" aria-modal="true" aria-label="Confirm testnet lock">
               <div className="highstakes-modal-card">
                 <h3>Room {room.roomCode}</h3>
-                <p>{tierLabel(room.entryTier)} · Required lock {formatEntry(room.entryWei)} ETH</p>
+                <p>{getUsdEntryLabelFromWei(room.entryWei) || "Entry"} · Required lock {formatEntry(room.entryWei)} ETH</p>
                 <p>{room.playerCount || 1}/4 players · {room.players?.filter((player) => player.entryLocked).length || 0} locked</p>
                 <button type="button" className="highstakes-modal-primary" disabled={busy} onClick={confirmWithWallet}>{busy ? "Working..." : "Confirm Testnet Lock"}</button>
                 <button type="button" className="highstakes-modal-cancel" disabled={busy} onClick={() => setRoom(null)}>Choose Another Room</button>
@@ -254,6 +271,78 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function HighstakesCalibrator({ enabled, targetIds, overrides, setOverrides }) {
+  const [selected, setSelected] = useState(targetIds[0] || "");
+  const [draft, setDraft] = useState({ left: "", top: "", width: "", height: "", fontSize: "" });
+
+  useEffect(() => {
+    if (!enabled || !selected) return;
+    const element = document.querySelector(`[data-calibrate="${selected}"]`);
+    const stage = document.querySelector(".highstakes-stage");
+    if (!element || !stage) return;
+
+    const stageRect = stage.getBoundingClientRect();
+    const rect = element.getBoundingClientRect();
+    const computed = window.getComputedStyle(element);
+    const override = overrides[selected] || {};
+
+    setDraft({
+      left: override.left || toPercent(rect.left - stageRect.left, stageRect.width),
+      top: override.top || toPercent(rect.top - stageRect.top, stageRect.height),
+      width: override.width || toPercent(rect.width, stageRect.width),
+      height: override.height || toPercent(rect.height, stageRect.height),
+      fontSize: override.fontSize || computed.fontSize || ""
+    });
+  }, [enabled, selected]);
+
+  if (!enabled) return null;
+
+  function updateField(field, value) {
+    const nextDraft = { ...draft, [field]: value };
+    setDraft(nextDraft);
+    setOverrides((current) => ({ ...current, [selected]: compactStyle(nextDraft) }));
+  }
+
+  function exportPositions() {
+    const stage = document.querySelector(".highstakes-stage");
+    if (!stage) return;
+    const stageRect = stage.getBoundingClientRect();
+    const result = {};
+    document.querySelectorAll("[data-calibrate]").forEach((element) => {
+      const key = element.getAttribute("data-calibrate");
+      if (!key) return;
+      const rect = element.getBoundingClientRect();
+      const computed = window.getComputedStyle(element);
+      result[key] = {
+        left: toPercent(rect.left - stageRect.left, stageRect.width),
+        top: toPercent(rect.top - stageRect.top, stageRect.height),
+        width: toPercent(rect.width, stageRect.width),
+        height: toPercent(rect.height, stageRect.height),
+        fontSize: computed.fontSize
+      };
+    });
+    const json = JSON.stringify(result, null, 2);
+    console.log("High Stakes calibration positions", result);
+    navigator.clipboard?.writeText(json).catch(() => {});
+  }
+
+  return (
+    <div className="highstakes-calibrator">
+      <strong>High Stakes Calibration</strong>
+      <select value={selected} onChange={(event) => setSelected(event.target.value)}>
+        {targetIds.map((targetId) => <option key={targetId} value={targetId}>{targetId}</option>)}
+      </select>
+      {["left", "top", "width", "height", "fontSize"].map((field) => (
+        <label key={field}>
+          <span>{field}</span>
+          <input value={draft[field] || ""} onChange={(event) => updateField(field, event.target.value)} placeholder={field === "fontSize" ? "1.6cqw" : "0%"} />
+        </label>
+      ))}
+      <button type="button" onClick={exportPositions}>EXPORT POSITIONS</button>
+    </div>
   );
 }
 
@@ -279,14 +368,24 @@ function clampPage(page, totalRooms) {
   return Math.min(page, maxPage);
 }
 
-function tierLabel(code) {
-  return TIERS.find((tier) => tier.code === String(code || "1"))?.label || "Tier A";
-}
-
 function getDisplayName(profile, address) {
   if (profile?.name && String(profile.name).trim()) return String(profile.name).trim();
-  if (!address) return "Player";
+  if (!address) return "";
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+function getUsdEntryLabel(entryEth) {
+  const value = Number(entryEth).toFixed(3);
+  const map = {
+    "0.001": "$1",
+    "0.002": "$4",
+    "0.003": "$16"
+  };
+  return map[value] || "";
+}
+
+function getUsdEntryLabelFromWei(value) {
+  return getUsdEntryLabel(formatEntry(value));
 }
 
 function formatEntry(value) {
@@ -309,4 +408,43 @@ function clean(value) {
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isHighstakesCalibrationEnabled() {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get(CALIBRATION_QUERY_KEY) === "1";
+}
+
+function getCalibrationTargets() {
+  const base = [
+    "wallet-text",
+    "points-text",
+    "available-lock",
+    "locked-lock",
+    "page-text",
+    "create-room-hitbox",
+    "refresh-rooms-hitbox",
+    "next-page-hitbox",
+    "private-room-input",
+    "join-private-hitbox",
+    "deposit-hitbox",
+    "back-hitbox"
+  ];
+  const roomTargets = Array.from({ length: ROOM_PAGE_SIZE }, (_, index) => [
+    `room-${index}-code`,
+    `room-${index}-users`,
+    `room-${index}-eth`,
+    `room-${index}-usd`,
+    `room-${index}-join`
+  ]).flat();
+  return [...base, ...roomTargets];
+}
+
+function toPercent(value, total) {
+  if (!total) return "0%";
+  return `${((value / total) * 100).toFixed(2)}%`;
+}
+
+function compactStyle(style) {
+  return Object.fromEntries(Object.entries(style).filter(([, value]) => String(value || "").trim()));
 }
