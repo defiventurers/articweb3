@@ -14,6 +14,14 @@
   height: 100%;
   aspect-ratio: 9 / 16;
   background: #061b3a;
+  container-type: inline-size;
+}
+
+.highstakes-stage .screen-art {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .highstakes-overlay,
@@ -67,10 +75,9 @@
 .highstakes-lock-value,
 .highstakes-private-input,
 .hs-room-code,
-.hs-room-tier,
 .hs-room-count,
 .hs-room-fee,
-.hs-room-status,
+.hs-room-usd,
 .hs-room-empty,
 .highstakes-page-text,
 .highstakes-toast {
@@ -85,32 +92,31 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .highstakes-wallet-text {
-  left: 69.1%;
-  top: 2.65%;
-  width: 18.6%;
-  height: 3.2%;
+  left: 71.1%;
+  top: 2.55%;
+  width: 16.5%;
+  height: 3.1%;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   padding-left: 1.2%;
-  font-size: clamp(9px, 1.65vw, 14px);
-  line-height: 1;
+  font-size: 1.75cqw;
   color: #f7fdff;
 }
 
 .highstakes-points-text {
-  left: 89.2%;
-  top: 2.55%;
-  width: 6.9%;
-  height: 3.4%;
+  left: 89.0%;
+  top: 2.50%;
+  width: 6.7%;
+  height: 3.2%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(8px, 1.35vw, 11px);
-  line-height: 1;
+  font-size: 1.35cqw;
   color: #ffe38c;
   text-shadow:
     0 1px 0 rgba(255,255,255,0.16),
@@ -120,121 +126,70 @@
 
 .highstakes-room-card {
   position: absolute;
-  width: 26.2%;
-  height: 8.45%;
+  width: 26.6%;
+  height: 10.2%;
 }
 
-.hs-room-0 { left: 9.9%; top: 35.95%; }
-.hs-room-1 { left: 37.0%; top: 35.95%; }
-.hs-room-2 { left: 64.0%; top: 35.95%; }
+.hs-room-0 { left: 9.0%; top: 34.9%; }
+.hs-room-1 { left: 36.9%; top: 34.9%; }
+.hs-room-2 { left: 64.8%; top: 34.9%; }
 
-.hs-room-3 { left: 9.9%; top: 45.85%; }
-.hs-room-4 { left: 37.0%; top: 45.85%; }
-.hs-room-5 { left: 64.0%; top: 45.85%; }
+.hs-room-3 { left: 9.0%; top: 45.9%; }
+.hs-room-4 { left: 36.9%; top: 45.9%; }
+.hs-room-5 { left: 64.8%; top: 45.9%; }
 
-.hs-room-6 { left: 9.9%; top: 55.75%; }
-.hs-room-7 { left: 37.0%; top: 55.75%; }
-.hs-room-8 { left: 64.0%; top: 55.75%; }
+.hs-room-6 { left: 9.0%; top: 56.9%; }
+.hs-room-7 { left: 36.9%; top: 56.9%; }
+.hs-room-8 { left: 64.8%; top: 56.9%; }
 
 .hs-room-code {
   position: absolute;
-  left: 8.4%;
-  top: 8.6%;
-  width: 43%;
+  left: 17.5%;
+  top: 18.5%;
+  width: 68.0%;
+  height: 14.0%;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  font-size: clamp(13px, 2.45vw, 23px);
-  letter-spacing: 0.03em;
-  color: #ffffff;
-}
-
-.hs-room-tier {
-  position: absolute;
-  right: 6.4%;
-  top: 10.4%;
-  width: 33.5%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: clamp(7px, 1.25vw, 11px);
-  line-height: 1;
-  text-transform: uppercase;
-  color: #eaf6ff;
-}
-
-.hs-room-tier.tier-1 {
-  color: #dff0ff;
-}
-
-.hs-room-tier.tier-4 {
-  color: #d5ffe1;
-}
-
-.hs-room-tier.tier-16 {
-  color: #f0d9ff;
+  font-size: 1.8cqw;
+  letter-spacing: 0.05em;
 }
 
 .hs-room-count {
   position: absolute;
-  left: 18.2%;
-  top: 39.7%;
-  width: 19%;
+  left: 20.0%;
+  top: 40.5%;
+  width: 19.0%;
+  height: 13.0%;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  font-size: clamp(8px, 1.55vw, 14px);
-  color: #ffffff;
+  justify-content: center;
+  font-size: 1.45cqw;
 }
 
 .hs-room-fee {
   position: absolute;
-  left: 56.0%;
-  top: 39.7%;
-  width: 34%;
+  left: 46.5%;
+  top: 40.5%;
+  width: 42.0%;
+  height: 13.0%;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  font-size: clamp(8px, 1.5vw, 13px);
-  color: #ffffff;
+  font-size: 1.38cqw;
 }
 
-.hs-room-status {
+.hs-room-usd {
   position: absolute;
-  left: 10.6%;
-  top: 72.6%;
-  width: 43%;
+  left: 20.0%;
+  top: 59.5%;
+  width: 68.5%;
+  height: 13.0%;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  font-size: clamp(7px, 1.3vw, 12px);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.hs-room-status.waiting {
-  color: #bfff52;
-  text-shadow:
-    0 1px 0 rgba(255,255,255,0.12),
-    0 2px 5px rgba(52, 90, 0, 0.9),
-    0 0 8px rgba(180, 255, 90, 0.25);
-}
-
-.hs-room-status.starting {
-  color: #ffd34b;
-  text-shadow:
-    0 1px 0 rgba(255,255,255,0.12),
-    0 2px 5px rgba(120, 80, 0, 0.9),
-    0 0 8px rgba(255, 208, 85, 0.25);
-}
-
-.hs-room-status.full {
-  color: #ff5b4f;
-  text-shadow:
-    0 1px 0 rgba(255,255,255,0.1),
-    0 2px 5px rgba(120, 0, 0, 0.9),
-    0 0 8px rgba(255, 110, 110, 0.25);
+  font-size: 1.5cqw;
+  color: #dff8ff;
 }
 
 .hs-room-empty {
@@ -243,34 +198,34 @@
   display: grid;
   place-items: center;
   color: rgba(230, 250, 255, 0.75);
-  font-size: clamp(8px, 1.45vw, 12px);
+  font-size: 1.3cqw;
   text-align: center;
 }
 
 .hs-room-join-hitbox {
-  left: 58.2%;
-  top: 61.1%;
-  width: 35.8%;
-  height: 30.4%;
+  left: 22.0%;
+  top: 75.2%;
+  width: 58.0%;
+  height: 20.0%;
   z-index: 16;
 }
 
 .highstakes-page-text {
-  left: 38%;
-  top: 64.12%;
-  width: 24%;
+  left: 39%;
+  top: 67.8%;
+  width: 22%;
   text-align: center;
-  font-size: clamp(8px, 1.3vw, 11px);
+  font-size: 1.25cqw;
   color: #dff8ff;
 }
 
 .highstakes-toast {
   left: 13%;
-  top: 80.4%;
+  top: 80.6%;
   width: 74%;
   min-height: 1.8%;
   text-align: center;
-  font-size: clamp(8px, 1.45vw, 12px);
+  font-size: 1.4cqw;
   color: #fff3c7;
 }
 
@@ -282,7 +237,7 @@
   position: absolute;
   z-index: 15;
   left: 20.0%;
-  top: 75.85%;
+  top: 75.95%;
   width: 31.9%;
   height: 3.55%;
   background: transparent;
@@ -290,7 +245,8 @@
   outline: none;
   padding: 0 2.8%;
   text-transform: uppercase;
-  font-size: clamp(14px, 2.5vw, 22px);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.35cqw;
   line-height: 1;
   color: #ffffff;
   letter-spacing: 0.08em;
@@ -304,24 +260,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(13px, 2.7vw, 24px);
+  font-size: 2.2cqw;
   line-height: 1;
 }
 
 .available-lock-value {
-  left: 19.1%;
-  top: 85.65%;
+  left: 18.8%;
+  top: 86.15%;
   width: 20.8%;
-  height: 2.9%;
+  height: 2.6%;
   text-align: center;
   color: #e9f8ff;
 }
 
 .locked-lock-value {
-  left: 51.8%;
-  top: 85.65%;
-  width: 17.7%;
-  height: 2.9%;
+  left: 52.2%;
+  top: 86.15%;
+  width: 17.9%;
+  height: 2.6%;
   text-align: center;
   color: #f1c6ff;
   text-shadow:
@@ -332,44 +288,44 @@
 
 .hs-create-room-hitbox {
   left: 30.0%;
-  top: 25.5%;
+  top: 25.7%;
   width: 42.0%;
-  height: 4.9%;
+  height: 5.1%;
 }
 
 .hs-refresh-rooms-hitbox {
-  left: 72.6%;
+  left: 72.4%;
   top: 33.2%;
-  width: 18.3%;
-  height: 3.55%;
+  width: 18.7%;
+  height: 3.65%;
 }
 
 .hs-next-page-hitbox {
-  left: 37.2%;
-  top: 65.1%;
-  width: 25.8%;
-  height: 3.2%;
+  left: 35.0%;
+  top: 67.7%;
+  width: 30.0%;
+  height: 3.45%;
 }
 
 .hs-join-private-hitbox {
-  left: 54.3%;
-  top: 75.45%;
-  width: 29.6%;
-  height: 4.35%;
+  left: 54.0%;
+  top: 75.55%;
+  width: 31.0%;
+  height: 4.5%;
 }
 
 .hs-deposit-hitbox {
-  left: 71.2%;
-  top: 85.15%;
-  width: 22.2%;
-  height: 4.55%;
+  left: 70.8%;
+  top: 85.65%;
+  width: 22.8%;
+  height: 4.65%;
 }
 
 .hs-back-hitbox {
   left: 23.0%;
-  top: 91.8%;
+  top: 92.15%;
   width: 54.5%;
-  height: 6.1%;
+  height: 5.7%;
 }
 
 .highstakes-modal {
@@ -440,11 +396,11 @@
   color: #fff3c7;
 }
 
-.highstakes-tier-btn.tier-4 {
+.highstakes-tier-btn.entry-4 {
   background: #145e62;
 }
 
-.highstakes-tier-btn.tier-16 {
+.highstakes-tier-btn.entry-16 {
   background: #4a2682;
 }
 
@@ -486,15 +442,59 @@
   line-height: 1.3;
 }
 
-/*
-.highstakes-stage .screen-hitbox {
-  outline: 1px solid rgba(255, 0, 0, .45);
+.highstakes-screen.is-calibrating .highstakes-stage .screen-hitbox {
+  outline: 1px solid rgba(255, 0, 0, .55);
+  background: rgba(255, 0, 0, .08);
 }
-.highstakes-overlay > *,
-.highstakes-private-input {
-  outline: 1px solid rgba(0, 255, 255, .45);
+
+.highstakes-screen.is-calibrating [data-calibrate]:not(.screen-hitbox) {
+  outline: 1px solid rgba(0, 255, 255, .55);
+  background-color: rgba(0, 180, 255, .08);
 }
-*/
+
+.highstakes-calibrator {
+  position: absolute;
+  left: 2%;
+  top: 2%;
+  z-index: 80;
+  width: min(44%, 330px);
+  max-height: 92%;
+  overflow: auto;
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(190, 245, 255, .85);
+  background: rgba(3, 15, 36, .92);
+  color: white;
+  font: 700 12px system-ui, sans-serif;
+  box-shadow: 0 12px 26px rgba(0,0,0,.35);
+}
+
+.highstakes-calibrator select,
+.highstakes-calibrator input,
+.highstakes-calibrator button {
+  width: 100%;
+  min-height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(190, 245, 255, .65);
+  background: rgba(255,255,255,.08);
+  color: white;
+  padding: 4px 6px;
+  font: inherit;
+}
+
+.highstakes-calibrator label {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 6px;
+  align-items: center;
+}
+
+.highstakes-calibrator button {
+  background: #0878d8;
+  cursor: pointer;
+}
 
 @media (max-width: 768px) and (orientation: portrait) {
   .highstakes-shell,
@@ -506,25 +506,6 @@
 }
 
 @media (max-width: 430px) {
-  .hs-room-code {
-    font-size: 12px;
-  }
-
-  .hs-room-fee,
-  .hs-room-count {
-    font-size: 8px;
-  }
-
-  .hs-room-status,
-  .hs-room-tier {
-    font-size: 7px;
-  }
-
-  .highstakes-lock-value,
-  .highstakes-private-input {
-    font-size: 12px;
-  }
-
   .highstakes-modal-card {
     width: 86%;
     padding: 14px;
