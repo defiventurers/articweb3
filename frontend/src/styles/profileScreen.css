@@ -198,6 +198,46 @@
   border-color: rgba(255, 130, 130, .55);
 }
 
+.profile-calibration-rect {
+  position: absolute;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  border: 2px solid rgba(0, 210, 255, .95);
+  background: rgba(0, 120, 255, .20);
+  color: white;
+  font: 900 11px/1 system-ui, sans-serif;
+  letter-spacing: .04em;
+  text-shadow: 0 1px 2px rgba(0,0,0,.8);
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+.profile-agw-rectangle {
+  left: 15.20%;
+  top: 25.35%;
+  width: 69.60%;
+  height: 11.35%;
+}
+
+.profile-wallet-rectangle {
+  left: 14.7%;
+  top: 48.1%;
+  width: 69.8%;
+  height: 5.9%;
+}
+
+.profile-player-name-rectangle {
+  left: 14.7%;
+  top: 62.7%;
+  width: 69.8%;
+  height: 5.9%;
+}
+
 .profile-page.is-calibrating [data-calibrate] {
   outline: 1px solid rgba(0, 255, 255, .65);
   background-color: rgba(0, 180, 255, .08);
@@ -213,8 +253,14 @@
   cursor: move;
 }
 
+.profile-page.is-calibrating .profile-calibration-rect[data-calibrate] {
+  outline: 2px solid rgba(0, 210, 255, .95);
+  background-color: rgba(0, 120, 255, .20);
+}
+
 .profile-page.is-calibrating .profile-connect-disabled,
-.profile-page.is-calibrating .profile-wallet-display {
+.profile-page.is-calibrating .profile-wallet-display,
+.profile-page.is-calibrating .profile-name-input {
   pointer-events: auto;
 }
 
