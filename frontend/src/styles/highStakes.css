@@ -81,6 +81,7 @@
 .hs-room-empty,
 .highstakes-page-text,
 .highstakes-toast {
+  position: absolute;
   color: #ffffff;
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 900;
@@ -95,28 +96,35 @@
   line-height: 1;
 }
 
-.highstakes-wallet-text {
-  left: 71.1%;
-  top: 2.55%;
-  width: 16.5%;
-  height: 3.1%;
+.highstakes-wallet-text,
+.highstakes-points-text,
+.highstakes-lock-value,
+.hs-room-code,
+.hs-room-count,
+.hs-room-fee,
+.hs-room-usd,
+.highstakes-page-text {
   display: flex;
   align-items: center;
+}
+
+.highstakes-wallet-text {
+  left: 73.67%;
+  top: 1.22%;
+  width: 23.36%;
+  height: 2.79%;
+  font-size: 11.4579px;
   justify-content: flex-start;
-  padding-left: 1.2%;
-  font-size: 1.75cqw;
   color: #f7fdff;
 }
 
 .highstakes-points-text {
-  left: 89.0%;
-  top: 2.50%;
-  width: 6.7%;
-  height: 3.2%;
-  display: flex;
-  align-items: center;
+  left: 72.51%;
+  top: 2.61%;
+  width: 6.88%;
+  height: 2.38%;
+  font-size: 8.83891px;
   justify-content: center;
-  font-size: 1.35cqw;
   color: #ffe38c;
   text-shadow:
     0 1px 0 rgba(255,255,255,0.16),
@@ -126,97 +134,148 @@
 
 .highstakes-room-card {
   position: absolute;
-  width: 26.6%;
-  height: 10.2%;
-}
-
-.hs-room-0 { left: 9.0%; top: 34.9%; }
-.hs-room-1 { left: 36.9%; top: 34.9%; }
-.hs-room-2 { left: 64.8%; top: 34.9%; }
-
-.hs-room-3 { left: 9.0%; top: 45.9%; }
-.hs-room-4 { left: 36.9%; top: 45.9%; }
-.hs-room-5 { left: 64.8%; top: 45.9%; }
-
-.hs-room-6 { left: 9.0%; top: 56.9%; }
-.hs-room-7 { left: 36.9%; top: 56.9%; }
-.hs-room-8 { left: 64.8%; top: 56.9%; }
-
-.hs-room-code {
-  position: absolute;
-  left: 17.5%;
-  top: 18.5%;
-  width: 68.0%;
-  height: 14.0%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  font-size: 1.8cqw;
-  letter-spacing: 0.05em;
-}
-
-.hs-room-count {
-  position: absolute;
-  left: 20.0%;
-  top: 40.5%;
-  width: 19.0%;
-  height: 13.0%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.45cqw;
-}
-
-.hs-room-fee {
-  position: absolute;
-  left: 46.5%;
-  top: 40.5%;
-  width: 42.0%;
-  height: 13.0%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  font-size: 1.38cqw;
-}
-
-.hs-room-usd {
-  position: absolute;
-  left: 20.0%;
-  top: 59.5%;
-  width: 68.5%;
-  height: 13.0%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  font-size: 1.5cqw;
-  color: #dff8ff;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 .hs-room-empty {
-  position: absolute;
-  inset: 0;
+  inset: 35% 0 auto 0;
+  height: 2%;
   display: grid;
   place-items: center;
   color: rgba(230, 250, 255, 0.75);
-  font-size: 1.3cqw;
+  font-size: 12px;
   text-align: center;
 }
 
-.hs-room-join-hitbox {
-  left: 22.0%;
-  top: 75.2%;
-  width: 58.0%;
-  height: 20.0%;
-  z-index: 16;
+.hs-room-code {
+  justify-content: flex-start;
+  letter-spacing: 0.03em;
+}
+
+.hs-room-count,
+.hs-room-fee,
+.hs-room-usd {
+  justify-content: flex-start;
+}
+
+.hs-room-usd {
+  color: #dff8ff;
+}
+
+.hs-room-0 .hs-room-code { left: 12.28%; top: 38.31%; width: 5.10%; height: 1.1%; font-size: 11.7852px; }
+.hs-room-0 .hs-room-count { left: 12.37%; top: 38.55%; width: 1.34%; height: 1.0%; font-size: 9.49365px; }
+.hs-room-0 .hs-room-fee { left: 14.43%; top: 38.55%; width: 3.02%; height: 1.0%; font-size: 9.03533px; }
+.hs-room-0 .hs-room-usd { left: 12.37%; top: 38.79%; width: 5.04%; height: 1.0%; font-size: 9.82102px; }
+.hs-room-0 .hs-room-join-hitbox { left: 11.43%; top: 39.03%; width: 6.15%; height: 2.7%; z-index: 16; }
+
+.hs-room-1 .hs-room-code { left: 47.70%; top: 38.31%; width: 5.25%; height: 1.1%; font-size: 11.7852px; }
+.hs-room-1 .hs-room-count { left: 47.73%; top: 38.55%; width: 1.34%; height: 1.0%; font-size: 9.49365px; }
+.hs-room-1 .hs-room-fee { left: 49.90%; top: 38.55%; width: 3.02%; height: 1.0%; font-size: 9.03533px; }
+.hs-room-1 .hs-room-usd { left: 47.69%; top: 38.78%; width: 5.19%; height: 1.0%; font-size: 9.82102px; }
+.hs-room-1 .hs-room-join-hitbox { left: 46.80%; top: 39.02%; width: 6.15%; height: 2.7%; z-index: 16; }
+
+.hs-room-2 .hs-room-code { left: 83.27%; top: 38.31%; width: 5.49%; height: 1.1%; font-size: 11.7852px; }
+.hs-room-2 .hs-room-count { left: 83.20%; top: 38.54%; width: 1.49%; height: 1.0%; font-size: 9.49365px; }
+.hs-room-2 .hs-room-fee { left: 85.52%; top: 38.54%; width: 3.26%; height: 1.0%; font-size: 9.03533px; }
+.hs-room-2 .hs-room-usd { left: 83.20%; top: 38.80%; width: 4.80%; height: 1.0%; font-size: 9.82102px; }
+.hs-room-2 .hs-room-join-hitbox { left: 82.32%; top: 39.03%; width: 6.54%; height: 2.7%; z-index: 16; }
+
+.hs-room-3 .hs-room-code { left: 12.33%; top: 50.67%; width: 5.25%; height: 1.1%; font-size: 11.7852px; }
+.hs-room-3 .hs-room-count { left: 12.27%; top: 50.91%; width: 1.49%; height: 1.0%; font-size: 9.49365px; }
+.hs-room-3 .hs-room-fee { left: 14.48%; top: 50.92%; width: 2.97%; height: 1.0%; font-size: 9.03533px; }
+.hs-room-3 .hs-room-usd { left: 12.22%; top: 51.14%; width: 5.33%; height: 1.0%; font-size: 9.82102px; }
+.hs-room-3 .hs-room-join-hitbox { left: 11.43%; top: 51.39%; width: 6.20%; height: 2.7%; z-index: 16; }
+
+.hs-room-4 .hs-room-code { left: 47.70%; top: 50.69%; width: 5.34%; height: 1.1%; font-size: 11.7852px; }
+.hs-room-4 .hs-room-count { left: 47.69%; top: 50.93%; width: 1.39%; height: 1.0%; font-size: 9.49365px; }
+.hs-room-4 .hs-room-fee { left: 49.95%; top: 50.91%; width: 2.97%; height: 1.0%; font-size: 9.03533px; }
+.hs-room-4 .hs-room-usd { left: 47.69%; top: 51.15%; width: 5.38%; height: 1.0%; font-size: 9.82102px; }
+.hs-room-4 .hs-room-join-hitbox { left: 46.76%; top: 51.38%; width: 6.30%; height: 2.7%; z-index: 16; }
+
+.hs-room-5 .hs-room-code { left: 83.22%; top: 50.70%; width: 5.44%; height: 1.1%; font-size: 11.7852px; }
+.hs-room-5 .hs-room-count { left: 83.25%; top: 50.92%; width: 1.44%; height: 1.0%; font-size: 9.49365px; }
+.hs-room-5 .hs-room-fee { left: 85.52%; top: 50.93%; width: 3.26%; height: 1.0%; font-size: 9.03533px; }
+.hs-room-5 .hs-room-usd { left: 83.16%; top: 51.15%; width: 5.72%; height: 1.0%; font-size: 9.82102px; }
+.hs-room-5 .hs-room-join-hitbox { left: 82.32%; top: 51.38%; width: 6.49%; height: 2.7%; z-index: 16; }
+
+.hs-room-6 .hs-room-code { left: 12.33%; top: 63.05%; width: 5.05%; height: 1.1%; font-size: 11.7852px; }
+.hs-room-6 .hs-room-count { left: 12.32%; top: 63.27%; width: 1.39%; height: 1.0%; font-size: 9.49365px; }
+.hs-room-6 .hs-room-fee { left: 14.48%; top: 63.27%; width: 3.07%; height: 1.0%; font-size: 9.03533px; }
+.hs-room-6 .hs-room-usd { left: 12.32%; top: 63.50%; width: 5.14%; height: 1.0%; font-size: 9.82102px; }
+.hs-room-6 .hs-room-join-hitbox { left: 11.39%; top: 63.73%; width: 6.30%; height: 2.7%; z-index: 16; }
+
+.hs-room-7 .hs-room-code { left: 47.65%; top: 63.05%; width: 5.34%; height: 1.1%; font-size: 11.7852px; }
+.hs-room-7 .hs-room-count { left: 47.69%; top: 63.28%; width: 1.44%; height: 1.0%; font-size: 9.49365px; }
+.hs-room-7 .hs-room-fee { left: 49.85%; top: 63.28%; width: 3.16%; height: 1.0%; font-size: 9.03533px; }
+.hs-room-7 .hs-room-usd { left: 47.79%; top: 63.51%; width: 4.99%; height: 1.0%; font-size: 9.82102px; }
+.hs-room-7 .hs-room-join-hitbox { left: 46.80%; top: 63.74%; width: 6.25%; height: 2.7%; z-index: 16; }
+
+.hs-room-8 .hs-room-code { left: 83.22%; top: 63.04%; width: 5.54%; height: 1.1%; font-size: 11.7852px; }
+.hs-room-8 .hs-room-count { left: 83.16%; top: 63.26%; width: 1.49%; height: 1.0%; font-size: 9.49365px; }
+.hs-room-8 .hs-room-fee { left: 85.42%; top: 63.26%; width: 3.36%; height: 1.0%; font-size: 9.03533px; }
+.hs-room-8 .hs-room-usd { left: 83.20%; top: 63.49%; width: 5.53%; height: 1.0%; font-size: 9.82102px; }
+.hs-room-8 .hs-room-join-hitbox { left: 82.32%; top: 63.75%; width: 6.44%; height: 2.7%; z-index: 16; }
+
+.available-lock-value {
+  left: 20.63%;
+  top: 88.31%;
+  width: 20.80%;
+  height: 2.60%;
+  font-size: 14.4042px;
+  text-align: center;
+  justify-content: center;
+  color: #e9f8ff;
+}
+
+.locked-lock-value {
+  left: 48.53%;
+  top: 88.21%;
+  width: 17.53%;
+  height: 2.70%;
+  font-size: 14.4042px;
+  text-align: center;
+  justify-content: center;
+  color: #f1c6ff;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.18),
+    0 2px 4px rgba(80, 20, 100, 0.95),
+    0 0 10px rgba(215, 160, 255, 0.28);
 }
 
 .highstakes-page-text {
-  left: 39%;
-  top: 67.8%;
-  width: 22%;
-  text-align: center;
-  font-size: 1.25cqw;
+  left: 23.79%;
+  top: 70.99%;
+  width: 6.97%;
+  height: 1.11%;
+  font-size: 8.18418px;
+  justify-content: center;
   color: #dff8ff;
+}
+
+.highstakes-private-input {
+  left: 25.68%;
+  top: 78.73%;
+  width: 25.30%;
+  height: 3.03%;
+  font-size: 15.3863px;
+  position: absolute;
+  z-index: 15;
+  background: transparent;
+  border: 0;
+  outline: none;
+  padding: 0 2.8%;
+  text-transform: uppercase;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1;
+  color: #ffffff;
+  letter-spacing: 0.08em;
+}
+
+.highstakes-private-input::placeholder {
+  color: rgba(232, 246, 255, 0.45);
 }
 
 .highstakes-toast {
@@ -233,100 +292,12 @@
   color: #ffd7d7;
 }
 
-.highstakes-private-input {
-  position: absolute;
-  z-index: 15;
-  left: 20.0%;
-  top: 75.95%;
-  width: 31.9%;
-  height: 3.55%;
-  background: transparent;
-  border: 0;
-  outline: none;
-  padding: 0 2.8%;
-  text-transform: uppercase;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 2.35cqw;
-  line-height: 1;
-  color: #ffffff;
-  letter-spacing: 0.08em;
-}
-
-.highstakes-private-input::placeholder {
-  color: rgba(232, 246, 255, 0.45);
-}
-
-.highstakes-lock-value {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.2cqw;
-  line-height: 1;
-}
-
-.available-lock-value {
-  left: 18.8%;
-  top: 86.15%;
-  width: 20.8%;
-  height: 2.6%;
-  text-align: center;
-  color: #e9f8ff;
-}
-
-.locked-lock-value {
-  left: 52.2%;
-  top: 86.15%;
-  width: 17.9%;
-  height: 2.6%;
-  text-align: center;
-  color: #f1c6ff;
-  text-shadow:
-    0 1px 0 rgba(255,255,255,0.18),
-    0 2px 4px rgba(80, 20, 100, 0.95),
-    0 0 10px rgba(215, 160, 255, 0.28);
-}
-
-.hs-create-room-hitbox {
-  left: 30.0%;
-  top: 25.7%;
-  width: 42.0%;
-  height: 5.1%;
-}
-
-.hs-refresh-rooms-hitbox {
-  left: 72.4%;
-  top: 33.2%;
-  width: 18.7%;
-  height: 3.65%;
-}
-
-.hs-next-page-hitbox {
-  left: 35.0%;
-  top: 67.7%;
-  width: 30.0%;
-  height: 3.45%;
-}
-
-.hs-join-private-hitbox {
-  left: 54.0%;
-  top: 75.55%;
-  width: 31.0%;
-  height: 4.5%;
-}
-
-.hs-deposit-hitbox {
-  left: 70.8%;
-  top: 85.65%;
-  width: 22.8%;
-  height: 4.65%;
-}
-
-.hs-back-hitbox {
-  left: 23.0%;
-  top: 92.15%;
-  width: 54.5%;
-  height: 5.7%;
-}
+.hs-create-room-hitbox { left: 49.79%; top: 18.69%; width: 33.58%; height: 6.12%; }
+.hs-refresh-rooms-hitbox { left: 73.13%; top: 27.94%; width: 18.52%; height: 2.62%; }
+.hs-next-page-hitbox { left: 33.71%; top: 70.79%; width: 30.73%; height: 3.14%; }
+.hs-join-private-hitbox { left: 54.73%; top: 78.64%; width: 24.40%; height: 3.58%; }
+.hs-deposit-hitbox { left: 66.95%; top: 86.89%; width: 17.12%; height: 3.93%; }
+.hs-back-hitbox { left: 23.91%; top: 92.97%; width: 50.47%; height: 5.80%; }
 
 .highstakes-modal {
   position: absolute;
