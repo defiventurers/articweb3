@@ -15,6 +15,8 @@
   aspect-ratio: 9 / 16;
   background: #061b3a;
   container-type: inline-size;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .highstakes-stage .screen-art {
@@ -158,10 +160,25 @@
   overflow: hidden;
   text-overflow: ellipsis;
   text-shadow:
-    0 1px 0 rgba(255,255,255,0.25),
-    0 2px 5px rgba(0,40,120,0.98),
-    0 0 8px rgba(120,220,255,0.35);
+    0 1px 0 rgba(255,255,255,0.28),
+    0 2px 5px rgba(0,40,120,1),
+    0 0 9px rgba(120,220,255,0.42);
   letter-spacing: 0.02em;
+}
+
+.hs-room-count {
+  font-size: 12.25px !important;
+  font-weight: 1000 !important;
+  -webkit-text-stroke: 0.18px rgba(255,255,255,0.45);
+}
+
+.hs-room-fee {
+  font-size: 10.75px !important;
+  font-weight: 1000 !important;
+  line-height: 1.18;
+  -webkit-text-stroke: 0.16px rgba(255,255,255,0.42);
+  transform: scaleY(1.12);
+  transform-origin: left center;
 }
 
 .hs-room-usd {
@@ -324,105 +341,71 @@
   background-color: rgba(0,180,255,0.08);
 }
 
-.highstakes-wallet-text {
-  left: 68.80%;
-  top: 2.00%;
-  width: 18.00%;
-  height: 2.20%;
-  font-size: 10.1484px;
-}
-
-.highstakes-points-text {
-  left: 89.00%;
-  top: 2.00%;
-  width: 6.80%;
-  height: 2.60%;
-  font-size: 8.18418px;
-}
-
-.available-lock-value {
-  left: 23.00%;
-  top: 88.20%;
-  width: 14.30%;
-  height: 2.60%;
-  font-size: 12px;
-}
-
-.locked-lock-value {
-  left: 52.00%;
-  top: 88.20%;
-  width: 13.00%;
-  height: 2.60%;
-  font-size: 12px;
-}
-
-.highstakes-page-text {
-  left: 14.50%;
-  top: 71.45%;
-  width: 17.00%;
-  height: 1.80%;
-  font-size: 9px;
-}
+.highstakes-wallet-text { left: 74.66%; top: 1.59%; width: 19.83%; height: 2.61%; font-size: 10.1484px; }
+.highstakes-points-text { left: 73.05%; top: 2.82%; width: 6.80%; height: 2.60%; font-size: 8.18418px; }
+.available-lock-value { left: 25.01%; top: 88.10%; width: 14.30%; height: 2.60%; font-size: 12px; }
+.locked-lock-value { left: 52.00%; top: 88.20%; width: 13.00%; height: 2.60%; font-size: 12px; }
+.highstakes-page-text { left: 24.40%; top: 71.14%; width: 17.00%; height: 1.80%; font-size: 9px; }
 
 .hs-room-0 .hs-room-code { left: 22.08%; top: 20.15%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
-.hs-room-0 .hs-room-count { left: 22.14%; top: 39.20%; width: 25.00%; height: 15.00%; font-size: 10.1484px; }
-.hs-room-0 .hs-room-fee { left: 54.84%; top: 38.37%; width: 41.49%; height: 15.00%; font-size: 9px; }
-.hs-room-0 .hs-room-usd { left: 24.16%; top: 58.01%; width: 67.98%; height: 13.99%; font-size: 10.4757px; }
-.hs-room-0 .hs-room-join-hitbox { left: 7.98%; top: 77.99%; width: 86.08%; height: 19.15%; font-size: 16px; }
+.hs-room-0 .hs-room-count { left: 22.13%; top: 39.20%; width: 25.00%; height: 17.50%; }
+.hs-room-0 .hs-room-fee { left: 54.84%; top: 38.37%; width: 41.49%; height: 17.50%; }
+.hs-room-0 .hs-room-usd { left: 24.16%; top: 58.01%; width: 67.97%; height: 13.99%; font-size: 10.4757px; }
+.hs-room-0 .hs-room-join-hitbox { left: 7.98%; top: 77.99%; width: 86.08%; height: 19.14%; font-size: 16px; }
 
 .hs-room-1 .hs-room-code { left: 20.00%; top: 20.15%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
-.hs-room-1 .hs-room-count { left: 17.96%; top: 38.33%; width: 18.06%; height: 15.00%; font-size: 10.1484px; }
-.hs-room-1 .hs-room-fee { left: 50.68%; top: 39.20%; width: 41.49%; height: 15.00%; font-size: 9px; }
-.hs-room-1 .hs-room-usd { left: 18.60%; top: 58.01%; width: 67.98%; height: 13.99%; font-size: 10.4757px; }
+.hs-room-1 .hs-room-count { left: 17.95%; top: 38.33%; width: 18.06%; height: 17.50%; }
+.hs-room-1 .hs-room-fee { left: 50.67%; top: 39.20%; width: 41.49%; height: 17.50%; }
+.hs-room-1 .hs-room-usd { left: 18.59%; top: 58.01%; width: 67.97%; height: 13.99%; font-size: 10.4757px; }
 .hs-room-1 .hs-room-join-hitbox { left: 3.14%; top: 76.32%; width: 86.77%; height: 19.98%; font-size: 16px; }
 
-.hs-room-2 .hs-room-code { left: 16.52%; top: 20.15%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
-.hs-room-2 .hs-room-count { left: 15.21%; top: 38.37%; width: 25.00%; height: 15.00%; font-size: 10.1484px; }
-.hs-room-2 .hs-room-fee { left: 47.91%; top: 38.37%; width: 41.49%; height: 15.00%; font-size: 9px; }
-.hs-room-2 .hs-room-usd { left: 15.83%; top: 56.34%; width: 67.97%; height: 13.99%; font-size: 10.4757px; }
-.hs-room-2 .hs-room-join-hitbox { left: -0.30%; top: 75.48%; width: 93.01%; height: 21.64%; font-size: 16px; }
+.hs-room-2 .hs-room-code { left: 16.51%; top: 20.15%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
+.hs-room-2 .hs-room-count { left: 15.20%; top: 38.37%; width: 25.00%; height: 17.50%; }
+.hs-room-2 .hs-room-fee { left: 47.90%; top: 38.37%; width: 41.49%; height: 17.50%; }
+.hs-room-2 .hs-room-usd { left: 15.83%; top: 56.33%; width: 67.96%; height: 13.99%; font-size: 10.4757px; }
+.hs-room-2 .hs-room-join-hitbox { left: -0.29%; top: 75.48%; width: 93.01%; height: 21.64%; font-size: 16px; }
 
 .hs-room-3 .hs-room-code { left: 22.75%; top: 23.45%; width: 71.85%; height: 16.32%; font-size: 13.4221px; }
-.hs-room-3 .hs-room-count { left: 22.85%; top: 42.51%; width: 25.00%; height: 15.00%; font-size: 10.1484px; }
-.hs-room-3 .hs-room-fee { left: 55.53%; top: 42.51%; width: 41.49%; height: 15.00%; font-size: 9px; }
-.hs-room-3 .hs-room-usd { left: 20.00%; top: 62.99%; width: 67.99%; height: 13.99%; font-size: 10.4757px; }
-.hs-room-3 .hs-room-join-hitbox { left: 7.99%; top: 77.99%; width: 84.00%; height: 19.99%; font-size: 16px; }
+.hs-room-3 .hs-room-count { left: 22.85%; top: 42.51%; width: 25.00%; height: 17.50%; }
+.hs-room-3 .hs-room-fee { left: 55.52%; top: 42.51%; width: 41.49%; height: 17.50%; }
+.hs-room-3 .hs-room-usd { left: 20.00%; top: 62.98%; width: 67.98%; height: 13.99%; font-size: 10.4757px; }
+.hs-room-3 .hs-room-join-hitbox { left: 7.98%; top: 77.99%; width: 84.00%; height: 19.98%; font-size: 16px; }
 
-.hs-room-4 .hs-room-code { left: 20.00%; top: 23.46%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
-.hs-room-4 .hs-room-count { left: 19.37%; top: 41.68%; width: 25.00%; height: 15.00%; font-size: 10.1484px; }
-.hs-room-4 .hs-room-fee { left: 50.00%; top: 43.34%; width: 41.49%; height: 15.00%; font-size: 9px; }
-.hs-room-4 .hs-room-usd { left: 20.00%; top: 58.84%; width: 67.98%; height: 13.99%; font-size: 10.4757px; }
-.hs-room-4 .hs-room-join-hitbox { left: 1.73%; top: 77.99%; width: 88.16%; height: 20.81%; font-size: 16px; }
+.hs-room-4 .hs-room-code { left: 20.00%; top: 23.45%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
+.hs-room-4 .hs-room-count { left: 19.37%; top: 41.68%; width: 25.00%; height: 17.50%; }
+.hs-room-4 .hs-room-fee { left: 50.00%; top: 43.34%; width: 41.49%; height: 17.50%; }
+.hs-room-4 .hs-room-usd { left: 20.00%; top: 58.84%; width: 67.97%; height: 13.99%; font-size: 10.4757px; }
+.hs-room-4 .hs-room-join-hitbox { left: 1.72%; top: 77.99%; width: 88.16%; height: 20.81%; font-size: 16px; }
 
-.hs-room-5 .hs-room-code { left: 16.52%; top: 20.99%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
-.hs-room-5 .hs-room-count { left: 16.60%; top: 41.68%; width: 25.00%; height: 15.00%; font-size: 10.1484px; }
-.hs-room-5 .hs-room-fee { left: 48.60%; top: 41.68%; width: 41.49%; height: 15.00%; font-size: 9px; }
-.hs-room-5 .hs-room-usd { left: 20.00%; top: 62.99%; width: 67.99%; height: 13.99%; font-size: 10.4757px; }
-.hs-room-5 .hs-room-join-hitbox { left: 1.73%; top: 78.82%; width: 88.85%; height: 19.98%; font-size: 16px; }
+.hs-room-5 .hs-room-code { left: 16.51%; top: 20.99%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
+.hs-room-5 .hs-room-count { left: 16.60%; top: 41.68%; width: 25.00%; height: 17.50%; }
+.hs-room-5 .hs-room-fee { left: 48.59%; top: 41.68%; width: 41.49%; height: 17.50%; }
+.hs-room-5 .hs-room-usd { left: 20.00%; top: 62.98%; width: 67.98%; height: 13.99%; font-size: 10.4757px; }
+.hs-room-5 .hs-room-join-hitbox { left: 1.72%; top: 78.82%; width: 88.85%; height: 19.98%; font-size: 16px; }
 
-.hs-room-6 .hs-room-code { left: 23.45%; top: 25.96%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
-.hs-room-6 .hs-room-count { left: 22.82%; top: 44.15%; width: 25.00%; height: 15.00%; font-size: 10.1484px; }
-.hs-room-6 .hs-room-fee { left: 51.39%; top: 46.65%; width: 41.49%; height: 15.00%; font-size: 9px; }
-.hs-room-6 .hs-room-usd { left: 24.16%; top: 62.98%; width: 67.97%; height: 13.99%; font-size: 10.4757px; }
-.hs-room-6 .hs-room-join-hitbox { left: 8.67%; top: 81.29%; width: 84.00%; height: 19.98%; font-size: 16px; }
+.hs-room-6 .hs-room-code { left: 23.44%; top: 25.96%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
+.hs-room-6 .hs-room-count { left: 22.81%; top: 44.14%; width: 25.00%; height: 17.50%; }
+.hs-room-6 .hs-room-fee { left: 52.76%; top: 44.98%; width: 41.49%; height: 17.50%; }
+.hs-room-6 .hs-room-usd { left: 24.16%; top: 62.98%; width: 67.96%; height: 13.99%; font-size: 10.4757px; }
+.hs-room-6 .hs-room-join-hitbox { left: 8.66%; top: 81.29%; width: 84.00%; height: 19.98%; font-size: 16px; }
 
-.hs-room-7 .hs-room-code { left: 20.00%; top: 20.99%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
-.hs-room-7 .hs-room-count { left: 17.99%; top: 44.99%; width: 25.00%; height: 15.00%; font-size: 10.1484px; }
-.hs-room-7 .hs-room-fee { left: 50.00%; top: 44.99%; width: 41.49%; height: 15.00%; font-size: 9px; }
-.hs-room-7 .hs-room-usd { left: 20.00%; top: 63.82%; width: 67.98%; height: 13.99%; font-size: 10.4757px; }
-.hs-room-7 .hs-room-join-hitbox { left: 3.14%; top: 82.13%; width: 87.45%; height: 20.81%; font-size: 16px; }
+.hs-room-7 .hs-room-code { left: 21.37%; top: 26.79%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
+.hs-room-7 .hs-room-count { left: 19.37%; top: 44.98%; width: 25.00%; height: 17.50%; }
+.hs-room-7 .hs-room-fee { left: 50.00%; top: 44.98%; width: 41.49%; height: 17.50%; }
+.hs-room-7 .hs-room-usd { left: 20.00%; top: 63.82%; width: 67.97%; height: 13.99%; font-size: 10.4757px; }
+.hs-room-7 .hs-room-join-hitbox { left: 3.14%; top: 82.13%; width: 87.44%; height: 20.81%; font-size: 16px; }
 
-.hs-room-8 .hs-room-code { left: 16.52%; top: 25.96%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
-.hs-room-8 .hs-room-count { left: 14.52%; top: 44.15%; width: 25.00%; height: 15.00%; font-size: 10.1484px; }
-.hs-room-8 .hs-room-fee { left: 48.60%; top: 46.65%; width: 41.49%; height: 15.00%; font-size: 9px; }
-.hs-room-8 .hs-room-usd { left: 16.52%; top: 63.82%; width: 67.98%; height: 13.99%; font-size: 10.4757px; }
-.hs-room-8 .hs-room-join-hitbox { left: 1.04%; top: 81.29%; width: 90.22%; height: 21.64%; font-size: 16px; }
+.hs-room-8 .hs-room-code { left: 16.51%; top: 25.96%; width: 67.00%; height: 15.49%; font-size: 13.4221px; }
+.hs-room-8 .hs-room-count { left: 14.52%; top: 44.14%; width: 25.00%; height: 17.50%; }
+.hs-room-8 .hs-room-fee { left: 48.58%; top: 44.98%; width: 41.49%; height: 17.50%; }
+.hs-room-8 .hs-room-usd { left: 16.51%; top: 63.82%; width: 67.97%; height: 13.99%; font-size: 10.4757px; }
+.hs-room-8 .hs-room-join-hitbox { left: 1.04%; top: 81.29%; width: 90.21%; height: 21.64%; font-size: 16px; }
 
-.hs-create-room-hitbox { left: 49.00%; top: 18.50%; width: 34.00%; height: 6.20%; font-size: 16px; }
+.hs-create-room-hitbox { left: 50.46%; top: 18.60%; width: 32.53%; height: 6.20%; font-size: 16px; }
 .hs-refresh-rooms-hitbox { left: 73.20%; top: 27.85%; width: 18.70%; height: 2.70%; font-size: 16px; }
 .hs-prev-page-hitbox { left: 17.78%; top: 70.69%; width: 20.50%; height: 3.14%; font-size: 16px; }
 .hs-next-page-hitbox { left: 33.50%; top: 70.79%; width: 31.00%; height: 3.14%; font-size: 16px; }
-.hs-deposit-hitbox { left: 66.80%; top: 86.75%; width: 17.80%; height: 4.20%; font-size: 16px; }
+.hs-deposit-hitbox { left: 66.80%; top: 87.16%; width: 17.43%; height: 3.68%; font-size: 16px; }
 .hs-back-hitbox { left: 23.20%; top: 92.80%; width: 52.50%; height: 5.95%; font-size: 16px; }
 .highstakes-private-input { left: 21.15%; top: 78.90%; width: 31.00%; height: 3.20%; font-size: 14px; }
 .hs-join-private-hitbox { left: 54.40%; top: 78.65%; width: 24.80%; height: 3.65%; font-size: 16px; }
