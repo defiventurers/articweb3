@@ -3,7 +3,7 @@
   right: calc(100% + 14px);
   left: auto;
   top: 0;
-  z-index: 90;
+  z-index: 140;
   width: 320px;
   max-height: 96%;
   overflow: auto;
@@ -21,6 +21,61 @@
 .highstakes-screen.is-calibrating [data-calibrate][data-calibration-selected="true"] {
   outline: 2px solid rgba(255, 236, 87, .95) !important;
   background-color: rgba(255, 236, 87, .12) !important;
+}
+
+.highstakes-screen.is-calibrating .highstakes-calibration-drag-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 130;
+  pointer-events: none;
+}
+
+.highstakes-calibration-box {
+  position: absolute;
+  pointer-events: auto;
+  border: 2px solid rgba(255, 60, 60, .72);
+  background: rgba(255, 30, 30, .08);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.25), 0 0 14px rgba(255, 50, 50, .28);
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+}
+
+.highstakes-calibration-box.selected {
+  border-color: rgba(255, 236, 87, .98);
+  background: rgba(255, 236, 87, .14);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.35), 0 0 18px rgba(255, 236, 87, .45);
+}
+
+.highstakes-calibration-label {
+  position: absolute;
+  left: 0;
+  top: -18px;
+  max-width: 220px;
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: rgba(0, 10, 30, .92);
+  color: white;
+  font: 800 10px/1.1 system-ui, sans-serif;
+  text-shadow: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.highstakes-calibration-resize {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: #ffec57;
+  border: 1px solid rgba(0,0,0,.65);
+  cursor: nwse-resize;
+  pointer-events: auto;
+  touch-action: none;
 }
 
 .highstakes-calibrator-header {
