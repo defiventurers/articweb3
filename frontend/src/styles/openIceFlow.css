@@ -283,6 +283,142 @@
   bottom: 2.0%;
 }
 
+.openicehub-room-card {
+  position: absolute;
+  z-index: 20;
+  width: 25.95%;
+  height: 11.8%;
+}
+
+.openicehub-room-0 { left: 7.8%; top: 31.7%; }
+.openicehub-room-1 { left: 36.9%; top: 31.7%; }
+.openicehub-room-2 { left: 64.9%; top: 31.7%; }
+.openicehub-room-3 { left: 7.8%; top: 44.9%; }
+.openicehub-room-4 { left: 36.9%; top: 44.9%; }
+.openicehub-room-5 { left: 64.9%; top: 44.9%; }
+.openicehub-room-6 { left: 7.8%; top: 58.1%; }
+.openicehub-room-7 { left: 36.9%; top: 58.1%; }
+.openicehub-room-8 { left: 64.9%; top: 58.1%; }
+
+.openicehub-room-code,
+.openicehub-users-count,
+.openicehub-room-empty,
+.openicehub-private-input {
+  position: absolute;
+  color: #ffffff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 1000;
+  line-height: 1;
+  text-shadow: 0 2px 3px rgba(0, 10, 40, .95), 0 0 8px rgba(110, 220, 255, .32);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.openicehub-room-code {
+  left: 12.2%;
+  top: 28.2%;
+  width: 75.6%;
+  height: 16.2%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.15cqh;
+  letter-spacing: .06em;
+}
+
+.openicehub-users-count {
+  left: 68.3%;
+  top: 55.6%;
+  width: 16.7%;
+  height: 19.2%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.0cqh;
+  letter-spacing: .02em;
+}
+
+.openicehub-room-empty {
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(235, 252, 255, .82);
+  font-size: 1.45cqh;
+  text-align: center;
+  pointer-events: none;
+}
+
+.openicehub-room-join-hit {
+  left: 5.0%;
+  top: 75.1%;
+  width: 90.0%;
+  height: 21.5%;
+}
+
+.openicehub-create-hit {
+  left: 49.0%;
+  top: 17.6%;
+  width: 34.8%;
+  height: 6.5%;
+}
+
+.openicehub-refresh-hit {
+  left: 72.4%;
+  top: 29.2%;
+  width: 18.2%;
+  height: 3.4%;
+}
+
+.openicehub-next-page-hit {
+  left: 34.2%;
+  top: 70.4%;
+  width: 31.8%;
+  height: 3.7%;
+}
+
+.openicehub-private-code-hit {
+  left: 20.5%;
+  top: 78.2%;
+  width: 31.4%;
+  height: 3.7%;
+}
+
+.openicehub-join-private-hit {
+  left: 54.3%;
+  top: 77.9%;
+  width: 25.0%;
+  height: 4.5%;
+}
+
+.openicehub-back-hit {
+  left: 22.5%;
+  top: 93.1%;
+  width: 55.0%;
+  height: 5.3%;
+}
+
+.openicehub-private-input {
+  z-index: 35;
+  left: 21.3%;
+  top: 78.35%;
+  width: 29.6%;
+  height: 3.1%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  padding: 0 3.2%;
+  box-sizing: border-box;
+  text-transform: uppercase;
+  font-size: 2.2cqh;
+  letter-spacing: .10em;
+  text-align: center;
+}
+
+.openicehub-status {
+  bottom: 1.25%;
+}
+
 @media (max-width: 768px) and (orientation: portrait) {
   .open-ice-image-stage {
     width: 100vw;
