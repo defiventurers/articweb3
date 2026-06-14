@@ -59,6 +59,58 @@ export function ProfileScreen({ onComplete, onBack }) {
     return calibrateProfile ? calibrationOverrides[targetId] : undefined;
   }
 
+  function beginCalibrationDrag(event, targetId) {
+    if (!calibrateProfile) return;
+    const element = event.currentTarget;
+    const stage = document.querySelector(".profile-stage");
+    if (!element || !stage) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    element.setPointerCapture?.(event.pointerId);
+
+    const stageRect = stage.getBoundingClientRect();
+    const rect = element.getBoundingClientRect();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startLeft = rect.left - stageRect.left;
+    const startTop = rect.top - stageRect.top;
+
+    const move = (moveEvent) => {
+      moveEvent.preventDefault();
+      const nextLeft = clamp(startLeft + moveEvent.clientX - startX, 0, stageRect.width - rect.width);
+      const nextTop = clamp(startTop + moveEvent.clientY - startY, 0, stageRect.height - rect.height);
+      setCalibrationOverrides((current) => ({
+        ...current,
+        [targetId]: {
+          ...(current[targetId] || {}),
+          left: toPercent(nextLeft, stageRect.width),
+          top: toPercent(nextTop, stageRect.height),
+          width: (current[targetId] || {}).width || toPercent(rect.width, stageRect.width),
+          height: (current[targetId] || {}).height || toPercent(rect.height, stageRect.height)
+        }
+      }));
+    };
+
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+    };
+
+    window.addEventListener("pointermove", move, { passive: false });
+    window.addEventListener("pointerup", up, { once: true });
+    window.addEventListener("pointercancel", up, { once: true });
+  }
+
+  function calibrationProps(targetId) {
+    return {
+      "data-calibrate": targetId,
+      style: calibrationStyle(targetId),
+      onPointerDown: calibrateProfile ? (event) => beginCalibrationDrag(event, targetId) : undefined
+    };
+  }
+
   async function handleConnect() {
     try {
       setError("");
@@ -144,74 +196,69 @@ export function ProfileScreen({ onComplete, onBack }) {
 
         <button
           className={`profile-hit profile-connect-hit ${isConnected ? "connected" : ""}`}
-          data-calibrate="connect-hit"
-          style={calibrationStyle("connect-hit")}
+          {...calibrationProps("connect-hit")}
           aria-label={isConnected ? "AGW connected" : "Connect AGW"}
-          onClick={handleConnect}
-          disabled={busy || isConnected}
+          onClick={calibrateProfile ? undefined : handleConnect}
+          disabled={!calibrateProfile && (busy || isConnected)}
         />
 
-        {isConnected && <div className="profile-connect-disabled" data-calibrate="connect-disabled" style={calibrationStyle("connect-disabled")} aria-hidden="true">AGW CONNECTED</div>}
+        {isConnected && <div className="profile-connect-disabled" {...calibrationProps("connect-disabled")} aria-hidden="true">AGW CONNECTED</div>}
 
         {isConnected && (
           <button
             className="profile-hit profile-disconnect-hit"
-            data-calibrate="disconnect-hit"
-            style={calibrationStyle("disconnect-hit")}
+            {...calibrationProps("disconnect-hit")}
             aria-label="Disconnect wallet"
-            onClick={handleDisconnect}
-            disabled={busy}
+            onClick={calibrateProfile ? undefined : handleDisconnect}
+            disabled={!calibrateProfile && busy}
             title="Disconnect wallet"
           >
             DISCONNECT
           </button>
         )}
 
-        <div className="profile-wallet-display" data-calibrate="wallet-display" style={calibrationStyle("wallet-display")} title={address || ""}>
+        <div className="profile-wallet-display" {...calibrationProps("wallet-display")} title={address || ""}>
           {address ? compactAddress(address) : ""}
         </div>
 
         <button
           className="profile-hit profile-copy-hit"
-          data-calibrate="copy-hit"
-          style={calibrationStyle("copy-hit")}
+          {...calibrationProps("copy-hit")}
           aria-label="Copy wallet address"
-          onClick={handleCopyAddress}
-          disabled={busy || !address}
+          onClick={calibrateProfile ? undefined : handleCopyAddress}
+          disabled={!calibrateProfile && (busy || !address)}
         />
 
         <input
           className="profile-name-input"
-          data-calibrate="name-input"
-          style={calibrationStyle("name-input")}
+          {...calibrationProps("name-input")}
           placeholder={lookupBusy ? "Checking Abstract profile..." : "Enter player name"}
           maxLength={20}
           value={name}
           onChange={handleNameChange}
-          disabled={busy}
+          disabled={!calibrateProfile && busy}
+          readOnly={calibrateProfile}
           aria-label="Player name"
         />
 
         <button
           className="profile-hit profile-complete-hit"
-          data-calibrate="complete-hit"
-          style={calibrationStyle("complete-hit")}
+          {...calibrationProps("complete-hit")}
           aria-label="Complete profile"
-          disabled={busy}
-          onClick={handleComplete}
+          disabled={!calibrateProfile && busy}
+          onClick={calibrateProfile ? undefined : handleComplete}
         />
 
         <button
           className="profile-hit profile-back-hit"
-          data-calibrate="back-hit"
-          style={calibrationStyle("back-hit")}
+          {...calibrationProps("back-hit")}
           aria-label="Back"
-          disabled={busy}
-          onClick={onBack}
+          disabled={!calibrateProfile && busy}
+          onClick={calibrateProfile ? undefined : onBack}
         />
 
         {statusMessage && (
-          <div className={`profile-status ${error ? "error" : ""}`} data-calibrate="status-message" style={calibrationStyle("status-message")} aria-live="polite">
+          <div className={`profile-status ${error ? "error" : ""}`} {...calibrationProps("status-message")} aria-live="polite">
             {statusMessage}
           </div>
         )}
@@ -244,7 +291,7 @@ function ProfileCalibrator({ enabled, targetIds, overrides, setOverrides }) {
       height: override.height || toPercent(rect.height, stageRect.height),
       fontSize: override.fontSize || computed.fontSize || ""
     });
-  }, [enabled, selected]);
+  }, [enabled, selected, overrides]);
 
   if (!enabled) return null;
 
@@ -280,6 +327,7 @@ function ProfileCalibrator({ enabled, targetIds, overrides, setOverrides }) {
   return (
     <div className="profile-calibrator">
       <strong>Profile Calibration</strong>
+      <small>Drag outlined areas directly, or edit numbers below.</small>
       <select value={selected} onChange={(event) => setSelected(event.target.value)}>
         {targetIds.map((targetId) => <option key={targetId} value={targetId}>{targetId}</option>)}
       </select>
@@ -362,4 +410,8 @@ function toPercent(value, total) {
 
 function compactStyle(style) {
   return Object.fromEntries(Object.entries(style).filter(([, value]) => String(value || "").trim()));
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
