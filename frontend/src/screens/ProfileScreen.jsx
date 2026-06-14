@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount, useDisconnect, useSignMessage } from "wagmi";
 import { useLoginWithAbstract } from "@abstract-foundation/agw-react";
 import { createProfile } from "../network/socketClient.js";
@@ -6,7 +6,9 @@ import "../styles/profileScreen.css";
 
 export function ProfileScreen({ onComplete, onBack }) {
   const [name, setName] = useState("");
+  const [nameTouched, setNameTouched] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [lookupBusy, setLookupBusy] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [notice, setNotice] = useState("");
@@ -15,6 +17,27 @@ export function ProfileScreen({ onComplete, onBack }) {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
+
+  useEffect(() => {
+    if (!address || !isConnected || nameTouched) return;
+
+    let cancelled = false;
+    setLookupBusy(true);
+    fetchAbstractUsername(address)
+      .then((username) => {
+        if (cancelled || !username || nameTouched) return;
+        setName(username);
+        setNotice("Abstract username found.");
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLookupBusy(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [address, isConnected, nameTouched]);
 
   async function handleConnect() {
     try {
@@ -30,6 +53,8 @@ export function ProfileScreen({ onComplete, onBack }) {
     try {
       setError("");
       setCopied(false);
+      setName("");
+      setNameTouched(false);
       disconnect();
       setNotice("Wallet disconnected.");
     } catch (err) {
@@ -85,28 +110,41 @@ export function ProfileScreen({ onComplete, onBack }) {
     }
   }
 
+  function handleNameChange(event) {
+    setNameTouched(true);
+    setName(event.target.value);
+  }
+
+  const statusMessage = error || (copied ? "Wallet copied." : busy ? "Creating profile..." : lookupBusy ? "Checking Abstract profile..." : notice);
+
   return (
     <section className="profile-page" aria-label="Create profile">
       <div className="profile-stage">
         <img className="profile-art" src="/assets/screens/profile.png" alt="Create Profile" />
 
         <button
-          className="profile-hit profile-connect-hit"
-          aria-label="Connect AGW"
+          className={`profile-hit profile-connect-hit ${isConnected ? "connected" : ""}`}
+          aria-label={isConnected ? "AGW connected" : "Connect AGW"}
           onClick={handleConnect}
           disabled={busy || isConnected}
         />
 
-        <button
-          className="profile-hit profile-disconnect-hit"
-          aria-label="Disconnect wallet"
-          onClick={handleDisconnect}
-          disabled={busy || !isConnected}
-          title="Disconnect wallet"
-        />
+        {isConnected && <div className="profile-connect-disabled" aria-hidden="true">AGW CONNECTED</div>}
 
-        <div className="profile-wallet-display">
-          {address ? compactAddress(address) : "Wallet not connected"}
+        {isConnected && (
+          <button
+            className="profile-hit profile-disconnect-hit"
+            aria-label="Disconnect wallet"
+            onClick={handleDisconnect}
+            disabled={busy}
+            title="Disconnect wallet"
+          >
+            DISCONNECT
+          </button>
+        )}
+
+        <div className="profile-wallet-display" title={address || ""}>
+          {address ? compactAddress(address) : ""}
         </div>
 
         <button
@@ -118,10 +156,10 @@ export function ProfileScreen({ onComplete, onBack }) {
 
         <input
           className="profile-name-input"
-          placeholder="Enter player name"
+          placeholder={lookupBusy ? "Checking Abstract profile..." : "Enter player name"}
           maxLength={20}
           value={name}
-          onChange={(event) => setName(event.target.value)}
+          onChange={handleNameChange}
           disabled={busy}
           aria-label="Player name"
         />
@@ -140,14 +178,65 @@ export function ProfileScreen({ onComplete, onBack }) {
           onClick={onBack}
         />
 
-        {(error || busy || copied || notice) && (
+        {statusMessage && (
           <div className={`profile-status ${error ? "error" : ""}`} aria-live="polite">
-            {error || (copied ? "Wallet copied." : busy ? "Creating profile..." : notice)}
+            {statusMessage}
           </div>
         )}
       </div>
     </section>
   );
+}
+
+async function fetchAbstractUsername(address) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3500);
+  const wallet = String(address || "").toLowerCase();
+  const configuredUrl = import.meta.env.VITE_ABSTRACT_PROFILE_LOOKUP_URL;
+  const urls = [
+    configuredUrl ? configuredUrl.replace("{address}", wallet) : "",
+    `https://portal.abs.xyz/api/profile/${wallet}`,
+    `https://portal.abs.xyz/api/users/${wallet}`,
+    `https://portal.abs.xyz/api/user/${wallet}`
+  ].filter(Boolean);
+
+  try {
+    for (const url of urls) {
+      try {
+        const response = await fetch(url, { signal: controller.signal, credentials: "omit" });
+        if (!response.ok) continue;
+        const data = await response.json();
+        const username = findUsername(data);
+        if (username) return username;
+      } catch {}
+    }
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  return "";
+}
+
+function findUsername(value) {
+  if (!value || typeof value !== "object") return "";
+  const direct = value.username || value.handle || value.displayName || value.name;
+  if (typeof direct === "string" && isValidProfileName(direct)) return cleanProfileName(direct);
+  for (const item of Object.values(value)) {
+    if (item && typeof item === "object") {
+      const found = findUsername(item);
+      if (found) return found;
+    }
+  }
+  return "";
+}
+
+function isValidProfileName(value) {
+  const name = cleanProfileName(value);
+  return name.length >= 3 && name.length <= 20 && !/^0x[a-f0-9]{8,}$/i.test(name);
+}
+
+function cleanProfileName(value) {
+  return String(value || "").replace(/^@/, "").trim().slice(0, 20);
 }
 
 function compactAddress(address) {
