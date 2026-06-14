@@ -41,7 +41,7 @@ export default function App() {
   if (screen === "vault-deployer") return <EthVaultDeployerScreen onBack={() => setScreen("hub")} />;
   if (screen === "settlement-admin") return <SettlementAdminScreen onBack={() => setScreen("hub")} />;
   if (screen === "high-stakes") return <HighStakesScreen profile={profile} onRoomReady={(readyRoom) => { setRoom(readyRoom); setScreen("team-select"); }} onBack={() => setScreen("hub")} />;
-  if (screen === "open-ice-menu") return <OpenIceMenuScreen profile={profile} onCreateRoom={() => setScreen("create-room")} onJoinRoom={() => setScreen("join-room")} onBack={() => setScreen("hub")} />;
+  if (screen === "open-ice-menu") return <OpenIceMenuScreen profile={profile} onCreateRoom={() => setScreen("create-room")} onJoinRoom={() => setScreen("join-room")} onRoomJoined={(joinedRoom) => { setRoom(joinedRoom); setScreen("team-select"); }} onBack={() => setScreen("hub")} />;
   if (screen === "create-room") return <CreateRoomScreen profile={profile} onRoomCreated={(createdRoom) => { setRoom(createdRoom); setScreen("team-select"); }} onBack={() => setScreen("open-ice-menu")} />;
   if (screen === "join-room") return <JoinRoomScreen profile={profile} onRoomJoined={(joinedRoom) => { setRoom(joinedRoom); setScreen("team-select"); }} onBack={() => setScreen("open-ice-menu")} />;
   if (screen === "team-select") return <TeamSelectScreen room={room} profile={profile} onRoomUpdate={setRoom} onContinue={(updatedRoom) => { setRoom(updatedRoom); setScreen("waiting"); }} onBack={() => setScreen(roomLobbyScreen())} />;
