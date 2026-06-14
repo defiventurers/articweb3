@@ -6,6 +6,9 @@ import "../styles/profileScreen.css";
 
 const PROFILE_CALIBRATION_QUERY_KEY = "calibrateProfile";
 const PROFILE_CALIBRATION_TARGETS = [
+  "agw-rectangle",
+  "wallet-rectangle",
+  "player-name-rectangle",
   "connect-hit",
   "connect-disabled",
   "disconnect-hit",
@@ -194,6 +197,14 @@ export function ProfileScreen({ onComplete, onBack }) {
       <div className="profile-stage">
         <img className="profile-art" src="/assets/screens/profile.png" alt="Create Profile" />
 
+        {calibrateProfile && (
+          <>
+            <div className="profile-calibration-rect profile-agw-rectangle" {...calibrationProps("agw-rectangle")}>AGW AREA</div>
+            <div className="profile-calibration-rect profile-wallet-rectangle" {...calibrationProps("wallet-rectangle")}>WALLET ADDRESS AREA</div>
+            <div className="profile-calibration-rect profile-player-name-rectangle" {...calibrationProps("player-name-rectangle")}>PLAYER NAME AREA</div>
+          </>
+        )}
+
         <button
           className={`profile-hit profile-connect-hit ${isConnected ? "connected" : ""}`}
           {...calibrationProps("connect-hit")}
@@ -327,7 +338,7 @@ function ProfileCalibrator({ enabled, targetIds, overrides, setOverrides }) {
   return (
     <div className="profile-calibrator">
       <strong>Profile Calibration</strong>
-      <small>Drag outlined areas directly, or edit numbers below.</small>
+      <small>Drag outlined areas directly, or edit numbers below. Use AGW AREA, WALLET ADDRESS AREA, and PLAYER NAME AREA for the large blue rectangles.</small>
       <select value={selected} onChange={(event) => setSelected(event.target.value)}>
         {targetIds.map((targetId) => <option key={targetId} value={targetId}>{targetId}</option>)}
       </select>
