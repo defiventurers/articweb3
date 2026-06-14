@@ -1,0 +1,108 @@
+.highstakes-screen.is-calibrating .highstakes-calibrator {
+  position: absolute;
+  right: calc(100% + 14px);
+  left: auto;
+  top: 0;
+  z-index: 90;
+  width: 320px;
+  max-height: 96%;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(190, 245, 255, .85);
+  background: rgba(3, 15, 36, .94);
+  color: white;
+  font: 700 12px system-ui, sans-serif;
+  box-shadow: 0 12px 26px rgba(0,0,0,.35);
+}
+
+.highstakes-screen.is-calibrating [data-calibrate][data-calibration-selected="true"] {
+  outline: 2px solid rgba(255, 236, 87, .95) !important;
+  background-color: rgba(255, 236, 87, .12) !important;
+}
+
+.highstakes-calibrator-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.highstakes-calibrator-hint {
+  margin: 0;
+  color: rgba(230, 250, 255, .78);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.highstakes-calibrator-controls,
+.highstakes-calibrator-size,
+.highstakes-calibrator-font {
+  display: grid;
+  gap: 6px;
+}
+
+.highstakes-calibrator-controls {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.highstakes-calibrator-size,
+.highstakes-calibrator-font {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.highstakes-calibrator .cal-spacer {
+  visibility: hidden;
+}
+
+.highstakes-calibrator .cal-wide {
+  grid-column: 1 / -1;
+}
+
+.highstakes-calibrator select,
+.highstakes-calibrator input,
+.highstakes-calibrator button {
+  width: 100%;
+  min-height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(190, 245, 255, .65);
+  background: rgba(255,255,255,.08);
+  color: white;
+  padding: 4px 6px;
+  font: inherit;
+}
+
+.highstakes-calibrator button {
+  background: #0878d8;
+  cursor: pointer;
+}
+
+.highstakes-calibrator button.secondary {
+  background: rgba(255,255,255,.08);
+}
+
+.highstakes-calibrator label {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 6px;
+  align-items: center;
+}
+
+.highstakes-calibrator hr {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid rgba(190,245,255,.25);
+}
+
+@media (max-width: 1200px) {
+  .highstakes-screen.is-calibrating .highstakes-calibrator {
+    position: fixed;
+    left: 8px;
+    right: auto;
+    top: 8px;
+    width: min(320px, calc(100vw - 16px));
+    max-height: calc(100dvh - 16px);
+  }
+}
