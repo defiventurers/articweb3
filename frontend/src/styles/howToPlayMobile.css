@@ -1,0 +1,515 @@
+@media (max-width: 740px) {
+  .academy-screen {
+    height: 100dvh;
+    min-height: 100dvh;
+    padding: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% -8%, rgba(126, 223, 255, .34), transparent 34%),
+      radial-gradient(circle at 85% 18%, rgba(255, 183, 225, .16), transparent 24%),
+      linear-gradient(180deg, #061b3a 0%, #08213f 50%, #020b18 100%);
+  }
+
+  .academy-shell {
+    width: 100%;
+    height: 100%;
+    max-height: 100dvh;
+    display: grid;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    gap: 8px;
+    padding-top: max(8px, env(safe-area-inset-top));
+  }
+
+  .academy-topbar {
+    grid-template-columns: 58px 1fr 58px;
+    gap: 8px;
+    padding: 0 10px;
+  }
+
+  .academy-back,
+  .academy-skip {
+    min-height: 38px;
+    padding: 0 8px;
+    border-radius: 14px;
+    font-size: 12px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, .22);
+  }
+
+  .academy-brand {
+    min-height: 44px;
+    border-radius: 16px;
+  }
+
+  .academy-brand span {
+    display: none;
+  }
+
+  .academy-brand strong {
+    font-size: clamp(14px, 4.8vw, 18px);
+    line-height: 1.05;
+  }
+
+  .academy-progress {
+    height: 6px;
+    margin: 0 10px;
+  }
+
+  .academy-tabs {
+    display: flex;
+    grid-template-columns: none;
+    gap: 7px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 10px 2px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .academy-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .academy-tabs button {
+    flex: 0 0 52px;
+    min-width: 52px;
+    width: 52px;
+    min-height: 42px;
+    padding: 0;
+    border-radius: 15px;
+    font-size: 0;
+    scroll-snap-align: center;
+  }
+
+  .academy-tabs button span {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    margin: 0;
+  }
+
+  .academy-tabs button.active {
+    flex-basis: 132px;
+    width: 132px;
+    min-width: 132px;
+    padding: 0 10px;
+    justify-content: flex-start;
+    font-size: 11px;
+    line-height: 1.05;
+    text-align: left;
+  }
+
+  .academy-tabs button.active span {
+    flex: 0 0 28px;
+  }
+
+  .academy-card {
+    min-height: 0;
+    height: 100%;
+    margin: 0 8px;
+    padding: 14px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 24px;
+  }
+
+  .academy-card::before {
+    width: 120px;
+    height: 120px;
+    inset: -40px -40px auto auto;
+  }
+
+  .academy-chapter-tag {
+    margin-bottom: 7px;
+    font-size: 10px;
+    letter-spacing: .1em;
+  }
+
+  .academy-eyebrow {
+    font-size: 10px;
+    letter-spacing: .12em;
+  }
+
+  .academy-two-col,
+  .roster-layout,
+  .dice-layout,
+  .drill-layout {
+    grid-template-columns: 1fr;
+    gap: 13px;
+  }
+
+  .academy-copy h1,
+  .academy-finale h1 {
+    margin: 4px 0 8px;
+    font-size: clamp(32px, 11vw, 46px);
+    line-height: .94;
+  }
+
+  .academy-copy p,
+  .academy-finale > p {
+    font-size: 14px;
+    line-height: 1.42;
+  }
+
+  .academy-kingdom-profile {
+    margin-top: 12px;
+    grid-template-columns: 42px 1fr;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .academy-kingdom-profile > span {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    font-size: 22px;
+  }
+
+  .academy-kingdom-profile strong,
+  .piece-rule strong,
+  .dice-example-card strong,
+  .capture-rules strong,
+  .king-capture-card strong,
+  .win-loop-grid strong,
+  .drill-panel strong {
+    font-size: 15px;
+  }
+
+  .academy-kingdom-profile p,
+  .piece-rule p,
+  .dice-example-card p,
+  .capture-rules p,
+  .king-capture-card p,
+  .win-loop-grid p,
+  .drill-panel p,
+  .roster-frame p {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .kingdom-picker {
+    display: flex;
+    grid-template-columns: none;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin: 2px -6px 0;
+    padding: 2px 6px 10px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .kingdom-picker::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kingdom-preview {
+    flex: 0 0 min(82vw, 320px);
+    min-height: min(52dvh, 320px);
+    border-radius: 22px;
+    scroll-snap-align: center;
+  }
+
+  .kingdom-preview .image-fallback-frame {
+    height: min(52dvh, 320px);
+    min-height: 240px;
+  }
+
+  .kingdom-preview span:last-child {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+
+  .image-fallback-frame {
+    min-height: 180px;
+  }
+
+  .piece-stack {
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .piece-rule {
+    grid-template-columns: 42px 1fr;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .piece-rule > span {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    font-size: 23px;
+  }
+
+  .roster-frame {
+    margin-top: 2px;
+    border-radius: 20px;
+  }
+
+  .roster-frame .image-fallback-frame {
+    height: min(46dvh, 310px);
+    min-height: 220px;
+    background: rgba(255, 255, 255, .92);
+  }
+
+  .roster-frame .image-fallback-frame img {
+    object-fit: contain;
+    background: rgba(255, 255, 255, .92);
+  }
+
+  .roster-frame p {
+    padding: 9px 10px 10px;
+    font-size: 11px;
+  }
+
+  .dice-example-card {
+    margin-top: 12px;
+    grid-template-columns: 68px 1fr;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 18px;
+    text-align: left;
+  }
+
+  .big-die {
+    width: 68px;
+    height: 68px;
+    border-radius: 20px;
+    font-size: 34px;
+    margin: 0;
+  }
+
+  .dice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .dice-face-card {
+    min-height: 92px;
+    border-radius: 17px;
+    padding: 10px;
+  }
+
+  .dice-number {
+    left: 8px;
+    top: 8px;
+    width: 23px;
+    height: 23px;
+    font-size: 11px;
+  }
+
+  .dice-face-card strong {
+    font-size: 24px;
+  }
+
+  .dice-face-card p {
+    font-size: 12px;
+  }
+
+  .drill-panel {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .drill-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .drill-actions button {
+    min-height: 42px;
+    padding: 0 8px;
+    border-radius: 14px;
+    font-size: 12px;
+  }
+
+  .academy-mini-board-wrap {
+    gap: 9px;
+  }
+
+  .academy-mini-board {
+    width: min(92vw, 360px);
+    border-radius: 18px;
+  }
+
+  .academy-mini-cell {
+    font-size: clamp(16px, 6vw, 25px);
+  }
+
+  .mini-board-legend {
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .capture-rules,
+  .win-loop-grid {
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .capture-rules article,
+  .win-loop-grid article {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .capture-rules article span,
+  .win-loop-grid article span {
+    font-size: 24px;
+  }
+
+  .king-capture-card {
+    min-height: 220px;
+    margin-top: 2px;
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .capture-scene {
+    gap: 12px;
+    font-size: clamp(48px, 18vw, 72px);
+  }
+
+  .capture-arrow {
+    font-size: clamp(30px, 11vw, 46px);
+  }
+
+  .academy-finale {
+    min-height: auto;
+    align-content: start;
+    padding: 2px 0 10px;
+  }
+
+  .win-loop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 16px 0;
+  }
+
+  .academy-start-large {
+    width: 100%;
+    min-height: 52px;
+    border-radius: 16px;
+    font-size: 16px;
+  }
+
+  .academy-nav {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 8px 8px max(8px, env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(190, 245, 255, .18);
+    background: rgba(2, 11, 24, .76);
+    backdrop-filter: blur(14px);
+  }
+
+  .academy-core-loop {
+    grid-column: 1 / -1;
+    order: -1;
+    min-height: 34px;
+    border-radius: 12px;
+    padding: 0 8px;
+    font-size: 12px;
+    line-height: 1.1;
+  }
+
+  .academy-nav-btn {
+    min-height: 48px;
+    border-radius: 16px;
+    padding: 0 10px;
+    font-size: 14px;
+  }
+
+  .academy-nav-btn.primary {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 380px) {
+  .academy-topbar {
+    grid-template-columns: 52px 1fr 52px;
+  }
+
+  .academy-back,
+  .academy-skip {
+    font-size: 11px;
+    padding: 0 6px;
+  }
+
+  .academy-card {
+    padding: 12px;
+    margin: 0 6px;
+  }
+
+  .academy-copy h1,
+  .academy-finale h1 {
+    font-size: clamp(29px, 10.6vw, 40px);
+  }
+
+  .kingdom-preview {
+    flex-basis: 84vw;
+  }
+
+  .dice-grid,
+  .win-loop-grid,
+  .drill-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 740px) and (max-height: 700px) {
+  .academy-shell {
+    gap: 6px;
+  }
+
+  .academy-tabs button {
+    min-height: 38px;
+  }
+
+  .academy-tabs button.active {
+    flex-basis: 118px;
+    min-width: 118px;
+  }
+
+  .academy-card {
+    padding: 12px;
+  }
+
+  .academy-copy h1,
+  .academy-finale h1 {
+    font-size: clamp(28px, 9.5vw, 40px);
+  }
+
+  .academy-copy p,
+  .academy-finale > p {
+    font-size: 13px;
+  }
+
+  .kingdom-preview,
+  .kingdom-preview .image-fallback-frame {
+    min-height: 220px;
+    height: min(44dvh, 260px);
+  }
+
+  .roster-frame .image-fallback-frame {
+    min-height: 190px;
+    height: min(38dvh, 250px);
+  }
+
+  .academy-nav {
+    padding-top: 6px;
+  }
+
+  .academy-core-loop {
+    display: none;
+  }
+}
