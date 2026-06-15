@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { MainMenu } from "./screens/MainMenu.jsx";
+import { HowToPlayScreen } from "./screens/HowToPlayScreen.jsx";
 import { ProfileScreen } from "./screens/ProfileScreen.jsx";
 import { PlayerHubScreen } from "./screens/PlayerHubScreen.jsx";
 import { OpenIceMenuScreen } from "./screens/OpenIceMenuScreen.jsx";
@@ -29,7 +30,8 @@ export default function App() {
   function roomLobbyScreen(targetRoom = room) { return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu"; }
   function resumeRoom(nextRoom) { setRoom(nextRoom); if (nextRoom.status === "finished") return setScreen("results"); if (nextRoom.status === "playing") return setScreen("game"); if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return setScreen("waiting"); return setScreen("team-select"); }
   if (screen === "cover") return <CoverScreen onContinue={() => setScreen("menu")} />;
-  if (screen === "menu") return <MainMenu onPlay={() => setScreen("profile")} onSpectate={() => setScreen("spectator")} onHowToPlay={() => alert("How to play comes after the lobby works.")} />;
+  if (screen === "menu") return <MainMenu onPlay={() => setScreen("profile")} onSpectate={() => setScreen("spectator")} onHowToPlay={() => setScreen("how-to-play")} />;
+  if (screen === "how-to-play") return <HowToPlayScreen onBack={() => setScreen("menu")} onStart={() => setScreen("profile")} />;
   if (screen === "spectator") return <SpectatorScreen initialRoomCode={initialSpectateCode} onBack={() => setScreen(profile ? "hub" : "menu")} />;
   if (screen === "profile") return <ProfileScreen onComplete={(createdProfile) => { setProfile(createdProfile); setScreen("hub"); }} onBack={() => setScreen("menu")} />;
   if (screen === "hub") return <PlayerHubScreen profile={profile} onOpenIce={() => setScreen("open-ice-menu")} onHighStakes={() => setScreen("high-stakes")} onMatchHistory={() => setScreen("match-history")} onLeaderboard={() => setScreen("leaderboard")} onAccountActivity={() => setScreen("activity")} onMyRooms={() => setScreen("my-rooms")} onDevQA={() => setScreen("dev-qa")} onVaultDeployer={() => setScreen("vault-deployer")} onSettlementAdmin={() => setScreen("settlement-admin")} onBack={() => setScreen("profile")} />;
