@@ -7,6 +7,7 @@ import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";
 import "./styles/gameBoard.css";
 import "./styles/teamSelect.css";
+import "./styles/howToPlay.css";
 import "./styles/profileScreen.css";
 import "./styles/openIceFlow.css";
 import "./utils/highstakesCalibrationExport.js";
