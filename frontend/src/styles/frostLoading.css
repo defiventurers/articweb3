@@ -171,12 +171,53 @@
   font-weight: 1000;
 }
 
+.frost-route-loader {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(126, 223, 255, .18), transparent 36%),
+    linear-gradient(180deg, #061b3a, #031123);
+  color: white;
+}
+
+.frost-route-loader-card {
+  width: min(86vw, 280px);
+  min-height: 132px;
+  border-radius: 24px;
+  border: 1px solid rgba(190, 245, 255, .42);
+  background: rgba(16, 85, 139, .72);
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  padding: 18px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .32);
+}
+
+.frost-route-loader-card span {
+  font-size: 32px;
+  animation: frost-loader-pulse 1s ease-in-out infinite alternate;
+}
+
+.frost-route-loader-card strong {
+  color: #d8f6ff;
+  font-size: 14px;
+  font-weight: 1000;
+}
+
 @keyframes frost-loader-spin {
   to { transform: rotate(360deg); }
 }
 
+@keyframes frost-loader-pulse {
+  to { transform: scale(1.12); filter: drop-shadow(0 0 12px rgba(126, 223, 255, .65)); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .frost-loader-sigil i {
+  .frost-loader-sigil i,
+  .frost-route-loader-card span {
     animation: none;
   }
 
