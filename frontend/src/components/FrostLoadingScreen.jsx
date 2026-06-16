@@ -19,6 +19,14 @@ const PIECE_ASSETS = PIECE_COLORS.flatMap((color) => PIECE_TYPES.map((piece) => 
 
 const CRITICAL_ASSETS = [...SCREEN_ASSETS, ...PIECE_ASSETS];
 
+const SECONDARY_ASSETS = [
+  "/assets/how-to-play/retsba-kingdom.png",
+  "/assets/how-to-play/pengu-kingdom.png",
+  "/assets/how-to-play/abster-kingdom.png",
+  "/assets/how-to-play/polly-kingdom.png",
+  "/assets/how-to-play/dominion-pieces-roster.png"
+];
+
 const STATUS_LINES = [
   "Opening the frozen gates...",
   "Summoning penguin kingdoms...",
@@ -30,6 +38,7 @@ const STATUS_LINES = [
 
 const MIN_VISIBLE_MS = 850;
 const ASSET_TIMEOUT_MS = 12000;
+const PRELOAD_CACHE = new Map();
 
 export function FrostLoadingScreen({ onReady }) {
   const [loaded, setLoaded] = useState(0);
@@ -62,6 +71,7 @@ export function FrostLoadingScreen({ onReady }) {
         if (cancelled || readyCalled.current) return;
         readyCalled.current = true;
         window.__ARCTIC_PRELOAD_REPORT__ = results;
+        warmSecondaryAssets();
         onReady?.();
       }, remainingMs);
     }
@@ -111,8 +121,39 @@ export function FrostLoadingScreen({ onReady }) {
   );
 }
 
+export function FrostRouteLoader({ label = "Loading frost chamber..." }) {
+  return (
+    <section className="frost-route-loader" aria-label={label}>
+      <div className="frost-route-loader-card">
+        <span aria-hidden="true">❄️</span>
+        <strong>{label}</strong>
+      </div>
+    </section>
+  );
+}
+
+export function warmSecondaryAssets() {
+  runWhenIdle(() => {
+    SECONDARY_ASSETS.forEach((src) => preloadImage(src));
+  });
+}
+
+export function warmGameAssets() {
+  runWhenIdle(() => {
+    ["/assets/screens/arctic-dominion-game-base.png", ...PIECE_ASSETS].forEach((src) => preloadImage(src));
+  });
+}
+
+export function warmHowToPlayAssets() {
+  runWhenIdle(() => {
+    SECONDARY_ASSETS.forEach((src) => preloadImage(src));
+  });
+}
+
 function preloadImage(src) {
-  return new Promise((resolve) => {
+  if (PRELOAD_CACHE.has(src)) return PRELOAD_CACHE.get(src);
+
+  const task = new Promise((resolve) => {
     const image = new Image();
     let settled = false;
 
@@ -136,4 +177,16 @@ function preloadImage(src) {
     image.onerror = () => finish("failed");
     image.src = src;
   });
+
+  PRELOAD_CACHE.set(src, task);
+  return task;
+}
+
+function runWhenIdle(callback) {
+  if (typeof window === "undefined") return;
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(callback, { timeout: 2200 });
+    return;
+  }
+  window.setTimeout(callback, 600);
 }
