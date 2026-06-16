@@ -1,0 +1,164 @@
+.wallet-status-panel {
+  position: absolute;
+  z-index: 18;
+  left: 5.8%;
+  top: 6.7%;
+  width: 41%;
+  max-width: 360px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(192, 245, 255, 0.72);
+  border-radius: 16px;
+  background: rgba(5, 28, 62, 0.74);
+  color: #f3fbff;
+  box-shadow: 0 14px 28px rgba(0,0,0,0.22), 0 0 22px rgba(120,220,255,0.12) inset;
+  backdrop-filter: blur(9px);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.wallet-status-panel.compact {
+  left: 4%;
+  top: 4%;
+  width: min(88%, 380px);
+}
+
+.wallet-status-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.wallet-status-head h3,
+.wallet-status-kicker,
+.wallet-status-note {
+  margin: 0;
+}
+
+.wallet-status-head h3 {
+  font-size: 15px;
+  line-height: 1.05;
+}
+
+.wallet-status-kicker {
+  color: #9ff4ff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.wallet-status-chip {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.26);
+  font-size: 10px;
+  font-weight: 950;
+  background: rgba(255,255,255,0.08);
+}
+
+.wallet-status-chip.ready {
+  color: #b6ffe0;
+}
+
+.wallet-status-chip.warning {
+  color: #fff1a8;
+}
+
+.wallet-status-chip.error {
+  color: #ffd0d0;
+}
+
+.wallet-status-grid {
+  display: grid;
+  gap: 5px;
+}
+
+.wallet-status-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 1fr) minmax(0, 1.2fr);
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+}
+
+.wallet-status-row span {
+  color: rgba(220, 246, 255, 0.72);
+  font-weight: 800;
+}
+
+.wallet-status-row strong,
+.wallet-status-row a {
+  min-width: 0;
+  color: #ffffff;
+  font-weight: 900;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.wallet-status-row a:hover {
+  text-decoration: underline;
+}
+
+.wallet-status-note {
+  padding: 7px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.07);
+  color: #dff8ff;
+  font-size: 11px;
+  line-height: 1.28;
+}
+
+.wallet-status-note.warning {
+  color: #fff1a8;
+}
+
+.wallet-status-note.error {
+  color: #ffd0d0;
+}
+
+.wallet-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.wallet-status-actions button {
+  min-height: 30px;
+  border: 1px solid rgba(190,245,255,0.85);
+  border-radius: 10px;
+  background: rgba(7, 86, 155, 0.9);
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.wallet-status-actions button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px) {
+  .wallet-status-panel {
+    left: 4%;
+    top: 5.8%;
+    width: 50%;
+    padding: 8px;
+  }
+
+  .wallet-status-head h3 {
+    font-size: 13px;
+  }
+
+  .wallet-status-row,
+  .wallet-status-note,
+  .wallet-status-actions button {
+    font-size: 10px;
+  }
+}
