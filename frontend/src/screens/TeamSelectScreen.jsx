@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { OptimizedImage } from "../components/OptimizedImage.jsx";
 import { selectRoomTeam } from "../network/socketClient.js";
 
 const OPTIONS = {
@@ -58,7 +59,7 @@ export function TeamSelectScreen({ room, profile, onRoomUpdate, onContinue, onBa
   return (
     <section className="team-select-page" aria-label="Team select">
       <div className="team-select-stage">
-        <img className="team-select-art" src="/assets/screens/team-select.png" alt="Choose your team" />
+        <OptimizedImage className="team-select-art" src="/assets/screens/team-select.png" alt="Choose your team" />
 
         <button className="team-select-hit hit-continue" aria-label="Continue" onClick={continueToWaitingRoom} disabled={busy} />
 
