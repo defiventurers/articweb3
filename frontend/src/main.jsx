@@ -8,6 +8,7 @@ import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";
 import "./styles/networkAndConfig.css";
+import "./styles/walletStatus.css";
 import "./styles/gameBoard.css";
 import "./styles/teamSelect.css";
 import "./styles/howToPlay.css";
