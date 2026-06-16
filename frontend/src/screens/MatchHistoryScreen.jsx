@@ -40,30 +40,50 @@ export function MatchHistoryScreen({ profile, onBack }) {
   }
 
   return (
-    <section className="screen proof-screen">
-      <div className="card proof-card">
-        <h1>Match History</h1>
-        <p className="note">Finished games, proof pages, placements, payouts, points, and settlement transactions for {profile?.name}.</p>
-        <button className="primary-btn" disabled={loading} onClick={loadHistory}>{loading ? "Loading..." : "Refresh History"}</button>
-        {error && <p className="error-text">{error}</p>}
-        {!loading && !history.length && <p className="note">No finished games recorded yet. Complete a match first.</p>}
-        <div className="room-list proof-list">
+    <section className="screen data-screen proof-screen">
+      <div className="card data-card-shell proof-card">
+        <header className="data-header">
+          <p className="data-kicker">Proofs & Results</p>
+          <h1>Match History</h1>
+          <p className="data-subtitle">Finished games, placements, points, payouts, and settlement proofs for {profile?.name || "this player"}.</p>
+        </header>
+
+        <button className="primary-btn data-main-action" disabled={loading} onClick={loadHistory}>{loading ? "Loading..." : "Refresh History"}</button>
+        {error && <p className="error-text data-error">{error}</p>}
+        {!loading && !history.length && <p className="data-empty">No finished games recorded yet. Complete a match first.</p>}
+
+        <div className="data-list match-card-list">
           {history.map((item) => {
             const withdrawal = findWithdrawal(item, withdrawals);
             return (
-              <div className="room-row proof-row" key={item.id}>
-                <strong>Room {item.roomCode} · {item.roomMode === "high_stakes" ? "High Stakes" : "Open Ice"}</strong>
-                <span>{formatDate(item.finishedAt)}</span>
-                <span>{TEAM_LABELS[item.team] || item.team || "—"} · #{item.position || "—"}</span>
-                <span>{formatEth(item.payoutWei)} ETH · +{item.points || 0} pts</span>
-                <span>Settlement: {item.settlementStatus || "—"}</span>
-                <span>Withdrawal: {withdrawal?.status || item.withdrawalStatus || "—"}</span>
-                <button className="primary-btn" onClick={() => setSelected(item)}>Open Match Detail</button>
-              </div>
+              <article className="data-item-card match-history-card" key={item.id}>
+                <div className="data-card-topline">
+                  <div>
+                    <strong>Room {item.roomCode}</strong>
+                    <span>{item.roomMode === "high_stakes" ? "High Stakes" : "Open Ice"} · {formatShortDate(item.finishedAt)}</span>
+                  </div>
+                  <span className={`status-pill ${statusClass(item.settlementStatus || item.withdrawalStatus)}`}>{item.settlementStatus || item.withdrawalStatus || "Finished"}</span>
+                </div>
+
+                <div className="stat-chip-row">
+                  <span className="stat-chip">Team: {TEAM_LABELS[item.team] || item.team || "—"}</span>
+                  <span className="stat-chip">Rank #{item.position || "—"}</span>
+                  <span className="stat-chip">+{item.points || 0} pts</span>
+                  <span className="stat-chip">Payout {formatEth(item.payoutWei)} ETH</span>
+                </div>
+
+                <div className="data-card-meta">
+                  <span>Withdrawal: {withdrawal?.status || item.withdrawalStatus || "—"}</span>
+                  <span>Proof: {item.proofHash ? shortHash(item.proofHash) : "—"}</span>
+                </div>
+
+                <button className="primary-btn data-card-action" onClick={() => setSelected(item)}>Open Match Detail</button>
+              </article>
             );
           })}
         </div>
-        <button className="primary-btn" onClick={onBack}>Back To Hub</button>
+
+        <button className="primary-btn data-back-btn" onClick={onBack}>Back To Hub</button>
       </div>
     </section>
   );
@@ -86,48 +106,76 @@ function MatchDetail({ item, withdrawal, onBack }) {
   }
 
   return (
-    <section className="screen proof-screen">
-      <div className="card proof-card">
-        <h1>Match Detail</h1>
-        <p className="note">Room {item.roomCode} · {formatDate(item.finishedAt)}</p>
-        <div className="rules-panel proof-grid">
+    <section className="screen data-screen proof-screen">
+      <div className="card data-card-shell proof-card">
+        <header className="data-header">
+          <p className="data-kicker">Match Detail</p>
+          <h1>Room {item.roomCode}</h1>
+          <p className="data-subtitle">{formatShortDate(item.finishedAt)} · {item.roomMode === "high_stakes" ? "High Stakes" : "Open Ice"}</p>
+        </header>
+
+        <section className="data-detail-panel">
           <strong>Core Proof</strong>
-          <span>Room Code: {item.roomCode}</span>
-          <span>Contract Match ID: {shortHash(item.contractMatchId)}</span>
-          <span>Proof Hash: {item.proofHash ? shortHash(item.proofHash) : "—"}</span>
-          <span>Settlement Status: {item.settlementStatus || "—"}</span>
-          {ETH_VAULT_ADDRESS && <a href={addressUrl(ETH_VAULT_ADDRESS)} target="_blank" rel="noreferrer">View Vault Contract</a>}
-          {item.entryTxHash && <a href={txUrl(item.entryTxHash)} target="_blank" rel="noreferrer">View Entry Tx: {shortHash(item.entryTxHash)}</a>}
-          {item.settlementTxHash && <a href={txUrl(item.settlementTxHash)} target="_blank" rel="noreferrer">View Settlement Tx: {shortHash(item.settlementTxHash)}</a>}
-          {withdrawalTx ? <a href={txUrl(withdrawalTx)} target="_blank" rel="noreferrer">View Withdrawal Tx: {shortHash(withdrawalTx)}</a> : <span>Withdrawal Tx: —</span>}
-          <span>Withdrawal Status: {withdrawalStatus || "—"}</span>
-        </div>
+          <div className="detail-chip-grid">
+            <span className="stat-chip">Contract: {shortHash(item.contractMatchId)}</span>
+            <span className="stat-chip">Proof: {item.proofHash ? shortHash(item.proofHash) : "—"}</span>
+            <span className="stat-chip">Settlement: {item.settlementStatus || "—"}</span>
+            <span className="stat-chip">Withdrawal: {withdrawalStatus || "—"}</span>
+          </div>
+          <div className="data-link-list">
+            {ETH_VAULT_ADDRESS && <a href={addressUrl(ETH_VAULT_ADDRESS)} target="_blank" rel="noreferrer">View Vault Contract</a>}
+            {item.entryTxHash && <a href={txUrl(item.entryTxHash)} target="_blank" rel="noreferrer">Entry Tx: {shortHash(item.entryTxHash)}</a>}
+            {item.settlementTxHash && <a href={txUrl(item.settlementTxHash)} target="_blank" rel="noreferrer">Settlement Tx: {shortHash(item.settlementTxHash)}</a>}
+            {withdrawalTx ? <a href={txUrl(withdrawalTx)} target="_blank" rel="noreferrer">Withdrawal Tx: {shortHash(withdrawalTx)}</a> : <span>Withdrawal Tx: —</span>}
+          </div>
+        </section>
 
-        <div className="rules-panel proof-grid">
-          <strong>Players / Placements / Payouts</strong>
-          {players.length ? players.map((player) => (
-            <span key={player.wallet}>#{player.position || "—"} · {player.name || "Player"} · {TEAM_LABELS[player.team] || player.team || "—"} · {shortAddress(player.wallet)} · Entry {player.entryTxHash ? shortHash(player.entryTxHash) : "—"} · Payout {formatEth(player.payoutWei || (sameWallet(player.wallet, item.wallet) ? item.payoutWei : "0"))} ETH · +{player.points ?? (sameWallet(player.wallet, item.wallet) ? item.points : 0)} pts</span>
-          )) : <span>{TEAM_LABELS[item.team] || item.team} · #{item.position} · {formatEth(item.payoutWei)} ETH · +{item.points || 0} pts</span>}
-        </div>
+        <section className="data-detail-panel">
+          <strong>Players / Placements</strong>
+          <div className="data-list compact-detail-list">
+            {players.length ? players.map((player) => (
+              <article className="mini-data-card" key={player.wallet}>
+                <strong>#{player.position || "—"} · {player.name || "Player"}</strong>
+                <span>{TEAM_LABELS[player.team] || player.team || "—"} · {shortAddress(player.wallet)}</span>
+                <div className="stat-chip-row">
+                  <span className="stat-chip">Entry {player.entryTxHash ? shortHash(player.entryTxHash) : "—"}</span>
+                  <span className="stat-chip">Payout {formatEth(player.payoutWei || (sameWallet(player.wallet, item.wallet) ? item.payoutWei : "0"))} ETH</span>
+                  <span className="stat-chip">+{player.points ?? (sameWallet(player.wallet, item.wallet) ? item.points : 0)} pts</span>
+                </div>
+              </article>
+            )) : (
+              <article className="mini-data-card">
+                <strong>{TEAM_LABELS[item.team] || item.team} · #{item.position}</strong>
+                <span>{formatEth(item.payoutWei)} ETH · +{item.points || 0} pts</span>
+              </article>
+            )}
+          </div>
+        </section>
 
-        <div className="rules-panel proof-grid">
+        <section className="data-detail-panel">
           <strong>Dice Proof Verifier</strong>
-          <span>Seed Hash: {randomness?.serverSeedHash ? shortHash(randomness.serverSeedHash) : "—"}</span>
-          <span>Seed Reveal: {randomness?.serverSeedReveal ? shortHash(randomness.serverSeedReveal) : "—"}</span>
-          <span>Dice Proofs: {diceProofs.length}</span>
-          <button className="primary-btn" disabled={verifyBusy || !diceProofs.length} onClick={verifyProofs}>{verifyBusy ? "Verifying..." : "Verify Dice Proofs"}</button>
+          <div className="detail-chip-grid">
+            <span className="stat-chip">Seed Hash {randomness?.serverSeedHash ? shortHash(randomness.serverSeedHash) : "—"}</span>
+            <span className="stat-chip">Reveal {randomness?.serverSeedReveal ? shortHash(randomness.serverSeedReveal) : "—"}</span>
+            <span className="stat-chip">Proofs {diceProofs.length}</span>
+          </div>
+          <button className="primary-btn data-card-action" disabled={verifyBusy || !diceProofs.length} onClick={verifyProofs}>{verifyBusy ? "Verifying..." : "Verify Dice Proofs"}</button>
           {verifyReport && <span className={`verify-pill ${verifyReport.status}`}>{shortVerificationStatus(verifyReport.status)} · {verifyReport.summary}</span>}
-          {(verifyReport?.results || diceProofs.slice(-8).map((proof) => ({ proof, status: "waiting", reason: "Not verified yet." }))).slice(-12).map((item) => <span className={`verify-line ${item.status}`} key={item.proof.inputHash}>Turn {item.proof.turnNonce} · {TEAM_LABELS[item.proof.team] || item.proof.team} · {item.proof.dice?.join(" / ")} · {shortVerificationStatus(item.status)} · {item.reason || shortHash(item.proof.inputHash)}</span>)}
-        </div>
+          <div className="proof-line-list">
+            {(verifyReport?.results || diceProofs.slice(-8).map((proof) => ({ proof, status: "waiting", reason: "Not verified yet." }))).slice(-12).map((item) => <span className={`verify-line ${item.status}`} key={item.proof.inputHash}>Turn {item.proof.turnNonce} · {TEAM_LABELS[item.proof.team] || item.proof.team} · {item.proof.dice?.join(" / ")} · {shortVerificationStatus(item.status)}</span>)}
+          </div>
+        </section>
 
         {board && <ReadOnlyBoard board={board} />}
 
-        <div className="rules-panel proof-grid">
+        <section className="data-detail-panel">
           <strong>Audit Log</strong>
-          {(item.auditLog || []).slice(-40).reverse().map((event, index) => <span key={`${event.at}-${index}`}>{formatDate(event.at)} · {event.type || "event"} · {compactEvent(event)}</span>)}
-        </div>
+          <div className="audit-line-list">
+            {(item.auditLog || []).slice(-40).reverse().map((event, index) => <span key={`${event.at}-${index}`}>{formatShortDate(event.at)} · {event.type || "event"} · {compactEvent(event)}</span>)}
+          </div>
+        </section>
 
-        <button className="primary-btn" onClick={onBack}>Back To History</button>
+        <button className="primary-btn data-back-btn" onClick={onBack}>Back To History</button>
       </div>
     </section>
   );
@@ -137,6 +185,7 @@ function ReadOnlyBoard({ board }) { return <div className="spectator-board-grid"
 function findWithdrawal(item, withdrawals) { return withdrawals.find((activity) => sameWallet(activity.wallet, item.wallet) && (activity.contractMatchId === item.contractMatchId || activity.matchId === item.matchId || activity.roomCode === item.roomCode)); }
 function sameWallet(a, b) { return String(a || "").toLowerCase() === String(b || "").toLowerCase(); }
 function inferRandomnessFromAudit(auditLog) { const commit = auditLog.find((item) => item.type === "randomness_committed"); const reveal = auditLog.find((item) => item.type === "randomness_revealed"); const diceProofs = auditLog.filter((item) => item.type === "dice_rolled" && item.proof).map((item) => item.proof); if (!commit && !reveal && !diceProofs.length) return null; return { scheme: "server-commit-reveal-v1", serverSeedHash: commit?.serverSeedHash || reveal?.serverSeedHash || diceProofs[0]?.serverSeedHash, serverSeedReveal: reveal?.serverSeedReveal || null, diceProofs }; }
-function compactEvent(event) { const clone = { ...event }; delete clone.at; delete clone.type; const text = JSON.stringify(clone); return text.length > 180 ? `${text.slice(0, 180)}...` : text; }
+function compactEvent(event) { const clone = { ...event }; delete clone.at; delete clone.type; const text = JSON.stringify(clone); return text.length > 150 ? `${text.slice(0, 150)}...` : text; }
 function formatEth(value) { try { return formatEther(BigInt(value || "0")); } catch { return "0"; } }
-function formatDate(value) { if (!value) return "—"; return new Date(value).toLocaleString(); }
+function formatShortDate(value) { if (!value) return "—"; return new Date(value).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+function statusClass(status) { const value = String(status || "").toLowerCase(); if (value.includes("confirm") || value.includes("settled") || value.includes("complete") || value.includes("finished")) return "success"; if (value.includes("pending") || value.includes("waiting")) return "warning"; if (value.includes("fail") || value.includes("error")) return "danger"; return "neutral"; }
