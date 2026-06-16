@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAccount, useDisconnect, useSignMessage } from "wagmi";
 import { useLoginWithAbstract } from "@abstract-foundation/agw-react";
+import { useChainGuard } from "../hooks/useChainGuard.js";
 import { createProfile } from "../network/socketClient.js";
 import "../styles/profileScreen.css";
 
@@ -34,6 +35,7 @@ export function ProfileScreen({ onComplete, onBack }) {
 
   const { login } = useLoginWithAbstract();
   const { address, isConnected } = useAccount();
+  const { isWrongChain, expectedNetworkName, connectedChainId } = useChainGuard();
   const { disconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
 
@@ -164,6 +166,11 @@ export function ProfileScreen({ onComplete, onBack }) {
         return;
       }
 
+      if (isWrongChain) {
+        setError(`Switch to ${expectedNetworkName} before completing profile.`);
+        return;
+      }
+
       if (name.trim().length < 3) {
         setError("Name must be at least 3 characters.");
         return;
@@ -190,7 +197,8 @@ export function ProfileScreen({ onComplete, onBack }) {
     setName(event.target.value);
   }
 
-  const statusMessage = error || (copied ? "Wallet copied." : busy ? "Creating profile..." : lookupBusy ? "Checking Abstract profile..." : notice);
+  const chainNotice = isConnected && isWrongChain ? `Wrong network: ${connectedChainId || "unknown"}. Switch to ${expectedNetworkName}.` : "";
+  const statusMessage = error || chainNotice || (copied ? "Wallet copied." : busy ? "Creating profile..." : lookupBusy ? "Checking Abstract profile..." : notice);
 
   return (
     <section className={`profile-page ${calibrateProfile ? "is-calibrating" : ""}`} aria-label="Create profile">
@@ -256,7 +264,7 @@ export function ProfileScreen({ onComplete, onBack }) {
           className="profile-hit profile-complete-hit"
           {...calibrationProps("complete-hit")}
           aria-label="Complete profile"
-          disabled={!calibrateProfile && busy}
+          disabled={!calibrateProfile && (busy || isWrongChain)}
           onClick={calibrateProfile ? undefined : handleComplete}
         />
 
@@ -269,7 +277,7 @@ export function ProfileScreen({ onComplete, onBack }) {
         />
 
         {statusMessage && (
-          <div className={`profile-status ${error ? "error" : ""}`} {...calibrationProps("status-message")} aria-live="polite">
+          <div className={`profile-status ${error || chainNotice ? "error" : ""}`} {...calibrationProps("status-message")} aria-live="polite">
             {statusMessage}
           </div>
         )}
