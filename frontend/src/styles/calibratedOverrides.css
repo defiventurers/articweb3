@@ -1,0 +1,349 @@
+.menu-play-hitbox {
+  left: 13.16%;
+  top: 75.33%;
+  width: 74.41%;
+  height: 12.92%;
+}
+
+.menu-how-hitbox {
+  left: 22.58%;
+  top: 89.16%;
+  width: 54.72%;
+  height: 8.27%;
+}
+
+.menu-spectate-hitbox {
+  left: 0.96%;
+  top: 1.57%;
+  width: 31.15%;
+  height: 5.09%;
+}
+
+.openicehub-room-0 {
+  left: 7.80%;
+  top: 31.70%;
+  width: 25.95%;
+  height: 11.80%;
+}
+
+.openicehub-room-1 {
+  left: 36.90%;
+  top: 31.70%;
+  width: 25.95%;
+  height: 11.80%;
+}
+
+.openicehub-room-2 {
+  left: 64.90%;
+  top: 31.70%;
+  width: 25.95%;
+  height: 11.80%;
+}
+
+.openicehub-room-3 {
+  left: 7.80%;
+  top: 44.90%;
+  width: 25.95%;
+  height: 11.80%;
+}
+
+.openicehub-room-4 {
+  left: 36.90%;
+  top: 44.90%;
+  width: 25.95%;
+  height: 11.80%;
+}
+
+.openicehub-room-5 {
+  left: 64.90%;
+  top: 44.90%;
+  width: 25.95%;
+  height: 11.80%;
+}
+
+.openicehub-room-6 {
+  left: 7.80%;
+  top: 58.10%;
+  width: 25.95%;
+  height: 11.80%;
+}
+
+.openicehub-room-7 {
+  left: 36.90%;
+  top: 58.10%;
+  width: 25.95%;
+  height: 11.80%;
+}
+
+.openicehub-room-8 {
+  left: 64.90%;
+  top: 58.10%;
+  width: 25.95%;
+  height: 11.80%;
+}
+
+.openicehub-room-0 .openicehub-room-code {
+  left: 11.41%;
+  top: 22.31%;
+  width: 75.60%;
+  height: 16.20%;
+  font-size: 2.15cqh;
+}
+
+.openicehub-room-0 .openicehub-users-count {
+  left: 61.16%;
+  top: 41.86%;
+  width: 16.70%;
+  height: 19.20%;
+  font-size: 2.0cqh;
+}
+
+.openicehub-room-0 .openicehub-room-join-hit {
+  left: 3.41%;
+  top: 66.27%;
+  width: 91.59%;
+  height: 28.37%;
+}
+
+.openicehub-room-1 .openicehub-room-code {
+  left: 8.23%;
+  top: 20.35%;
+  width: 75.60%;
+  height: 16.20%;
+  font-size: 2.15cqh;
+}
+
+.openicehub-room-1 .openicehub-users-count {
+  left: 58.78%;
+  top: 43.82%;
+  width: 16.70%;
+  height: 19.20%;
+  font-size: 2.0cqh;
+}
+
+.openicehub-room-1 .openicehub-room-join-hit {
+  left: 0.24%;
+  top: 66.27%;
+  width: 92.38%;
+  height: 27.39%;
+}
+
+.openicehub-room-2 .openicehub-room-code {
+  left: 11.41%;
+  top: 21.33%;
+  width: 75.60%;
+  height: 16.20%;
+  font-size: 2.15cqh;
+}
+
+.openicehub-room-2 .openicehub-users-count {
+  left: 59.58%;
+  top: 41.86%;
+  width: 16.70%;
+  height: 19.20%;
+  font-size: 2.0cqh;
+}
+
+.openicehub-room-2 .openicehub-room-join-hit {
+  left: 1.83%;
+  top: 66.27%;
+  width: 93.97%;
+  height: 27.39%;
+}
+
+.openicehub-room-3 .openicehub-room-code {
+  left: 10.61%;
+  top: 16.42%;
+  width: 75.60%;
+  height: 19.14%;
+  font-size: 2.15cqh;
+}
+
+.openicehub-room-3 .openicehub-users-count {
+  left: 61.96%;
+  top: 38.91%;
+  width: 16.70%;
+  height: 19.20%;
+  font-size: 2.0cqh;
+}
+
+.openicehub-room-3 .openicehub-room-join-hit {
+  left: 4.21%;
+  top: 64.30%;
+  width: 90.79%;
+  height: 25.43%;
+}
+
+.openicehub-room-4 .openicehub-room-code {
+  left: 6.65%;
+  top: 17.40%;
+  width: 79.57%;
+  height: 18.16%;
+  font-size: 2.15cqh;
+}
+
+.openicehub-room-4 .openicehub-users-count {
+  left: 57.20%;
+  top: 39.89%;
+  width: 16.70%;
+  height: 17.24%;
+  font-size: 2.0cqh;
+}
+
+.openicehub-room-4 .openicehub-room-join-hit {
+  left: 1.03%;
+  top: 63.32%;
+  width: 91.59%;
+  height: 26.41%;
+}
+
+.openicehub-room-5 .openicehub-room-code {
+  left: 9.82%;
+  top: 18.38%;
+  width: 76.39%;
+  height: 16.20%;
+  font-size: 2.15cqh;
+}
+
+.openicehub-room-5 .openicehub-users-count {
+  left: 59.58%;
+  top: 38.91%;
+  width: 16.70%;
+  height: 18.22%;
+  font-size: 2.0cqh;
+}
+
+.openicehub-room-5 .openicehub-room-join-hit {
+  left: 2.62%;
+  top: 66.27%;
+  width: 90.79%;
+  height: 22.48%;
+}
+
+.openicehub-room-6 .openicehub-room-code {
+  left: 12.20%;
+  top: 14.46%;
+  width: 75.60%;
+  height: 16.20%;
+  font-size: 2.15cqh;
+}
+
+.openicehub-room-6 .openicehub-users-count {
+  left: 61.16%;
+  top: 35.97%;
+  width: 16.70%;
+  height: 19.20%;
+  font-size: 2.0cqh;
+}
+
+.openicehub-room-6 .openicehub-room-join-hit {
+  left: 5.00%;
+  top: 62.34%;
+  width: 90.79%;
+  height: 26.41%;
+}
+
+.openicehub-room-7 .openicehub-room-code {
+  left: 8.23%;
+  top: 15.44%;
+  width: 75.60%;
+  height: 16.20%;
+  font-size: 2.15cqh;
+}
+
+.openicehub-room-7 .openicehub-users-count {
+  left: 57.99%;
+  top: 36.95%;
+  width: 16.70%;
+  height: 19.20%;
+  font-size: 2.0cqh;
+}
+
+.openicehub-room-7 .openicehub-room-join-hit {
+  left: 1.83%;
+  top: 59.39%;
+  width: 90.00%;
+  height: 27.39%;
+}
+
+.openicehub-room-8 .openicehub-room-code {
+  left: 9.82%;
+  top: 13.48%;
+  width: 75.60%;
+  height: 16.20%;
+  font-size: 2.15cqh;
+}
+
+.openicehub-room-8 .openicehub-users-count {
+  left: 59.58%;
+  top: 37.93%;
+  width: 16.70%;
+  height: 19.20%;
+  font-size: 2.0cqh;
+}
+
+.openicehub-room-8 .openicehub-room-join-hit {
+  left: 1.83%;
+  top: 63.32%;
+  width: 90.00%;
+  height: 21.50%;
+}
+
+.openicehub-create-hit {
+  left: 49.82%;
+  top: 19.11%;
+  width: 34.80%;
+  height: 6.50%;
+}
+
+.openicehub-refresh-hit {
+  left: 72.40%;
+  top: 28.39%;
+  width: 18.20%;
+  height: 2.71%;
+}
+
+.openicehub-next-page-hit {
+  left: 33.38%;
+  top: 69.71%;
+  width: 30.57%;
+  height: 3.01%;
+}
+
+.openicehub-private-code-hit {
+  left: 21.12%;
+  top: 77.74%;
+  width: 31.40%;
+  height: 3.70%;
+}
+
+.openicehub-private-input {
+  left: 26.03%;
+  top: 78.12%;
+  width: 26.31%;
+  height: 2.98%;
+  font-size: 2.2cqh;
+}
+
+.openicehub-join-private-hit {
+  left: 55.12%;
+  top: 77.55%;
+  width: 24.18%;
+  height: 4.04%;
+}
+
+.openicehub-back-hit {
+  left: 24.35%;
+  top: 92.98%;
+  width: 50.06%;
+  height: 5.30%;
+}
+
+.openicehub-status {
+  left: 24.76%;
+  top: 0.82%;
+  width: 42.25%;
+  height: 6.26%;
+  font-size: 1.5cqh;
+  bottom: auto;
+}
