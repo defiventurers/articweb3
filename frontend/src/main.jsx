@@ -13,6 +13,7 @@ import "./styles/tutorialBoard.css";
 import "./styles/startingPositions.css";
 import "./styles/profileScreen.css";
 import "./styles/openIceFlow.css";
+import "./styles/calibration.css";
 import "./utils/highstakesCalibrationExport.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
