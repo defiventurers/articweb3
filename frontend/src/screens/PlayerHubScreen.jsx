@@ -1,4 +1,5 @@
 import { DepositPanel } from "../components/DepositPanel.jsx";
+import { OptimizedImage } from "../components/OptimizedImage.jsx";
 import "../styles/playerHub.css";
 
 const SHOW_VAULT_DEPLOYER = import.meta.env.VITE_ENABLE_VAULT_DEPLOYER === "true";
@@ -9,7 +10,7 @@ export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHisto
     <section id="screenPlayerHub" className="art-screen playerhub-screen" aria-label="Player Hub">
       <div className="menu-screen-shell">
         <div className="art-stage screen-stage playerhub-stage">
-          <img className="screen-art" src="/assets/screens/playerhub.png" alt="Player Hub" draggable="false" />
+          <OptimizedImage className="screen-art" src="/assets/screens/playerhub.png" alt="Player Hub" />
 
           <div className="playerhub-overlay" aria-hidden="true">
             <div id="playerHubWalletText" className="playerhub-wallet-text">{profile.name}</div>
@@ -31,7 +32,7 @@ export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHisto
           <aside className="ph-dev-rail" aria-label="Developer tools">
             <button type="button" onClick={onDevQA} title="Dev QA Checklist">QA</button>
             {SHOW_SETTLEMENT_ADMIN && <button type="button" onClick={onSettlementAdmin} title="Settlement Admin">SET</button>}
-            {SHOW_VAULT_DEPLOYER && <button type="button" onClick={onVaultDeployer} title="Deploy Vault">DEP</button>}
+            {SHOW_VAULT_DEPLOYER && <button type="button" onClick={onVaultDeployer} title="Vault Tool">VAULT</button>}
           </aside>
         </div>
       </div>
