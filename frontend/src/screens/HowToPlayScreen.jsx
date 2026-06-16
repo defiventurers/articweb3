@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { TutorialBoard } from "../components/TutorialBoard.jsx";
 
 const KINGDOMS = [
   {
@@ -37,9 +38,9 @@ const KINGDOMS = [
 
 const PIECES = [
   { icon: "👑", name: "Frost King", count: 1, rule: "Moves 1 tile in any direction. If captured, your kingdom falls." },
-  { icon: "🚢", name: "Icebreaker", count: 1, rule: "Controls straight ice lanes and punishes open files." },
-  { icon: "🦣", name: "War Mammoth", count: 1, rule: "Heavy tactical piece for power moves and board pressure." },
-  { icon: "🦄", name: "Aurora Unicorn", count: 1, rule: "Jumps in surprise angles and creates chaos." },
+  { icon: "🚢", name: "Icebreaker", count: 1, rule: "Moves straight across rows or columns." },
+  { icon: "🦣", name: "War Mammoth", count: 1, rule: "Jumps exactly 2 tiles diagonally." },
+  { icon: "🦄", name: "Aurora Unicorn", count: 1, rule: "Moves in an L-shape and jumps over pieces." },
   { icon: "🐧", name: "Snow Guards", count: 4, rule: "Advance forward, capture diagonally, and guard your Crown." }
 ];
 
@@ -54,11 +55,10 @@ const DICE_FACES = [
 
 const CHAPTERS = [
   "Choose Kingdom",
-  "Command Pieces",
+  "Try Pieces",
   "Roll Dice",
-  "Move on Ice",
   "Capture Kings",
-  "Win Dominion"
+  "Start Battle"
 ];
 
 const ROSTER_IMAGE = "/assets/how-to-play/dominion-pieces-roster.png";
@@ -67,7 +67,6 @@ export function HowToPlayScreen({ onBack, onStart }) {
   const [chapter, setChapter] = useState(0);
   const [selectedKingdom, setSelectedKingdom] = useState("retsba");
   const [failedImages, setFailedImages] = useState({});
-  const [drillStep, setDrillStep] = useState(0);
 
   const activeKingdom = useMemo(() => {
     return KINGDOMS.find((kingdom) => kingdom.id === selectedKingdom) || KINGDOMS[0];
@@ -128,16 +127,21 @@ export function HowToPlayScreen({ onBack, onStart }) {
               markImageFailed={markImageFailed}
             />
           )}
-          {chapter === 1 && <CommandPiecesChapter failedImages={failedImages} markImageFailed={markImageFailed} />}
+          {chapter === 1 && (
+            <TryPiecesChapter
+              activeKingdom={activeKingdom}
+              failedImages={failedImages}
+              markImageFailed={markImageFailed}
+            />
+          )}
           {chapter === 2 && <DiceChapter />}
-          {chapter === 3 && <MoveOnIceChapter drillStep={drillStep} setDrillStep={setDrillStep} />}
-          {chapter === 4 && <CaptureKingsChapter />}
-          {chapter === 5 && <WinDominionChapter onStart={onStart || onBack} />}
+          {chapter === 3 && <CaptureKingsChapter />}
+          {chapter === 4 && <WinDominionChapter onStart={onStart || onBack} />}
         </main>
 
         <footer className="academy-nav">
           <button type="button" className="academy-nav-btn" onClick={goBackChapter} disabled={chapter === 0}>Previous</button>
-          <div className="academy-core-loop">Roll → Move glowing piece → Capture Kings → Survive</div>
+          <div className="academy-core-loop">Tap piece → glow moves → move → capture King</div>
           {chapter < CHAPTERS.length - 1 ? (
             <button type="button" className="academy-nav-btn primary" onClick={goNext}>Next</button>
           ) : (
@@ -192,18 +196,18 @@ function ChooseKingdomChapter({ activeKingdom, selectedKingdom, setSelectedKingd
   );
 }
 
-function CommandPiecesChapter({ failedImages, markImageFailed }) {
+function TryPiecesChapter({ activeKingdom, failedImages, markImageFailed }) {
   return (
-    <div className="academy-two-col roster-layout">
-      <div className="academy-copy">
+    <div className="academy-two-col try-pieces-layout">
+      <div className="academy-copy try-copy">
         <p className="academy-eyebrow">Step 2</p>
-        <h1>Command 8 Dominion pieces.</h1>
+        <h1>Try every piece.</h1>
         <p>
-          Each kingdom starts with the same army. The army is small on purpose:
-          faster turns, less confusion, and more direct combat.
+          Select a Dominion piece, tap it on the board, then move it to a glowing tile.
+          This is the fastest way to learn Arctic Dominion on mobile.
         </p>
 
-        <div className="piece-stack">
+        <div className="piece-stack compact-piece-stack">
           {PIECES.map((piece) => (
             <article className="piece-rule" key={piece.name}>
               <span>{piece.icon}</span>
@@ -214,18 +218,20 @@ function CommandPiecesChapter({ failedImages, markImageFailed }) {
             </article>
           ))}
         </div>
+
+        <div className="roster-frame academy-roster-preview">
+          <ImageWithFallback
+            src={ROSTER_IMAGE}
+            alt="Arctic Dominion full piece roster"
+            fallback="👑"
+            failedImages={failedImages}
+            onFail={markImageFailed}
+          />
+          <p>Full army roster for all four kingdoms.</p>
+        </div>
       </div>
 
-      <div className="roster-frame">
-        <ImageWithFallback
-          src={ROSTER_IMAGE}
-          alt="Arctic Dominion full piece roster"
-          fallback="👑"
-          failedImages={failedImages}
-          onFail={markImageFailed}
-        />
-        <p>Upload the roster image here later. The layout already supports it.</p>
-      </div>
+      <TutorialBoard teamColor={activeKingdom.color} />
     </div>
   );
 }
@@ -237,8 +243,8 @@ function DiceChapter() {
         <p className="academy-eyebrow">Step 3</p>
         <h1>Roll the Dominion Dice.</h1>
         <p>
-          The dice awakens which piece type can move this turn. That is what
-          makes Arctic Dominion more chaotic and replayable than chess.
+          In a real match, the dice decides which piece type can move this turn.
+          The training board lets you practice freely first, then the dice adds chaos.
         </p>
 
         <div className="dice-example-card">
@@ -263,46 +269,11 @@ function DiceChapter() {
   );
 }
 
-function MoveOnIceChapter({ drillStep, setDrillStep }) {
-  const drillText = [
-    "Tap Roll Dice. The Dominion Dice awakens a piece type.",
-    "The Unicorn is awake. Select it.",
-    "Glowing ice shows where the selected piece can move.",
-    "Move to the capture tile and threaten the enemy Crown."
-  ][drillStep];
-
-  return (
-    <div className="academy-two-col drill-layout">
-      <div className="academy-copy">
-        <p className="academy-eyebrow">Step 4</p>
-        <h1>Move on glowing ice.</h1>
-        <p>
-          Players should not memorize everything on turn one. The board teaches
-          them: select a piece, then move to a highlighted tile.
-        </p>
-
-        <div className="drill-panel">
-          <strong>Mini Frost Drill</strong>
-          <p>{drillText}</p>
-          <div className="drill-actions">
-            <button type="button" onClick={() => setDrillStep(1)} disabled={drillStep > 0}>Roll Dice</button>
-            <button type="button" onClick={() => setDrillStep(2)} disabled={drillStep < 1 || drillStep > 2}>Select Unicorn</button>
-            <button type="button" onClick={() => setDrillStep(3)} disabled={drillStep < 2}>Move</button>
-            <button type="button" onClick={() => setDrillStep(0)}>Reset</button>
-          </div>
-        </div>
-      </div>
-
-      <MiniBoard drillStep={drillStep} />
-    </div>
-  );
-}
-
 function CaptureKingsChapter() {
   return (
     <div className="academy-two-col capture-layout">
       <div className="academy-copy">
-        <p className="academy-eyebrow">Step 5</p>
+        <p className="academy-eyebrow">Step 4</p>
         <h1>Capture Kings. Erase kingdoms.</h1>
         <p>
           Land on enemy pieces to capture them. Capture a Frost King and that
@@ -344,7 +315,7 @@ function CaptureKingsChapter() {
 function WinDominionChapter({ onStart }) {
   return (
     <div className="academy-finale">
-      <p className="academy-eyebrow">Step 6</p>
+      <p className="academy-eyebrow">Step 5</p>
       <h1>Last Crown standing wins.</h1>
       <p>
         Arctic Dominion is a strategy party battle: simple to start, chaotic to
@@ -359,47 +330,6 @@ function WinDominionChapter({ onStart }) {
       </div>
 
       <button type="button" className="academy-start-large" onClick={onStart}>Start Battle</button>
-    </div>
-  );
-}
-
-function MiniBoard({ drillStep }) {
-  const cells = [];
-  for (let row = 0; row < 8; row += 1) {
-    for (let col = 0; col < 8; col += 1) {
-      const key = `${row}-${col}`;
-      let label = "";
-      let className = "academy-mini-cell";
-
-      if (row === 5 && col === 2) {
-        label = "🦄";
-        className += drillStep >= 1 ? " awake" : "";
-        className += drillStep >= 2 ? " selected" : "";
-      }
-
-      const legalTiles = [[3, 1], [3, 3], [4, 4], [6, 4], [7, 1], [7, 3]];
-      if (drillStep >= 2 && legalTiles.some(([r, c]) => r === row && c === col)) {
-        className += " legal";
-      }
-
-      if (row === 3 && col === 3) {
-        label = drillStep >= 3 ? "🦄" : "👑";
-        className += drillStep >= 2 ? " capture" : "";
-      }
-
-      cells.push(<div className={className} key={key}>{label}</div>);
-    }
-  }
-
-  return (
-    <div className="academy-mini-board-wrap">
-      <div className="academy-mini-board" aria-label="Mini tutorial board">
-        {cells}
-      </div>
-      <div className="mini-board-legend">
-        <span><i className="legend-dot legal" /> Legal move</span>
-        <span><i className="legend-dot capture" /> Capture target</span>
-      </div>
     </div>
   );
 }
