@@ -1,0 +1,88 @@
+.network-badge {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  z-index: 10000;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid rgba(210, 244, 255, 0.72);
+  border-radius: 999px;
+  background: rgba(4, 20, 45, 0.82);
+  color: #eefbff;
+  font: 800 12px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.28), 0 0 18px rgba(120,220,255,0.12) inset;
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+.network-badge.mainnet {
+  background: rgba(2, 16, 36, 0.9);
+}
+
+.network-badge.testnet {
+  background: rgba(10, 45, 110, 0.88);
+}
+
+.network-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #9ff4ff;
+  box-shadow: 0 0 12px rgba(159,244,255,0.85);
+}
+
+.highstakes-config-panel {
+  width: min(84%, 420px);
+  margin: 18vh auto 0;
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid rgba(190,245,255,0.9);
+  border-radius: 22px;
+  background: rgba(7,37,78,0.96);
+  color: #ffffff;
+  box-shadow: 0 14px 35px rgba(0,0,0,0.45), 0 0 24px rgba(110,220,255,0.2) inset;
+  text-align: left;
+}
+
+.highstakes-config-panel h2,
+.highstakes-config-panel p,
+.highstakes-config-panel dl {
+  margin: 0;
+}
+
+.highstakes-config-kicker {
+  color: #9ff4ff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.highstakes-config-list {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.highstakes-config-list div {
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.07);
+}
+
+.highstakes-config-list dt {
+  color: #bfefff;
+  font-weight: 900;
+}
+
+.highstakes-config-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #fff3c7;
+}
