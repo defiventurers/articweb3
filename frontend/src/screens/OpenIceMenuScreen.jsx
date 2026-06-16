@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { OptimizedImage } from "../components/OptimizedImage.jsx";
 import { joinRoom, listRooms } from "../network/socketClient.js";
 
 const OPEN_ICE_ROOMS_PER_PAGE = 9;
@@ -103,7 +104,7 @@ export function OpenIceMenuScreen({ profile, onCreateRoom, onJoinRoom, onRoomJoi
   return (
     <section className="open-ice-image-page openicehub-page" aria-label="Open Ice Hub">
       <div className="open-ice-image-stage openicehub-stage">
-        <img className="open-ice-screen-art" src="/assets/screens/openicehub.png" alt="Open Ice Hub" draggable="false" />
+        <OptimizedImage className="open-ice-screen-art" src="/assets/screens/openicehub.png" alt="Open Ice Hub" />
 
         {Array.from({ length: OPEN_ICE_ROOMS_PER_PAGE }, (_, index) => roomSlot(index))}
 
