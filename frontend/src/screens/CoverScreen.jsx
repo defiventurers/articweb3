@@ -7,6 +7,8 @@ export function CoverScreen({ onContinue }) {
           src="/assets/screens/cover.png"
           alt="Artic Web3 cover"
           draggable="false"
+          decoding="async"
+          fetchPriority="high"
         />
       </button>
     </section>
