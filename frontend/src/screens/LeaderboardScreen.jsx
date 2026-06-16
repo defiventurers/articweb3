@@ -21,33 +21,52 @@ export function LeaderboardScreen({ onBack }) {
   useEffect(() => { load(); }, []);
 
   return (
-    <section className="screen">
-      <div className="card">
-        <h1>Leaderboard</h1>
-        <p className="note">Rankings by points, wins, and games played.</p>
-        <button className="primary-btn" disabled={loading} onClick={load}>{loading ? "Loading..." : "Refresh"}</button>
-        {error && <p className="error-text">{error}</p>}
-        <div className="room-list">
+    <section className="screen data-screen">
+      <div className="card data-card-shell leaderboard-shell">
+        <header className="data-header">
+          <p className="data-kicker">Frozen Rankings</p>
+          <h1>Leaderboard</h1>
+          <p className="data-subtitle">Rankings by points, wins, games played, and win rate.</p>
+        </header>
+
+        <button className="primary-btn data-main-action" disabled={loading} onClick={load}>{loading ? "Loading..." : "Refresh"}</button>
+        {error && <p className="error-text data-error">{error}</p>}
+
+        <div className="data-list leaderboard-list">
           {leaders.map((player) => (
-            <div className="room-row" key={player.wallet}>
-              <div>
-                <strong>#{player.rank} · {player.name}</strong>
-                <span>{shortAddress(player.wallet)}</span>
+            <article className={`data-item-card leaderboard-card rank-${player.rank}`} key={player.wallet}>
+              <div className="leaderboard-rank-badge">{rankBadge(player.rank)}</div>
+              <div className="leaderboard-main">
+                <div className="data-card-topline">
+                  <div>
+                    <strong>{player.name || "Player"}</strong>
+                    <span>{shortAddress(player.wallet)}</span>
+                  </div>
+                  <span className="status-pill neutral">#{player.rank}</span>
+                </div>
+                <div className="stat-chip-row">
+                  <span className="stat-chip strong-chip">{player.points} pts</span>
+                  <span className="stat-chip">{player.wins} win{player.wins === 1 ? "" : "s"}</span>
+                  <span className="stat-chip">{player.gamesPlayed} game{player.gamesPlayed === 1 ? "" : "s"}</span>
+                  <span className="stat-chip">{formatWinRate(player)} win rate</span>
+                </div>
               </div>
-              <div>
-                <span>Points: {player.points}</span>
-                <span>Wins: {player.wins}</span>
-                <span>Games: {player.gamesPlayed}</span>
-                <span>Win Rate: {formatWinRate(player)}</span>
-              </div>
-            </div>
+            </article>
           ))}
         </div>
-        {!loading && !leaders.length && <p className="note">No ranked players yet.</p>}
-        <button className="primary-btn" onClick={onBack}>Back To Hub</button>
+
+        {!loading && !leaders.length && <p className="data-empty">No ranked players yet.</p>}
+        <button className="primary-btn data-back-btn" onClick={onBack}>Back To Hub</button>
       </div>
     </section>
   );
+}
+
+function rankBadge(rank) {
+  if (rank === 1) return "🥇";
+  if (rank === 2) return "🥈";
+  if (rank === 3) return "🥉";
+  return `#${rank}`;
 }
 
 function formatWinRate(player) {
