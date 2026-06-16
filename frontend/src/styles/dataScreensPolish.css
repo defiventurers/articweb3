@@ -1,0 +1,24 @@
+.screen.data-screen {
+  place-items: start center;
+}
+
+.data-card-shell {
+  margin: 0;
+}
+
+.lobby-score-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+@media (min-width: 760px) {
+  .waiting-card,
+  .data-card-shell {
+    margin-top: clamp(16px, 6vh, 72px);
+  }
+}
+
+@media (max-width: 520px) {
+  .screen.data-screen {
+    place-items: start center;
+  }
+}
