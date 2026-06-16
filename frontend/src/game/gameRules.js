@@ -298,9 +298,9 @@ export function pickBotMove(state) {
 function getPossibleTargets(state, row, col, piece) {
   if (piece.type === "king") return kingMoves(row, col);
   if (piece.type === "pawn") return pawnMoves(state, row, col, piece.team);
-  if (piece.type === "ship") return shipMoves(state, row, col);
+  if (piece.type === "ship") return shipMoves(row, col);
   if (piece.type === "horse") return horseMoves(row, col);
-  if (piece.type === "elephant") return mammothMoves(row, col);
+  if (piece.type === "elephant") return mammothMoves(state, row, col);
   return [];
 }
 
@@ -342,14 +342,14 @@ function horseMoves(row, col) {
     .filter(([r, c]) => inBounds(r, c));
 }
 
-function shipMoves(state, row, col) {
-  return slideMoves(state, row, col, [[1, 0], [-1, 0], [0, 1], [0, -1]]);
-}
-
-function mammothMoves(row, col) {
+function shipMoves(row, col) {
   return [[2, 2], [2, -2], [-2, 2], [-2, -2]]
     .map(([dr, dc]) => [row + dr, col + dc])
     .filter(([r, c]) => inBounds(r, c));
+}
+
+function mammothMoves(state, row, col) {
+  return slideMoves(state, row, col, [[1, 0], [-1, 0], [0, 1], [0, -1]]);
 }
 
 function oneStepMoves(row, col, dirs) {
