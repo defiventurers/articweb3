@@ -1,9 +1,9 @@
 import { AbstractWalletProvider } from "@abstract-foundation/agw-react";
-import { abstractTestnet } from "viem/chains";
+import { abstractChain } from "../config/chain.js";
 
 export function Web3Provider({ children }) {
   return (
-    <AbstractWalletProvider chain={abstractTestnet}>
+    <AbstractWalletProvider chain={abstractChain}>
       {children}
     </AbstractWalletProvider>
   );
