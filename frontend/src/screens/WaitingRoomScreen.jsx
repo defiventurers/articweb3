@@ -42,6 +42,8 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
     });
   }, [currentRoom.players]);
 
+  const choosingPlayers = useMemo(() => currentRoom.players.filter((player) => !player.team), [currentRoom.players]);
+
   useEffect(() => {
     function handlePacket(event) {
       const packet = event.detail;
@@ -150,16 +152,32 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
           )}
         </div>
 
+        {choosingPlayers.length > 0 && (
+          <div className="lobby-choosing-list" aria-label="Players choosing teams">
+            {choosingPlayers.map((player) => (
+              <article className="lobby-team-card choosing-player-card" key={player.wallet}>
+                <div className="lobby-team-topline">
+                  <span>🧭</span>
+                  <strong>{player.name || "Player"}</strong>
+                  <em>Choosing</em>
+                </div>
+                <div className="lobby-player-name">Pick a kingdom to become ready.</div>
+                {isEscrowTestRoom && <div className={`lobby-lock-pill ${player.entryLocked ? "success" : "warning"}`}>{player.entryLocked ? "Confirmed" : "Pending"}</div>}
+              </article>
+            ))}
+          </div>
+        )}
+
         <div className="lobby-team-grid" aria-label="Lobby team seats">
           {teamSlots.map(({ team, player }) => (
             <article className={`lobby-team-card team-${team} ${player ? "filled" : "empty"}`} key={team}>
               <div className="lobby-team-topline">
                 <span>{TEAM_EMOJIS[team]}</span>
                 <strong>{TEAM_LABELS[team]}</strong>
-                <em>{player ? "Ready" : "Choosing"}</em>
+                <em>{player ? "Ready" : "Open"}</em>
               </div>
               <div className="lobby-player-name">{player?.name || "Waiting for player"}</div>
-              {isEscrowTestRoom && <div className={`lobby-lock-pill ${player?.entryLocked ? "success" : "warning"}`}>{player?.entryLocked ? "Confirmed" : "Pending"}</div>}
+              {isEscrowTestRoom && player && <div className={`lobby-lock-pill ${player.entryLocked ? "success" : "warning"}`}>{player.entryLocked ? "Confirmed" : "Pending"}</div>}
             </article>
           ))}
         </div>
