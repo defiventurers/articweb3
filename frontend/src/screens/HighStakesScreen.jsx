@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { formatEther } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 import { useAbstractClient } from "@abstract-foundation/agw-react";
+import { appConfig } from "../config/chain.js";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
 import { confirmEntryLock, createRoom, joinRoom, listRooms } from "../network/socketClient.js";
@@ -15,6 +16,8 @@ const TIERS = [
 
 const ROOM_PAGE_SIZE = 9;
 const CALIBRATION_QUERY_KEY = "calibrateHighstakes";
+const NETWORK_LOCK_COPY = appConfig.isMainnet ? "mainnet lock" : "testnet lock";
+const NETWORK_ETH_COPY = appConfig.isMainnet ? "mainnet ETH" : "testnet ETH";
 
 export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   const { address } = useAccount();
@@ -97,7 +100,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     if (!abstractClient) return setError("Wallet client is not ready. Reconnect AGW and try again.");
     await run(async () => {
       const value = BigInt(tier.fallbackWei || "0");
-      setStatus(`Open AGW to deposit ${formatEntry(value.toString())} ETH.`);
+      setStatus(`Open AGW to deposit ${formatEntry(value.toString())} ETH on ${appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"}.`);
       await abstractClient.writeContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "deposit", value });
       setTierPickerMode(null);
       await refreshBalances();
@@ -121,7 +124,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     await run(async () => {
       const value = BigInt(room.entryWei || "0");
       if (!room.contractMatchId || value <= 0n) throw new Error("Room data is not ready.");
-      setStatus("Open AGW and confirm the testnet lock.");
+      setStatus(`Open AGW and confirm the ${NETWORK_LOCK_COPY}.`);
       const txHash = await abstractClient.writeContract({
         address: ETH_VAULT_ADDRESS,
         abi: ethVaultAbi,
@@ -196,10 +199,10 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   }
 
   return (
-    <section id="screenHighStakes" className={`art-screen highstakes-screen ${calibrateHighstakes ? "is-calibrating" : ""}`} aria-label="High Stakes Lab">
+    <section id="screenHighStakes" className={`art-screen highstakes-screen ${calibrateHighstakes ? "is-calibrating" : ""}`} aria-label="Locked Match Mode">
       <div className="highstakes-shell">
         <div className="art-stage highstakes-stage">
-          <img className="screen-art" src="/assets/screens/highstakes.png" alt="High Stakes Lab" draggable="false" />
+          <img className="screen-art" src="/assets/screens/highstakes.png" alt="Locked Match Mode" draggable="false" />
 
           <div className="highstakes-overlay">
             <div id="highStakesWalletText" className="highstakes-wallet-text" data-calibrate="wallet-text">{displayName}</div>
@@ -237,8 +240,8 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
           {tierPickerMode && (
             <div className="highstakes-modal" role="dialog" aria-modal="true" aria-label={tierPickerMode === "create" ? "Choose entry amount" : "Choose deposit amount"}>
               <div className="highstakes-modal-card">
-                <h3>{tierPickerMode === "create" ? "Choose Entry" : "Deposit Testnet ETH"}</h3>
-                <p>{tierPickerMode === "create" ? "Pick the testnet lock amount for the new room." : "Pick how much testnet ETH to deposit into available balance."}</p>
+                <h3>{tierPickerMode === "create" ? "Choose Entry" : `Deposit ${NETWORK_ETH_COPY}`}</h3>
+                <p>{tierPickerMode === "create" ? `Pick the ${NETWORK_LOCK_COPY} amount for the new room.` : `Pick how much ${NETWORK_ETH_COPY} to deposit into available balance.`}</p>
                 <div className="highstakes-tier-grid">
                   {TIERS.map((tier) => (
                     <button key={tier.code} type="button" className={`highstakes-tier-btn entry-${tier.code}`} disabled={busy} onClick={() => tierPickerMode === "create" ? makeRoom(tier) : depositTier(tier)}>
@@ -253,12 +256,12 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
           )}
 
           {room && (
-            <div className="highstakes-modal" role="dialog" aria-modal="true" aria-label="Confirm testnet lock">
+            <div className="highstakes-modal" role="dialog" aria-modal="true" aria-label={`Confirm ${NETWORK_LOCK_COPY}`}>
               <div className="highstakes-modal-card">
                 <h3>Room {room.roomCode}</h3>
                 <p>{getUsdEntryLabelFromWei(room.entryWei) || "Entry"} · Required lock {formatEntry(room.entryWei)} ETH</p>
                 <p>{room.playerCount || 1}/4 players · {room.players?.filter((player) => player.entryLocked).length || 0} locked</p>
-                <button type="button" className="highstakes-modal-primary" disabled={busy} onClick={confirmWithWallet}>{busy ? "Working..." : "Confirm Testnet Lock"}</button>
+                <button type="button" className="highstakes-modal-primary" disabled={busy} onClick={confirmWithWallet}>{busy ? "Working..." : `Confirm ${appConfig.isMainnet ? "Mainnet" : "Testnet"} Lock`}</button>
                 <button type="button" className="highstakes-modal-cancel" disabled={busy} onClick={() => setRoom(null)}>Choose Another Room</button>
               </div>
             </div>
