@@ -10,6 +10,20 @@
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }
 
+.lobby-choosing-list {
+  display: grid;
+  gap: 10px;
+}
+
+.choosing-player-card {
+  border-color: rgba(255, 243, 199, .48);
+  background: linear-gradient(90deg, rgba(255, 243, 199, .13), rgba(6, 27, 58, .56));
+}
+
+.lobby-team-card.empty {
+  opacity: .78;
+}
+
 @media (min-width: 760px) {
   .waiting-card,
   .data-card-shell {
