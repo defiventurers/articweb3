@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { PromotionBoard } from "../components/PromotionBoard.jsx";
 import { StartingPositionsBoard } from "../components/StartingPositionsBoard.jsx";
 import { TutorialBoard } from "../components/TutorialBoard.jsx";
 
@@ -42,7 +43,7 @@ const PIECES = [
   { icon: "🚢", name: "Icebreaker", count: 1, rule: "Jumps exactly 2 tiles diagonally." },
   { icon: "🦣", name: "War Mammoth", count: 1, rule: "Moves straight across rows or columns." },
   { icon: "🦄", name: "Aurora Unicorn", count: 1, rule: "Moves in an L-shape and jumps over pieces." },
-  { icon: "🐧", name: "Snow Guards", count: 4, rule: "Advance forward, capture diagonally, and guard your Crown." }
+  { icon: "🐧", name: "Snow Guards", count: 4, rule: "Advance forward, capture diagonally, and promote on the enemy edge." }
 ];
 
 const CHAPTERS = [
@@ -50,6 +51,7 @@ const CHAPTERS = [
   "Start Positions",
   "Try Pieces",
   "Roll Dice",
+  "Promote Guards",
   "Capture Kings",
   "Start Battle"
 ];
@@ -128,13 +130,14 @@ export function HowToPlayScreen({ onBack, onStart }) {
           )}
           {chapter === 2 && <TryPiecesChapter activeKingdom={activeKingdom} />}
           {chapter === 3 && <DiceChapter activeKingdom={activeKingdom} />}
-          {chapter === 4 && <CaptureKingsChapter />}
-          {chapter === 5 && <WinDominionChapter onStart={onStart || onBack} />}
+          {chapter === 4 && <PromotionChapter activeKingdom={activeKingdom} />}
+          {chapter === 5 && <CaptureKingsChapter />}
+          {chapter === 6 && <WinDominionChapter onStart={onStart || onBack} />}
         </main>
 
         <footer className="academy-nav">
           <button type="button" className="academy-nav-btn" onClick={goBackChapter} disabled={chapter === 0}>Previous</button>
-          <div className="academy-core-loop">Roll dice → tap piece → glow moves → capture King</div>
+          <div className="academy-core-loop">Roll dice → move Guards → promote → capture Kings</div>
           {chapter < CHAPTERS.length - 1 ? (
             <button type="button" className="academy-nav-btn primary" onClick={goNext}>Next</button>
           ) : (
@@ -271,14 +274,55 @@ function DiceChapter({ activeKingdom }) {
   );
 }
 
+function PromotionChapter({ activeKingdom }) {
+  return (
+    <div className="academy-two-col promotion-layout">
+      <div className="academy-copy promotion-copy">
+        <p className="academy-eyebrow">Step 5</p>
+        <h1>Promote Snow Guards.</h1>
+        <p>
+          A Snow Guard that reaches the enemy edge transforms based on the square it lands on.
+          The promotion square decides the new piece.
+        </p>
+
+        <div className="promotion-rule-cards">
+          <article>
+            <span>🐧</span>
+            <div>
+              <strong>Reach the enemy edge</strong>
+              <p>Move a Snow Guard onto a glowing promotion edge square.</p>
+            </div>
+          </article>
+          <article>
+            <span>✨</span>
+            <div>
+              <strong>Square decides the upgrade</strong>
+              <p>Promote into Icebreaker, War Mammoth, Aurora Unicorn, or Frost King.</p>
+            </div>
+          </article>
+          <article>
+            <span>👑</span>
+            <div>
+              <strong>Promoted King is not royal</strong>
+              <p>A promoted Frost King fights like a King, but losing it does not eliminate you.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <PromotionBoard teamColor={activeKingdom.color} />
+    </div>
+  );
+}
+
 function CaptureKingsChapter() {
   return (
     <div className="academy-two-col capture-layout">
       <div className="academy-copy">
-        <p className="academy-eyebrow">Step 5</p>
+        <p className="academy-eyebrow">Step 6</p>
         <h1>Capture Kings. Erase kingdoms.</h1>
         <p>
-          Land on enemy pieces to capture them. Capture a Frost King and that
+          Land on enemy pieces to capture them. Capture a royal Frost King and that
           kingdom disappears from the battlefield instantly.
         </p>
 
@@ -290,8 +334,8 @@ function CaptureKingsChapter() {
           </article>
           <article>
             <span>👑</span>
-            <strong>King falls</strong>
-            <p>The player is eliminated when their King is captured.</p>
+            <strong>Royal King falls</strong>
+            <p>The player is eliminated only when their original royal King is captured.</p>
           </article>
           <article>
             <span>❌</span>
@@ -307,8 +351,8 @@ function CaptureKingsChapter() {
           <span className="capture-arrow">→</span>
           <span className="target-king">👑</span>
         </div>
-        <strong>Capture the King</strong>
-        <p>Kingdom removed. Remaining kingdoms continue fighting.</p>
+        <strong>Capture the Royal King</strong>
+        <p>Kingdom removed. Promoted Frost Kings are fighters, not elimination targets.</p>
       </div>
     </div>
   );
@@ -317,7 +361,7 @@ function CaptureKingsChapter() {
 function WinDominionChapter({ onStart }) {
   return (
     <div className="academy-finale">
-      <p className="academy-eyebrow">Step 6</p>
+      <p className="academy-eyebrow">Step 7</p>
       <h1>Last Crown standing wins.</h1>
       <p>
         Arctic Dominion is a strategy party battle: simple to start, chaotic to
@@ -327,8 +371,8 @@ function WinDominionChapter({ onStart }) {
       <div className="win-loop-grid">
         <article><span>🎲</span><strong>Roll</strong><p>Dice chooses your options.</p></article>
         <article><span>🧊</span><strong>Move</strong><p>Glowing tiles show legal moves.</p></article>
-        <article><span>⚔️</span><strong>Capture</strong><p>Remove enemies and hunt Kings.</p></article>
-        <article><span>🏆</span><strong>Survive</strong><p>Last kingdom wins Dominion.</p></article>
+        <article><span>✨</span><strong>Promote</strong><p>Guards can upgrade on enemy edge.</p></article>
+        <article><span>🏆</span><strong>Survive</strong><p>Last royal King wins Dominion.</p></article>
       </div>
 
       <button type="button" className="academy-start-large" onClick={onStart}>Start Battle</button>
