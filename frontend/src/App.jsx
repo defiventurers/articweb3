@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FrostLoadingScreen } from "./components/FrostLoadingScreen.jsx";
 import { CalibrationScreen } from "./screens/CalibrationScreen.jsx";
 import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { MainMenu } from "./screens/MainMenu.jsx";
@@ -26,11 +27,14 @@ import "./styles/mobileProof.css";
 export default function App() {
   const params = new URLSearchParams(window.location.search);
   const calibrationTarget = params.get("calibrate");
+  const skipLoader = params.get("skipLoader") === "1" || Boolean(calibrationTarget);
   const initialSpectateCode = params.get("spectate") || "";
+  const [assetsReady, setAssetsReady] = useState(skipLoader);
   const [screen, setScreen] = useState(initialSpectateCode ? "spectator" : "cover");
   const [profile, setProfile] = useState(null);
   const [room, setRoom] = useState(null);
   if (calibrationTarget) return <CalibrationScreen target={calibrationTarget} />;
+  if (!assetsReady) return <FrostLoadingScreen onReady={() => setAssetsReady(true)} />;
   function roomLobbyScreen(targetRoom = room) { return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu"; }
   function resumeRoom(nextRoom) { setRoom(nextRoom); if (nextRoom.status === "finished") return setScreen("results"); if (nextRoom.status === "playing") return setScreen("game"); if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return setScreen("waiting"); return setScreen("team-select"); }
   if (screen === "cover") return <CoverScreen onContinue={() => setScreen("menu")} />;
