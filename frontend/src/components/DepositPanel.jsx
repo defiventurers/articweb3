@@ -12,6 +12,7 @@ import {
   VAULT_ADDRESS
 } from "../config/chainTargets.js";
 import { ethVaultAbi, tokenAbi, vaultAbi } from "../contracts/abis.js";
+import { useChainGuard } from "../hooks/useChainGuard.js";
 
 export function DepositPanel({ variant = "panel" }) {
   const [currency, setCurrency] = useState("ETH");
@@ -22,21 +23,22 @@ export function DepositPanel({ variant = "panel" }) {
   const [messageType, setMessageType] = useState("info");
   const { address, isConnected } = useAccount();
   const { data: abstractClient } = useAbstractClient();
+  const { isWrongChain, expectedNetworkName } = useChainGuard();
 
   const isEth = currency === "ETH";
   const decimals = isEth ? ETH_DECIMALS : TOKEN_DECIMALS;
   const parsedDepositAmount = parseSafeAmount(amount, decimals);
   const parsedWithdrawAmount = parseSafeAmount(variant === "art" ? amount : withdrawAmount, decimals);
-  const enabled = Boolean(address && (isEth ? ETH_TARGETS_READY : CHAIN_TARGETS_READY));
-  const canUseContracts = Boolean(isConnected && abstractClient && enabled);
+  const enabled = Boolean(address && !isWrongChain && (isEth ? ETH_TARGETS_READY : CHAIN_TARGETS_READY));
+  const canUseContracts = Boolean(isConnected && !isWrongChain && abstractClient && enabled);
 
-  const nativeBalanceQuery = useBalance({ address, query: { enabled: Boolean(address) } });
-  const tokenWalletQuery = useReadContract({ address: TOKEN_ADDRESS, abi: tokenAbi, functionName: "balanceOf", args: address ? [address] : undefined, query: { enabled: Boolean(address && CHAIN_TARGETS_READY) } });
-  const usdcAvailableQuery = useReadContract({ address: VAULT_ADDRESS, abi: vaultAbi, functionName: "availableBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && CHAIN_TARGETS_READY) } });
-  const usdcLockedQuery = useReadContract({ address: VAULT_ADDRESS, abi: vaultAbi, functionName: "lockedBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && CHAIN_TARGETS_READY) } });
-  const allowanceQuery = useReadContract({ address: TOKEN_ADDRESS, abi: tokenAbi, functionName: "allowance", args: address ? [address, VAULT_ADDRESS] : undefined, query: { enabled: Boolean(address && CHAIN_TARGETS_READY) } });
-  const ethAvailableQuery = useReadContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "availableBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && ETH_TARGETS_READY) } });
-  const ethLockedQuery = useReadContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "lockedBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && ETH_TARGETS_READY) } });
+  const nativeBalanceQuery = useBalance({ address, query: { enabled: Boolean(address && !isWrongChain) } });
+  const tokenWalletQuery = useReadContract({ address: TOKEN_ADDRESS, abi: tokenAbi, functionName: "balanceOf", args: address ? [address] : undefined, query: { enabled: Boolean(address && !isWrongChain && CHAIN_TARGETS_READY) } });
+  const usdcAvailableQuery = useReadContract({ address: VAULT_ADDRESS, abi: vaultAbi, functionName: "availableBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && !isWrongChain && CHAIN_TARGETS_READY) } });
+  const usdcLockedQuery = useReadContract({ address: VAULT_ADDRESS, abi: vaultAbi, functionName: "lockedBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && !isWrongChain && CHAIN_TARGETS_READY) } });
+  const allowanceQuery = useReadContract({ address: TOKEN_ADDRESS, abi: tokenAbi, functionName: "allowance", args: address ? [address, VAULT_ADDRESS] : undefined, query: { enabled: Boolean(address && !isWrongChain && CHAIN_TARGETS_READY) } });
+  const ethAvailableQuery = useReadContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "availableBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && !isWrongChain && ETH_TARGETS_READY) } });
+  const ethLockedQuery = useReadContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "lockedBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && !isWrongChain && ETH_TARGETS_READY) } });
 
   const walletBalance = isEth ? nativeBalanceQuery.data?.value || 0n : tokenWalletQuery.data || 0n;
   const availableBalance = isEth ? ethAvailableQuery.data || 0n : usdcAvailableQuery.data || 0n;
@@ -46,6 +48,7 @@ export function DepositPanel({ variant = "panel" }) {
   const hasEnoughWalletBalance = parsedDepositAmount > 0n && walletBalance >= parsedDepositAmount;
   const isConfigured = isEth ? ETH_TARGETS_READY : CHAIN_TARGETS_READY;
   const canWithdraw = canUseContracts && parsedWithdrawAmount > 0n && availableBalance >= parsedWithdrawAmount;
+  const disabledReason = getDisabledReason({ isConnected, isWrongChain, isConfigured, canUseContracts, hasEnoughAllowance, hasEnoughWalletBalance, parsedDepositAmount, expectedNetworkName, currency });
 
   function selectCurrency(nextCurrency) {
     setCurrency(nextCurrency);
@@ -116,10 +119,10 @@ export function DepositPanel({ variant = "panel" }) {
 
         <button id="ethTabBtn" className={`screen-hitbox eth-tab-hitbox ${isEth ? "active" : ""}`} aria-label="ETH" onClick={() => selectCurrency("ETH")} />
         <button id="usdcTabBtn" className={`screen-hitbox usdc-tab-hitbox ${!isEth ? "active" : ""}`} aria-label="USDC" onClick={() => selectCurrency("USDC")} />
-        <button id="refreshBalanceBtn" className="screen-hitbox refresh-hitbox" aria-label="Refresh" disabled={busy} onClick={refresh} />
-        <button id="depositBtn" className="screen-hitbox deposit-hitbox" aria-label="Deposit" disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={deposit} />
-        <button id="withdrawBtn" className="screen-hitbox withdraw-hitbox" aria-label="Withdraw" disabled={!canUseContracts || busy || !canWithdraw} onClick={withdraw} />
-        <div className={`ph-toast ${messageType === "error" ? "error" : ""}`}>{message}</div>
+        <button id="refreshBalanceBtn" className="screen-hitbox refresh-hitbox" aria-label="Refresh" disabled={busy || isWrongChain} onClick={refresh} />
+        <button id="depositBtn" className="screen-hitbox deposit-hitbox" aria-label={disabledReason || "Deposit"} disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={deposit} />
+        <button id="withdrawBtn" className="screen-hitbox withdraw-hitbox" aria-label="Withdraw from available balance" disabled={!canUseContracts || busy || !canWithdraw} onClick={withdraw} />
+        <div className={`ph-toast ${messageType === "error" ? "error" : ""}`}>{message || disabledReason}</div>
         {!isEth && parsedDepositAmount > 0n && !hasEnoughAllowance && <button className="ph-hit ph-approve" aria-label="Approve USDC" disabled={!canUseContracts || busy} onClick={approveToken}>Approve</button>}
       </>
     );
@@ -127,13 +130,23 @@ export function DepositPanel({ variant = "panel" }) {
 
   return (
     <div className="wallet-panel">
-      <div className="wallet-panel-header"><strong>Game Balance</strong><span className={`wallet-status-pill ${isConfigured ? "ready" : ""}`}>{isConfigured ? `${currency} Ready` : "Open Ice Free"}</span></div>
+      <div className="wallet-panel-header"><strong>Game Balance</strong><span className={`wallet-status-pill ${isConfigured && !isWrongChain ? "ready" : ""}`}>{isConfigured && !isWrongChain ? `${currency} Ready` : "Open Ice Free"}</span></div>
       <div className="wallet-action-row"><button className={`wallet-btn ${isEth ? "primary" : ""}`} onClick={() => selectCurrency("ETH")}>ETH</button><button className={`wallet-btn ${!isEth ? "primary" : ""}`} onClick={() => selectCurrency("USDC")}>USDC</button></div>
-      <div className="wallet-balance-grid"><div className="wallet-balance-box"><span>Wallet</span><strong>{formatAmount(walletBalance, decimals)} {currency}</strong></div><div className="wallet-balance-box"><span>Available</span><strong>{formatAmount(availableBalance, decimals)} {currency}</strong></div><div className="wallet-balance-box"><span>Locked</span><strong>{formatAmount(lockedBalance, decimals)} {currency}</strong></div></div>
-      {!isConfigured ? <p className="wallet-info-note">{currency} vault is not deployed yet. Open Ice does not need crypto.</p> : <><label className="wallet-field-label">Deposit amount</label><input className="wallet-amount-input" placeholder="Deposit amount" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} /><div className="wallet-action-row"><button className="wallet-btn" disabled={busy} onClick={refresh}>Refresh</button>{!isEth && <button className="wallet-btn" disabled={!canUseContracts || busy || parsedDepositAmount <= 0n} onClick={approveToken}>Approve</button>}<button className="wallet-btn primary" disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={deposit}>Deposit</button></div><label className="wallet-field-label">Withdraw from available</label><div className="wallet-withdraw-row"><input className="wallet-amount-input" placeholder={`Up to ${formatInputAmount(availableBalance, decimals)} ${currency}`} inputMode="decimal" value={withdrawAmount} onChange={(event) => setWithdrawAmount(event.target.value)} /><button className="wallet-btn" disabled={busy || availableBalance <= 0n} onClick={fillMaxWithdraw}>Max</button><button className="wallet-btn" disabled={busy || !canWithdraw} onClick={withdraw}>Withdraw</button></div>{!isConnected && <p className="wallet-info-note">Connect AGW from the profile screen before using deposits.</p>}{!isEth && parsedDepositAmount > 0n && !hasEnoughAllowance && <p className="wallet-info-note">Approve this deposit amount before depositing USDC.</p>}{parsedWithdrawAmount > availableBalance && <p className="wallet-info-note">Withdraw amount is higher than your available balance.</p>}</>}
+      <div className="wallet-balance-grid"><div className="wallet-balance-box"><span>Wallet</span><strong>{formatAmount(walletBalance, decimals)} {currency}</strong></div><div className="wallet-balance-box"><span>Available / withdrawable</span><strong>{formatAmount(availableBalance, decimals)} {currency}</strong></div><div className="wallet-balance-box"><span>Locked</span><strong>{formatAmount(lockedBalance, decimals)} {currency}</strong></div></div>
+      {!isConfigured ? <p className="wallet-info-note">{currency} vault is not deployed yet. Open Ice does not need crypto.</p> : <><label className="wallet-field-label">Deposit amount</label><input className="wallet-amount-input" placeholder="Deposit amount" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} /><div className="wallet-action-row"><button className="wallet-btn" disabled={busy || isWrongChain} onClick={refresh}>Refresh</button>{!isEth && <button className="wallet-btn" disabled={!canUseContracts || busy || parsedDepositAmount <= 0n} onClick={approveToken}>Approve</button>}<button className="wallet-btn primary" disabled={!canUseContracts || busy || !hasEnoughAllowance || !hasEnoughWalletBalance} onClick={deposit}>Deposit</button></div><label className="wallet-field-label">Withdraw from available</label><div className="wallet-withdraw-row"><input className="wallet-amount-input" placeholder={`Up to ${formatInputAmount(availableBalance, decimals)} ${currency}`} inputMode="decimal" value={withdrawAmount} onChange={(event) => setWithdrawAmount(event.target.value)} /><button className="wallet-btn" disabled={busy || isWrongChain || availableBalance <= 0n} onClick={fillMaxWithdraw}>Max</button><button className="wallet-btn" disabled={busy || !canWithdraw} onClick={withdraw}>Withdraw</button></div>{disabledReason && <p className="wallet-info-note">{disabledReason}</p>}{!isEth && parsedDepositAmount > 0n && !hasEnoughAllowance && <p className="wallet-info-note">Approve this deposit amount before depositing USDC.</p>}{parsedWithdrawAmount > availableBalance && <p className="wallet-info-note">Withdraw amount is higher than your available balance.</p>}</>}
       {message && <p className={`wallet-message ${messageType === "error" ? "error" : ""}`}>{message}</p>}
     </div>
   );
+}
+
+function getDisabledReason({ isConnected, isWrongChain, isConfigured, hasEnoughAllowance, hasEnoughWalletBalance, parsedDepositAmount, expectedNetworkName, currency }) {
+  if (!isConnected) return "Connect AGW from the profile screen first.";
+  if (isWrongChain) return `Switch to ${expectedNetworkName} before using deposits or withdrawals.`;
+  if (!isConfigured) return `${currency} vault is not configured for this environment.`;
+  if (parsedDepositAmount <= 0n) return "Enter an amount greater than zero.";
+  if (!hasEnoughWalletBalance) return `Not enough ${currency} in wallet.`;
+  if (!hasEnoughAllowance) return `Approve ${currency} before depositing.`;
+  return "";
 }
 
 function parseSafeAmount(value, decimals) { try { if (!value || Number(value) <= 0) return 0n; return parseUnits(value, decimals); } catch { return 0n; } }
