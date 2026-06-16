@@ -8,6 +8,15 @@ const TEAM_LABELS = {
   yellow: "Polly"
 };
 
+const TEAM_EMOJIS = {
+  red: "🔥",
+  blue: "❄️",
+  green: "🌌",
+  yellow: "💎"
+};
+
+const TEAM_ORDER = ["red", "green", "blue", "yellow"];
+
 export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) {
   const [currentRoom, setCurrentRoom] = useState(room);
   const [secondsLeft, setSecondsLeft] = useState(null);
@@ -25,6 +34,13 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
   const emptySeats = Math.max(0, 4 - currentRoom.playerCount);
   const readyTeams = currentRoom.players.filter((player) => player.team).length;
   const lockedPlayers = currentRoom.players.filter((player) => player.entryLocked).length;
+
+  const teamSlots = useMemo(() => {
+    return TEAM_ORDER.map((team) => {
+      const player = currentRoom.players.find((entry) => entry.team === team);
+      return { team, player };
+    });
+  }, [currentRoom.players]);
 
   useEffect(() => {
     function handlePacket(event) {
@@ -101,54 +117,74 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
   }
 
   return (
-    <section className="screen">
-      <div className="card">
-        <h1>Room {currentRoom.roomCode}</h1>
+    <section className="screen data-screen waiting-screen">
+      <div className="card data-card-shell waiting-card">
+        <header className="data-header lobby-header">
+          <p className="data-kicker">Battle Lobby</p>
+          <h1>Room {currentRoom.roomCode}</h1>
+          <p className="data-subtitle">
+            {isEscrowTestRoom
+              ? "Share this code with three real players. All four players must confirm before countdown."
+              : "Share this code, choose different kingdoms, then start when ready."}
+          </p>
+        </header>
 
-        <p className="note">
-          {isEscrowTestRoom
-            ? "Share this code with three real players. All four players must confirm before countdown."
-            : "Share this code on the other device, then choose different teams."}
-        </p>
-
-        <button className="secondary-btn" onClick={handleCopyCode}>
+        <button className="secondary-btn data-main-action copy-code-btn" onClick={handleCopyCode}>
           {copied ? "Copied" : "Copy Room Code"}
         </button>
 
-        <div className="room-list">
-          {currentRoom.players.map((player) => (
-            <div className="room-row" key={player.wallet}>
-              <strong>{player.name}</strong>
-              <span>{player.team ? TEAM_LABELS[player.team] || player.team : "choosing"}</span>
-              {isEscrowTestRoom && <span>{player.entryLocked ? "confirmed" : "pending"}</span>}
+        <div className="lobby-score-grid">
+          <div>
+            <strong>{currentRoom.playerCount}/4</strong>
+            <span>Seats Filled</span>
+          </div>
+          <div>
+            <strong>{readyTeams}/4</strong>
+            <span>Teams Ready</span>
+          </div>
+          {isEscrowTestRoom && (
+            <div>
+              <strong>{lockedPlayers}/4</strong>
+              <span>Confirmed</span>
             </div>
+          )}
+        </div>
+
+        <div className="lobby-team-grid" aria-label="Lobby team seats">
+          {teamSlots.map(({ team, player }) => (
+            <article className={`lobby-team-card team-${team} ${player ? "filled" : "empty"}`} key={team}>
+              <div className="lobby-team-topline">
+                <span>{TEAM_EMOJIS[team]}</span>
+                <strong>{TEAM_LABELS[team]}</strong>
+                <em>{player ? "Ready" : "Choosing"}</em>
+              </div>
+              <div className="lobby-player-name">{player?.name || "Waiting for player"}</div>
+              {isEscrowTestRoom && <div className={`lobby-lock-pill ${player?.entryLocked ? "success" : "warning"}`}>{player?.entryLocked ? "Confirmed" : "Pending"}</div>}
+            </article>
           ))}
         </div>
 
-        <h2>{currentRoom.playerCount}/4 seats filled</h2>
-
-        <p className="note">
+        <p className="data-subtitle lobby-note">
           {isEscrowTestRoom
             ? `${realPlayers.length}/4 real players · ${lockedPlayers}/4 confirmations · ${readyTeams}/4 teams ready`
             : realPlayers.length >= 2
-              ? `${realPlayers.length} real players joined. Press Start With Bots to fill ${emptySeats} empty seat${emptySeats === 1 ? "" : "s"}.`
+              ? `${realPlayers.length} real players joined. Start with bots to fill ${emptySeats} empty seat${emptySeats === 1 ? "" : "s"}.`
               : "Waiting for another real player, or start with bots now."}
         </p>
 
-        <h2>
-          {secondsLeft !== null
-            ? `Starting in ${secondsLeft}`
-            : `${readyTeams}/4 teams ready`}
-        </h2>
+        <div className={`countdown-card ${secondsLeft !== null ? "live" : ""}`}>
+          <span>{secondsLeft !== null ? "Countdown" : "Readiness"}</span>
+          <strong>{secondsLeft !== null ? `Starting in ${secondsLeft}` : `${readyTeams}/4 teams ready`}</strong>
+        </div>
 
         {!isEscrowTestRoom && (
-          <button className="primary-btn" disabled={busy || !hasPickedTeam} onClick={handleStartWithBots}>
+          <button className="primary-btn data-main-action" disabled={busy || !hasPickedTeam} onClick={handleStartWithBots}>
             {busy ? "Adding bots..." : "Start With Bots"}
           </button>
         )}
 
-        {isEscrowTestRoom && <p className="note">Bots are disabled here. Wait for four confirmed real players.</p>}
-        {error && <p className="error">{error}</p>}
+        {isEscrowTestRoom && <p className="data-empty">Bots are disabled here. Wait for four confirmed real players.</p>}
+        {error && <p className="error data-error">{error}</p>}
       </div>
     </section>
   );
