@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { COLS, PIECE_NAME, ROWS, createEmptyBoard, makePiece } from "../game/gameRules.js";
+import { PIECE_NAME, createEmptyBoard, makePiece } from "../game/gameRules.js";
 
 const LOCAL_PIECE_ASSET_BASE = "/assets/arctic/pieces";
 const REMOTE_PIECE_ASSET_BASE =
