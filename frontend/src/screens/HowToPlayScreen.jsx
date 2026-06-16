@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { StartingPositionsBoard } from "../components/StartingPositionsBoard.jsx";
 import { TutorialBoard } from "../components/TutorialBoard.jsx";
 
 const KINGDOMS = [
@@ -38,23 +39,15 @@ const KINGDOMS = [
 
 const PIECES = [
   { icon: "👑", name: "Frost King", count: 1, rule: "Moves 1 tile in any direction. If captured, your kingdom falls." },
-  { icon: "🚢", name: "Icebreaker", count: 1, rule: "Moves straight across rows or columns." },
-  { icon: "🦣", name: "War Mammoth", count: 1, rule: "Jumps exactly 2 tiles diagonally." },
+  { icon: "🚢", name: "Icebreaker", count: 1, rule: "Jumps exactly 2 tiles diagonally." },
+  { icon: "🦣", name: "War Mammoth", count: 1, rule: "Moves straight across rows or columns." },
   { icon: "🦄", name: "Aurora Unicorn", count: 1, rule: "Moves in an L-shape and jumps over pieces." },
   { icon: "🐧", name: "Snow Guards", count: 4, rule: "Advance forward, capture diagonally, and guard your Crown." }
 ];
 
-const DICE_FACES = [
-  { face: "1", icon: "🐧 / 👑", title: "Guard or King" },
-  { face: "2", icon: "🦣", title: "War Mammoth" },
-  { face: "3", icon: "🦄", title: "Aurora Unicorn" },
-  { face: "4", icon: "🚢", title: "Icebreaker" },
-  { face: "5", icon: "🐧 / 👑", title: "Guard or King" },
-  { face: "6", icon: "🚢", title: "Icebreaker" }
-];
-
 const CHAPTERS = [
   "Choose Kingdom",
+  "Start Positions",
   "Try Pieces",
   "Roll Dice",
   "Capture Kings",
@@ -128,20 +121,20 @@ export function HowToPlayScreen({ onBack, onStart }) {
             />
           )}
           {chapter === 1 && (
-            <TryPiecesChapter
-              activeKingdom={activeKingdom}
+            <StartPositionsChapter
               failedImages={failedImages}
               markImageFailed={markImageFailed}
             />
           )}
-          {chapter === 2 && <DiceChapter />}
-          {chapter === 3 && <CaptureKingsChapter />}
-          {chapter === 4 && <WinDominionChapter onStart={onStart || onBack} />}
+          {chapter === 2 && <TryPiecesChapter activeKingdom={activeKingdom} />}
+          {chapter === 3 && <DiceChapter activeKingdom={activeKingdom} />}
+          {chapter === 4 && <CaptureKingsChapter />}
+          {chapter === 5 && <WinDominionChapter onStart={onStart || onBack} />}
         </main>
 
         <footer className="academy-nav">
           <button type="button" className="academy-nav-btn" onClick={goBackChapter} disabled={chapter === 0}>Previous</button>
-          <div className="academy-core-loop">Tap piece → glow moves → move → capture King</div>
+          <div className="academy-core-loop">Roll dice → tap piece → glow moves → capture King</div>
           {chapter < CHAPTERS.length - 1 ? (
             <button type="button" className="academy-nav-btn primary" onClick={goNext}>Next</button>
           ) : (
@@ -196,11 +189,39 @@ function ChooseKingdomChapter({ activeKingdom, selectedKingdom, setSelectedKingd
   );
 }
 
-function TryPiecesChapter({ activeKingdom, failedImages, markImageFailed }) {
+function StartPositionsChapter({ failedImages, markImageFailed }) {
+  return (
+    <div className="academy-two-col start-positions-layout">
+      <div className="academy-copy start-copy">
+        <p className="academy-eyebrow">Step 2</p>
+        <h1>Learn the battlefield.</h1>
+        <p>
+          All four teams start on the outside edges. The center stays open so the
+          first fights happen quickly.
+        </p>
+
+        <div className="roster-frame roster-spotlight">
+          <ImageWithFallback
+            src={ROSTER_IMAGE}
+            alt="Arctic Dominion full piece roster"
+            fallback="👑"
+            failedImages={failedImages}
+            onFail={markImageFailed}
+          />
+          <p>Full army roster: 4 Snow Guards, Icebreaker, War Mammoth, Aurora Unicorn, and Frost King.</p>
+        </div>
+      </div>
+
+      <StartingPositionsBoard />
+    </div>
+  );
+}
+
+function TryPiecesChapter({ activeKingdom }) {
   return (
     <div className="academy-two-col try-pieces-layout">
       <div className="academy-copy try-copy">
-        <p className="academy-eyebrow">Step 2</p>
+        <p className="academy-eyebrow">Step 3</p>
         <h1>Try every piece.</h1>
         <p>
           Select a Dominion piece, tap it on the board, then move it to a glowing tile.
@@ -218,17 +239,6 @@ function TryPiecesChapter({ activeKingdom, failedImages, markImageFailed }) {
             </article>
           ))}
         </div>
-
-        <div className="roster-frame academy-roster-preview">
-          <ImageWithFallback
-            src={ROSTER_IMAGE}
-            alt="Arctic Dominion full piece roster"
-            fallback="👑"
-            failedImages={failedImages}
-            onFail={markImageFailed}
-          />
-          <p>Full army roster for all four kingdoms.</p>
-        </div>
       </div>
 
       <TutorialBoard teamColor={activeKingdom.color} />
@@ -236,35 +246,27 @@ function TryPiecesChapter({ activeKingdom, failedImages, markImageFailed }) {
   );
 }
 
-function DiceChapter() {
+function DiceChapter({ activeKingdom }) {
   return (
-    <div className="academy-two-col dice-layout">
+    <div className="academy-two-col dice-layout dice-training-layout">
       <div className="academy-copy">
-        <p className="academy-eyebrow">Step 3</p>
-        <h1>Roll the Dominion Dice.</h1>
+        <p className="academy-eyebrow">Step 4</p>
+        <h1>Roll two Dominion Dice.</h1>
         <p>
-          In a real match, the dice decides which piece type can move this turn.
-          The training board lets you practice freely first, then the dice adds chaos.
+          In a real match, both dice decide your active piece types. Roll, pick one
+          matching piece, move it, then use the second die if possible.
         </p>
 
         <div className="dice-example-card">
-          <div className="big-die">🦄</div>
+          <div className="big-die">🎲🎲</div>
           <div>
-            <strong>Roll Unicorn</strong>
-            <p>Move one Aurora Unicorn. If no safe attack exists, reposition for the next turn.</p>
+            <strong>Roll → Move</strong>
+            <p>The tray will dim pieces that are not active on your unused dice.</p>
           </div>
         </div>
       </div>
 
-      <div className="dice-grid" aria-label="Dominion Dice faces">
-        {DICE_FACES.map((face) => (
-          <article className="dice-face-card" key={`${face.face}-${face.title}`}>
-            <span className="dice-number">{face.face}</span>
-            <strong>{face.icon}</strong>
-            <p>{face.title}</p>
-          </article>
-        ))}
-      </div>
+      <TutorialBoard teamColor={activeKingdom.color} diceMode />
     </div>
   );
 }
@@ -273,7 +275,7 @@ function CaptureKingsChapter() {
   return (
     <div className="academy-two-col capture-layout">
       <div className="academy-copy">
-        <p className="academy-eyebrow">Step 4</p>
+        <p className="academy-eyebrow">Step 5</p>
         <h1>Capture Kings. Erase kingdoms.</h1>
         <p>
           Land on enemy pieces to capture them. Capture a Frost King and that
@@ -315,7 +317,7 @@ function CaptureKingsChapter() {
 function WinDominionChapter({ onStart }) {
   return (
     <div className="academy-finale">
-      <p className="academy-eyebrow">Step 5</p>
+      <p className="academy-eyebrow">Step 6</p>
       <h1>Last Crown standing wins.</h1>
       <p>
         Arctic Dominion is a strategy party battle: simple to start, chaotic to
