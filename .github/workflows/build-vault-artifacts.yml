@@ -8,6 +8,7 @@ on:
       - "contracts/scripts/**"
       - "contracts/package.json"
       - "contracts/hardhat.config.js"
+      - ".github/workflows/build-vault-artifacts.yml"
 
 permissions:
   contents: write
