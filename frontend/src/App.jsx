@@ -7,6 +7,7 @@ import {
 } from "./components/FrostLoadingScreen.jsx";
 import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { MainMenu } from "./screens/MainMenu.jsx";
+import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import "./styles/mobileProof.css";
 import "./utils/preferWebpAssets.js";
 
@@ -75,7 +76,7 @@ export default function App() {
   if (screen === "my-rooms") return renderLazy(<MyRoomsScreen profile={profile} onResumeRoom={resumeRoom} onBack={() => goTo("hub")} />);
   if (screen === "vault-deployer") return renderLazy(<EthVaultDeployerScreen onBack={() => goTo("hub")} />);
   if (screen === "settlement-admin") return renderLazy(<SettlementAdminScreen onBack={() => goTo("hub")} />);
-  if (screen === "high-stakes") return renderLazy(<HighStakesScreen profile={profile} onRoomReady={(readyRoom) => { setRoom(readyRoom); goTo("team-select"); }} onBack={() => goTo("hub")} />);
+  if (screen === "high-stakes") return renderLazy(<HighStakesGate onBack={() => goTo("hub")}><HighStakesScreen profile={profile} onRoomReady={(readyRoom) => { setRoom(readyRoom); goTo("team-select"); }} onBack={() => goTo("hub")} /></HighStakesGate>);
   if (screen === "open-ice-menu") return renderLazy(<OpenIceMenuScreen profile={profile} onCreateRoom={() => goTo("create-room")} onJoinRoom={() => goTo("join-room")} onRoomJoined={(joinedRoom) => { setRoom(joinedRoom); goTo("team-select"); }} onBack={() => goTo("hub")} />);
   if (screen === "create-room") return renderLazy(<CreateRoomScreen profile={profile} onRoomCreated={(createdRoom) => { setRoom(createdRoom); goTo("team-select"); }} onBack={() => goTo("open-ice-menu")} />);
   if (screen === "join-room") return renderLazy(<JoinRoomScreen profile={profile} onRoomJoined={(joinedRoom) => { setRoom(joinedRoom); goTo("team-select"); }} onBack={() => goTo("open-ice-menu")} />);
