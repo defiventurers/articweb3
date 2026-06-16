@@ -1,0 +1,366 @@
+.start-positions-layout {
+  grid-template-columns: minmax(0, .82fr) minmax(420px, 1.18fr);
+  align-items: start;
+}
+
+.roster-spotlight {
+  margin-top: 18px;
+  border-radius: 26px;
+}
+
+.roster-spotlight .image-fallback-frame {
+  min-height: 460px;
+  max-height: 620px;
+  background: rgba(255, 255, 255, .94);
+}
+
+.roster-spotlight .image-fallback-frame img {
+  object-fit: contain;
+  background: rgba(255, 255, 255, .94);
+}
+
+.starting-board-shell {
+  border-radius: 30px;
+  border: 1px solid rgba(190, 245, 255, .34);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(126, 223, 255, .18), transparent 42%),
+    rgba(0, 12, 32, .36);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .12);
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.starting-board-header h2 {
+  margin: 4px 0 6px;
+  color: white;
+  font-size: clamp(26px, 4vw, 44px);
+  line-height: .95;
+  letter-spacing: -.03em;
+  text-shadow: 0 2px 0 rgba(0, 30, 80, .82), 0 0 18px rgba(126, 223, 255, .28);
+}
+
+.starting-board-header p {
+  margin: 0;
+  color: #d8f6ff;
+  line-height: 1.35;
+}
+
+.starting-board-grid {
+  width: min(560px, 100%);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(190, 245, 255, .54);
+  background:
+    radial-gradient(circle at center, rgba(126, 223, 255, .12), transparent 60%),
+    rgba(0, 12, 32, .5);
+  box-shadow: 0 20px 54px rgba(0, 0, 0, .32);
+}
+
+.starting-cell {
+  aspect-ratio: 1;
+  border: 1px solid rgba(190, 245, 255, .16);
+  background: rgba(255, 255, 255, .06);
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  position: relative;
+}
+
+.starting-cell:nth-child(odd) {
+  background: rgba(126, 223, 255, .09);
+}
+
+.starting-cell.has-piece {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .08);
+}
+
+.starting-cell.team-red {
+  background: rgba(255, 90, 90, .16);
+}
+
+.starting-cell.team-blue {
+  background: rgba(126, 180, 255, .16);
+}
+
+.starting-cell.team-green {
+  background: rgba(117, 219, 158, .16);
+}
+
+.starting-cell.team-yellow {
+  background: rgba(255, 183, 225, .16);
+}
+
+.starting-cell img {
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 5px 6px rgba(0, 0, 0, .34));
+}
+
+.starting-piece-emoji {
+  font-size: clamp(18px, 4vw, 34px);
+}
+
+.starting-legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.starting-legend-item {
+  display: grid;
+  grid-template-columns: 14px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(190, 245, 255, .22);
+  background: rgba(255, 255, 255, .07);
+  color: white;
+}
+
+.starting-legend-item span {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  display: block;
+}
+
+.starting-legend-item.red span { background: #ff5a5a; }
+.starting-legend-item.blue span { background: #7eb4ff; }
+.starting-legend-item.green span { background: #75db9e; }
+.starting-legend-item.pink span { background: #ffb7e1; }
+
+.starting-legend-item strong {
+  font-size: 13px;
+  font-weight: 1000;
+}
+
+.starting-legend-item em {
+  color: #d8f6ff;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.dice-training-layout {
+  grid-template-columns: minmax(0, .7fr) minmax(430px, 1.3fr);
+  align-items: start;
+}
+
+.tutorial-dice-panel {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.tutorial-roll-btn {
+  min-height: 68px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 243, 199, .7);
+  background: linear-gradient(180deg, #7edfff, #0878d8);
+  color: #061b3a;
+  font-weight: 1000;
+  cursor: pointer;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .25);
+}
+
+.tutorial-dice-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tutorial-die {
+  min-height: 68px;
+  border-radius: 18px;
+  border: 1px solid rgba(190, 245, 255, .28);
+  background: rgba(255, 255, 255, .08);
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  text-align: center;
+  padding: 8px;
+}
+
+.tutorial-die span {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.tutorial-die strong {
+  color: #d8f6ff;
+  font-size: 11px;
+  line-height: 1.05;
+}
+
+.tutorial-die.used {
+  opacity: .46;
+  filter: grayscale(.3);
+}
+
+.tutorial-piece-tray button.unavailable {
+  opacity: .42;
+  filter: grayscale(.4);
+}
+
+.tutorial-board-shell.dice-mode .tutorial-piece-tip {
+  color: #fff3c7;
+}
+
+@media (max-width: 980px) {
+  .start-positions-layout,
+  .dice-training-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 740px) {
+  .start-positions-layout .starting-board-shell,
+  .dice-training-layout .tutorial-board-shell {
+    order: -1;
+  }
+
+  .start-copy h1,
+  .start-copy > p,
+  .dice-training-layout > .academy-copy h1,
+  .dice-training-layout > .academy-copy > p {
+    display: none;
+  }
+
+  .roster-spotlight {
+    margin-top: 8px;
+    border-radius: 20px;
+  }
+
+  .roster-spotlight .image-fallback-frame {
+    min-height: 360px;
+    height: min(58dvh, 520px);
+    max-height: none;
+  }
+
+  .roster-spotlight p {
+    font-size: 11px;
+    padding: 9px 10px;
+  }
+
+  .starting-board-shell {
+    border-radius: 22px;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .starting-board-header h2 {
+    font-size: clamp(24px, 8vw, 34px);
+    margin: 2px 0 4px;
+  }
+
+  .starting-board-header p {
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .starting-board-grid {
+    width: min(92vw, 380px);
+    border-radius: 18px;
+  }
+
+  .starting-cell {
+    padding: 1px;
+  }
+
+  .starting-legend {
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+  }
+
+  .starting-legend-item {
+    grid-template-columns: 10px 1fr;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 13px;
+  }
+
+  .starting-legend-item span {
+    width: 10px;
+    height: 10px;
+  }
+
+  .starting-legend-item strong {
+    font-size: 11px;
+  }
+
+  .starting-legend-item em {
+    grid-column: 2;
+    font-size: 10px;
+  }
+
+  .tutorial-dice-panel {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .tutorial-roll-btn {
+    min-height: 46px;
+    border-radius: 15px;
+    font-size: 13px;
+  }
+
+  .tutorial-dice-slots {
+    gap: 8px;
+  }
+
+  .tutorial-die {
+    min-height: 54px;
+    border-radius: 15px;
+  }
+
+  .tutorial-die span {
+    font-size: 21px;
+  }
+
+  .tutorial-die strong {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .roster-spotlight .image-fallback-frame {
+    min-height: 320px;
+    height: min(54dvh, 460px);
+  }
+
+  .starting-board-grid {
+    width: min(90vw, 330px);
+  }
+}
+
+@media (max-width: 740px) and (max-height: 700px) {
+  .roster-spotlight .image-fallback-frame {
+    min-height: 240px;
+    height: min(42dvh, 340px);
+  }
+
+  .starting-board-header p {
+    display: none;
+  }
+
+  .starting-board-grid {
+    width: min(76dvh, 92vw, 340px);
+  }
+
+  .starting-legend-item {
+    padding: 6px 8px;
+  }
+
+  .tutorial-die {
+    min-height: 48px;
+  }
+}
