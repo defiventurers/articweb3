@@ -243,7 +243,7 @@ export function applyMove(state, move) {
 
   maybePromotePawn(board[move.toRow][move.toCol], move.toRow, move.toCol, moveLog);
 
-  if (captured?.type === "king") {
+  if (isRoyalKing(captured)) {
     removeTeamPieces(board, captured.team);
     moveLog.unshift(`${TEAM_LABEL[captured.team]} eliminated`);
   }
@@ -402,7 +402,11 @@ function checkWinner(state) {
 }
 
 function teamHasKing(board, team) {
-  return board.some((row) => row.some((piece) => piece && piece.team === team && piece.type === "king"));
+  return board.some((row) => row.some((piece) => piece && piece.team === team && isRoyalKing(piece)));
+}
+
+function isRoyalKing(piece) {
+  return piece?.type === "king" && piece.isRoyal !== false;
 }
 
 function inBounds(row, col) {
