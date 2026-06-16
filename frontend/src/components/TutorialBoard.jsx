@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   COLS,
+  DICE_ROLLS,
   PIECE_NAME,
   ROWS,
   createEmptyBoard,
@@ -29,6 +30,15 @@ const PIECE_EMOJI = {
   pawn: "🐧"
 };
 
+const DIE_FACE_META = {
+  1: { icon: "🐧/👑", label: "Guard or King" },
+  2: { icon: "🦣", label: "War Mammoth" },
+  3: { icon: "🦄", label: "Aurora Unicorn" },
+  4: { icon: "🚢", label: "Icebreaker" },
+  5: { icon: "🐧/👑", label: "Guard or King" },
+  6: { icon: "🚢", label: "Icebreaker" }
+};
+
 const PIECE_OPTIONS = [
   {
     type: "pawn",
@@ -39,14 +49,14 @@ const PIECE_OPTIONS = [
   {
     type: "ship",
     label: "Icebreaker",
-    shortRule: "Moves straight across rows or columns.",
-    tip: "The Icebreaker controls long open lanes."
+    shortRule: "Jumps exactly 2 tiles diagonally.",
+    tip: "The Icebreaker is a sharp angle jumper. Use it to punish exposed corners."
   },
   {
     type: "elephant",
     label: "War Mammoth",
-    shortRule: "Jumps exactly 2 tiles diagonally.",
-    tip: "The Mammoth is a power jumper. Use it to break locked positions."
+    shortRule: "Moves straight across rows or columns.",
+    tip: "The Mammoth controls long lanes and crushes open files."
   },
   {
     type: "horse",
@@ -69,40 +79,96 @@ const TEAM_NAME = {
   yellow: "POLLY"
 };
 
-export function TutorialBoard({ teamColor = "red" }) {
+const EMPTY_DICE = { values: [null, null], used: [false, false], rolled: false };
+
+export function TutorialBoard({ teamColor = "red", diceMode = false }) {
   const tutorialTeam = normalizeTeam(teamColor);
   const [pieceType, setPieceType] = useState("pawn");
   const [board, setBoard] = useState(() => createTutorialSetup("pawn", tutorialTeam).board);
   const [selected, setSelected] = useState(null);
-  const [lastAction, setLastAction] = useState("Tap a piece below, then tap it on the board.");
+  const [dice, setDice] = useState(EMPTY_DICE);
+  const [lastAction, setLastAction] = useState(() => getInitialMessage("pawn", diceMode));
   const selectedPiece = PIECE_OPTIONS.find((piece) => piece.type === pieceType) || PIECE_OPTIONS[0];
 
   useEffect(() => {
-    resetBoard(pieceType, tutorialTeam);
+    resetBoard(pieceType, tutorialTeam, { keepDice: true, message: getInitialMessage(pieceType, diceMode) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pieceType, tutorialTeam]);
+  }, [tutorialTeam, diceMode]);
+
+  const availablePieceTypes = useMemo(() => {
+    if (!diceMode || !dice.rolled) return PIECE_OPTIONS.map((piece) => piece.type);
+    const out = new Set();
+    dice.values.forEach((value, index) => {
+      if (!value || dice.used[index]) return;
+      DICE_ROLLS[value].forEach((type) => out.add(type));
+    });
+    return [...out];
+  }, [dice, diceMode]);
+
+  const activeDieIndex = useMemo(() => {
+    if (!diceMode) return 0;
+    return dice.values.findIndex((value, index) => {
+      return value && !dice.used[index] && DICE_ROLLS[value].includes(pieceType);
+    });
+  }, [dice, diceMode, pieceType]);
 
   const legalMoves = useMemo(() => {
     if (!selected) return [];
+    if (diceMode && activeDieIndex === -1) return [];
     return getMovementPreviewTargets({ board, gameOver: false }, selected.row, selected.col);
-  }, [board, selected]);
+  }, [activeDieIndex, board, diceMode, selected]);
 
   const legalMap = useMemo(() => {
     return new Map(legalMoves.map((move) => [`${move.toRow},${move.toCol}`, move]));
   }, [legalMoves]);
 
-  function resetBoard(nextPieceType = pieceType, nextTeam = tutorialTeam) {
+  function resetBoard(nextPieceType = pieceType, nextTeam = tutorialTeam, options = {}) {
     const setup = createTutorialSetup(nextPieceType, nextTeam);
     setBoard(setup.board);
     setSelected(null);
-    setLastAction(`Tap the ${PIECE_NAME[nextPieceType]} on the board to reveal legal moves.`);
+    if (!options.keepDice) setDice(EMPTY_DICE);
+    setLastAction(options.message || getInitialMessage(nextPieceType, diceMode));
   }
 
   function choosePiece(nextPieceType) {
+    if (diceMode && !dice.rolled) {
+      setPieceType(nextPieceType);
+      resetBoard(nextPieceType, tutorialTeam, { keepDice: true, message: "Roll two Dominion Dice, then move one matching piece." });
+      return;
+    }
+
+    if (diceMode && !availablePieceTypes.includes(nextPieceType)) {
+      setLastAction(`${PIECE_NAME[nextPieceType]} is not active. Pick a piece shown by your unused dice.`);
+      return;
+    }
+
     setPieceType(nextPieceType);
+    resetBoard(nextPieceType, tutorialTeam, { keepDice: true, message: `Tap the ${PIECE_NAME[nextPieceType]} on the board, then move to glowing ice.` });
+  }
+
+  function rollTutorialDice() {
+    const values = [rollD6(), rollD6()];
+    const allowed = values.flatMap((value) => DICE_ROLLS[value]);
+    const nextPieceType = PIECE_OPTIONS.find((piece) => allowed.includes(piece.type))?.type || "pawn";
+    setDice({ values, used: [false, false], rolled: true });
+    setPieceType(nextPieceType);
+    resetBoard(nextPieceType, tutorialTeam, {
+      keepDice: true,
+      message: `Rolled ${getDieLabel(values[0])} and ${getDieLabel(values[1])}. Choose a matching piece and move.`
+    });
   }
 
   function handleCell(row, col) {
+    if (diceMode && !dice.rolled) {
+      setLastAction("Roll two Dominion Dice first.");
+      return;
+    }
+
+    if (diceMode && activeDieIndex === -1) {
+      setLastAction(`${PIECE_NAME[pieceType]} is not active on your unused dice.`);
+      return;
+    }
+
     const move = legalMap.get(`${row},${col}`);
     if (selected && move) {
       const nextBoard = cloneBoard(board);
@@ -112,12 +178,17 @@ export function TutorialBoard({ teamColor = "red" }) {
       nextBoard[move.fromRow][move.fromCol] = null;
       setBoard(nextBoard);
       setSelected(null);
-      if (captured?.type === "king") {
-        setLastAction(`${PIECE_NAME[piece.type]} captured the Frost King. Kingdom erased.`);
-      } else if (captured) {
-        setLastAction(`${PIECE_NAME[piece.type]} captured ${PIECE_NAME[captured.type]}.`);
+
+      const nextDice = { values: [...dice.values], used: [...dice.used], rolled: dice.rolled };
+      if (diceMode && activeDieIndex >= 0) nextDice.used[activeDieIndex] = true;
+      if (diceMode) setDice(nextDice);
+
+      const actionText = getMoveResultText(piece, captured);
+      if (diceMode) {
+        const remaining = getRemainingDiceTypes(nextDice);
+        setLastAction(remaining.length ? `${actionText} Use your second die: ${remaining.join(" or ")}.` : `${actionText} Both dice used. Roll again.`);
       } else {
-        setLastAction(`${PIECE_NAME[piece.type]} moved to glowing ice.`);
+        setLastAction(actionText);
       }
       return;
     }
@@ -136,15 +207,29 @@ export function TutorialBoard({ teamColor = "red" }) {
   }
 
   return (
-    <div className="tutorial-board-shell">
+    <div className={`tutorial-board-shell ${diceMode ? "dice-mode" : "free-mode"}`}>
       <div className="tutorial-board-header">
         <div>
-          <p className="academy-eyebrow">Try Every Piece</p>
-          <h2>{selectedPiece.label}</h2>
-          <p>{selectedPiece.shortRule}</p>
+          <p className="academy-eyebrow">{diceMode ? "Roll & Move" : "Try Every Piece"}</p>
+          <h2>{diceMode ? "Dominion Dice Drill" : selectedPiece.label}</h2>
+          <p>{diceMode ? "Roll two dice. Move pieces matching the unused dice symbols." : selectedPiece.shortRule}</p>
         </div>
-        <button type="button" onClick={() => resetBoard()} className="tutorial-reset-btn">Reset</button>
+        <button type="button" onClick={() => resetBoard(pieceType)} className="tutorial-reset-btn">Reset</button>
       </div>
+
+      {diceMode && (
+        <div className="tutorial-dice-panel">
+          <button type="button" className="tutorial-roll-btn" onClick={rollTutorialDice}>Roll Two Dice</button>
+          <div className="tutorial-dice-slots" aria-label="Tutorial dice results">
+            {[0, 1].map((index) => (
+              <div key={index} className={`tutorial-die ${dice.used[index] ? "used" : ""}`}>
+                <span>{dice.values[index] ? DIE_FACE_META[dice.values[index]].icon : "🎲"}</span>
+                <strong>{dice.values[index] ? DIE_FACE_META[dice.values[index]].label : `Die ${index + 1}`}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="tutorial-board-grid" aria-label="Interactive Arctic Dominion tutorial board">
         {board.flatMap((rowItems, row) => rowItems.map((piece, col) => {
@@ -177,20 +262,23 @@ export function TutorialBoard({ teamColor = "red" }) {
       </div>
 
       <div className="tutorial-piece-tray" aria-label="Choose piece to train">
-        {PIECE_OPTIONS.map((piece) => (
-          <button
-            type="button"
-            key={piece.type}
-            className={piece.type === pieceType ? "active" : ""}
-            onClick={() => choosePiece(piece.type)}
-          >
-            <span>{PIECE_EMOJI[piece.type]}</span>
-            <strong>{piece.label}</strong>
-          </button>
-        ))}
+        {PIECE_OPTIONS.map((piece) => {
+          const unavailable = diceMode && dice.rolled && !availablePieceTypes.includes(piece.type);
+          return (
+            <button
+              type="button"
+              key={piece.type}
+              className={`${piece.type === pieceType ? "active" : ""} ${unavailable ? "unavailable" : ""}`}
+              onClick={() => choosePiece(piece.type)}
+            >
+              <span>{PIECE_EMOJI[piece.type]}</span>
+              <strong>{piece.label}</strong>
+            </button>
+          );
+        })}
       </div>
 
-      <p className="tutorial-piece-tip">{selectedPiece.tip}</p>
+      <p className="tutorial-piece-tip">{diceMode ? "Dice limits your options in real matches. Use both dice when possible." : selectedPiece.tip}</p>
     </div>
   );
 }
@@ -264,13 +352,42 @@ function getEnemyTargets(pieceType, team, start) {
   }
 
   const targets = {
-    ship: [{ row: start.row - 3, col: start.col, type: "king" }, { row: start.row, col: start.col + 3, type: "pawn" }],
-    elephant: [{ row: start.row - 2, col: start.col + 2, type: "king" }, { row: start.row + 2, col: start.col - 2, type: "pawn" }],
+    ship: [{ row: start.row - 2, col: start.col + 2, type: "king" }, { row: start.row + 2, col: start.col - 2, type: "pawn" }],
+    elephant: [{ row: start.row - 3, col: start.col, type: "king" }, { row: start.row, col: start.col + 3, type: "pawn" }],
     horse: [{ row: start.row - 2, col: start.col + 1, type: "king" }, { row: start.row + 1, col: start.col + 2, type: "pawn" }],
     king: [{ row: start.row - 1, col: start.col + 1, type: "king" }, { row: start.row + 1, col: start.col, type: "pawn" }]
   };
 
   return (targets[pieceType] || []).filter(isInBounds);
+}
+
+function getInitialMessage(pieceType, diceMode) {
+  if (diceMode) return "Roll two Dominion Dice, then move one matching piece.";
+  return `Tap the ${PIECE_NAME[pieceType]} on the board to reveal legal moves.`;
+}
+
+function getMoveResultText(piece, captured) {
+  if (!piece) return "Move complete.";
+  if (captured?.type === "king") return `${PIECE_NAME[piece.type]} captured the Frost King. Kingdom erased.`;
+  if (captured) return `${PIECE_NAME[piece.type]} captured ${PIECE_NAME[captured.type]}.`;
+  return `${PIECE_NAME[piece.type]} moved to glowing ice.`;
+}
+
+function getRemainingDiceTypes(dice) {
+  const names = new Set();
+  dice.values.forEach((value, index) => {
+    if (!value || dice.used[index]) return;
+    DICE_ROLLS[value].forEach((type) => names.add(PIECE_NAME[type]));
+  });
+  return [...names];
+}
+
+function getDieLabel(value) {
+  return DIE_FACE_META[value]?.label || `Die ${value}`;
+}
+
+function rollD6() {
+  return Math.floor(Math.random() * 6) + 1;
 }
 
 function getEnemyTeam(team) {
