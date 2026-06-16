@@ -1,0 +1,29 @@
+name: Contract Safety Checks
+
+on:
+  workflow_dispatch:
+
+jobs:
+  contracts:
+    name: Contract compile and escrow safety
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: contracts/package.json
+      - name: Install contract dependencies
+        run: npm install
+      - name: Run escrow safety audit
+        run: npm run safety:audit
+      - name: Compile contracts for Abstract testnet
+        run: npm run compile
+      - name: Compile contracts for Abstract mainnet
+        run: npm run compile:mainnet
