@@ -4,9 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite --mode testnet",
+    "dev:testnet": "vite --mode testnet",
+    "dev:mainnet": "vite --mode mainnet",
+    "check:testnet": "node scripts/check-env.mjs testnet",
+    "check:mainnet": "node scripts/check-env.mjs mainnet",
+    "build": "npm run build:testnet",
+    "build:testnet": "npm run check:testnet && vite build --mode testnet",
+    "build:mainnet": "npm run check:mainnet && vite build --mode mainnet",
     "preview": "vite preview",
+    "preview:mainnet": "vite preview --mode mainnet",
     "assets:audit": "node scripts/audit-assets.mjs",
     "assets:webp": "node scripts/convert-assets-to-webp.mjs"
   },
