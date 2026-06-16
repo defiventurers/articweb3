@@ -1,0 +1,70 @@
+name: Optimize Frontend Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      webp_quality:
+        description: "WebP quality, 1-100"
+        required: false
+        default: "82"
+      commit_changes:
+        description: "Commit generated WebP files back to the repo"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  contents: write
+
+jobs:
+  optimize-assets:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Audit current image sizes
+        run: npm run assets:audit || true
+
+      - name: Generate WebP assets
+        run: npm run assets:webp
+        env:
+          WEBP_QUALITY: ${{ github.event.inputs.webp_quality }}
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Show changed files
+        run: git status --short
+        working-directory: .
+
+      - name: Commit generated assets
+        if: ${{ github.event.inputs.commit_changes == 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/public/assets frontend/package.json frontend/package-lock.json
+          if git diff --cached --quiet; then
+            echo "No generated asset changes to commit."
+          else
+            git commit -m "Generate optimized WebP frontend assets"
+            git push
+          fi
+        working-directory: .
