@@ -14,6 +14,7 @@ import "./styles/promotionBoard.css";
 import "./styles/startingPositions.css";
 import "./styles/profileScreen.css";
 import "./styles/openIceFlow.css";
+import "./styles/dataScreens.css";
 import "./styles/calibration.css";
 import "./styles/calibratedOverrides.css";
 import "./utils/highstakesCalibrationExport.js";
