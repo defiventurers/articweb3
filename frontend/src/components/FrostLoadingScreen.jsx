@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toWebpPath } from "./OptimizedImage.jsx";
 
 const REMOTE_PIECE_ASSET_BASE =
   "https://raw.githubusercontent.com/defiventurers/chaturanga-game/36d8ee9ae33fa08a21ba3d644b6053b9e13273e4/public/assets/arctic/pieces";
 
 const SCREEN_ASSETS = [
-  "/assets/screens/cover.png",
-  "/assets/screens/main-menu.png",
-  "/assets/screens/profile.png",
-  "/assets/screens/playerhub.png",
-  "/assets/screens/openicehub.png",
-  "/assets/screens/team-select.png",
-  "/assets/screens/arctic-dominion-game-base.png"
+  "/assets/screens/cover.webp",
+  "/assets/screens/main-menu.webp",
+  "/assets/screens/profile.webp",
+  "/assets/screens/playerhub.webp",
+  "/assets/screens/openicehub.webp",
+  "/assets/screens/team-select.webp",
+  "/assets/screens/arctic-dominion-game-base.webp"
 ];
 
 const PIECE_COLORS = ["red", "blue", "green", "pink"];
@@ -20,11 +21,11 @@ const PIECE_ASSETS = PIECE_COLORS.flatMap((color) => PIECE_TYPES.map((piece) => 
 const CRITICAL_ASSETS = [...SCREEN_ASSETS, ...PIECE_ASSETS];
 
 const SECONDARY_ASSETS = [
-  "/assets/how-to-play/retsba-kingdom.png",
-  "/assets/how-to-play/pengu-kingdom.png",
-  "/assets/how-to-play/abster-kingdom.png",
-  "/assets/how-to-play/polly-kingdom.png",
-  "/assets/how-to-play/dominion-pieces-roster.png"
+  "/assets/how-to-play/retsba-kingdom.webp",
+  "/assets/how-to-play/pengu-kingdom.webp",
+  "/assets/how-to-play/abster-kingdom.webp",
+  "/assets/how-to-play/polly-kingdom.webp",
+  "/assets/how-to-play/dominion-pieces-roster.webp"
 ];
 
 const STATUS_LINES = [
@@ -140,7 +141,7 @@ export function warmSecondaryAssets() {
 
 export function warmGameAssets() {
   runWhenIdle(() => {
-    ["/assets/screens/arctic-dominion-game-base.png", ...PIECE_ASSETS].forEach((src) => preloadImage(src));
+    ["/assets/screens/arctic-dominion-game-base.webp", ...PIECE_ASSETS].forEach((src) => preloadImage(src));
   });
 }
 
@@ -174,7 +175,14 @@ function preloadImage(src) {
       }
     };
 
-    image.onerror = () => finish("failed");
+    image.onerror = () => {
+      const fallback = src.endsWith(".webp") ? src.replace(/\.webp$/i, ".png") : toWebpPath(src);
+      if (fallback && fallback !== src && !PRELOAD_CACHE.has(fallback)) {
+        preloadImage(fallback).then(resolve);
+      } else {
+        finish("failed");
+      }
+    };
     image.src = src;
   });
 
