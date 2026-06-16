@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useAccount } from "wagmi";
 import { useAbstractClient } from "@abstract-foundation/agw-react";
-import { abstractTestnet } from "viem/chains";
 import { isAddress } from "viem";
+import { abstractChain, appConfig } from "../config/chain.js";
 import { ETH_GAME_ESCROW_ABI, ETH_GAME_ESCROW_BYTECODE } from "../contracts/ethGameEscrowArtifact.js";
 import "../styles/vaultDeployer.css";
 
@@ -16,13 +16,16 @@ export function EthVaultDeployerScreen({ onBack }) {
   const [error, setError] = useState("");
 
   const selectedGameServer = gameServerAddress.trim() || address || "";
-  const ready = Boolean(ETH_GAME_ESCROW_BYTECODE && ETH_GAME_ESCROW_BYTECODE.startsWith("0x"));
+  const bytecodeReady = Boolean(ETH_GAME_ESCROW_BYTECODE && ETH_GAME_ESCROW_BYTECODE.startsWith("0x"));
+  const artifactSafetyReady = hasFunction("maxEntryAmount") && hasFunction("refundExpiredEntry") && hasFunction("setDepositsPaused") && hasFunction("setSettlementPaused");
+  const ready = bytecodeReady && artifactSafetyReady;
   const gameServerReady = isAddress(selectedGameServer);
   const envText = vaultAddress ? `VITE_ETH_VAULT_ADDRESS=${vaultAddress}` : "";
 
   async function deployEthVault() {
     if (!isConnected || !address || !agwClient) return setError("Connect AGW first.");
-    if (!ready) return setError("Bytecode missing. Build the frontend artifact first.");
+    if (!bytecodeReady) return setError("Bytecode missing. Run the contract artifact workflow first.");
+    if (!artifactSafetyReady) return setError("Escrow artifact is stale. Run: contracts → build:frontend-artifact, then commit the generated artifact.");
     if (!gameServerReady) return setError("Game server must be a valid address.");
 
     try {
@@ -34,7 +37,7 @@ export function EthVaultDeployerScreen({ onBack }) {
       const hash = await agwClient.deployContract({
         abi: ETH_GAME_ESCROW_ABI,
         bytecode: ETH_GAME_ESCROW_BYTECODE,
-        chain: abstractTestnet,
+        chain: abstractChain,
         account: agwClient.account,
         args: [selectedGameServer]
       });
@@ -56,11 +59,16 @@ export function EthVaultDeployerScreen({ onBack }) {
     <section className="vault-deployer-page">
       <div className="vault-deployer-card">
         <h1>Deploy ETH Vault</h1>
-        <p className="vault-note">This deploys the native ETH escrow from your connected AGW.</p>
+        <p className="vault-note">This deploys the native ETH escrow from your connected AGW on {appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"}.</p>
 
         <div className="vault-row">
           <span>Connected AGW</span>
           <strong>{address || "Not connected"}</strong>
+        </div>
+
+        <div className="vault-row">
+          <span>Artifact safety</span>
+          <strong>{artifactSafetyReady ? "Hardened escrow artifact ready" : "Stale artifact blocked"}</strong>
         </div>
 
         <label className="vault-label">
@@ -68,7 +76,8 @@ export function EthVaultDeployerScreen({ onBack }) {
           <input value={gameServerAddress} placeholder={address || "0x..."} onChange={(event) => setGameServerAddress(event.target.value)} />
         </label>
 
-        {!ready && <p className="vault-error">Run: cd contracts && npm run build:frontend-artifact</p>}
+        {!bytecodeReady && <p className="vault-error">Bytecode missing. Run the contract artifact workflow first.</p>}
+        {!artifactSafetyReady && <p className="vault-error">Stale escrow artifact. Do not deploy this vault. Regenerate and commit frontend/src/contracts/ethGameEscrowArtifact.js after compiling the hardened contract.</p>}
 
         <button className="vault-primary" disabled={busy || !isConnected || !ready || !gameServerReady} onClick={deployEthVault}>
           {busy ? "Deploying..." : "Deploy ETH Vault"}
@@ -98,4 +107,8 @@ export function EthVaultDeployerScreen({ onBack }) {
       </div>
     </section>
   );
+}
+
+function hasFunction(name) {
+  return ETH_GAME_ESCROW_ABI.some((item) => item?.type === "function" && item?.name === name);
 }
