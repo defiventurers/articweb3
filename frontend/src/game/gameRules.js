@@ -185,6 +185,24 @@ export function getLegalMovesForPiece(state, row, col) {
   return dedupeMoves(moves);
 }
 
+export function getMovementPreviewTargets(state, row, col) {
+  const piece = state.board[row]?.[col];
+  if (!piece || state.gameOver) return [];
+
+  return getPossibleTargets(state, row, col, piece)
+    .filter(([toRow, toCol]) => {
+      const target = state.board[toRow][toCol];
+      return !target || target.team !== piece.team;
+    })
+    .map(([toRow, toCol]) => ({
+      fromRow: row,
+      fromCol: col,
+      toRow,
+      toCol,
+      captured: state.board[toRow][toCol] || null
+    }));
+}
+
 export function getAllLegalMovesForTeam(state, team = currentTeam(state)) {
   const moves = [];
   for (let row = 0; row < ROWS; row += 1) {
@@ -280,9 +298,9 @@ export function pickBotMove(state) {
 function getPossibleTargets(state, row, col, piece) {
   if (piece.type === "king") return kingMoves(row, col);
   if (piece.type === "pawn") return pawnMoves(state, row, col, piece.team);
-  if (piece.type === "ship") return shipMoves(row, col);
+  if (piece.type === "ship") return shipMoves(state, row, col);
   if (piece.type === "horse") return horseMoves(row, col);
-  if (piece.type === "elephant") return slideMoves(state, row, col, [[1, 0], [-1, 0], [0, 1], [0, -1]]);
+  if (piece.type === "elephant") return mammothMoves(row, col);
   return [];
 }
 
@@ -324,7 +342,11 @@ function horseMoves(row, col) {
     .filter(([r, c]) => inBounds(r, c));
 }
 
-function shipMoves(row, col) {
+function shipMoves(state, row, col) {
+  return slideMoves(state, row, col, [[1, 0], [-1, 0], [0, 1], [0, -1]]);
+}
+
+function mammothMoves(row, col) {
   return [[2, 2], [2, -2], [-2, 2], [-2, -2]]
     .map(([dr, dc]) => [row + dr, col + dc])
     .filter(([r, c]) => inBounds(r, c));
