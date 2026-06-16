@@ -4,7 +4,11 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "start:testnet": "node scripts/check-env.mjs testnet && node -r dotenv/config index.js dotenv_config_path=.env.testnet",
+    "start:mainnet": "node scripts/check-env.mjs mainnet && node -r dotenv/config index.js dotenv_config_path=.env.mainnet",
+    "check:testnet": "node scripts/check-env.mjs testnet",
+    "check:mainnet": "node scripts/check-env.mjs mainnet"
   },
   "dependencies": {
     "dotenv": "latest",
