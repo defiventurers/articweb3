@@ -12,28 +12,59 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: build-vault-artifacts-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-artifacts:
+    name: Compile and commit frontend artifacts
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: npm
+          cache-dependency-path: contracts/package.json
 
       - name: Install contracts dependencies
         working-directory: contracts
         run: npm install
 
-      - name: Build frontend contract artifacts
+      - name: Run escrow safety audit
         working-directory: contracts
-        run: npm run build:frontend-artifact
+        run: npm run safety:audit
+
+      - name: Compile contracts for Abstract testnet
+        working-directory: contracts
+        run: npm run compile
+
+      - name: Compile contracts for Abstract mainnet
+        working-directory: contracts
+        run: npm run compile:mainnet
+
+      - name: Export frontend contract artifacts
+        working-directory: contracts
+        run: npm run export:frontend
+
+      - name: Verify hardened ETH artifact was exported
+        shell: bash
+        run: |
+          test -f frontend/src/contracts/ethGameEscrowArtifact.js
+          grep -q "maxEntryAmount" frontend/src/contracts/ethGameEscrowArtifact.js
+          grep -q "refundExpiredEntry" frontend/src/contracts/ethGameEscrowArtifact.js
+          grep -q "setDepositsPaused" frontend/src/contracts/ethGameEscrowArtifact.js
+          grep -q "setSettlementPaused" frontend/src/contracts/ethGameEscrowArtifact.js
 
       - name: Commit artifact updates
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Build vault frontend artifacts"
+          commit_message: "Build hardened vault frontend artifacts"
           file_pattern: "frontend/src/contracts/gameEscrowArtifact.js frontend/src/contracts/ethGameEscrowArtifact.js"
