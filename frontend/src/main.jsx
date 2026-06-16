@@ -9,6 +9,7 @@ import "./styles/gameBoard.css";
 import "./styles/teamSelect.css";
 import "./styles/howToPlay.css";
 import "./styles/howToPlayMobile.css";
+import "./styles/tutorialBoard.css";
 import "./styles/profileScreen.css";
 import "./styles/openIceFlow.css";
 import "./utils/highstakesCalibrationExport.js";
