@@ -1,5 +1,6 @@
 import { DepositPanel } from "../components/DepositPanel.jsx";
 import { OptimizedImage } from "../components/OptimizedImage.jsx";
+import { WalletStatusPanel } from "../components/WalletStatusPanel.jsx";
 import "../styles/playerHub.css";
 
 const SHOW_VAULT_DEPLOYER = import.meta.env.VITE_ENABLE_VAULT_DEPLOYER === "true";
@@ -17,6 +18,7 @@ export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHisto
             <div id="playerHubPointsText" className="playerhub-points-text">{profile.points} pts</div>
           </div>
 
+          <WalletStatusPanel />
           <DepositPanel variant="art" />
 
           <div className="hitbox-layer playerhub-hitboxes">
