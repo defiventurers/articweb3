@@ -33,6 +33,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
 
   const calibrateHighstakes = useMemo(() => isHighstakesCalibrationEnabled(), []);
   const displayName = getDisplayName(profile, address);
+  const userWallet = String(profile?.wallet || address || "").toLowerCase();
 
   const availableQuery = useReadContract({
     address: ETH_VAULT_ADDRESS,
@@ -50,6 +51,22 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     query: { enabled: Boolean(address && ETH_TARGETS_READY) }
   });
 
+  const roomLockedEntryQuery = useReadContract({
+    address: ETH_VAULT_ADDRESS,
+    abi: ethVaultAbi,
+    functionName: "lockedEntry",
+    args: room?.contractMatchId && address ? [room.contractMatchId, address] : undefined,
+    query: { enabled: Boolean(room?.contractMatchId && address && ETH_TARGETS_READY) }
+  });
+
+  const roomLockDeadlineQuery = useReadContract({
+    address: ETH_VAULT_ADDRESS,
+    abi: ethVaultAbi,
+    functionName: "lockDeadline",
+    args: room?.contractMatchId && address ? [room.contractMatchId, address] : undefined,
+    query: { enabled: Boolean(room?.contractMatchId && address && ETH_TARGETS_READY) }
+  });
+
   const pageCount = Math.max(1, Math.ceil(publicRooms.length / ROOM_PAGE_SIZE));
   const visibleRooms = useMemo(() => {
     const start = roomPage * ROOM_PAGE_SIZE;
@@ -59,6 +76,11 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   const hasPrevPage = roomPage > 0;
   const availableBalance = availableQuery.data || 0n;
   const lockedBalance = lockedQuery.data || 0n;
+  const roomLockedEntry = roomLockedEntryQuery.data || 0n;
+  const roomLockDeadline = roomLockDeadlineQuery.data || 0n;
+  const currentUserInRoom = Boolean(room?.players?.some((player) => String(player.wallet || "").toLowerCase() === userWallet));
+  const canRefundRoomLock = Boolean(room?.contractMatchId && currentUserInRoom && roomLockedEntry > 0n && roomLockDeadline > 0n && BigInt(Math.floor(Date.now() / 1000)) >= roomLockDeadline);
+  const refundTimeLabel = roomLockDeadline > 0n ? new Date(Number(roomLockDeadline) * 1000).toLocaleString() : "Not locked";
 
   useEffect(() => {
     refreshRooms();
@@ -74,7 +96,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   }, []);
 
   async function refreshBalances() {
-    await Promise.all([availableQuery.refetch?.(), lockedQuery.refetch?.()]);
+    await Promise.all([availableQuery.refetch?.(), lockedQuery.refetch?.(), roomLockedEntryQuery.refetch?.(), roomLockDeadlineQuery.refetch?.()]);
   }
 
   async function refreshRooms() {
@@ -135,6 +157,19 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
       setStatus("Confirming on server...");
       const nextRoom = await waitForLock(txHash);
       onRoomReady(nextRoom);
+    });
+  }
+
+  async function refundExpiredLock() {
+    if (!room?.contractMatchId) return setError("Room lock data is not ready.");
+    if (!abstractClient) return setError("Wallet client is not ready. Reconnect AGW and try again.");
+    if (!canRefundRoomLock) return setError(`Refund is available after ${refundTimeLabel}.`);
+    await run(async () => {
+      setStatus("Open AGW to refund the expired lock.");
+      await abstractClient.writeContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "refundExpiredEntry", args: [room.contractMatchId] });
+      setStatus("Refund submitted. Refreshing balances...");
+      await refreshBalances();
+      await refreshRooms();
     });
   }
 
@@ -224,17 +259,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
             <button id="highStakesBackBtn" className="screen-hitbox hs-back-hitbox" data-calibrate="back-hitbox" aria-label="Back To Hub" disabled={busy} onClick={onBack} />
           </div>
 
-          <input
-            id="highStakesPrivateRoomInput"
-            className="highstakes-private-input"
-            data-calibrate="private-room-input"
-            inputMode="text"
-            autoComplete="off"
-            maxLength={4}
-            aria-label="Private room code"
-            value={joinCode}
-            onChange={(event) => setJoinCode(clean(event.target.value))}
-          />
+          <input id="highStakesPrivateRoomInput" className="highstakes-private-input" data-calibrate="private-room-input" inputMode="text" autoComplete="off" maxLength={4} aria-label="Private room code" value={joinCode} onChange={(event) => setJoinCode(clean(event.target.value))} />
           <button id="highStakesJoinPrivateBtn" className="screen-hitbox hs-join-private-hitbox" data-calibrate="join-private-hitbox" aria-label="Join Private Room" disabled={busy} onClick={() => enterRoom()} />
 
           {tierPickerMode && (
@@ -261,87 +286,5 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
                 <h3>Room {room.roomCode}</h3>
                 <p>{getUsdEntryLabelFromWei(room.entryWei) || "Entry"} · Required lock {formatEntry(room.entryWei)} ETH</p>
                 <p>{room.playerCount || 1}/4 players · {room.players?.filter((player) => player.entryLocked).length || 0} locked</p>
-                <button type="button" className="highstakes-modal-primary" disabled={busy} onClick={confirmWithWallet}>{busy ? "Working..." : `Confirm ${appConfig.isMainnet ? "Mainnet" : "Testnet"} Lock`}</button>
-                <button type="button" className="highstakes-modal-cancel" disabled={busy} onClick={() => setRoom(null)}>Choose Another Room</button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function mergeRoomList(current, nextRoom) {
-  const roomStillListed = nextRoom.visibility === "public" && nextRoom.status === "waiting";
-  const filtered = current.filter((item) => item.roomCode !== nextRoom.roomCode);
-  return roomStillListed ? [nextRoom, ...filtered] : filtered;
-}
-
-function canJoin(room) {
-  return room && room.status === "waiting" && !room.countdownStartTime && Number(room.playerCount || 0) < Number(room.maxPlayers || 4);
-}
-
-function clampPage(page, totalRooms) {
-  const maxPage = Math.max(0, Math.ceil(totalRooms / ROOM_PAGE_SIZE) - 1);
-  return Math.min(page, maxPage);
-}
-
-function getDisplayName(profile, address) {
-  if (profile?.name && String(profile.name).trim()) return String(profile.name).trim();
-  if (!address) return "";
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
-
-function getCalibrationRoom(index) {
-  const samples = [
-    { roomCode: "YS3B", entryWei: "1000000000000000", playerCount: 2, maxPlayers: 4 },
-    { roomCode: "A352", entryWei: "2000000000000000", playerCount: 1, maxPlayers: 4 },
-    { roomCode: "FTY2", entryWei: "3000000000000000", playerCount: 3, maxPlayers: 4 },
-    { roomCode: "J4VE", entryWei: "4000000000000000", playerCount: 2, maxPlayers: 4 },
-    { roomCode: "T6RK", entryWei: "1000000000000000", playerCount: 4, maxPlayers: 4 },
-    { roomCode: "H9CY", entryWei: "2000000000000000", playerCount: 1, maxPlayers: 4 },
-    { roomCode: "B3UA", entryWei: "3000000000000000", playerCount: 3, maxPlayers: 4 },
-    { roomCode: "W5DN", entryWei: "4000000000000000", playerCount: 1, maxPlayers: 4 },
-    { roomCode: "Z1GF", entryWei: "1000000000000000", playerCount: 2, maxPlayers: 4 }
-  ];
-  return samples[index] || null;
-}
-
-function getUsdEntryLabel(entryEth) {
-  const ethAmount = Number(entryEth);
-  if (!Number.isFinite(ethAmount) || ethAmount <= 0) return "";
-  const usdAmount = Math.round(ethAmount * 1000);
-  return `${usdAmount} USD`;
-}
-
-function getUsdEntryLabelFromWei(value) {
-  return getUsdEntryLabel(formatEntry(value));
-}
-
-function formatEntry(value) {
-  try { return trimEth(formatEther(BigInt(value || "0"))); } catch { return "0"; }
-}
-
-function formatAmount(value) {
-  return trimEth(formatEther(value || 0n));
-}
-
-function trimEth(value) {
-  const [whole, decimal = ""] = String(value).split(".");
-  const cleanDecimal = decimal.slice(0, 6).replace(/0+$/, "");
-  return cleanDecimal ? `${whole}.${cleanDecimal}` : whole;
-}
-
-function clean(value) {
-  return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
-}
-
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function isHighstakesCalibrationEnabled() {
-  if (typeof window === "undefined") return false;
-  return new URLSearchParams(window.location.search).get(CALIBRATION_QUERY_KEY) === "1";
-}
+                {roomLockedEntry > 0n && <p>Your room lock: {formatAmount(roomLockedEntry)} ETH · Refund after {refundTimeLabel}</p>}
+                <button type="button" className="highstakes-modal-primary" disabled={busy} onClick={confirmWithWallet}>{busy ? "Working..." : `Confirm ${appConfig.isMainnet ? "Mainnet" : "Testnet
