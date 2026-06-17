@@ -168,6 +168,56 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     throw lastError || new Error("Server could not verify yet. Wait a few seconds and try again.");
   }
 
+  async function copyRoomInvite() {
+    if (!room) return;
+    const lines = [
+      "Open Ice Closed Beta Room Invite",
+      `Room code: ${room.roomCode}`,
+      `Mode: Locked Match Lab`,
+      `Entry: ${formatEntry(room.entryWei)} ETH`,
+      `Network: ${appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"}`,
+      "",
+      "Steps:",
+      "1. Connect Abstract Global Wallet.",
+      "2. Open High Stakes Lab.",
+      "3. Join this room code.",
+      "4. Confirm the lock in AGW.",
+      "5. Select a team after lock confirmation."
+    ];
+    await copyLines(lines, "Room invite copied.");
+  }
+
+  async function copyLockDebugContext() {
+    if (!room) return;
+    const lockedCount = room.players?.filter((player) => player.entryLocked).length || 0;
+    const lines = [
+      "Locked Match Debug Context",
+      `Room code: ${room.roomCode}`,
+      `Contract match id: ${room.contractMatchId || "—"}`,
+      `Entry wei: ${room.entryWei || "—"}`,
+      `Entry ETH: ${formatEntry(room.entryWei)}`,
+      `Wallet: ${address || "—"}`,
+      `Wallet ETH: ${formatAmount(walletBalance)}`,
+      `Vault available ETH: ${formatAmount(availableBalance)}`,
+      `Vault locked ETH: ${formatAmount(lockedBalance)}`,
+      `Players: ${room.playerCount || 1}/${room.maxPlayers || 4}`,
+      `Locked players: ${lockedCount}`,
+      `Status: ${room.status || "—"}`
+    ];
+    await copyLines(lines, "Lock debug context copied.");
+  }
+
+  async function copyLines(lines, successMessage) {
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setError("");
+      setStatus(successMessage);
+    } catch {
+      setStatus("");
+      setError("Copy failed. Select the room details manually.");
+    }
+  }
+
   async function run(action) {
     if (busy) return;
     try {
@@ -280,6 +330,8 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
                 <p>Wallet {formatAmount(walletBalance)} ETH · Vault available {formatAmount(availableBalance)} ETH</p>
                 {!hasWalletForRoom && <p className="error">Wallet ETH is below this room lock. Fund wallet or choose a smaller room.</p>}
                 <p>{room.playerCount || 1}/4 players · {room.players?.filter((player) => player.entryLocked).length || 0} locked</p>
+                <button type="button" className="highstakes-modal-cancel" disabled={busy} onClick={copyRoomInvite}>Copy Room Invite</button>
+                <button type="button" className="highstakes-modal-cancel" disabled={busy} onClick={copyLockDebugContext}>Copy Lock Debug</button>
                 <ExpiredLockRecovery room={room} busy={busy} onRecovered={refreshAfterRecovery} onLockStateChange={setHasCurrentRoomLock} />
                 {hasCurrentRoomLock ? (
                   <button type="button" className="highstakes-modal-primary" disabled>Entry Lock Confirmed</button>
