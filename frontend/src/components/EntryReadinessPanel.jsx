@@ -24,7 +24,7 @@ export function EntryReadinessPanel() {
   const lockedWei = lockedQuery.data || 0n;
   const walletReady = walletWei >= ENTRY_WEI;
   const vaultReady = availableWei >= ENTRY_WEI;
-  const overallReady = isConnected && !isWrongChain && ETH_TARGETS_READY && walletReady && vaultReady;
+  const directLockReady = isConnected && !isWrongChain && ETH_TARGETS_READY && walletReady;
 
   return (
     <aside style={panelStyle} aria-label="Funding and entry readiness">
@@ -37,13 +37,13 @@ export function EntryReadinessPanel() {
         <ReadinessRow label="Wallet ETH" ready={walletReady} value={formatEth(walletWei)} />
         <ReadinessRow label="Vault available" ready={vaultReady} value={formatEth(availableWei)} />
         <ReadinessRow label="Vault locked" ready={true} value={formatEth(lockedWei)} />
-        <ReadinessRow label="Small lock ready" ready={overallReady} value={overallReady ? "Ready" : "Not ready"} />
+        <ReadinessRow label="Direct lock ready" ready={directLockReady} value={directLockReady ? "Ready" : "Not ready"} />
       </div>
       <div style={linkRow}>
         {address && <a className="secondary-btn" href={addressUrl(address)} target="_blank" rel="noreferrer">Wallet Explorer</a>}
         {ETH_TARGETS_READY && <a className="secondary-btn" href={addressUrl(ETH_VAULT_ADDRESS)} target="_blank" rel="noreferrer">Vault Explorer</a>}
       </div>
-      <p style={{ margin: "0.45rem 0 0", fontSize: "0.66rem", opacity: 0.78 }}>Need test ETH? Fund your AGW on Abstract testnet, then deposit to vault before locking a match.</p>
+      <p style={{ margin: "0.45rem 0 0", fontSize: "0.66rem", opacity: 0.78 }}>Direct lock uses wallet ETH. Vault available is shown for deposit and recovery visibility.</p>
     </aside>
   );
 }
