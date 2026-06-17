@@ -75,13 +75,13 @@ async function saveIndexedVaultEvent(event) {
 async function getRecentIndexedVaultEvents(options = {}) {
   const limit = Math.min(100, Math.max(1, Number(options.limit || 25)));
   const player = options.player ? String(options.player).toLowerCase() : "";
+  const eventName = options.eventName ? String(options.eventName).trim() : "";
   if (await initVaultEventStore()) {
+    const filters = [];
     const params = [];
-    let where = "";
-    if (player) {
-      params.push(player);
-      where = "WHERE player = $1";
-    }
+    if (player) { params.push(player); filters.push(`player = $${params.length}`); }
+    if (eventName) { params.push(eventName); filters.push(`event_name = $${params.length}`); }
+    const where = filters.length ? `WHERE ${filters.join(" AND ")}` : "";
     params.push(limit);
     const result = await getPool().query(
       `SELECT id, contract_address, chain_id, block_number, log_index, tx_hash, event_name, player, match_id, amount_wei, deadline, payload_json, created_at
@@ -109,8 +109,53 @@ async function getRecentIndexedVaultEvents(options = {}) {
   }
   return [...memoryEvents.values()]
     .filter((event) => !player || event.player === player)
+    .filter((event) => !eventName || event.eventName === eventName)
     .sort((a, b) => (b.blockNumber - a.blockNumber) || (b.logIndex - a.logIndex))
     .slice(0, limit);
+}
+
+async function getIndexedVaultEventStats(options = {}) {
+  const player = options.player ? String(options.player).toLowerCase() : "";
+  if (await initVaultEventStore()) {
+    const params = [];
+    const where = player ? "WHERE player = $1" : "";
+    if (player) params.push(player);
+    const summary = await getPool().query(
+      `SELECT COUNT(*)::int AS total_events, COUNT(DISTINCT player)::int AS unique_players, MAX(block_number)::bigint AS latest_block, MAX(created_at) AS last_created_at
+       FROM vault_indexed_events ${where}`,
+      params
+    );
+    const byEvent = await getPool().query(
+      `SELECT event_name, COUNT(*)::int AS count FROM vault_indexed_events ${where} GROUP BY event_name ORDER BY count DESC, event_name ASC`,
+      params
+    );
+    const row = summary.rows[0] || {};
+    return {
+      totalEvents: Number(row.total_events || 0),
+      uniquePlayers: Number(row.unique_players || 0),
+      latestBlock: row.latest_block ? Number(row.latest_block) : null,
+      lastCreatedAt: row.last_created_at || null,
+      byEvent: byEvent.rows.map((item) => ({ eventName: item.event_name, count: Number(item.count || 0) })),
+      store: vaultEventStoreStatus()
+    };
+  }
+  const events = [...memoryEvents.values()].filter((event) => !player || event.player === player);
+  const byEventMap = new Map();
+  const players = new Set();
+  let latestBlock = null;
+  events.forEach((event) => {
+    byEventMap.set(event.eventName, (byEventMap.get(event.eventName) || 0) + 1);
+    if (event.player) players.add(event.player);
+    latestBlock = latestBlock === null ? event.blockNumber : Math.max(latestBlock, event.blockNumber);
+  });
+  return {
+    totalEvents: events.length,
+    uniquePlayers: players.size,
+    latestBlock,
+    lastCreatedAt: null,
+    byEvent: [...byEventMap.entries()].map(([eventName, count]) => ({ eventName, count })).sort((a, b) => b.count - a.count || a.eventName.localeCompare(b.eventName)),
+    store: vaultEventStoreStatus()
+  };
 }
 
 async function getLastIndexedBlock(stateKey) {
@@ -160,4 +205,4 @@ function normalizeEvent(event) {
   };
 }
 
-module.exports = { initVaultEventStore, saveIndexedVaultEvent, getRecentIndexedVaultEvents, getLastIndexedBlock, setLastIndexedBlock, vaultEventStoreStatus };
+module.exports = { initVaultEventStore, saveIndexedVaultEvent, getRecentIndexedVaultEvents, getIndexedVaultEventStats, getLastIndexedBlock, setLastIndexedBlock, vaultEventStoreStatus };
