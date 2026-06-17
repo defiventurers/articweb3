@@ -72,6 +72,47 @@ async function saveIndexedVaultEvent(event) {
   return entry;
 }
 
+async function getRecentIndexedVaultEvents(options = {}) {
+  const limit = Math.min(100, Math.max(1, Number(options.limit || 25)));
+  const player = options.player ? String(options.player).toLowerCase() : "";
+  if (await initVaultEventStore()) {
+    const params = [];
+    let where = "";
+    if (player) {
+      params.push(player);
+      where = "WHERE player = $1";
+    }
+    params.push(limit);
+    const result = await getPool().query(
+      `SELECT id, contract_address, chain_id, block_number, log_index, tx_hash, event_name, player, match_id, amount_wei, deadline, payload_json, created_at
+       FROM vault_indexed_events
+       ${where}
+       ORDER BY block_number DESC, log_index DESC
+       LIMIT $${params.length}`,
+      params
+    );
+    return result.rows.map((row) => ({
+      id: row.id,
+      contractAddress: row.contract_address,
+      chainId: Number(row.chain_id),
+      blockNumber: Number(row.block_number),
+      logIndex: Number(row.log_index),
+      txHash: row.tx_hash,
+      eventName: row.event_name,
+      player: row.player,
+      matchId: row.match_id,
+      amountWei: row.amount_wei,
+      deadline: row.deadline,
+      payloadJson: row.payload_json || {},
+      createdAt: row.created_at
+    }));
+  }
+  return [...memoryEvents.values()]
+    .filter((event) => !player || event.player === player)
+    .sort((a, b) => (b.blockNumber - a.blockNumber) || (b.logIndex - a.logIndex))
+    .slice(0, limit);
+}
+
 async function getLastIndexedBlock(stateKey) {
   if (await initVaultEventStore()) {
     const result = await getPool().query(`SELECT state_value FROM vault_indexer_state WHERE state_key = $1`, [stateKey]);
@@ -119,4 +160,4 @@ function normalizeEvent(event) {
   };
 }
 
-module.exports = { initVaultEventStore, saveIndexedVaultEvent, getLastIndexedBlock, setLastIndexedBlock, vaultEventStoreStatus };
+module.exports = { initVaultEventStore, saveIndexedVaultEvent, getRecentIndexedVaultEvents, getLastIndexedBlock, setLastIndexedBlock, vaultEventStoreStatus };
