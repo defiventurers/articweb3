@@ -1,1 +1,10 @@
-phase four
+Phase 4 review notes
+
+Keep this branch separate from main until checks pass.
+
+Scope for review:
+- keep the working game loop stable
+- keep deploy tools hidden after setup
+- verify owner and game server wallet on the admin screen
+- verify caps are visible before wider testing
+- confirm testnet room flow after each merge
