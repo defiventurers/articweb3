@@ -18,6 +18,39 @@ const EMPTY_STATE = {
   defaultLockTimeout: 0n
 };
 
+const dashboardStyle = {
+  display: "grid",
+  gap: "0.65rem",
+  width: "100%",
+  margin: "1rem 0 1.25rem"
+};
+
+const rowStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(120px, 0.8fr) minmax(0, 1.4fr)",
+  gap: "0.75rem",
+  alignItems: "start",
+  padding: "0.75rem 0.85rem",
+  border: "1px solid rgba(148, 217, 255, 0.22)",
+  borderRadius: "14px",
+  background: "rgba(4, 28, 52, 0.38)"
+};
+
+const labelStyle = {
+  fontSize: "0.82rem",
+  opacity: 0.78,
+  textAlign: "left"
+};
+
+const valueStyle = {
+  minWidth: 0,
+  overflowWrap: "anywhere",
+  wordBreak: "break-word",
+  textAlign: "left",
+  fontFamily: "monospace",
+  lineHeight: 1.35
+};
+
 export function SettlementAdminScreen({ onBack }) {
   const { address } = useAccount();
   const publicClient = useMemo(() => createPublicClient({ chain: abstractChain, transport: http(appConfig.rpcUrl) }), []);
@@ -26,6 +59,22 @@ export function SettlementAdminScreen({ onBack }) {
   const [error, setError] = useState("");
 
   const ownerMatches = state.owner && address && state.owner.toLowerCase() === address.toLowerCase();
+
+  const rows = [
+    ["Network", appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"],
+    ["Vault", ETH_VAULT_ADDRESS || "Not configured"],
+    ["Connected wallet", address || "Not connected"],
+    ["Vault owner", state.owner || "Reading from chain..."],
+    ["Owner connected", ownerMatches ? "Yes" : "No"],
+    ["Game server", state.gameServer || "Reading from chain..."],
+    ["Max entry", `${formatEth(state.maxEntryAmount)} ETH`],
+    ["Active locks", `${String(state.activeLocks)} / ${String(state.maxActiveLocks)}`],
+    ["Lock timeout", `${String((state.defaultLockTimeout || 0n) / 60n)} minutes`],
+    ["Deposits paused", state.depositsPaused ? "Yes" : "No"],
+    ["New locks paused", state.locksPaused ? "Yes" : "No"],
+    ["Settlement paused", state.settlementPaused ? "Yes" : "No"],
+    ["Balance exits paused", state.exitsPaused ? "Yes" : "No"]
+  ];
 
   useEffect(() => {
     refreshVaultState();
@@ -81,20 +130,13 @@ export function SettlementAdminScreen({ onBack }) {
         <h1>Settlement Admin</h1>
         <p className="note">Read-only vault dashboard. No game settings are changed from this screen.</p>
 
-        <div className="rules-panel">
-          <strong>Network</strong><span>{appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"}</span>
-          <strong>Vault</strong><span>{ETH_VAULT_ADDRESS || "Not configured"}</span>
-          <strong>Connected wallet</strong><span>{address || "Not connected"}</span>
-          <strong>Vault owner</strong><span>{state.owner || "Reading from chain..."}</span>
-          <strong>Owner connected</strong><span>{ownerMatches ? "Yes" : "No"}</span>
-          <strong>Game server</strong><span>{state.gameServer || "Reading from chain..."}</span>
-          <strong>Max entry</strong><span>{formatEth(state.maxEntryAmount)} ETH</span>
-          <strong>Active locks</strong><span>{String(state.activeLocks)} / {String(state.maxActiveLocks)}</span>
-          <strong>Lock timeout</strong><span>{String((state.defaultLockTimeout || 0n) / 60n)} minutes</span>
-          <strong>Deposits paused</strong><span>{state.depositsPaused ? "Yes" : "No"}</span>
-          <strong>New locks paused</strong><span>{state.locksPaused ? "Yes" : "No"}</span>
-          <strong>Settlement paused</strong><span>{state.settlementPaused ? "Yes" : "No"}</span>
-          <strong>Balance exits paused</strong><span>{state.exitsPaused ? "Yes" : "No"}</span>
+        <div style={dashboardStyle}>
+          {rows.map(([label, value]) => (
+            <div key={label} style={rowStyle}>
+              <strong style={labelStyle}>{label}</strong>
+              <span style={valueStyle}>{value}</span>
+            </div>
+          ))}
         </div>
 
         <button className="secondary-btn" disabled={busy} onClick={refreshVaultState}>{busy ? "Refreshing..." : "Refresh Vault State"}</button>
