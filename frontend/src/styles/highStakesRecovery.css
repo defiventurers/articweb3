@@ -1,0 +1,23 @@
+.highstakes-recovery-panel {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgba(190, 245, 255, 0.6);
+  border-radius: 14px;
+  background: rgba(3, 22, 45, 0.72);
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.28;
+}
+
+.highstakes-recovery-panel strong {
+  color: #fff3c7;
+}
+
+.highstakes-recovery-panel span {
+  overflow-wrap: anywhere;
+}
+
+.highstakes-recovery-panel .highstakes-modal-primary {
+  margin-top: 4px;
+}
