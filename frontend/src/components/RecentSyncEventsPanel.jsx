@@ -51,12 +51,21 @@ export function RecentSyncEventsPanel({ baseUrl }) {
         {events.length ? events.map((event) => (
           <div key={event.id} style={rowStyle}>
             <strong style={labelStyle}>{event.eventName || "Event"}</strong>
-            <span style={valueStyle}>block {event.blockNumber} / {event.player || event.matchId || "system"} / {event.txHash ? <a href={txUrl(event.txHash)} target="_blank" rel="noreferrer">{shortHash(event.txHash)}</a> : "—"}</span>
+            <span style={valueStyle}>{eventDetails(event)}</span>
           </div>
         )) : <p className="note">No indexed events found yet.</p>}
       </div>
     </section>
   );
+}
+
+function eventDetails(event) {
+  const tx = event.txHash ? shortHash(event.txHash) : "—";
+  const subject = event.player || event.matchId || "system";
+  const amount = event.amountWei ? " / wei " + event.amountWei : "";
+  const match = event.matchId ? " / match " + shortHash(event.matchId) : "";
+  const deadline = event.deadline ? " / deadline " + event.deadline : "";
+  return <>block {event.blockNumber} / {subject}{match}{amount}{deadline} / {event.txHash ? <a href={txUrl(event.txHash)} target="_blank" rel="noreferrer">{tx}</a> : tx}</>;
 }
 
 function txUrl(txHash) {
