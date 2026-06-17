@@ -8,3 +8,4 @@ Scope for review:
 - verify owner and game server wallet on the admin screen
 - verify caps are visible before wider testing
 - confirm testnet room flow after each merge
+- retry Vercel after build limit clears
