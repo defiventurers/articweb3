@@ -31,6 +31,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [tierPickerMode, setTierPickerMode] = useState(null);
+  const [hasCurrentRoomLock, setHasCurrentRoomLock] = useState(false);
 
   const calibrateHighstakes = useMemo(() => isHighstakesCalibrationEnabled(), []);
   const displayName = getDisplayName(profile, address);
@@ -74,6 +75,10 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     return () => window.removeEventListener("server-packet", onPacket);
   }, []);
 
+  useEffect(() => {
+    setHasCurrentRoomLock(false);
+  }, [room?.contractMatchId, address]);
+
   async function refreshBalances() {
     await Promise.all([availableQuery.refetch?.(), lockedQuery.refetch?.()]);
   }
@@ -90,6 +95,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
 
   async function refreshAfterRecovery() {
     await Promise.all([refreshBalances(), refreshRooms()]);
+    setHasCurrentRoomLock(false);
   }
 
   async function makeRoom(tier) {
@@ -124,7 +130,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   }
 
   async function confirmWithWallet() {
-    if (!room) return;
+    if (!room || hasCurrentRoomLock) return;
     if (!abstractClient) return setError("Wallet client is not ready. Reconnect AGW and try again.");
     await run(async () => {
       const value = BigInt(room.entryWei || "0");
@@ -139,6 +145,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
       });
       setStatus("Confirming on server...");
       const nextRoom = await waitForLock(txHash);
+      setHasCurrentRoomLock(true);
       onRoomReady(nextRoom);
     });
   }
@@ -266,8 +273,12 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
                 <h3>Room {room.roomCode}</h3>
                 <p>{getUsdEntryLabelFromWei(room.entryWei) || "Entry"} · Required lock {formatEntry(room.entryWei)} ETH</p>
                 <p>{room.playerCount || 1}/4 players · {room.players?.filter((player) => player.entryLocked).length || 0} locked</p>
-                <ExpiredLockRecovery room={room} busy={busy} onRecovered={refreshAfterRecovery} />
-                <button type="button" className="highstakes-modal-primary" disabled={busy} onClick={confirmWithWallet}>{busy ? "Working..." : `Confirm ${appConfig.isMainnet ? "Mainnet" : "Testnet"} Lock`}</button>
+                <ExpiredLockRecovery room={room} busy={busy} onRecovered={refreshAfterRecovery} onLockStateChange={setHasCurrentRoomLock} />
+                {hasCurrentRoomLock ? (
+                  <button type="button" className="highstakes-modal-primary" disabled>Entry Lock Confirmed</button>
+                ) : (
+                  <button type="button" className="highstakes-modal-primary" disabled={busy} onClick={confirmWithWallet}>{busy ? "Working..." : `Confirm ${appConfig.isMainnet ? "Mainnet" : "Testnet"} Lock`}</button>
+                )}
                 <button type="button" className="highstakes-modal-cancel" disabled={busy} onClick={() => setRoom(null)}>Choose Another Room</button>
               </div>
             </div>
