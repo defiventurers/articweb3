@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { formatEther } from "viem";
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useBalance, useReadContract } from "wagmi";
 import { useAbstractClient } from "@abstract-foundation/agw-react";
 import { appConfig } from "../config/chain.js";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
@@ -36,6 +36,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   const calibrateHighstakes = useMemo(() => isHighstakesCalibrationEnabled(), []);
   const displayName = getDisplayName(profile, address);
 
+  const walletBalanceQuery = useBalance({ address, query: { enabled: Boolean(address) } });
   const availableQuery = useReadContract({
     address: ETH_VAULT_ADDRESS,
     abi: ethVaultAbi,
@@ -61,6 +62,9 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   const hasPrevPage = roomPage > 0;
   const availableBalance = availableQuery.data || 0n;
   const lockedBalance = lockedQuery.data || 0n;
+  const walletBalance = walletBalanceQuery.data?.value || 0n;
+  const roomEntryWei = room ? BigInt(room.entryWei || "0") : 0n;
+  const hasWalletForRoom = !room || roomEntryWei <= 0n || walletBalance >= roomEntryWei;
 
   useEffect(() => {
     refreshRooms();
@@ -80,7 +84,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
   }, [room?.contractMatchId, address]);
 
   async function refreshBalances() {
-    await Promise.all([availableQuery.refetch?.(), lockedQuery.refetch?.()]);
+    await Promise.all([availableQuery.refetch?.(), lockedQuery.refetch?.(), walletBalanceQuery.refetch?.()]);
   }
 
   async function refreshRooms() {
@@ -131,6 +135,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
 
   async function confirmWithWallet() {
     if (!room || hasCurrentRoomLock) return;
+    if (!hasWalletForRoom) return setError(`Not enough wallet ETH for this ${NETWORK_LOCK_COPY}. Fund wallet or choose a smaller room.`);
     if (!abstractClient) return setError("Wallet client is not ready. Reconnect AGW and try again.");
     await run(async () => {
       const value = BigInt(room.entryWei || "0");
@@ -247,7 +252,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
             value={joinCode}
             onChange={(event) => setJoinCode(clean(event.target.value))}
           />
-          <button id="highStakesJoinPrivateBtn" className="screen-hitbox hs-join-private-hitbox" data-calibrate="join-private-hitbox" aria-label="Join Private Room" disabled={busy} onClick={() => enterRoom()} />
+          <button id="highStakesJoinPrivateBtn" className="screen-hitbox hs-join-private-hitbox" data-calibrate="join-private" aria-label="Join Private Room" disabled={busy} onClick={() => enterRoom()} />
 
           {tierPickerMode && (
             <div className="highstakes-modal" role="dialog" aria-modal="true" aria-label={tierPickerMode === "create" ? "Choose entry amount" : "Choose deposit amount"}>
@@ -272,12 +277,14 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
               <div className="highstakes-modal-card">
                 <h3>Room {room.roomCode}</h3>
                 <p>{getUsdEntryLabelFromWei(room.entryWei) || "Entry"} · Required lock {formatEntry(room.entryWei)} ETH</p>
+                <p>Wallet {formatAmount(walletBalance)} ETH · Vault available {formatAmount(availableBalance)} ETH</p>
+                {!hasWalletForRoom && <p className="error">Wallet ETH is below this room lock. Fund wallet or choose a smaller room.</p>}
                 <p>{room.playerCount || 1}/4 players · {room.players?.filter((player) => player.entryLocked).length || 0} locked</p>
                 <ExpiredLockRecovery room={room} busy={busy} onRecovered={refreshAfterRecovery} onLockStateChange={setHasCurrentRoomLock} />
                 {hasCurrentRoomLock ? (
                   <button type="button" className="highstakes-modal-primary" disabled>Entry Lock Confirmed</button>
                 ) : (
-                  <button type="button" className="highstakes-modal-primary" disabled={busy} onClick={confirmWithWallet}>{busy ? "Working..." : `Confirm ${appConfig.isMainnet ? "Mainnet" : "Testnet"} Lock`}</button>
+                  <button type="button" className="highstakes-modal-primary" disabled={busy || !hasWalletForRoom} onClick={confirmWithWallet}>{busy ? "Working..." : `Confirm ${appConfig.isMainnet ? "Mainnet" : "Testnet"} Lock`}</button>
                 )}
                 <button type="button" className="highstakes-modal-cancel" disabled={busy} onClick={() => setRoom(null)}>Choose Another Room</button>
               </div>
@@ -345,7 +352,7 @@ function formatAmount(value) {
 }
 
 function trimEth(value) {
-  const [whole, decimal = ""] = String(value).split(".");
+  const [whole, decimal = ""] = String(value || "0").split(".");
   const cleanDecimal = decimal.slice(0, 6).replace(/0+$/, "");
   return cleanDecimal ? `${whole}.${cleanDecimal}` : whole;
 }
@@ -354,11 +361,11 @@ function clean(value) {
   return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
 }
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function isHighstakesCalibrationEnabled() {
   if (typeof window === "undefined") return false;
   return new URLSearchParams(window.location.search).get(CALIBRATION_QUERY_KEY) === "1";
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
