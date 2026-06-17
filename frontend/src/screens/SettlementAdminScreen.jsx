@@ -54,11 +54,20 @@ const valueStyle = {
 export function SettlementAdminScreen({ onBack }) {
   const { address } = useAccount();
   const publicClient = useMemo(() => createPublicClient({ chain: abstractChain, transport: http(appConfig.rpcUrl) }), []);
+  const backendHealthUrl = useMemo(() => deriveBackendHealthUrl(), []);
   const [state, setState] = useState(EMPTY_STATE);
+  const [backendHealth, setBackendHealth] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [healthBusy, setHealthBusy] = useState(false);
   const [error, setError] = useState("");
+  const [healthError, setHealthError] = useState("");
 
   const ownerMatches = state.owner && address && state.owner.toLowerCase() === address.toLowerCase();
+  const signerMatchesGameServer = Boolean(
+    backendHealth?.settlementSignerAddress &&
+    state.gameServer &&
+    String(backendHealth.settlementSignerAddress).toLowerCase() === String(state.gameServer).toLowerCase()
+  );
 
   const rows = [
     ["Network", appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"],
@@ -76,9 +85,24 @@ export function SettlementAdminScreen({ onBack }) {
     ["Balance exits paused", state.exitsPaused ? "Yes" : "No"]
   ];
 
+  const healthRows = [
+    ["Backend health", backendHealthUrl || "Set VITE_WS_URL"],
+    ["Backend online", backendHealth?.ok ? "Yes" : "Not confirmed"],
+    ["Backend chain", backendHealth?.chainId || "—"],
+    ["High Stakes enabled", yesNo(backendHealth?.highStakesEnabled)],
+    ["Vault configured", yesNo(backendHealth?.ethVaultConfigured)],
+    ["Signer configured", yesNo(backendHealth?.settlementSignerConfigured)],
+    ["Backend signer", backendHealth?.settlementSignerAddress || "—"],
+    ["Signer matches game server", signerMatchesGameServer ? "Yes" : backendHealth?.settlementSignerAddress && state.gameServer ? "No" : "—"],
+    ["Settlement max attempts", backendHealth?.settlementMaxAttempts ?? "—"],
+    ["On-chain settlement check", yesNo(backendHealth?.antiCheat?.onChainSettlementCheck)],
+    ["Database stores", databaseStoreSummary(backendHealth)]
+  ];
+
   useEffect(() => {
     refreshVaultState();
-  }, [publicClient]);
+    refreshBackendHealth();
+  }, [publicClient, backendHealthUrl]);
 
   async function refreshVaultState() {
     if (!ETH_TARGETS_READY) return;
@@ -116,6 +140,22 @@ export function SettlementAdminScreen({ onBack }) {
     }
   }
 
+  async function refreshBackendHealth() {
+    if (!backendHealthUrl) return;
+    try {
+      setHealthBusy(true);
+      setHealthError("");
+      const response = await fetch(backendHealthUrl, { cache: "no-store" });
+      if (!response.ok) throw new Error(`Health check returned ${response.status}.`);
+      setBackendHealth(await response.json());
+    } catch (err) {
+      setBackendHealth(null);
+      setHealthError(err.message || "Could not read backend health from browser.");
+    } finally {
+      setHealthBusy(false);
+    }
+  }
+
   async function readVault(functionName, fallback) {
     try {
       return await publicClient.readContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName });
@@ -124,12 +164,17 @@ export function SettlementAdminScreen({ onBack }) {
     }
   }
 
+  async function refreshAll() {
+    await Promise.all([refreshVaultState(), refreshBackendHealth()]);
+  }
+
   return (
     <section className="screen">
       <div className="card">
         <h1>Settlement Admin</h1>
-        <p className="note">Read-only vault dashboard. No game settings are changed from this screen.</p>
+        <p className="note">Read-only vault and backend dashboard. No game settings are changed from this screen.</p>
 
+        <h3>Vault State</h3>
         <div style={dashboardStyle}>
           {rows.map(([label, value]) => (
             <div key={label} style={rowStyle}>
@@ -139,12 +184,44 @@ export function SettlementAdminScreen({ onBack }) {
           ))}
         </div>
 
-        <button className="secondary-btn" disabled={busy} onClick={refreshVaultState}>{busy ? "Refreshing..." : "Refresh Vault State"}</button>
+        <h3>Backend Health</h3>
+        <div style={dashboardStyle}>
+          {healthRows.map(([label, value]) => (
+            <div key={label} style={rowStyle}>
+              <strong style={labelStyle}>{label}</strong>
+              <span style={valueStyle}>{value}</span>
+            </div>
+          ))}
+        </div>
+
+        {backendHealthUrl && <a className="secondary-btn" href={backendHealthUrl} target="_blank" rel="noreferrer">Open Backend Health</a>}
+        <button className="secondary-btn" disabled={busy || healthBusy} onClick={refreshAll}>{busy || healthBusy ? "Refreshing..." : "Refresh Admin State"}</button>
         {error && <p className="error">{error}</p>}
-        <button className="secondary-btn" disabled={busy} onClick={onBack}>Back To Hub</button>
+        {healthError && <p className="error">Backend health note: {healthError}</p>}
+        <button className="secondary-btn" disabled={busy || healthBusy} onClick={onBack}>Back To Hub</button>
       </div>
     </section>
   );
+}
+
+function deriveBackendHealthUrl() {
+  const raw = import.meta.env.VITE_BACKEND_HTTP_URL || import.meta.env.VITE_API_URL || import.meta.env.VITE_WS_URL || "";
+  if (!raw) return "";
+  const base = String(raw).trim().replace(/^wss:\/\//, "https://").replace(/^ws:\/\//, "http://").replace(/\/$/, "");
+  return `${base}/health`;
+}
+
+function yesNo(value) {
+  if (value === true) return "Yes";
+  if (value === false) return "No";
+  return "—";
+}
+
+function databaseStoreSummary(health) {
+  if (!health) return "—";
+  const stores = [health.historyStore, health.profileStore, health.vaultActivityStore, health.roomStore];
+  const ready = stores.filter((store) => store?.databaseReady).length;
+  return `${ready}/${stores.length} ready`;
 }
 
 function formatEth(value) {
