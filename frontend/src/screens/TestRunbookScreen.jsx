@@ -94,6 +94,21 @@ const SECTIONS = [
   }
 ];
 
+const REPORT_FIELDS = [
+  "Tester wallet:",
+  "Room code:",
+  "Room mode:",
+  "Entry tier:",
+  "Tx hash, if any:",
+  "Screen where failure happened:",
+  "Exact button clicked:",
+  "Visible error message:",
+  "Expected result:",
+  "Actual result:",
+  "Recent Indexed Events filter used:",
+  "Browser/device:"
+];
+
 export function TestRunbookScreen({ onBack }) {
   const indexerBase = getBackendBaseUrl();
   return (
@@ -136,6 +151,14 @@ export function TestRunbookScreen({ onBack }) {
             </article>
           ))}
         </div>
+
+        <section className="data-detail-panel">
+          <strong>Beta issue report template</strong>
+          <ol className="audit-line-list">
+            {REPORT_FIELDS.map((field) => <li key={field}>{field}</li>)}
+          </ol>
+          <p className="data-subtitle">Do not accept vague reports. Every failed test should include wallet, room code, screen, exact action, visible error, and tx hash when available.</p>
+        </section>
 
         <section className="data-detail-panel">
           <strong>Pass condition</strong>
