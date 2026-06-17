@@ -5,3 +5,4 @@ P4 checklist
 - Use small test values during closed beta.
 - Keep deploy tools hidden after setup.
 - Confirm Vercel is green before merge.
+- Refresh PR 2.

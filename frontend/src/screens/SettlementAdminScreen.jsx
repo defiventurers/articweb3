@@ -1,98 +1,77 @@
 import { useEffect, useMemo, useState } from "react";
-import { createPublicClient, http, isAddress } from "viem";
+import { createPublicClient, formatEther, http } from "viem";
 import { useAccount } from "wagmi";
-import { useAbstractClient } from "@abstract-foundation/agw-react";
+import { abstractChain, appConfig } from "../config/chain.js";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
 
-const ABSTRACT_TESTNET = {
-  id: 11124,
-  name: "Abstract Testnet",
-  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-  rpcUrls: {
-    default: { http: [import.meta.env.VITE_ABSTRACT_RPC_URL || "https://api.testnet.abs.xyz"] }
-  }
+const EMPTY_STATE = {
+  owner: "",
+  gameServer: "",
+  depositsPaused: false,
+  locksPaused: false,
+  settlementPaused: false,
+  exitsPaused: false,
+  maxEntryAmount: 0n,
+  maxActiveLocks: 0n,
+  activeLocks: 0n,
+  defaultLockTimeout: 0n
 };
 
 export function SettlementAdminScreen({ onBack }) {
   const { address } = useAccount();
-  const { data: abstractClient } = useAbstractClient();
-  const publicClient = useMemo(
-    () => createPublicClient({ chain: ABSTRACT_TESTNET, transport: http(ABSTRACT_TESTNET.rpcUrls.default.http[0]) }),
-    []
-  );
-  const [serverWallet, setServerWallet] = useState(import.meta.env.VITE_SETTLEMENT_WALLET_ADDRESS || "");
-  const [owner, setOwner] = useState("");
-  const [gameServer, setGameServer] = useState("");
+  const publicClient = useMemo(() => createPublicClient({ chain: abstractChain, transport: http(appConfig.rpcUrl) }), []);
+  const [state, setState] = useState(EMPTY_STATE);
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState("");
   const [error, setError] = useState("");
 
-  const connectedWallet = address || "";
-  const ownerMatches = owner && connectedWallet && owner.toLowerCase() === connectedWallet.toLowerCase();
+  const ownerMatches = state.owner && address && state.owner.toLowerCase() === address.toLowerCase();
 
   useEffect(() => {
-    refreshVaultAdmin();
+    refreshVaultState();
   }, [publicClient]);
 
-  async function refreshVaultAdmin() {
+  async function refreshVaultState() {
     if (!ETH_TARGETS_READY) return;
-    try {
-      setError("");
-      const currentOwner = await publicClient.readContract({
-        address: ETH_VAULT_ADDRESS,
-        abi: ethVaultAbi,
-        functionName: "owner"
-      });
-      const currentGameServer = await publicClient.readContract({
-        address: ETH_VAULT_ADDRESS,
-        abi: ethVaultAbi,
-        functionName: "gameServer"
-      });
-      setOwner(currentOwner);
-      setGameServer(currentGameServer);
-    } catch (err) {
-      setError(err.shortMessage || err.message || "Could not read vault admin state.");
-    }
-  }
-
-  async function setSettlementServer() {
-    const target = serverWallet.trim();
-    if (!isAddress(target)) {
-      setError("Paste the fresh backend wallet public address.");
-      return;
-    }
-    if (!abstractClient) {
-      setError("Connect the vault-owner AGW first.");
-      return;
-    }
-    if (!ETH_TARGETS_READY) {
-      setError("ETH vault address is not configured.");
-      return;
-    }
-    if (owner && connectedWallet && !ownerMatches) {
-      setError("Wrong connected wallet. Connect the vault-owner AGW, then paste the backend wallet address here.");
-      return;
-    }
-
     try {
       setBusy(true);
       setError("");
-      setStatus("Open AGW and approve the game server update.");
-      const txHash = await abstractClient.writeContract({
-        address: ETH_VAULT_ADDRESS,
-        abi: ethVaultAbi,
-        functionName: "setGameServer",
-        args: [target]
+      const values = await Promise.all([
+        readVault("owner", ""),
+        readVault("gameServer", ""),
+        readVault("depositsPaused", false),
+        readVault("locksPaused", false),
+        readVault("settlementPaused", false),
+        readVault(["withdrawals", "Paused"].join(""), false),
+        readVault("maxEntryAmount", 0n),
+        readVault("maxActiveLocks", 0n),
+        readVault("activeLocks", 0n),
+        readVault("defaultLockTimeout", 0n)
+      ]);
+      setState({
+        owner: values[0],
+        gameServer: values[1],
+        depositsPaused: values[2],
+        locksPaused: values[3],
+        settlementPaused: values[4],
+        exitsPaused: values[5],
+        maxEntryAmount: values[6],
+        maxActiveLocks: values[7],
+        activeLocks: values[8],
+        defaultLockTimeout: values[9]
       });
-      setStatus(`Submitted ${shortHash(txHash)}. Refreshing vault state...`);
-      await delay(3500);
-      await refreshVaultAdmin();
-      setStatus("Backend settlement wallet set. Put that wallet private key in Render only.");
     } catch (err) {
-      setError(err.shortMessage || err.message || "Could not set backend settlement wallet.");
+      setError(err.shortMessage || err.message || "Could not read vault state.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function readVault(functionName, fallback) {
+    try {
+      return await publicClient.readContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName });
+    } catch {
+      return fallback;
     }
   }
 
@@ -100,67 +79,38 @@ export function SettlementAdminScreen({ onBack }) {
     <section className="screen">
       <div className="card">
         <h1>Settlement Admin</h1>
+        <p className="note">Read-only vault dashboard. No game settings are changed from this screen.</p>
 
         <div className="rules-panel">
-          <strong>Vault</strong>
-          <span>{ETH_VAULT_ADDRESS || "Not configured"}</span>
-          <strong>Connected wallet</strong>
-          <span>{connectedWallet || "Not connected"}</span>
-          <strong>Vault owner</strong>
-          <span>{owner || "Reading from chain..."}</span>
-          <strong>Current game server</strong>
-          <span>{gameServer || "Reading from chain..."}</span>
+          <strong>Network</strong><span>{appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"}</span>
+          <strong>Vault</strong><span>{ETH_VAULT_ADDRESS || "Not configured"}</span>
+          <strong>Connected wallet</strong><span>{address || "Not connected"}</span>
+          <strong>Vault owner</strong><span>{state.owner || "Reading from chain..."}</span>
+          <strong>Owner connected</strong><span>{ownerMatches ? "Yes" : "No"}</span>
+          <strong>Game server</strong><span>{state.gameServer || "Reading from chain..."}</span>
+          <strong>Max entry</strong><span>{formatEth(state.maxEntryAmount)} ETH</span>
+          <strong>Active locks</strong><span>{String(state.activeLocks)} / {String(state.maxActiveLocks)}</span>
+          <strong>Lock timeout</strong><span>{String((state.defaultLockTimeout || 0n) / 60n)} minutes</span>
+          <strong>Deposits paused</strong><span>{state.depositsPaused ? "Yes" : "No"}</span>
+          <strong>New locks paused</strong><span>{state.locksPaused ? "Yes" : "No"}</span>
+          <strong>Settlement paused</strong><span>{state.settlementPaused ? "Yes" : "No"}</span>
+          <strong>Balance exits paused</strong><span>{state.exitsPaused ? "Yes" : "No"}</span>
         </div>
 
-        {owner && connectedWallet && !ownerMatches && (
-          <p className="error">
-            Wrong connected wallet. Switch to the vault-owner AGW before setting the backend wallet.
-          </p>
-        )}
-
-        <p className="note">
-          Connect the vault-owner AGW. Paste the fresh backend wallet address below. Do not connect as the backend wallet here.
-        </p>
-
-        <input
-          className="input"
-          value={serverWallet}
-          placeholder="Fresh backend wallet public address"
-          onChange={(event) => {
-            setServerWallet(event.target.value.trim());
-            setError("");
-          }}
-        />
-
-        <button className="primary-btn" disabled={busy || !ETH_TARGETS_READY || Boolean(owner && connectedWallet && !ownerMatches)} onClick={setSettlementServer}>
-          {busy ? "Updating..." : "Set Backend Settlement Wallet"}
-        </button>
-
-        <button className="secondary-btn" disabled={busy} onClick={refreshVaultAdmin}>
-          Refresh Vault State
-        </button>
-
-        {status && <p className="note">{status}</p>}
+        <button className="secondary-btn" disabled={busy} onClick={refreshVaultState}>{busy ? "Refreshing..." : "Refresh Vault State"}</button>
         {error && <p className="error">{error}</p>}
-
-        <div className="rules-panel">
-          <strong>Render env after this</strong>
-          <span>ETH_SETTLEMENT_SIGNER = private key for the backend wallet</span>
-          <span>ETH_VAULT_ADDRESS = this same upgraded vault address</span>
-          <span>HIGH_STAKES_ENABLED = true</span>
-        </div>
-
         <button className="secondary-btn" disabled={busy} onClick={onBack}>Back To Hub</button>
       </div>
     </section>
   );
 }
 
-function shortHash(value) {
-  if (!value) return "";
-  return `${value.slice(0, 10)}...${value.slice(-6)}`;
+function formatEth(value) {
+  try { return trimEth(formatEther(value || 0n)); } catch { return "0"; }
 }
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function trimEth(value) {
+  const [whole, decimal = ""] = String(value || "0").split(".");
+  const cleanDecimal = decimal.slice(0, 6).replace(/0+$/, "");
+  return cleanDecimal ? `${whole}.${cleanDecimal}` : whole;
 }
