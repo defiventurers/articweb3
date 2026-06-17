@@ -1,6 +1,9 @@
 import { BetaBlockerTriagePanel } from "../components/BetaBlockerTriagePanel.jsx";
 import { BetaCycleProgressPanel } from "../components/BetaCycleProgressPanel.jsx";
 import { BetaFailureReportPanel } from "../components/BetaFailureReportPanel.jsx";
+import { BetaGasPolicyPanel } from "../components/BetaGasPolicyPanel.jsx";
+import { BetaLaunchGuardPanel } from "../components/BetaLaunchGuardPanel.jsx";
+import { BetaNextWavePlanPanel } from "../components/BetaNextWavePlanPanel.jsx";
 import { BetaReleaseDecisionPanel } from "../components/BetaReleaseDecisionPanel.jsx";
 import { BetaReleaseGatePanel } from "../components/BetaReleaseGatePanel.jsx";
 import { BetaTesterHandoffPanel } from "../components/BetaTesterHandoffPanel.jsx";
@@ -12,91 +15,46 @@ const SECTIONS = [
   {
     title: "1. Operator preflight",
     checks: [
-      "Confirm Vercel is on the latest frontend commit.",
-      "Confirm Render is on the latest backend commit when backend changes are included.",
-      "Confirm frontend chain, backend chain, RPC, explorer, and vault address match the selected environment.",
-      "Confirm locked-match mode is enabled only for the intended closed-beta environment.",
-      "Keep sensitive backend-only values out of frontend env."
+      "Confirm the latest frontend deploy is live.",
+      "Confirm the selected Abstract environment matches the test plan.",
+      "Confirm Locked Match Lab is enabled only for the planned beta cycle.",
+      "Confirm public links and room invites open correctly."
     ]
   },
   {
     title: "2. System checks",
     checks: [
       "Open Player Hub, then SET, and confirm System Checks are Ready.",
-      "Confirm backend health is reachable.",
-      "Confirm signer alignment says Ready.",
-      "Confirm database stores are ready.",
-      "Confirm Chain Sync Status can read health and stats."
+      "Confirm chain sync health and recent event panels load.",
+      "Confirm account activity and match history load.",
+      "Confirm testers can reconnect and return to their room."
     ]
   },
   {
-    title: "3. Sync checks",
-    checks: [
-      "Open Indexer Health from the runbook or SET screen.",
-      "Open Indexer Stats and confirm the response loads.",
-      "Open Recent Events and confirm the events array loads.",
-      "After a lock, filter Recent Indexed Events by EntryLocked.",
-      "After settlement, filter Recent Indexed Events by MatchSettled."
-    ]
-  },
-  {
-    title: "4. Funding readiness",
+    title: "3. Funding readiness",
     checks: [
       "Open Player Hub and read Entry Readiness.",
-      "Confirm wallet connected and correct network.",
-      "Confirm wallet has enough testnet ETH for the chosen room.",
-      "Remember direct lock uses wallet ETH; vault available is shown for deposit and recovery visibility.",
-      "Use wallet and vault explorer links when debugging tester reports."
+      "Confirm each tester is connected to the planned network.",
+      "Confirm each tester can cover the selected test entry.",
+      "Use explorer links when debugging a failed lock."
     ]
   },
   {
-    title: "5. Create Locked Match room",
+    title: "4. Locked Match cycle",
     checks: [
-      "Open High Stakes Lab from Player Hub.",
       "Create a public room using the smallest test entry.",
-      "Confirm AGW opens and the entry lock succeeds.",
-      "If confirm is disabled, check wallet ETH and network first.",
-      "Open My Rooms and confirm the room appears there."
+      "Share the invite link with testers.",
+      "Confirm every tester joins and locks successfully.",
+      "Play the match to completion."
     ]
   },
   {
-    title: "6. Fill and play the match",
+    title: "5. Records and recovery",
     checks: [
-      "Join with the remaining test wallets.",
-      "Each wallet confirms its own entry lock.",
-      "Each wallet selects a unique team.",
-      "Wait for countdown, then play until the match finishes.",
-      "Do not use browser refresh as a shortcut during the first clean run."
-    ]
-  },
-  {
-    title: "7. Verify settlement and records",
-    checks: [
-      "Open Match History and open the finished room detail.",
-      "Confirm settlement status and attempts are visible.",
-      "Open Account Activity and confirm room-linked records exist.",
-      "Open Recent Indexed Events and use event filters.",
-      "Open tx links from the indexed-event feed when debugging."
-    ]
-  },
-  {
-    title: "8. Recovery drill",
-    checks: [
-      "Create a separate Locked Match room.",
-      "Confirm your entry lock, then leave the room unfinished.",
-      "After the lock timeout, open My Rooms or the same room code.",
-      "Confirm the recovery panel appears.",
-      "Recover the expired lock and verify balances refresh."
-    ]
-  },
-  {
-    title: "9. Common lock-failure diagnosis",
-    checks: [
-      "Wallet client not ready: reconnect AGW from the profile screen.",
-      "Wrong chain: switch to the configured Abstract environment.",
-      "Insufficient wallet ETH: fund wallet or choose a smaller test room.",
-      "Server not verifying tx yet: wait, refresh sync, then check Recent Indexed Events.",
-      "Room state mismatch: refresh rooms, check My Rooms, then retry from the room modal."
+      "Confirm match history shows the finished room.",
+      "Confirm account activity includes room-linked records.",
+      "Confirm recent indexed events show lock and settlement activity.",
+      "Run one expired-lock recovery drill before widening the beta."
     ]
   }
 ];
@@ -109,7 +67,7 @@ export function TestRunbookScreen({ onBack }) {
         <header className="data-header">
           <p className="data-kicker">Closed Beta</p>
           <h1>Test Runbook</h1>
-          <p className="data-subtitle">Repeatable checklist for one full Locked Match test cycle on {appConfig.isMainnet ? "Abstract Mainnet guarded mode" : "Abstract Testnet"}.</p>
+          <p className="data-subtitle">Repeatable control room for one full Locked Match test cycle on {appConfig.isMainnet ? "Abstract Mainnet guarded mode" : "Abstract Testnet"}.</p>
         </header>
 
         <section className="data-detail-panel">
@@ -120,12 +78,15 @@ export function TestRunbookScreen({ onBack }) {
             <span className="stat-chip">Vault: {shortAddress(ETH_VAULT_ADDRESS)}</span>
             <span className="stat-chip">High Stakes: {appConfig.features.highStakes ? "Enabled" : "Disabled"}</span>
           </div>
-          <p className="data-subtitle">This runbook is for closed beta testing. Keep testing on the configured environment until every step passes cleanly.</p>
+          <p className="data-subtitle">Keep testing on the planned environment until every gate and triage item is clean.</p>
         </section>
 
         <BetaReleaseGatePanel />
+        <BetaGasPolicyPanel />
+        <BetaLaunchGuardPanel />
         <BetaBlockerTriagePanel />
         <BetaReleaseDecisionPanel />
+        <BetaNextWavePlanPanel />
         <BetaCycleProgressPanel />
         <BetaTesterRosterPanel />
         <BetaTesterHandoffPanel />
@@ -155,7 +116,7 @@ export function TestRunbookScreen({ onBack }) {
 
         <section className="data-detail-panel">
           <strong>Pass condition</strong>
-          <p className="data-subtitle">One beta cycle passes only when room creation, entry locks, team select, gameplay, settlement visibility, account records, indexer visibility, and recovery behavior all work without manual database edits.</p>
+          <p className="data-subtitle">One beta cycle passes only when room creation, entry locks, team select, gameplay, settlement visibility, account records, event visibility, and recovery behavior all work without manual correction.</p>
         </section>
 
         <button className="primary-btn data-back-btn" onClick={onBack}>Back To Hub</button>
