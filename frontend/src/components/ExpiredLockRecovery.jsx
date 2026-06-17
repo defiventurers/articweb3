@@ -6,7 +6,7 @@ import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js"
 import { ethVaultAbi } from "../contracts/abis.js";
 import "../styles/highStakesRecovery.css";
 
-export function ExpiredLockRecovery({ room, busy, onRecovered }) {
+export function ExpiredLockRecovery({ room, busy, onRecovered, onLockStateChange }) {
   const { address } = useAccount();
   const { data: abstractClient } = useAbstractClient();
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
@@ -44,6 +44,10 @@ export function ExpiredLockRecovery({ room, busy, onRecovered }) {
   const isExpired = hasLock && deadlineSeconds > 0 && now >= deadlineSeconds;
   const minutesLeft = useMemo(() => Math.max(0, Math.ceil((deadlineSeconds - now) / 60)), [deadlineSeconds, now]);
 
+  useEffect(() => {
+    onLockStateChange?.(hasLock);
+  }, [hasLock, onLockStateChange]);
+
   async function recoverLock() {
     if (!abstractClient || !matchId || !isExpired) return;
     try {
@@ -53,6 +57,7 @@ export function ExpiredLockRecovery({ room, busy, onRecovered }) {
       setMessage("Recovery submitted. Refreshing balances...");
       await Promise.all([lockedEntryQuery.refetch?.(), lockDeadlineQuery.refetch?.(), onRecovered?.()]);
       setMessage("Expired entry lock recovered to available balance.");
+      onLockStateChange?.(false);
     } catch (err) {
       setMessage(err.shortMessage || err.message || "Could not recover expired lock.");
     } finally {
