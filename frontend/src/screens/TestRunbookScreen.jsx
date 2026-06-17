@@ -1,5 +1,6 @@
 import { BetaBlockerTriagePanel } from "../components/BetaBlockerTriagePanel.jsx";
 import { BetaCycleProgressPanel } from "../components/BetaCycleProgressPanel.jsx";
+import { BetaEvidencePacketPanel } from "../components/BetaEvidencePacketPanel.jsx";
 import { BetaFailureReportPanel } from "../components/BetaFailureReportPanel.jsx";
 import { BetaGasPolicyPanel } from "../components/BetaGasPolicyPanel.jsx";
 import { BetaLaunchGuardPanel } from "../components/BetaLaunchGuardPanel.jsx";
@@ -12,51 +13,11 @@ import { appConfig } from "../config/chain.js";
 import { ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 
 const SECTIONS = [
-  {
-    title: "1. Operator preflight",
-    checks: [
-      "Confirm the latest frontend deploy is live.",
-      "Confirm the selected Abstract environment matches the test plan.",
-      "Confirm Locked Match Lab is enabled only for the planned beta cycle.",
-      "Confirm public links and room invites open correctly."
-    ]
-  },
-  {
-    title: "2. System checks",
-    checks: [
-      "Open Player Hub, then SET, and confirm System Checks are Ready.",
-      "Confirm chain sync health and recent event panels load.",
-      "Confirm account activity and match history load.",
-      "Confirm testers can reconnect and return to their room."
-    ]
-  },
-  {
-    title: "3. Funding readiness",
-    checks: [
-      "Open Player Hub and read Entry Readiness.",
-      "Confirm each tester is connected to the planned network.",
-      "Confirm each tester can cover the selected test entry.",
-      "Use explorer links when debugging a failed lock."
-    ]
-  },
-  {
-    title: "4. Locked Match cycle",
-    checks: [
-      "Create a public room using the smallest test entry.",
-      "Share the invite link with testers.",
-      "Confirm every tester joins and locks successfully.",
-      "Play the match to completion."
-    ]
-  },
-  {
-    title: "5. Records and recovery",
-    checks: [
-      "Confirm match history shows the finished room.",
-      "Confirm account activity includes room-linked records.",
-      "Confirm recent indexed events show lock and settlement activity.",
-      "Run one expired-lock recovery drill before widening the beta."
-    ]
-  }
+  { title: "1. Operator preflight", checks: ["Confirm the latest frontend deploy is live.", "Confirm the selected Abstract environment matches the test plan.", "Confirm room invites open correctly."] },
+  { title: "2. System checks", checks: ["Open Player Hub, then SET, and confirm System Checks are Ready.", "Confirm sync panels load.", "Confirm activity and match history load."] },
+  { title: "3. Funding readiness", checks: ["Open Player Hub and read Entry Readiness.", "Confirm each tester is connected to the planned network.", "Confirm each tester can cover the selected test entry."] },
+  { title: "4. Locked Match cycle", checks: ["Create a public room using the smallest test entry.", "Share the invite link with testers.", "Confirm every tester joins and locks successfully.", "Play the match to completion."] },
+  { title: "5. Records and recovery", checks: ["Confirm match history shows the finished room.", "Confirm activity includes room-linked records.", "Confirm recent events show lock and settlement activity.", "Run one expired-lock recovery drill before widening the beta."] }
 ];
 
 export function TestRunbookScreen({ onBack }) {
@@ -87,6 +48,7 @@ export function TestRunbookScreen({ onBack }) {
         <BetaBlockerTriagePanel />
         <BetaReleaseDecisionPanel />
         <BetaNextWavePlanPanel />
+        <BetaEvidencePacketPanel />
         <BetaCycleProgressPanel />
         <BetaTesterRosterPanel />
         <BetaTesterHandoffPanel />
@@ -116,7 +78,7 @@ export function TestRunbookScreen({ onBack }) {
 
         <section className="data-detail-panel">
           <strong>Pass condition</strong>
-          <p className="data-subtitle">One beta cycle passes only when room creation, entry locks, team select, gameplay, settlement visibility, account records, event visibility, and recovery behavior all work without manual correction.</p>
+          <p className="data-subtitle">One beta cycle passes only when room creation, entry locks, team select, gameplay, settlement visibility, account records, event visibility, and recovery behavior all work cleanly.</p>
         </section>
 
         <button className="primary-btn data-back-btn" onClick={onBack}>Back To Hub</button>
