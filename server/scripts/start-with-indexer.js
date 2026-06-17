@@ -9,20 +9,45 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type"
 };
 
+const RUN_KEY = process.env.ETH_INDEXER_RUN_KEY || process.env.EVENT_INDEXER_ADMIN_KEY || "";
 const originalCreateServer = http.createServer.bind(http);
-http.createServer = function createServerWithIndexerHealth(listener) {
-  return originalCreateServer((req, res) => {
-    const path = String(req.url || "").split("?")[0];
-    if (req.method === "OPTIONS" && path === "/indexer/health") {
+
+http.createServer = function createServerWithIndexerControls(listener) {
+  return originalCreateServer(async (req, res) => {
+    const fullUrl = new URL(req.url || "/", "http://localhost");
+    const path = fullUrl.pathname;
+
+    if (req.method === "OPTIONS" && (path === "/indexer/health" || path === "/indexer/run")) {
       res.writeHead(204, CORS_HEADERS);
       res.end();
       return;
     }
+
     if (req.method === "GET" && path === "/indexer/health") {
       res.writeHead(200, { ...CORS_HEADERS, "Content-Type": "application/json" });
       res.end(JSON.stringify(getVaultIndexerHealth()));
       return;
     }
+
+    if (req.method === "GET" && path === "/indexer/run") {
+      if (!RUN_KEY) {
+        res.writeHead(503, { ...CORS_HEADERS, "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: "ETH_INDEXER_RUN_KEY is not configured." }));
+        return;
+      }
+      if (fullUrl.searchParams.get("key") !== RUN_KEY) {
+        res.writeHead(403, { ...CORS_HEADERS, "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: "Invalid indexer key." }));
+        return;
+      }
+      const fromBlock = fullUrl.searchParams.get("fromBlock");
+      const options = fromBlock ? { fromBlock: Number(fromBlock) } : {};
+      const result = await runVaultEventIndexer(options);
+      res.writeHead(result.ok ? 200 : 500, { ...CORS_HEADERS, "Content-Type": "application/json" });
+      res.end(JSON.stringify(result));
+      return;
+    }
+
     return listener(req, res);
   });
 };
@@ -42,6 +67,7 @@ console.log("[vault-indexer] auto run", AUTO_RUN, "delay", DELAY_MS);
 console.log("[vault-indexer] scheduled run", SCHEDULED_RUN, "interval", INTERVAL_MS);
 console.log("[vault-indexer] heartbeat", HEARTBEAT_RUN, "interval", HEARTBEAT_MS);
 console.log("[vault-indexer] health endpoint /indexer/health enabled");
+console.log("[vault-indexer] protected run endpoint /indexer/run", Boolean(RUN_KEY));
 
 async function runIndexer(label) {
   try {
