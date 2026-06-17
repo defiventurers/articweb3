@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPublicClient, formatEther, http } from "viem";
 import { useAccount } from "wagmi";
+import { RecentSyncEventsPanel } from "../components/RecentSyncEventsPanel.jsx";
 import { SyncStatusPanel } from "../components/SyncStatusPanel.jsx";
 import { SystemCheckPanel } from "../components/SystemCheckPanel.jsx";
 import { abstractChain, appConfig } from "../config/chain.js";
@@ -57,6 +58,7 @@ export function SettlementAdminScreen({ onBack }) {
   const { address } = useAccount();
   const publicClient = useMemo(() => createPublicClient({ chain: abstractChain, transport: http(appConfig.rpcUrl) }), []);
   const backendHealthUrl = useMemo(() => deriveBackendHealthUrl(), []);
+  const syncBaseUrl = useMemo(() => backendHealthUrl.replace(/\/health$/, ""), [backendHealthUrl]);
   const [state, setState] = useState(EMPTY_STATE);
   const [backendHealth, setBackendHealth] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -199,6 +201,7 @@ export function SettlementAdminScreen({ onBack }) {
         </div>
 
         <SyncStatusPanel />
+        <RecentSyncEventsPanel baseUrl={syncBaseUrl} />
 
         {backendHealthUrl && <a className="secondary-btn" href={backendHealthUrl} target="_blank" rel="noreferrer">Open Backend Health</a>}
         <button className="secondary-btn" disabled={busy || healthBusy} onClick={refreshAll}>{busy || healthBusy ? "Refreshing..." : "Refresh Admin State"}</button>
