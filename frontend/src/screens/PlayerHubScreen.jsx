@@ -1,4 +1,5 @@
 import { DepositPanel } from "../components/DepositPanel.jsx";
+import { EntryReadinessPanel } from "../components/EntryReadinessPanel.jsx";
 import { OptimizedImage } from "../components/OptimizedImage.jsx";
 import { WalletStatusPanel } from "../components/WalletStatusPanel.jsx";
 import "../styles/playerHub.css";
@@ -20,6 +21,7 @@ export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHisto
 
           <WalletStatusPanel />
           <DepositPanel variant="art" />
+          <EntryReadinessPanel />
 
           <div className="hitbox-layer playerhub-hitboxes">
             <button id="openIceBtn" className="screen-hitbox open-ice-hitbox" aria-label="Play Open Ice" onClick={onOpenIce} />
