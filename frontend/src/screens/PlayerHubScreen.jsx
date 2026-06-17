@@ -6,7 +6,7 @@ import "../styles/playerHub.css";
 const SHOW_VAULT_DEPLOYER = import.meta.env.VITE_ENABLE_VAULT_DEPLOYER === "true";
 const SHOW_SETTLEMENT_ADMIN = import.meta.env.VITE_ENABLE_SETTLEMENT_ADMIN === "true";
 
-export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHistory, onLeaderboard, onAccountActivity, onMyRooms, onDevQA, onVaultDeployer, onSettlementAdmin, onBack }) {
+export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHistory, onLeaderboard, onAccountActivity, onMyRooms, onTestRunbook, onDevQA, onVaultDeployer, onSettlementAdmin, onBack }) {
   return (
     <section id="screenPlayerHub" className="art-screen playerhub-screen" aria-label="Player Hub">
       <div className="menu-screen-shell">
@@ -32,6 +32,7 @@ export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHisto
           </div>
 
           <aside className="ph-dev-rail" aria-label="Developer tools">
+            <button type="button" onClick={onTestRunbook} title="Closed Beta Test Runbook">RUN</button>
             <button type="button" onClick={onDevQA} title="Dev QA Checklist">QA</button>
             {SHOW_SETTLEMENT_ADMIN && <button type="button" onClick={onSettlementAdmin} title="Settlement Admin">SET</button>}
             {SHOW_VAULT_DEPLOYER && <button type="button" onClick={onVaultDeployer} title="Vault Tool">VAULT</button>}
