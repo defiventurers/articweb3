@@ -5,6 +5,7 @@ import { useAbstractClient } from "@abstract-foundation/agw-react";
 import { appConfig } from "../config/chain.js";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
+import { ExpiredLockRecovery } from "../components/ExpiredLockRecovery.jsx";
 import { confirmEntryLock, createRoom, joinRoom, listRooms } from "../network/socketClient.js";
 import "../styles/highStakes.css";
 
@@ -85,6 +86,10 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     } catch (err) {
       setError(err.message || "Could not load rooms.");
     }
+  }
+
+  async function refreshAfterRecovery() {
+    await Promise.all([refreshBalances(), refreshRooms()]);
   }
 
   async function makeRoom(tier) {
@@ -261,6 +266,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
                 <h3>Room {room.roomCode}</h3>
                 <p>{getUsdEntryLabelFromWei(room.entryWei) || "Entry"} · Required lock {formatEntry(room.entryWei)} ETH</p>
                 <p>{room.playerCount || 1}/4 players · {room.players?.filter((player) => player.entryLocked).length || 0} locked</p>
+                <ExpiredLockRecovery room={room} busy={busy} onRecovered={refreshAfterRecovery} />
                 <button type="button" className="highstakes-modal-primary" disabled={busy} onClick={confirmWithWallet}>{busy ? "Working..." : `Confirm ${appConfig.isMainnet ? "Mainnet" : "Testnet"} Lock`}</button>
                 <button type="button" className="highstakes-modal-cancel" disabled={busy} onClick={() => setRoom(null)}>Choose Another Room</button>
               </div>
