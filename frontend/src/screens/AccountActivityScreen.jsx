@@ -21,15 +21,16 @@ export function AccountActivityScreen({ profile, onBack }) {
 
   useEffect(() => { load(); }, [profile?.wallet]);
 
-  const filteredItems = useMemo(() => items.filter((item) => filterMatches(item, filter)), [items, filter]);
+  const sortedItems = useMemo(() => [...items].sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0)), [items]);
+  const filteredItems = useMemo(() => sortedItems.filter((item) => filterMatches(item, filter)), [sortedItems, filter]);
 
   return (
     <section className="screen data-screen proof-screen">
       <div className="card data-card-shell proof-card activity-shell">
         <header className="data-header">
-          <p className="data-kicker">Wallet Ledger</p>
+          <p className="data-kicker">Account Records</p>
           <h1>Account Activity</h1>
-          <p className="data-subtitle">Wallet-linked lock, settlement, and payout events for this player.</p>
+          <p className="data-subtitle">Room-linked records for this wallet. Newest records appear first.</p>
         </header>
 
         <button className="primary-btn data-main-action" disabled={loading} onClick={load}>{loading ? "Loading..." : "Refresh Activity"}</button>
@@ -45,19 +46,25 @@ export function AccountActivityScreen({ profile, onBack }) {
 
         <div className="data-list activity-list">
           {filteredItems.map((item) => (
-            <article className="data-item-card activity-card" key={item.id}>
+            <article className="data-item-card activity-card" key={item.id || `${item.type}-${item.createdAt}-${item.txHash}`}>
               <div className="data-card-topline">
                 <div>
                   <strong>{labelFor(item.type)}</strong>
                   <span>{formatShortDate(item.createdAt)}</span>
                 </div>
-                <span className={`status-pill ${statusClass(item.status)}`}>{item.status || "Recorded"}</span>
+                <span className={`status-pill ${statusClass(item.status)}`}>{statusLabel(item.status)}</span>
               </div>
 
               <div className="stat-chip-row">
                 <span className="stat-chip strong-chip">{formatEth(item.amountWei)} {item.currency || "ETH"}</span>
                 <span className="stat-chip">Room {item.roomCode || "—"}</span>
                 <span className="stat-chip">{activityTypeLabel(item.type)}</span>
+              </div>
+
+              <div className="data-card-meta">
+                {item.matchId && <span>Match {shortHash(item.matchId)}</span>}
+                {item.contractMatchId && <span>Contract {shortHash(item.contractMatchId)}</span>}
+                {item.txHash && <span>Tx {shortHash(item.txHash)}</span>}
               </div>
 
               {item.note && <p className="data-card-note">{item.note}</p>}
@@ -91,7 +98,7 @@ function filterMatches(item, filter) {
   const type = String(item.type || "").toLowerCase();
   if (filter === "locks") return type.includes("lock") || type.includes("entry");
   if (filter === "settlements") return type.includes("settle") || type.includes("settlement");
-  if (filter === "payouts") return type.includes("withdraw") || type.includes("payout") || type.includes("reward");
+  if (filter === "payouts") return type.includes("withdraw") || type.includes("payout");
   return true;
 }
 
@@ -103,10 +110,14 @@ function activityTypeLabel(type) {
   return "Activity";
 }
 
+function statusLabel(status) {
+  return labelFor(status || "recorded");
+}
+
 function statusClass(status) {
   const value = String(status || "").toLowerCase();
-  if (value.includes("confirm") || value.includes("complete") || value.includes("success")) return "success";
-  if (value.includes("pending") || value.includes("waiting")) return "warning";
+  if (value.includes("confirm") || value.includes("complete") || value.includes("success") || value.includes("recorded")) return "success";
+  if (value.includes("pending") || value.includes("waiting") || value.includes("submitted")) return "warning";
   if (value.includes("fail") || value.includes("error")) return "danger";
   return "neutral";
 }
@@ -115,5 +126,17 @@ async function copyText(value) {
   try { await navigator.clipboard.writeText(value); } catch {}
 }
 
-function formatEth(value) { try { return formatEther(BigInt(value || "0")); } catch { return "0"; } }
-function formatShortDate(value) { if (!value) return "—"; return new Date(value).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+function formatEth(value) {
+  try { return trimEth(formatEther(BigInt(value || "0"))); } catch { return "0"; }
+}
+
+function trimEth(value) {
+  const [whole, decimal = ""] = String(value || "0").split(".");
+  const cleanDecimal = decimal.slice(0, 6).replace(/0+$/, "");
+  return cleanDecimal ? `${whole}.${cleanDecimal}` : whole;
+}
+
+function formatShortDate(value) {
+  if (!value) return "—";
+  return new Date(value).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
