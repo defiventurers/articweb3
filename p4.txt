@@ -1,0 +1,7 @@
+P4 checklist
+
+- Keep the current testnet game loop working.
+- Review every code change before merge.
+- Use small test values during closed beta.
+- Keep deploy tools hidden after setup.
+- Confirm Vercel is green before merge.
