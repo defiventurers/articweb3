@@ -55,6 +55,7 @@ export function MatchHistoryScreen({ profile, onBack }) {
         <div className="data-list match-card-list">
           {history.map((item) => {
             const withdrawal = findWithdrawal(item, withdrawals);
+            const settlement = settlementView(item);
             return (
               <article className="data-item-card match-history-card" key={item.id}>
                 <div className="data-card-topline">
@@ -62,7 +63,7 @@ export function MatchHistoryScreen({ profile, onBack }) {
                     <strong>Room {item.roomCode}</strong>
                     <span>{item.roomMode === "high_stakes" ? "High Stakes" : "Open Ice"} · {formatShortDate(item.finishedAt)}</span>
                   </div>
-                  <span className={`status-pill ${statusClass(item.settlementStatus || item.withdrawalStatus)}`}>{item.settlementStatus || item.withdrawalStatus || "Finished"}</span>
+                  <span className={`status-pill ${statusClass(item.settlementStatus || item.withdrawalStatus)}`}>{settlement.label || item.withdrawalStatus || "Finished"}</span>
                 </div>
 
                 <div className="stat-chip-row">
@@ -73,6 +74,8 @@ export function MatchHistoryScreen({ profile, onBack }) {
                 </div>
 
                 <div className="data-card-meta">
+                  <span>Settlement: {settlement.summary}</span>
+                  <span>Attempts: {item.settlementAttempts ?? 0}</span>
                   <span>Withdrawal: {withdrawal?.status || item.withdrawalStatus || "—"}</span>
                   <span>Proof: {item.proofHash ? shortHash(item.proofHash) : "—"}</span>
                 </div>
@@ -98,6 +101,7 @@ function MatchDetail({ item, withdrawal, onBack }) {
   const board = item.finalBoardState?.board;
   const withdrawalTx = withdrawal?.txHash || item.withdrawalTxHash;
   const withdrawalStatus = withdrawal?.status || item.withdrawalStatus;
+  const settlement = settlementView(item);
 
   async function verifyProofs() {
     setVerifyBusy(true);
@@ -119,9 +123,13 @@ function MatchDetail({ item, withdrawal, onBack }) {
           <div className="detail-chip-grid">
             <span className="stat-chip">Contract: {shortHash(item.contractMatchId)}</span>
             <span className="stat-chip">Proof: {item.proofHash ? shortHash(item.proofHash) : "—"}</span>
-            <span className="stat-chip">Settlement: {item.settlementStatus || "—"}</span>
+            <span className="stat-chip">Settlement: {settlement.label}</span>
+            <span className="stat-chip">Attempts: {item.settlementAttempts ?? 0}</span>
+            <span className="stat-chip">Last check: {formatShortDate(item.settlementCheckedAt)}</span>
             <span className="stat-chip">Withdrawal: {withdrawalStatus || "—"}</span>
           </div>
+          <p className="data-subtitle">{settlement.description}</p>
+          {item.settlementError && <p className="error-text data-error">Settlement note: {item.settlementError}</p>}
           <div className="data-link-list">
             {ETH_VAULT_ADDRESS && <a href={addressUrl(ETH_VAULT_ADDRESS)} target="_blank" rel="noreferrer">View Vault Contract</a>}
             {item.entryTxHash && <a href={txUrl(item.entryTxHash)} target="_blank" rel="noreferrer">Entry Tx: {shortHash(item.entryTxHash)}</a>}
@@ -188,4 +196,18 @@ function inferRandomnessFromAudit(auditLog) { const commit = auditLog.find((item
 function compactEvent(event) { const clone = { ...event }; delete clone.at; delete clone.type; const text = JSON.stringify(clone); return text.length > 150 ? `${text.slice(0, 150)}...` : text; }
 function formatEth(value) { try { return formatEther(BigInt(value || "0")); } catch { return "0"; } }
 function formatShortDate(value) { if (!value) return "—"; return new Date(value).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
-function statusClass(status) { const value = String(status || "").toLowerCase(); if (value.includes("confirm") || value.includes("settled") || value.includes("complete") || value.includes("finished")) return "success"; if (value.includes("pending") || value.includes("waiting")) return "warning"; if (value.includes("fail") || value.includes("error")) return "danger"; return "neutral"; }
+function statusClass(status) { const value = String(status || "").toLowerCase(); if (value.includes("confirm") || value.includes("settled") || value.includes("complete") || value.includes("finished")) return "success"; if (value.includes("pending") || value.includes("waiting") || value.includes("submitted")) return "warning"; if (value.includes("fail") || value.includes("error") || value.includes("review") || value.includes("mismatch")) return "danger"; return "neutral"; }
+function settlementView(item) {
+  const status = String(item.settlementStatus || "").toLowerCase();
+  const attempts = item.settlementAttempts ?? 0;
+  if (!status) return { label: "Finished", summary: "No settlement needed", description: "This match does not have an on-chain settlement status." };
+  if (status === "settled") return { label: "Settled", summary: `Settled after ${attempts} attempt${attempts === 1 ? "" : "s"}`, description: "The backend confirmed this match settlement on-chain." };
+  if (status === "submitted") return { label: "Submitted", summary: `Submitted · attempt ${attempts}`, description: "A settlement transaction was submitted and is waiting for final confirmation." };
+  if (status === "settlement_pending") return { label: "Pending", summary: `Pending · attempt ${attempts}`, description: "The settlement transaction was submitted, but the backend has not confirmed final success yet." };
+  if (status === "pending") return { label: "Pending", summary: "Waiting for backend settlement", description: "The match finished and is waiting for the backend settlement worker." };
+  if (status === "failed") return { label: "Failed", summary: `Failed · attempt ${attempts}`, description: "The backend could not complete settlement. Check the settlement note and backend health." };
+  if (status === "needs_settlement_signer") return { label: "Needs signer", summary: "Backend signer missing", description: "The backend is missing its settlement signer configuration." };
+  if (status === "needs_game_server_update") return { label: "Signer mismatch", summary: "Backend signer does not match vault game server", description: "The configured backend signer does not match the vault game server wallet." };
+  if (status === "needs_settlement_review") return { label: "Needs review", summary: `Retry cap reached · ${attempts} attempts`, description: "Settlement hit the retry cap and needs manual review before another attempt." };
+  return { label: item.settlementStatus, summary: `${item.settlementStatus} · ${attempts} attempt${attempts === 1 ? "" : "s"}`, description: "Settlement status is reported by the backend." };
+}
