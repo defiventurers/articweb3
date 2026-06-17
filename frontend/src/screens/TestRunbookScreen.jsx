@@ -1,3 +1,4 @@
+import { BetaCycleProgressPanel } from "../components/BetaCycleProgressPanel.jsx";
 import { appConfig } from "../config/chain.js";
 import { ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 
@@ -130,6 +131,8 @@ export function TestRunbookScreen({ onBack }) {
           </div>
           <p className="data-subtitle">This runbook is for closed beta testing. Keep testing on the configured environment until every step passes cleanly.</p>
         </section>
+
+        <BetaCycleProgressPanel />
 
         <section className="data-detail-panel">
           <strong>Quick operator links</strong>
