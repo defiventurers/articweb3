@@ -1,5 +1,7 @@
+import { BetaBlockerTriagePanel } from "../components/BetaBlockerTriagePanel.jsx";
 import { BetaCycleProgressPanel } from "../components/BetaCycleProgressPanel.jsx";
 import { BetaFailureReportPanel } from "../components/BetaFailureReportPanel.jsx";
+import { BetaReleaseDecisionPanel } from "../components/BetaReleaseDecisionPanel.jsx";
 import { BetaReleaseGatePanel } from "../components/BetaReleaseGatePanel.jsx";
 import { BetaTesterHandoffPanel } from "../components/BetaTesterHandoffPanel.jsx";
 import { BetaTesterRosterPanel } from "../components/BetaTesterRosterPanel.jsx";
@@ -122,6 +124,8 @@ export function TestRunbookScreen({ onBack }) {
         </section>
 
         <BetaReleaseGatePanel />
+        <BetaBlockerTriagePanel />
+        <BetaReleaseDecisionPanel />
         <BetaCycleProgressPanel />
         <BetaTesterRosterPanel />
         <BetaTesterHandoffPanel />
