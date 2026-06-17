@@ -20,13 +20,13 @@ const CALIBRATION_QUERY_KEY = "calibrateHighstakes";
 const NETWORK_LOCK_COPY = appConfig.isMainnet ? "mainnet lock" : "testnet lock";
 const NETWORK_ETH_COPY = appConfig.isMainnet ? "mainnet ETH" : "testnet ETH";
 
-export function HighStakesScreen({ profile, onRoomReady, onBack }) {
+export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, onBack }) {
   const { address } = useAccount();
   const { data: abstractClient } = useAbstractClient();
   const [room, setRoom] = useState(null);
   const [publicRooms, setPublicRooms] = useState([]);
   const [roomPage, setRoomPage] = useState(0);
-  const [joinCode, setJoinCode] = useState("");
+  const [joinCode, setJoinCode] = useState(() => clean(initialRoomCode));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
@@ -78,6 +78,11 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     window.addEventListener("server-packet", onPacket);
     return () => window.removeEventListener("server-packet", onPacket);
   }, []);
+
+  useEffect(() => {
+    const inviteCode = clean(initialRoomCode);
+    if (inviteCode) setJoinCode(inviteCode);
+  }, [initialRoomCode]);
 
   useEffect(() => {
     setHasCurrentRoomLock(false);
@@ -172,17 +177,19 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     if (!room) return;
     const lines = [
       "Open Ice Closed Beta Room Invite",
+      `Invite link: ${buildRoomInviteUrl(room.roomCode)}`,
       `Room code: ${room.roomCode}`,
       `Mode: Locked Match Lab`,
       `Entry: ${formatEntry(room.entryWei)} ETH`,
       `Network: ${appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"}`,
       "",
       "Steps:",
-      "1. Connect Abstract Global Wallet.",
-      "2. Open High Stakes Lab.",
-      "3. Join this room code.",
-      "4. Confirm the lock in AGW.",
-      "5. Select a team after lock confirmation."
+      "1. Open the invite link.",
+      "2. Connect Abstract Global Wallet.",
+      "3. Complete or confirm profile.",
+      "4. Join the prefilled room code from High Stakes Lab.",
+      "5. Confirm the lock in AGW.",
+      "6. Select a team after lock confirmation."
     ];
     await copyLines(lines, "Room invite copied.");
   }
@@ -193,6 +200,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
     const lines = [
       "Locked Match Debug Context",
       `Room code: ${room.roomCode}`,
+      `Invite link: ${buildRoomInviteUrl(room.roomCode)}`,
       `Contract match id: ${room.contractMatchId || "—"}`,
       `Entry wei: ${room.entryWei || "—"}`,
       `Entry ETH: ${formatEntry(room.entryWei)}`,
@@ -411,6 +419,14 @@ function trimEth(value) {
 
 function clean(value) {
   return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
+}
+
+function buildRoomInviteUrl(roomCode) {
+  if (typeof window === "undefined") return "";
+  const url = new URL(window.location.href);
+  url.searchParams.delete("spectate");
+  url.searchParams.set("highStakesRoom", clean(roomCode));
+  return url.toString();
 }
 
 function isHighstakesCalibrationEnabled() {
