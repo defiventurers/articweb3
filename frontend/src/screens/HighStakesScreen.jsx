@@ -6,6 +6,7 @@ import { appConfig } from "../config/chain.js";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
 import { ExpiredLockRecovery } from "../components/ExpiredLockRecovery.jsx";
+import { InvitedRoomPanel } from "../components/InvitedRoomPanel.jsx";
 import { confirmEntryLock, createRoom, joinRoom, listRooms } from "../network/socketClient.js";
 import "../styles/highStakes.css";
 
@@ -27,6 +28,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   const [publicRooms, setPublicRooms] = useState([]);
   const [roomPage, setRoomPage] = useState(0);
   const [joinCode, setJoinCode] = useState(() => clean(initialRoomCode));
+  const [showInvitePanel, setShowInvitePanel] = useState(() => Boolean(clean(initialRoomCode)));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
@@ -34,6 +36,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   const [hasCurrentRoomLock, setHasCurrentRoomLock] = useState(false);
 
   const calibrateHighstakes = useMemo(() => isHighstakesCalibrationEnabled(), []);
+  const invitedRoomCode = useMemo(() => clean(initialRoomCode), [initialRoomCode]);
   const displayName = getDisplayName(profile, address);
 
   const walletBalanceQuery = useBalance({ address, query: { enabled: Boolean(address) } });
@@ -80,9 +83,11 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   }, []);
 
   useEffect(() => {
-    const inviteCode = clean(initialRoomCode);
-    if (inviteCode) setJoinCode(inviteCode);
-  }, [initialRoomCode]);
+    if (invitedRoomCode) {
+      setJoinCode(invitedRoomCode);
+      setShowInvitePanel(true);
+    }
+  }, [invitedRoomCode]);
 
   useEffect(() => {
     setHasCurrentRoomLock(false);
@@ -134,8 +139,25 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
       const joined = await joinRoom({ roomCode: code, profile });
       setRoom(joined);
       setJoinCode("");
+      setShowInvitePanel(false);
       await refreshRooms();
     });
+  }
+
+  async function joinInvitedRoom() {
+    await enterRoom(invitedRoomCode || joinCode);
+    cleanInviteQueryParams();
+  }
+
+  async function copyInvitedRoomLink() {
+    const code = invitedRoomCode || joinCode;
+    if (!code) return;
+    await copyLines([`Invite link: ${buildRoomInviteUrl(code)}`, `Room code: ${code}`], "Invite link copied.");
+  }
+
+  function dismissInvitedRoom() {
+    setShowInvitePanel(false);
+    cleanInviteQueryParams();
   }
 
   async function confirmWithWallet() {
@@ -187,7 +209,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
       "1. Open the invite link.",
       "2. Connect Abstract Global Wallet.",
       "3. Complete or confirm profile.",
-      "4. Join the prefilled room code from High Stakes Lab.",
+      "4. Click Join Invited Room in High Stakes Lab.",
       "5. Confirm the lock in AGW.",
       "6. Select a team after lock confirmation."
     ];
@@ -312,6 +334,10 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
           />
           <button id="highStakesJoinPrivateBtn" className="screen-hitbox hs-join-private-hitbox" data-calibrate="join-private-hitbox" aria-label="Join Private Room" disabled={busy} onClick={() => enterRoom()} />
 
+          {showInvitePanel && invitedRoomCode && !room && !tierPickerMode && (
+            <InvitedRoomPanel roomCode={invitedRoomCode} busy={busy} onJoin={joinInvitedRoom} onDismiss={dismissInvitedRoom} onCopyLink={copyInvitedRoomLink} />
+          )}
+
           {tierPickerMode && (
             <div className="highstakes-modal" role="dialog" aria-modal="true" aria-label={tierPickerMode === "create" ? "Choose entry amount" : "Choose deposit amount"}>
               <div className="highstakes-modal-card">
@@ -427,6 +453,15 @@ function buildRoomInviteUrl(roomCode) {
   url.searchParams.delete("spectate");
   url.searchParams.set("highStakesRoom", clean(roomCode));
   return url.toString();
+}
+
+function cleanInviteQueryParams() {
+  if (typeof window === "undefined" || !window.history?.replaceState) return;
+  const url = new URL(window.location.href);
+  url.searchParams.delete("highStakesRoom");
+  url.searchParams.delete("hsRoom");
+  url.searchParams.delete("lockedRoom");
+  window.history.replaceState({}, "", url.toString());
 }
 
 function isHighstakesCalibrationEnabled() {
