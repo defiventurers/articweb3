@@ -9,7 +9,9 @@ const inputStyle = { width: "100%", padding: "0.7rem 0.85rem", borderRadius: "12
 export function SyncStatusPanel() {
   const baseUrl = useMemo(() => deriveBaseUrl(), []);
   const statusUrl = baseUrl ? baseUrl + "/indexer/health" : "";
+  const statsUrl = baseUrl ? baseUrl + "/indexer/stats" : "";
   const [status, setStatus] = useState(null);
+  const [stats, setStats] = useState(null);
   const [busy, setBusy] = useState(false);
   const [runBusy, setRunBusy] = useState(false);
   const [error, setError] = useState("");
@@ -17,7 +19,11 @@ export function SyncStatusPanel() {
   const [runKey, setRunKey] = useState("");
   const [fromBlock, setFromBlock] = useState("");
 
-  useEffect(() => { refreshStatus(); }, [statusUrl]);
+  useEffect(() => { refreshSync(); }, [statusUrl, statsUrl]);
+
+  async function refreshSync() {
+    await Promise.all([refreshStatus(), refreshStats()]);
+  }
 
   async function refreshStatus() {
     if (!statusUrl) return;
@@ -32,6 +38,18 @@ export function SyncStatusPanel() {
       setError(err.message || "Could not read chain sync status.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function refreshStats() {
+    if (!statsUrl) return;
+    try {
+      const response = await fetch(statsUrl, { cache: "no-store" });
+      if (!response.ok) throw new Error("Chain sync stats returned " + response.status + ".");
+      const payload = await response.json();
+      setStats(payload.stats || null);
+    } catch {
+      setStats(null);
     }
   }
 
@@ -51,7 +69,7 @@ export function SyncStatusPanel() {
       if (!response.ok || payload.ok === false) throw new Error(payload.error || "Manual sync failed.");
       setStatus(payload.ok ? { ...(status || {}), lastRun: payload, totalRuns: payload.totalRuns, totalIndexed: payload.totalIndexed, running: false, lastError: null, store: payload.store } : status);
       setRunNote("Manual sync finished. Indexed " + String(payload.indexed ?? 0) + " event(s).");
-      await refreshStatus();
+      await refreshSync();
     } catch (err) {
       setRunNote(err.message || "Manual sync failed.");
     } finally {
@@ -62,14 +80,16 @@ export function SyncStatusPanel() {
   const lastRun = status?.lastRun || null;
   const rows = [
     ["Status endpoint", statusUrl || "Set VITE_WS_URL"],
+    ["Stats endpoint", statsUrl || "Set VITE_WS_URL"],
     ["Sync state", status?.running ? "Running" : status ? "Idle" : "Not confirmed"],
     ["Total runs", status?.totalRuns ?? "—"],
-    ["Total events", status?.totalIndexed ?? "—"],
+    ["Total events", stats?.totalEvents ?? status?.totalIndexed ?? "—"],
+    ["Unique players", stats?.uniquePlayers ?? "—"],
+    ["Latest indexed block", stats?.latestBlock ?? lastRun?.latest ?? "—"],
     ["Last run", lastRun ? yesNo(lastRun.ok) : "—"],
     ["Last run events", lastRun?.indexed ?? "—"],
-    ["Latest block", lastRun?.latest ?? "—"],
     ["Last error", status?.lastError || "—"],
-    ["Sync DB", yesNo(status?.store?.databaseReady)]
+    ["Sync DB", yesNo(stats?.store?.databaseReady ?? status?.store?.databaseReady)]
   ];
 
   return (
@@ -88,10 +108,12 @@ export function SyncStatusPanel() {
         <input style={inputStyle} inputMode="numeric" value={fromBlock} onChange={(event) => setFromBlock(event.target.value.replace(/[^0-9]/g, ""))} placeholder="Optional fromBlock for one-time backfill" />
       </div>
       {statusUrl && <a className="secondary-btn" href={statusUrl} target="_blank" rel="noreferrer">Open Sync Status</a>}
-      <button className="secondary-btn" disabled={busy} onClick={refreshStatus}>{busy ? "Refreshing Sync..." : "Refresh Sync Status"}</button>
+      {statsUrl && <a className="secondary-btn" href={statsUrl} target="_blank" rel="noreferrer">Open Sync Stats</a>}
+      <button className="secondary-btn" disabled={busy} onClick={refreshSync}>{busy ? "Refreshing Sync..." : "Refresh Sync Status"}</button>
       <button className="secondary-btn" disabled={runBusy || !baseUrl} onClick={runManualSync}>{runBusy ? "Running Sync..." : "Run Sync Now"}</button>
       {runNote && <p className="note">{runNote}</p>}
       {error && <p className="error">Chain sync note: {error}</p>}
+      {stats?.byEvent?.length ? <div style={panelStyle}>{stats.byEvent.map((item) => <div key={item.eventName} style={rowStyle}><strong style={labelStyle}>{item.eventName}</strong><span style={valueStyle}>{String(item.count)} event(s)</span></div>)}</div> : null}
     </section>
   );
 }
