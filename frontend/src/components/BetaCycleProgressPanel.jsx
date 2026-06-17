@@ -15,6 +15,7 @@ const STEPS = [
 
 export function BetaCycleProgressPanel() {
   const [checked, setChecked] = useState(() => loadProgress());
+  const [copyNote, setCopyNote] = useState("");
 
   useEffect(() => {
     try {
@@ -33,6 +34,23 @@ export function BetaCycleProgressPanel() {
 
   function reset() {
     setChecked({});
+    setCopyNote("");
+  }
+
+  async function copySummary() {
+    const lines = [
+      "Closed Beta Cycle Summary",
+      `Progress: ${completed}/${total}`,
+      `Status: ${completed === total ? "Cycle passed" : "In progress"}`,
+      "",
+      ...STEPS.map((step) => `${checked[step] ? "[x]" : "[ ]"} ${step}`)
+    ];
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setCopyNote("Cycle summary copied.");
+    } catch {
+      setCopyNote("Copy failed. Select the checklist manually.");
+    }
   }
 
   return (
@@ -53,7 +71,9 @@ export function BetaCycleProgressPanel() {
           </li>
         ))}
       </ol>
+      <button className="secondary-btn" type="button" onClick={copySummary}>Copy Cycle Summary</button>
       <button className="secondary-btn" type="button" onClick={reset}>Reset Cycle Progress</button>
+      {copyNote && <p className="data-subtitle">{copyNote}</p>}
     </section>
   );
 }
