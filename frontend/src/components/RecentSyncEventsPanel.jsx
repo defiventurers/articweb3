@@ -4,9 +4,18 @@ const panelStyle = { display: "grid", gap: "0.65rem", width: "100%", margin: "1r
 const rowStyle = { display: "grid", gridTemplateColumns: "minmax(120px, 0.8fr) minmax(0, 1.4fr)", gap: "0.75rem", alignItems: "start", padding: "0.75rem 0.85rem", border: "1px solid rgba(148, 217, 255, 0.22)", borderRadius: "14px", background: "rgba(4, 28, 52, 0.38)" };
 const labelStyle = { fontSize: "0.82rem", opacity: 0.78, textAlign: "left" };
 const valueStyle = { minWidth: 0, overflowWrap: "anywhere", wordBreak: "break-word", textAlign: "left", fontFamily: "monospace", lineHeight: 1.35 };
+const inputStyle = { width: "100%", padding: "0.7rem 0.85rem", borderRadius: "12px", border: "1px solid rgba(148, 217, 255, 0.24)", background: "rgba(4, 28, 52, 0.5)", color: "inherit", marginBottom: "0.55rem" };
 
 export function RecentSyncEventsPanel({ baseUrl }) {
-  const eventsUrl = useMemo(() => baseUrl ? baseUrl + "/indexer/events?limit=10" : "", [baseUrl]);
+  const [eventName, setEventName] = useState("");
+  const [player, setPlayer] = useState("");
+  const eventsUrl = useMemo(() => {
+    if (!baseUrl) return "";
+    const params = new URLSearchParams({ limit: "10" });
+    if (eventName.trim()) params.set("eventName", eventName.trim());
+    if (player.trim()) params.set("player", player.trim().toLowerCase());
+    return baseUrl + "/indexer/events?" + params.toString();
+  }, [baseUrl, eventName, player]);
   const [events, setEvents] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -33,6 +42,8 @@ export function RecentSyncEventsPanel({ baseUrl }) {
   return (
     <section>
       <h4>Recent Indexed Events</h4>
+      <input style={inputStyle} value={eventName} onChange={(event) => setEventName(event.target.value)} placeholder="Optional event filter, for example EntryLocked" />
+      <input style={inputStyle} value={player} onChange={(event) => setPlayer(event.target.value)} placeholder="Optional player wallet filter" />
       {eventsUrl && <a className="secondary-btn" href={eventsUrl} target="_blank" rel="noreferrer">Open Indexed Events</a>}
       <button className="secondary-btn" disabled={busy} onClick={refreshEvents}>{busy ? "Refreshing Events..." : "Refresh Indexed Events"}</button>
       {error && <p className="error">Indexed events note: {error}</p>}
@@ -40,12 +51,17 @@ export function RecentSyncEventsPanel({ baseUrl }) {
         {events.length ? events.map((event) => (
           <div key={event.id} style={rowStyle}>
             <strong style={labelStyle}>{event.eventName || "Event"}</strong>
-            <span style={valueStyle}>block {event.blockNumber} / {event.player || event.matchId || "system"} / {shortHash(event.txHash)}</span>
+            <span style={valueStyle}>block {event.blockNumber} / {event.player || event.matchId || "system"} / {event.txHash ? <a href={txUrl(event.txHash)} target="_blank" rel="noreferrer">{shortHash(event.txHash)}</a> : "—"}</span>
           </div>
         )) : <p className="note">No indexed events found yet.</p>}
       </div>
     </section>
   );
+}
+
+function txUrl(txHash) {
+  const explorer = import.meta.env.VITE_ABSTRACT_EXPLORER_URL || import.meta.env.VITE_ABSTRACT_EXPLORER || "https://explorer.testnet.abs.xyz";
+  return String(explorer).replace(/\/$/, "") + "/tx/" + txHash;
 }
 
 function shortHash(value) {
