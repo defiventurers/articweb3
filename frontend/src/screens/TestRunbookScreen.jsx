@@ -3,27 +3,57 @@ import { ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 
 const SECTIONS = [
   {
-    title: "1. Preflight",
+    title: "1. Operator preflight",
     checks: [
-      "Open Player Hub, then SET, and confirm System Checks are Ready.",
-      "Confirm backend chain and frontend chain match.",
-      "Confirm signer alignment says Ready.",
-      "Confirm database stores are ready.",
-      "Confirm entry flow is open."
+      "Confirm Vercel is on the latest frontend commit.",
+      "Confirm Render is on the latest backend commit when backend changes are included.",
+      "Confirm frontend chain, backend chain, RPC, explorer, and vault address match the selected environment.",
+      "Confirm locked-match mode is enabled only for the intended closed-beta environment.",
+      "Keep sensitive backend-only values out of frontend env."
     ]
   },
   {
-    title: "2. Create Locked Match room",
+    title: "2. System checks",
+    checks: [
+      "Open Player Hub, then SET, and confirm System Checks are Ready.",
+      "Confirm backend health is reachable.",
+      "Confirm signer alignment says Ready.",
+      "Confirm database stores are ready.",
+      "Confirm Chain Sync Status can read health and stats."
+    ]
+  },
+  {
+    title: "3. Sync checks",
+    checks: [
+      "Open Indexer Health from the runbook or SET screen.",
+      "Open Indexer Stats and confirm the response loads.",
+      "Open Recent Events and confirm the events array loads.",
+      "After a lock, filter Recent Indexed Events by EntryLocked.",
+      "After settlement, filter Recent Indexed Events by MatchSettled."
+    ]
+  },
+  {
+    title: "4. Funding readiness",
+    checks: [
+      "Open Player Hub and read Entry Readiness.",
+      "Confirm wallet connected and correct network.",
+      "Confirm wallet has enough testnet ETH for the chosen room.",
+      "Remember direct lock uses wallet ETH; vault available is shown for deposit and recovery visibility.",
+      "Use wallet and vault explorer links when debugging tester reports."
+    ]
+  },
+  {
+    title: "5. Create Locked Match room",
     checks: [
       "Open High Stakes Lab from Player Hub.",
       "Create a public room using the smallest test entry.",
       "Confirm AGW opens and the entry lock succeeds.",
-      "Check the room card says your lock is confirmed.",
+      "If confirm is disabled, check wallet ETH and network first.",
       "Open My Rooms and confirm the room appears there."
     ]
   },
   {
-    title: "3. Fill and play the match",
+    title: "6. Fill and play the match",
     checks: [
       "Join with the remaining test wallets.",
       "Each wallet confirms its own entry lock.",
@@ -33,17 +63,17 @@ const SECTIONS = [
     ]
   },
   {
-    title: "4. Verify settlement and records",
+    title: "7. Verify settlement and records",
     checks: [
       "Open Match History and open the finished room detail.",
-      "Confirm settlement status is visible.",
-      "Confirm settlement attempts are visible.",
+      "Confirm settlement status and attempts are visible.",
       "Open Account Activity and confirm room-linked records exist.",
-      "Open SET and confirm backend health is still Ready."
+      "Open Recent Indexed Events and use event filters.",
+      "Open tx links from the indexed-event feed when debugging."
     ]
   },
   {
-    title: "5. Recovery drill",
+    title: "8. Recovery drill",
     checks: [
       "Create a separate Locked Match room.",
       "Confirm your entry lock, then leave the room unfinished.",
@@ -51,10 +81,21 @@ const SECTIONS = [
       "Confirm the recovery panel appears.",
       "Recover the expired lock and verify balances refresh."
     ]
+  },
+  {
+    title: "9. Common lock-failure diagnosis",
+    checks: [
+      "Wallet client not ready: reconnect AGW from the profile screen.",
+      "Wrong chain: switch to the configured Abstract environment.",
+      "Insufficient wallet ETH: fund wallet or choose a smaller test room.",
+      "Server not verifying tx yet: wait, refresh sync, then check Recent Indexed Events.",
+      "Room state mismatch: refresh rooms, check My Rooms, then retry from the room modal."
+    ]
   }
 ];
 
 export function TestRunbookScreen({ onBack }) {
+  const indexerBase = getBackendBaseUrl();
   return (
     <section className="screen data-screen proof-screen">
       <div className="card data-card-shell proof-card">
@@ -75,6 +116,16 @@ export function TestRunbookScreen({ onBack }) {
           <p className="data-subtitle">This runbook is for closed beta testing. Keep testing on the configured environment until every step passes cleanly.</p>
         </section>
 
+        <section className="data-detail-panel">
+          <strong>Quick operator links</strong>
+          <div className="detail-chip-grid">
+            {indexerBase && <a className="stat-chip" href={`${indexerBase}/indexer/health`} target="_blank" rel="noreferrer">Indexer Health</a>}
+            {indexerBase && <a className="stat-chip" href={`${indexerBase}/indexer/stats`} target="_blank" rel="noreferrer">Indexer Stats</a>}
+            {indexerBase && <a className="stat-chip" href={`${indexerBase}/indexer/events?limit=10`} target="_blank" rel="noreferrer">Recent Events</a>}
+            <a className="stat-chip" href={addressUrl(ETH_VAULT_ADDRESS)} target="_blank" rel="noreferrer">Vault Explorer</a>
+          </div>
+        </section>
+
         <div className="data-list compact-detail-list">
           {SECTIONS.map((section) => (
             <article className="mini-data-card" key={section.title}>
@@ -88,7 +139,7 @@ export function TestRunbookScreen({ onBack }) {
 
         <section className="data-detail-panel">
           <strong>Pass condition</strong>
-          <p className="data-subtitle">One beta cycle passes only when room creation, entry locks, team select, gameplay, settlement visibility, account records, and recovery behavior all work without manual database edits.</p>
+          <p className="data-subtitle">One beta cycle passes only when room creation, entry locks, team select, gameplay, settlement visibility, account records, indexer visibility, and recovery behavior all work without manual database edits.</p>
         </section>
 
         <button className="primary-btn data-back-btn" onClick={onBack}>Back To Hub</button>
@@ -100,4 +151,18 @@ export function TestRunbookScreen({ onBack }) {
 function shortAddress(value) {
   if (!value) return "—";
   return `${value.slice(0, 6)}...${value.slice(-4)}`;
+}
+
+function getBackendBaseUrl() {
+  const raw = import.meta.env.VITE_BACKEND_HTTP_URL || import.meta.env.VITE_API_URL || import.meta.env.VITE_WS_URL || "";
+  if (!raw) return "";
+  let base = String(raw).trim();
+  if (base.startsWith("wss://")) base = "https://" + base.slice(6);
+  if (base.startsWith("ws://")) base = "http://" + base.slice(5);
+  return base.replace(/\/$/, "");
+}
+
+function addressUrl(value) {
+  const explorer = import.meta.env.VITE_ABSTRACT_EXPLORER_URL || import.meta.env.VITE_ABSTRACT_EXPLORER || appConfig.explorerUrl;
+  return String(explorer).replace(/\/$/, "") + "/address/" + value;
 }
