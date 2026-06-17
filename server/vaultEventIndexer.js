@@ -20,10 +20,12 @@ const VAULT_ABI = [
 let running = false;
 let lastRun = null;
 let lastError = null;
+let totalRuns = 0;
+let totalIndexed = 0;
 const iface = new ethers.Interface(VAULT_ABI);
 
 async function runVaultEventIndexer(options = {}) {
-  if (running) return { ok: false, running: true, message: "Indexer is already running.", lastRun, lastError, store: vaultEventStoreStatus() };
+  if (running) return { ok: false, running: true, message: "Indexer is already running.", lastRun, lastError, totalRuns, totalIndexed, store: vaultEventStoreStatus() };
   running = true;
   lastError = null;
   const startedAt = Date.now();
@@ -69,11 +71,14 @@ async function runVaultEventIndexer(options = {}) {
       }
     }
 
-    lastRun = { ok: true, contract: vaultAddress, chainId, fromBlock, latest, indexed, scannedRanges, startedAt, finishedAt: Date.now(), store: vaultEventStoreStatus() };
+    totalRuns += 1;
+    totalIndexed += indexed;
+    lastRun = { ok: true, contract: vaultAddress, chainId, fromBlock, latest, indexed, totalRuns, totalIndexed, scannedRanges, startedAt, finishedAt: Date.now(), store: vaultEventStoreStatus() };
     return lastRun;
   } catch (err) {
     lastError = err.message || String(err);
-    lastRun = { ok: false, error: lastError, startedAt, finishedAt: Date.now(), store: vaultEventStoreStatus() };
+    totalRuns += 1;
+    lastRun = { ok: false, error: lastError, totalRuns, totalIndexed, startedAt, finishedAt: Date.now(), store: vaultEventStoreStatus() };
     return lastRun;
   } finally {
     running = false;
@@ -81,7 +86,7 @@ async function runVaultEventIndexer(options = {}) {
 }
 
 function getVaultIndexerHealth() {
-  return { ok: true, running, lastRun, lastError, store: vaultEventStoreStatus() };
+  return { ok: true, running, lastRun, lastError, totalRuns, totalIndexed, store: vaultEventStoreStatus() };
 }
 
 function parseLog(log, context) {
