@@ -32,6 +32,7 @@ const MyRoomsScreen = lazyNamed(() => import("./screens/MyRoomsScreen.jsx"), "My
 const AccountActivityScreen = lazyNamed(() => import("./screens/AccountActivityScreen.jsx"), "AccountActivityScreen");
 const SpectatorScreen = lazyNamed(() => import("./screens/SpectatorScreen.jsx"), "SpectatorScreen");
 const DevQAScreen = lazyNamed(() => import("./screens/DevQAScreen.jsx"), "DevQAScreen");
+const TestRunbookScreen = lazyNamed(() => import("./screens/TestRunbookScreen.jsx"), "TestRunbookScreen");
 
 export default function App() {
   const params = new URLSearchParams(window.location.search);
@@ -73,8 +74,9 @@ export default function App() {
   if (screen === "how-to-play") return withClosedBetaBanner(renderLazy(<HowToPlayScreen onBack={() => goTo("menu")} onStart={() => goTo("profile")} />));
   if (screen === "spectator") return withClosedBetaBanner(renderLazy(<SpectatorScreen initialRoomCode={initialSpectateCode} onBack={() => goTo(profile ? "hub" : "menu")} />));
   if (screen === "profile") return withClosedBetaBanner(renderLazy(<ProfileScreen onComplete={(createdProfile) => { setProfile(createdProfile); goTo("hub"); }} onBack={() => goTo("menu")} />));
-  if (screen === "hub") return withClosedBetaBanner(renderLazy(<PlayerHubScreen profile={profile} onOpenIce={() => goTo("open-ice-menu")} onHighStakes={() => goTo("high-stakes")} onMatchHistory={() => goTo("match-history")} onLeaderboard={() => goTo("leaderboard")} onAccountActivity={() => goTo("activity")} onMyRooms={() => goTo("my-rooms")} onDevQA={() => goTo("dev-qa")} onVaultDeployer={() => goTo("vault-deployer")} onSettlementAdmin={() => goTo("settlement-admin")} onBack={() => goTo("profile")} />));
+  if (screen === "hub") return withClosedBetaBanner(renderLazy(<PlayerHubScreen profile={profile} onOpenIce={() => goTo("open-ice-menu")} onHighStakes={() => goTo("high-stakes")} onMatchHistory={() => goTo("match-history")} onLeaderboard={() => goTo("leaderboard")} onAccountActivity={() => goTo("activity")} onMyRooms={() => goTo("my-rooms")} onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onVaultDeployer={() => goTo("vault-deployer")} onSettlementAdmin={() => goTo("settlement-admin")} onBack={() => goTo("profile")} />));
   if (screen === "dev-qa") return withClosedBetaBanner(renderLazy(<DevQAScreen onBack={() => goTo("hub")} />));
+  if (screen === "test-runbook") return withClosedBetaBanner(renderLazy(<TestRunbookScreen onBack={() => goTo("hub")} />));
   if (screen === "match-history") return withClosedBetaBanner(renderLazy(<MatchHistoryScreen profile={profile} onBack={() => goTo("hub")} />));
   if (screen === "leaderboard") return withClosedBetaBanner(renderLazy(<LeaderboardScreen onBack={() => goTo("hub")} />));
   if (screen === "activity") return withClosedBetaBanner(renderLazy(<AccountActivityScreen profile={profile} onBack={() => goTo("hub")} />));
