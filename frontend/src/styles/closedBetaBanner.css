@@ -1,0 +1,58 @@
+.closed-beta-banner {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: grid;
+  gap: 2px;
+  width: min(92vw, 720px);
+  padding: 8px 14px;
+  border: 1px solid rgba(155, 226, 255, 0.55);
+  border-radius: 999px;
+  background: rgba(3, 20, 40, 0.84);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25), inset 0 0 18px rgba(126, 215, 255, 0.1);
+  color: #f5fbff;
+  text-align: center;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+.closed-beta-banner strong {
+  font-size: 0.74rem;
+  line-height: 1.05;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.closed-beta-banner span {
+  font-size: 0.68rem;
+  line-height: 1.15;
+  opacity: 0.9;
+}
+
+.closed-beta-banner.testnet {
+  border-color: rgba(120, 220, 255, 0.7);
+}
+
+.closed-beta-banner.mainnet {
+  border-color: rgba(255, 220, 130, 0.8);
+  background: rgba(48, 32, 5, 0.86);
+}
+
+@media (max-width: 640px) {
+  .closed-beta-banner {
+    top: max(6px, env(safe-area-inset-top));
+    width: min(94vw, 420px);
+    padding: 6px 10px;
+    border-radius: 18px;
+  }
+
+  .closed-beta-banner strong {
+    font-size: 0.64rem;
+  }
+
+  .closed-beta-banner span {
+    font-size: 0.58rem;
+  }
+}
