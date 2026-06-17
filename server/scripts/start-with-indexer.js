@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const http = require("http");
 const { runVaultEventIndexer, getVaultIndexerHealth } = require("../vaultEventIndexer.js");
-const { getRecentIndexedVaultEvents } = require("../vaultEventStore.js");
+const { getRecentIndexedVaultEvents, getIndexedVaultEventStats } = require("../vaultEventStore.js");
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -17,7 +17,7 @@ http.createServer = function createServerWithIndexerControls(listener) {
   return originalCreateServer(async (req, res) => {
     const fullUrl = new URL(req.url || "/", "http://localhost");
     const path = fullUrl.pathname;
-    const isIndexerPath = path === "/indexer/health" || path === "/indexer/run" || path === "/indexer/events";
+    const isIndexerPath = path === "/indexer/health" || path === "/indexer/run" || path === "/indexer/events" || path === "/indexer/stats";
 
     if (req.method === "OPTIONS" && isIndexerPath) {
       res.writeHead(204, CORS_HEADERS);
@@ -34,9 +34,18 @@ http.createServer = function createServerWithIndexerControls(listener) {
     if (req.method === "GET" && path === "/indexer/events") {
       const limit = Number(fullUrl.searchParams.get("limit") || 25);
       const player = fullUrl.searchParams.get("player") || "";
-      const events = await getRecentIndexedVaultEvents({ limit, player });
+      const eventName = fullUrl.searchParams.get("eventName") || "";
+      const events = await getRecentIndexedVaultEvents({ limit, player, eventName });
       res.writeHead(200, { ...CORS_HEADERS, "Content-Type": "application/json" });
       res.end(JSON.stringify({ ok: true, events }));
+      return;
+    }
+
+    if (req.method === "GET" && path === "/indexer/stats") {
+      const player = fullUrl.searchParams.get("player") || "";
+      const stats = await getIndexedVaultEventStats({ player });
+      res.writeHead(200, { ...CORS_HEADERS, "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true, stats }));
       return;
     }
 
@@ -79,6 +88,7 @@ console.log("[vault-indexer] scheduled run", SCHEDULED_RUN, "interval", INTERVAL
 console.log("[vault-indexer] heartbeat", HEARTBEAT_RUN, "interval", HEARTBEAT_MS);
 console.log("[vault-indexer] health endpoint /indexer/health enabled");
 console.log("[vault-indexer] events endpoint /indexer/events enabled");
+console.log("[vault-indexer] stats endpoint /indexer/stats enabled");
 console.log("[vault-indexer] protected run endpoint /indexer/run", Boolean(RUN_KEY));
 
 async function runIndexer(label) {
