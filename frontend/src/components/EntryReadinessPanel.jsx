@@ -18,6 +18,8 @@ export function EntryReadinessPanel() {
   const nativeBalanceQuery = useBalance({ address, query: { enabled: Boolean(address && !isWrongChain) } });
   const availableQuery = useReadContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "availableBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && !isWrongChain && ETH_TARGETS_READY) } });
   const lockedQuery = useReadContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "lockedBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && !isWrongChain && ETH_TARGETS_READY) } });
+  const faucetUrl = optionalEnv("VITE_ABSTRACT_FAUCET_URL") || optionalEnv("VITE_TESTNET_FAUCET_URL");
+  const bridgeUrl = optionalEnv("VITE_ABSTRACT_BRIDGE_URL") || optionalEnv("VITE_BRIDGE_URL");
 
   const walletWei = nativeBalanceQuery.data?.value || 0n;
   const availableWei = availableQuery.data || 0n;
@@ -42,6 +44,8 @@ export function EntryReadinessPanel() {
       <div style={linkRow}>
         {address && <a className="secondary-btn" href={addressUrl(address)} target="_blank" rel="noreferrer">Wallet Explorer</a>}
         {ETH_TARGETS_READY && <a className="secondary-btn" href={addressUrl(ETH_VAULT_ADDRESS)} target="_blank" rel="noreferrer">Vault Explorer</a>}
+        {appConfig.isTestnet && faucetUrl && <a className="secondary-btn" href={faucetUrl} target="_blank" rel="noreferrer">Testnet Faucet</a>}
+        {bridgeUrl && <a className="secondary-btn" href={bridgeUrl} target="_blank" rel="noreferrer">Bridge</a>}
       </div>
       <p style={{ margin: "0.45rem 0 0", fontSize: "0.66rem", opacity: 0.78 }}>Direct lock uses wallet ETH. Vault available is shown for deposit and recovery visibility.</p>
     </aside>
@@ -67,6 +71,11 @@ function formatEth(value) {
 function compactAddress(value) {
   const text = String(value || "");
   return text.length > 12 ? `${text.slice(0, 6)}...${text.slice(-4)}` : text;
+}
+
+function optionalEnv(name) {
+  const value = import.meta.env[name];
+  return value ? String(value).trim() : "";
 }
 
 function addressUrl(value) {
