@@ -252,7 +252,7 @@ export function HighStakesScreen({ profile, onRoomReady, onBack }) {
             value={joinCode}
             onChange={(event) => setJoinCode(clean(event.target.value))}
           />
-          <button id="highStakesJoinPrivateBtn" className="screen-hitbox hs-join-private-hitbox" data-calibrate="join-private" aria-label="Join Private Room" disabled={busy} onClick={() => enterRoom()} />
+          <button id="highStakesJoinPrivateBtn" className="screen-hitbox hs-join-private-hitbox" data-calibrate="join-private-hitbox" aria-label="Join Private Room" disabled={busy} onClick={() => enterRoom()} />
 
           {tierPickerMode && (
             <div className="highstakes-modal" role="dialog" aria-modal="true" aria-label={tierPickerMode === "create" ? "Choose entry amount" : "Choose deposit amount"}>
