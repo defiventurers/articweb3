@@ -1,10 +1,35 @@
 require("dotenv").config();
 
+const http = require("http");
+const { runVaultEventIndexer, getVaultIndexerHealth } = require("../vaultEventIndexer.js");
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type"
+};
+
+const originalCreateServer = http.createServer.bind(http);
+http.createServer = function createServerWithIndexerHealth(listener) {
+  return originalCreateServer((req, res) => {
+    const path = String(req.url || "").split("?")[0];
+    if (req.method === "OPTIONS" && path === "/indexer/health") {
+      res.writeHead(204, CORS_HEADERS);
+      res.end();
+      return;
+    }
+    if (req.method === "GET" && path === "/indexer/health") {
+      res.writeHead(200, { ...CORS_HEADERS, "Content-Type": "application/json" });
+      res.end(JSON.stringify(getVaultIndexerHealth()));
+      return;
+    }
+    return listener(req, res);
+  });
+};
+
 console.log("[vault-indexer] wrapper loaded");
 require("../index.js");
 console.log("[vault-indexer] backend loaded");
-
-const { runVaultEventIndexer, getVaultIndexerHealth } = require("../vaultEventIndexer.js");
 
 const AUTO_RUN = process.env.ETH_INDEXER_AUTO_RUN !== "false";
 const SCHEDULED_RUN = process.env.ETH_INDEXER_SCHEDULED_RUN !== "false";
@@ -16,6 +41,7 @@ const HEARTBEAT_MS = Math.max(60000, Number(process.env.ETH_INDEXER_HEARTBEAT_MS
 console.log("[vault-indexer] auto run", AUTO_RUN, "delay", DELAY_MS);
 console.log("[vault-indexer] scheduled run", SCHEDULED_RUN, "interval", INTERVAL_MS);
 console.log("[vault-indexer] heartbeat", HEARTBEAT_RUN, "interval", HEARTBEAT_MS);
+console.log("[vault-indexer] health endpoint /indexer/health enabled");
 
 async function runIndexer(label) {
   try {
