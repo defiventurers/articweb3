@@ -4,6 +4,7 @@ import { useAccount, useReadContract } from "wagmi";
 import { useAbstractClient } from "@abstract-foundation/agw-react";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
+import "../styles/highStakesRecovery.css";
 
 export function ExpiredLockRecovery({ room, busy, onRecovered }) {
   const { address } = useAccount();
