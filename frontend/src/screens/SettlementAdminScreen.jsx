@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPublicClient, formatEther, http } from "viem";
 import { useAccount } from "wagmi";
+import { SystemCheckPanel } from "../components/SystemCheckPanel.jsx";
 import { abstractChain, appConfig } from "../config/chain.js";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
@@ -173,6 +174,8 @@ export function SettlementAdminScreen({ onBack }) {
       <div className="card">
         <h1>Settlement Admin</h1>
         <p className="note">Read-only vault and backend dashboard. No game settings are changed from this screen.</p>
+
+        <SystemCheckPanel vaultState={state} backendHealth={backendHealth} signerMatchesGameServer={signerMatchesGameServer} />
 
         <h3>Vault State</h3>
         <div style={dashboardStyle}>
