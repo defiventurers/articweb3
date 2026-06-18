@@ -2,6 +2,12 @@ name: Frontend Smoke
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - frontend/**
+      - .github/workflows/frontend-smoke.yml
   pull_request:
     paths:
       - frontend/**
