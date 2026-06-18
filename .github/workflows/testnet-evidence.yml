@@ -1,0 +1,34 @@
+name: Testnet Evidence Packet
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate packet
+        run: node scripts/generate-testnet-evidence-packet.mjs --backend https://articweb3.onrender.com --out ops/evidence/testnet/github-action --eventLimit 100 --cleanCycles 3 --uiPassed true --notes "Three locked testnet matches passed after dice recovery fix."
+
+      - name: Show report
+        run: cat ops/evidence/testnet/github-action/testnet-evidence.md
+
+      - name: Upload packet
+        uses: actions/upload-artifact@v4
+        with:
+          name: testnet-evidence-packet
+          path: ops/evidence/testnet/github-action
+          if-no-files-found: error
+          retention-days: 30
