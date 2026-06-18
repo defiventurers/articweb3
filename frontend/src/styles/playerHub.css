@@ -260,6 +260,44 @@
   box-shadow: 0 16px 28px rgba(0, 0, 0, 0.24), inset 0 0 20px rgba(70, 200, 255, 0.08);
 }
 
+.utility-panel-dragbar {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.utility-panel-drag-handle,
+.utility-panel-reset {
+  min-height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(190, 245, 255, 0.5);
+  background: rgba(0, 55, 110, 0.66);
+  color: #e9fbff;
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.utility-panel-drag-handle {
+  flex: 1;
+  cursor: grab;
+}
+
+.utility-panel-drag-handle:active,
+.wallet-status-panel.dragging .utility-panel-drag-handle,
+.entry-readiness-panel.dragging .utility-panel-drag-handle {
+  cursor: grabbing;
+}
+
+.utility-panel-reset {
+  padding-inline: 0.55rem;
+  background: rgba(5, 20, 44, 0.68);
+}
+
 .playerhub-stage > .wallet-status-panel { right: calc(100% + 18px); top: 5%; }
 .playerhub-stage > .entry-readiness-panel { left: calc(100% + 18px); top: 5%; }
 
@@ -291,15 +329,8 @@
     font-size: 0.8rem;
   }
 
-  .playerhub-stage > .wallet-status-panel {
-    left: 0;
-    right: auto;
-  }
-
-  .playerhub-stage > .entry-readiness-panel {
-    left: auto;
-    right: 0;
-  }
+  .playerhub-stage > .wallet-status-panel { left: 0; right: auto; }
+  .playerhub-stage > .entry-readiness-panel { left: auto; right: 0; }
 }
 
 @media (max-width: 768px) and (orientation: portrait) {
@@ -310,9 +341,7 @@
     aspect-ratio: auto;
   }
 
-  .playerhub-screen .menu-screen-shell {
-    padding-bottom: 760px;
-  }
+  .playerhub-screen .menu-screen-shell { padding-bottom: 760px; }
 
   .playerhub-stage > .wallet-status-panel,
   .playerhub-stage > .entry-readiness-panel {
@@ -327,10 +356,7 @@
     font-size: 0.82rem;
   }
 
-  .playerhub-stage > .entry-readiness-panel {
-    top: calc(100% + 390px);
-    right: auto;
-  }
+  .playerhub-stage > .entry-readiness-panel { top: calc(100% + 390px); right: auto; }
 
   .ph-dev-rail {
     position: fixed;
@@ -349,9 +375,7 @@
   .ph-modal-card { width: 86%; padding: 14px; }
   .ph-modal-actions { grid-template-columns: 1fr; }
 
-  .playerhub-screen .menu-screen-shell {
-    padding-bottom: 820px;
-  }
+  .playerhub-screen .menu-screen-shell { padding-bottom: 820px; }
 
   .playerhub-stage > .wallet-status-panel,
   .playerhub-stage > .entry-readiness-panel {
@@ -361,9 +385,7 @@
     border-radius: 14px;
   }
 
-  .playerhub-stage > .entry-readiness-panel {
-    top: calc(100% + 410px);
-  }
+  .playerhub-stage > .entry-readiness-panel { top: calc(100% + 410px); }
 
   .playerhub-stage > .wallet-status-panel .secondary-btn,
   .playerhub-stage > .entry-readiness-panel .secondary-btn,
