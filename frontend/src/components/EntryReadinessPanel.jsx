@@ -6,7 +6,6 @@ import { ethVaultAbi } from "../contracts/abis.js";
 import { useChainGuard } from "../hooks/useChainGuard.js";
 
 const ENTRY_WEI = 1000000000000000n;
-const panelStyle = { position: "absolute", left: "3.6%", bottom: "5.5%", width: "31%", maxWidth: "390px", padding: "0.7rem", borderRadius: "16px", background: "rgba(3, 18, 34, 0.72)", border: "1px solid rgba(147, 217, 255, 0.24)", color: "#e7f8ff", zIndex: 6, backdropFilter: "blur(8px)" };
 const gridStyle = { display: "grid", gap: "0.45rem", marginTop: "0.5rem" };
 const rowStyle = { display: "grid", gridTemplateColumns: "1fr auto", gap: "0.5rem", alignItems: "center", fontSize: "0.76rem" };
 const pillBase = { padding: "0.18rem 0.45rem", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.18)", fontSize: "0.68rem", whiteSpace: "nowrap" };
@@ -29,7 +28,7 @@ export function EntryReadinessPanel() {
   const directLockReady = isConnected && !isWrongChain && ETH_TARGETS_READY && walletReady;
 
   return (
-    <aside style={panelStyle} aria-label="Funding and entry readiness">
+    <aside className="entry-readiness-panel" aria-label="Funding and entry readiness">
       <strong style={{ fontSize: "0.82rem" }}>Entry Readiness</strong>
       <p style={{ margin: "0.2rem 0 0", fontSize: "0.68rem", opacity: 0.78 }}>Testnet lock lab checks before a Locked Match.</p>
       <div style={gridStyle}>
