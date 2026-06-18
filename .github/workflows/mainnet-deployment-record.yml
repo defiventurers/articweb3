@@ -1,0 +1,67 @@
+name: Mainnet Deployment Record
+
+on:
+  workflow_dispatch:
+    inputs:
+      vault_address:
+        description: "Mainnet ETH vault address"
+        required: true
+      deploy_tx:
+        description: "Mainnet vault deployment transaction hash"
+        required: true
+      owner_address:
+        description: "Mainnet vault owner address"
+        required: true
+      game_server_address:
+        description: "Mainnet game server public address"
+        required: true
+      frontend_commit:
+        description: "Frontend commit"
+        required: false
+        default: ""
+      backend_commit:
+        description: "Backend commit"
+        required: false
+        default: ""
+      contract_commit:
+        description: "Contract commit"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Write deployment record
+        run: |
+          node scripts/write-mainnet-deployment-record.mjs \
+            --vault "${{ inputs.vault_address }}" \
+            --deployTx "${{ inputs.deploy_tx }}" \
+            --owner "${{ inputs.owner_address }}" \
+            --gameServer "${{ inputs.game_server_address }}" \
+            --frontendCommit "${{ inputs.frontend_commit || github.sha }}" \
+            --backendCommit "${{ inputs.backend_commit || github.sha }}" \
+            --contractCommit "${{ inputs.contract_commit || github.sha }}"
+
+      - name: Validate deployment record
+        run: node scripts/validate-mainnet-deployment.mjs ops/mainnet/deployment-record.json
+
+      - name: Upload deployment record
+        uses: actions/upload-artifact@v4
+        with:
+          name: mainnet-deployment-record
+          path: ops/mainnet/deployment-record.json
+          if-no-files-found: error
+          retention-days: 30
