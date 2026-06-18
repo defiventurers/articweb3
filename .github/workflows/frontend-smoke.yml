@@ -2,10 +2,27 @@ name: Frontend Smoke
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - frontend/**
+      - .github/workflows/frontend-smoke.yml
 
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     steps:
-      - name: Smoke workflow placeholder
-        run: echo frontend smoke workflow ready
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run smoke tests
+        run: npm run test:e2e:smoke -- --project=chromium
