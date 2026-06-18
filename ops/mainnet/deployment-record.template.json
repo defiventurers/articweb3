@@ -1,0 +1,91 @@
+{
+  "schema": "artic.mainnet.deployment.v1",
+  "status": "DRAFT",
+  "createdAt": "YYYY-MM-DDTHH:mm:ss.sssZ",
+  "updatedAt": "YYYY-MM-DDTHH:mm:ss.sssZ",
+  "release": {
+    "name": "capped-mainnet-rehearsal-001",
+    "scope": "internal-capped-rehearsal",
+    "frontendCommit": "",
+    "backendCommit": "",
+    "contractCommit": "",
+    "operator": "",
+    "reviewer": ""
+  },
+  "chain": {
+    "env": "mainnet",
+    "chainId": 2741,
+    "rpcUrl": "https://api.mainnet.abs.xyz",
+    "wsUrl": "wss://api.mainnet.abs.xyz/ws",
+    "explorerUrl": "https://abscan.org",
+    "verifyApiUrl": "https://api.abscan.org/api"
+  },
+  "contracts": {
+    "ethVaultAddress": "0x0000000000000000000000000000000000000000",
+    "deployTx": "0x",
+    "ownerAddress": "0x0000000000000000000000000000000000000000",
+    "gameServerAddress": "0x0000000000000000000000000000000000000000",
+    "verifiedOnExplorer": false,
+    "verificationUrl": "",
+    "sourceCompilerVersion": "",
+    "constructorArgs": []
+  },
+  "frontendEnv": {
+    "VITE_CHAIN_ENV": "mainnet",
+    "VITE_ABSTRACT_CHAIN_ID": "2741",
+    "VITE_ABSTRACT_RPC_URL": "https://api.mainnet.abs.xyz",
+    "VITE_ABSTRACT_RPC": "https://api.mainnet.abs.xyz",
+    "VITE_ABSTRACT_WS": "wss://api.mainnet.abs.xyz/ws",
+    "VITE_ABSTRACT_EXPLORER_URL": "https://abscan.org",
+    "VITE_ABSTRACT_EXPLORER": "https://abscan.org",
+    "VITE_ABSTRACT_VERIFY_URL": "https://api.abscan.org/api",
+    "VITE_ETH_VAULT_ADDRESS": "0x0000000000000000000000000000000000000000",
+    "VITE_ENABLE_HIGH_STAKES": "true",
+    "VITE_ENABLE_VAULT_DEPLOYER": "false",
+    "VITE_ENABLE_SETTLEMENT_ADMIN": "true",
+    "VITE_HIDE_CLOSED_BETA_BANNER": "false"
+  },
+  "backendEnv": {
+    "CHAIN_ENV": "mainnet",
+    "ABSTRACT_CHAIN_ID": "2741",
+    "ABSTRACT_RPC_URL": "https://api.mainnet.abs.xyz",
+    "ABSTRACT_WS_URL": "wss://api.mainnet.abs.xyz/ws",
+    "ABSTRACT_EXPLORER_URL": "https://abscan.org",
+    "ETH_VAULT_ADDRESS": "0x0000000000000000000000000000000000000000",
+    "HIGH_STAKES_ENABLED": "true",
+    "ETH_INDEXER_AUTO_RUN": "true",
+    "ETH_INDEXER_SCHEDULED_RUN": "true",
+    "ETH_INDEXER_HEARTBEAT": "true"
+  },
+  "preflight": {
+    "backendPreflightUrl": "https://articweb3.onrender.com/mainnet/preflight",
+    "lastReadiness": "HOLD",
+    "lastCheckedAt": "",
+    "failedGates": []
+  },
+  "rehearsal": {
+    "tinyValueLockAmountEth": "0.001",
+    "testerWallets": [],
+    "roomCode": "",
+    "entryLockedTx": "",
+    "settlementTx": "",
+    "indexedEntryLocked": false,
+    "matchHistoryVisible": false,
+    "rollbackDrillPassed": false
+  },
+  "launchGuards": {
+    "publicLaunchApproved": false,
+    "legalComplianceReviewed": false,
+    "realMoneyRewardsDisabled": true,
+    "cappedInternalOnly": true,
+    "maxTesterCount": 4,
+    "maxEntryEth": "0.001"
+  },
+  "rollback": {
+    "frontendRollbackCommit": "",
+    "backendRollbackCommit": "",
+    "renderEnvRollbackPlan": "switch CHAIN_ENV/ABSTRACT_* and ETH_VAULT_ADDRESS back to prior testnet values",
+    "vercelEnvRollbackPlan": "switch VITE_CHAIN_ENV/VITE_ABSTRACT_* and VITE_ETH_VAULT_ADDRESS back to prior testnet values"
+  },
+  "notes": []
+}
