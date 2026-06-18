@@ -6,6 +6,8 @@ const STORAGE_KEYS = [
   "artic.closedBeta.launchGuard.v1",
   "artic.closedBeta.mainnetReadiness.v1",
   "artic.closedBeta.mainnetCutover.v1",
+  "artic.closedBeta.mainnetEnvAudit.v1",
+  "artic.closedBeta.mainnetRehearsal.v1",
   "artic.closedBeta.envCutover.v1",
   "artic.closedBeta.contractVerification.v1",
   "artic.closedBeta.rollbackDrill.v1",
