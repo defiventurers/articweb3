@@ -14,6 +14,9 @@
     "build:mainnet": "npm run check:mainnet && vite build --mode mainnet",
     "preview": "vite preview",
     "preview:mainnet": "vite preview --mode mainnet",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test tests/closed-beta-smoke.spec.js",
+    "test:e2e:ui": "playwright test --ui",
     "assets:audit": "node scripts/audit-assets.mjs",
     "assets:webp": "node scripts/convert-assets-to-webp.mjs"
   },
