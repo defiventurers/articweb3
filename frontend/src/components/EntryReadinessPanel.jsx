@@ -4,6 +4,7 @@ import { appConfig } from "../config/chain.js";
 import { ETH_DECIMALS, ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
 import { useChainGuard } from "../hooks/useChainGuard.js";
+import { useDraggablePanel } from "../hooks/useDraggablePanel.js";
 
 const ENTRY_WEI = 1000000000000000n;
 const gridStyle = { display: "grid", gap: "0.45rem", marginTop: "0.5rem" };
@@ -14,6 +15,7 @@ const linkRow = { display: "flex", gap: "0.45rem", flexWrap: "wrap", marginTop: 
 export function EntryReadinessPanel() {
   const { address, isConnected } = useAccount();
   const { isWrongChain, expectedNetworkName } = useChainGuard();
+  const drag = useDraggablePanel("artic.playerHub.entryReadiness.position.v1");
   const nativeBalanceQuery = useBalance({ address, query: { enabled: Boolean(address && !isWrongChain) } });
   const availableQuery = useReadContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "availableBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && !isWrongChain && ETH_TARGETS_READY) } });
   const lockedQuery = useReadContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "lockedBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && !isWrongChain && ETH_TARGETS_READY) } });
@@ -28,7 +30,12 @@ export function EntryReadinessPanel() {
   const directLockReady = isConnected && !isWrongChain && ETH_TARGETS_READY && walletReady;
 
   return (
-    <aside className="entry-readiness-panel" aria-label="Funding and entry readiness">
+    <aside ref={drag.panelRef} style={drag.panelStyle} className={`entry-readiness-panel ${drag.dragging ? "dragging" : ""}`} aria-label="Funding and entry readiness">
+      <div className="utility-panel-dragbar">
+        <button type="button" className="utility-panel-drag-handle" {...drag.dragHandleProps}>Drag Entry Panel</button>
+        <button type="button" className="utility-panel-reset" onClick={drag.resetPosition}>Reset</button>
+      </div>
+
       <strong style={{ fontSize: "0.82rem" }}>Entry Readiness</strong>
       <p style={{ margin: "0.2rem 0 0", fontSize: "0.68rem", opacity: 0.78 }}>Testnet lock lab checks before a Locked Match.</p>
       <div style={gridStyle}>
