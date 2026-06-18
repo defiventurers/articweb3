@@ -1,10 +1,13 @@
 import { BetaBlockerTriagePanel } from "../components/BetaBlockerTriagePanel.jsx";
 import { BetaCycleProgressPanel } from "../components/BetaCycleProgressPanel.jsx";
+import { BetaDeviceMatrixPanel } from "../components/BetaDeviceMatrixPanel.jsx";
 import { BetaEvidencePacketPanel } from "../components/BetaEvidencePacketPanel.jsx";
 import { BetaFailureReportPanel } from "../components/BetaFailureReportPanel.jsx";
+import { BetaFlowCheckPanel } from "../components/BetaFlowCheckPanel.jsx";
 import { BetaGasPolicyPanel } from "../components/BetaGasPolicyPanel.jsx";
 import { BetaLaunchGuardPanel } from "../components/BetaLaunchGuardPanel.jsx";
 import { BetaNextWavePlanPanel } from "../components/BetaNextWavePlanPanel.jsx";
+import { BetaOpsSnapshotPanel } from "../components/BetaOpsSnapshotPanel.jsx";
 import { BetaReleaseDecisionPanel } from "../components/BetaReleaseDecisionPanel.jsx";
 import { BetaReleaseGatePanel } from "../components/BetaReleaseGatePanel.jsx";
 import { BetaTesterHandoffPanel } from "../components/BetaTesterHandoffPanel.jsx";
@@ -49,6 +52,9 @@ export function TestRunbookScreen({ onBack }) {
         <BetaReleaseDecisionPanel />
         <BetaNextWavePlanPanel />
         <BetaEvidencePacketPanel />
+        <BetaDeviceMatrixPanel />
+        <BetaFlowCheckPanel />
+        <BetaOpsSnapshotPanel />
         <BetaCycleProgressPanel />
         <BetaTesterRosterPanel />
         <BetaTesterHandoffPanel />
