@@ -142,89 +142,18 @@
   color: rgba(230, 250, 255, .5);
 }
 
-.open-ice-hitbox {
-  left: 7.4%;
-  top: 19.7%;
-  width: 41.4%;
-  height: 14.9%;
-}
-
-.high-stakes-hitbox {
-  left: 50.8%;
-  top: 19.7%;
-  width: 42.3%;
-  height: 14.9%;
-}
-
-.match-history-hitbox {
-  left: 10.2%;
-  top: 39.7%;
-  width: 39.1%;
-  height: 9.9%;
-}
-
-.leaderboard-hitbox {
-  left: 50.4%;
-  top: 39.7%;
-  width: 39.1%;
-  height: 9.9%;
-}
-
-.account-activity-hitbox {
-  left: 10.2%;
-  top: 50.0%;
-  width: 39.1%;
-  height: 9.9%;
-}
-
-.my-rooms-hitbox {
-  left: 50.4%;
-  top: 50.0%;
-  width: 39.1%;
-  height: 9.9%;
-}
-
-.eth-tab-hitbox {
-  left: 10.5%;
-  top: 64.75%;
-  width: 38.8%;
-  height: 3.25%;
-}
-
-.usdc-tab-hitbox {
-  left: 50.0%;
-  top: 64.75%;
-  width: 39.0%;
-  height: 3.25%;
-}
-
-.refresh-hitbox {
-  left: 9.4%;
-  top: 84.25%;
-  width: 25.2%;
-  height: 5.0%;
-}
-
-.deposit-hitbox {
-  left: 36.4%;
-  top: 84.25%;
-  width: 26.4%;
-  height: 5.0%;
-}
-
-.withdraw-hitbox {
-  left: 64.2%;
-  top: 84.25%;
-  width: 25.2%;
-  height: 5.0%;
-}
-
-.playerhub-back-hitbox {
-  left: 25.4%;
-  top: 90.05%;
-  width: 49.2%;
-  height: 7.2%;
-}
+.open-ice-hitbox { left: 7.4%; top: 19.7%; width: 41.4%; height: 14.9%; }
+.high-stakes-hitbox { left: 50.8%; top: 19.7%; width: 42.3%; height: 14.9%; }
+.match-history-hitbox { left: 10.2%; top: 39.7%; width: 39.1%; height: 9.9%; }
+.leaderboard-hitbox { left: 50.4%; top: 39.7%; width: 39.1%; height: 9.9%; }
+.account-activity-hitbox { left: 10.2%; top: 50.0%; width: 39.1%; height: 9.9%; }
+.my-rooms-hitbox { left: 50.4%; top: 50.0%; width: 39.1%; height: 9.9%; }
+.eth-tab-hitbox { left: 10.5%; top: 64.75%; width: 38.8%; height: 3.25%; }
+.usdc-tab-hitbox { left: 50.0%; top: 64.75%; width: 39.0%; height: 3.25%; }
+.refresh-hitbox { left: 9.4%; top: 84.25%; width: 25.2%; height: 5.0%; }
+.deposit-hitbox { left: 36.4%; top: 84.25%; width: 26.4%; height: 5.0%; }
+.withdraw-hitbox { left: 64.2%; top: 84.25%; width: 25.2%; height: 5.0%; }
+.playerhub-back-hitbox { left: 25.4%; top: 90.05%; width: 49.2%; height: 7.2%; }
 
 .ph-toast {
   position: absolute;
@@ -244,9 +173,7 @@
   white-space: nowrap;
 }
 
-.ph-toast.error {
-  color: #ffd0d0;
-}
+.ph-toast.error { color: #ffd0d0; }
 
 .ph-approve {
   position: absolute;
@@ -288,14 +215,8 @@
 }
 
 .ph-modal-card h3,
-.ph-modal-card p {
-  margin: 0;
-}
-
-.ph-modal-card p {
-  color: #fff3c7;
-  font-size: clamp(10px, 1.8vw, 14px);
-}
+.ph-modal-card p { margin: 0; }
+.ph-modal-card p { color: #fff3c7; font-size: clamp(10px, 1.8vw, 14px); }
 
 .ph-withdraw-input {
   min-height: 46px;
@@ -308,34 +229,14 @@
   width: 100%;
 }
 
-.ph-modal-actions {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.ph-modal-btn {
-  min-height: 42px;
-  border-radius: 14px;
-  border: 1px solid #bff6ff;
-  background: #0b355d;
-  color: white;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.ph-modal-btn.primary {
-  background: #0878d8;
-}
-
-.ph-modal-btn:disabled {
-  opacity: .48;
-  cursor: not-allowed;
-}
+.ph-modal-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ph-modal-btn { min-height: 42px; border-radius: 14px; border: 1px solid #bff6ff; background: #0b355d; color: white; font-weight: 900; cursor: pointer; }
+.ph-modal-btn.primary { background: #0878d8; }
+.ph-modal-btn:disabled { opacity: .48; cursor: not-allowed; }
 
 .ph-dev-rail {
   position: absolute;
-  z-index: 20;
+  z-index: 28;
   left: 0;
   top: 12%;
   transform: translateX(-58%);
@@ -356,25 +257,63 @@
   cursor: pointer;
 }
 
-.ph-dev-rail button:hover {
-  color: white;
-  background: rgba(15,95,175,.82);
+.ph-dev-rail button:hover { color: white; background: rgba(15,95,175,.82); }
+
+.playerhub-stage .wallet-panel { display: contents; }
+
+.playerhub-stage > .wallet-status-panel,
+.playerhub-stage > .entry-readiness-panel {
+  position: absolute;
+  z-index: 24;
+  width: min(290px, 34vw);
+  max-height: 82dvh;
+  overflow: auto;
+  padding: 0.72rem;
+  border-radius: 18px;
+  background: rgba(3, 18, 34, 0.78);
+  border: 1px solid rgba(147, 217, 255, 0.28);
+  color: #e7f8ff;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.24), inset 0 0 20px rgba(70, 200, 255, 0.08);
 }
 
-.playerhub-stage .wallet-panel {
-  display: contents;
+.playerhub-stage > .wallet-status-panel {
+  right: calc(100% + 18px);
+  top: 5%;
 }
 
-/*
-.screen-hitbox {
-  outline: 1px solid rgba(255, 0, 0, .45);
+.playerhub-stage > .entry-readiness-panel {
+  left: calc(100% + 18px);
+  top: 5%;
 }
-.playerhub-overlay > *,
-.playerhub-balance-value,
-.playerhub-amount-input {
-  outline: 1px solid rgba(0, 255, 255, .45);
+
+@media (min-width: 1180px) {
+  .playerhub-screen .menu-screen-shell {
+    overflow: visible;
+  }
 }
-*/
+
+@media (max-width: 1179px) {
+  .playerhub-stage > .wallet-status-panel,
+  .playerhub-stage > .entry-readiness-panel {
+    width: min(180px, 42vw);
+    max-height: 38dvh;
+    padding: 0.58rem;
+    font-size: 0.78rem;
+  }
+
+  .playerhub-stage > .wallet-status-panel {
+    left: 3.5%;
+    right: auto;
+    top: 7.5%;
+  }
+
+  .playerhub-stage > .entry-readiness-panel {
+    left: auto;
+    right: 3.5%;
+    top: 7.5%;
+  }
+}
 
 @media (max-width: 768px) and (orientation: portrait) {
   .menu-screen-shell,
@@ -382,6 +321,30 @@
     width: 100vw;
     height: 100dvh;
     aspect-ratio: auto;
+  }
+
+  .playerhub-stage > .wallet-status-panel,
+  .playerhub-stage > .entry-readiness-panel {
+    width: 33vw;
+    max-height: 45dvh;
+    padding: 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  .playerhub-stage > .wallet-status-panel {
+    left: 3vw;
+    top: 8dvh;
+  }
+
+  .playerhub-stage > .entry-readiness-panel {
+    right: 3vw;
+    top: 8dvh;
+  }
+
+  .playerhub-stage > .wallet-status-panel .wallet-status-row,
+  .playerhub-stage > .entry-readiness-panel div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr;
+    gap: 0.18rem;
   }
 
   .ph-dev-rail {
@@ -393,29 +356,28 @@
 }
 
 @media (max-width: 430px) {
-  .playerhub-wallet-text {
-    font-size: 9px;
-  }
-
-  .playerhub-points-text {
-    font-size: 7px;
-  }
-
+  .playerhub-wallet-text { font-size: 9px; }
+  .playerhub-points-text { font-size: 7px; }
   .playerhub-balance-value,
-  .playerhub-amount-input {
-    font-size: 11px;
+  .playerhub-amount-input { font-size: 11px; }
+  .ph-toast { font-size: 7px; }
+  .ph-modal-card { width: 86%; padding: 14px; }
+  .ph-modal-actions { grid-template-columns: 1fr; }
+
+  .playerhub-stage > .wallet-status-panel,
+  .playerhub-stage > .entry-readiness-panel {
+    width: 31vw;
+    max-height: 38dvh;
+    padding: 0.42rem;
+    font-size: 0.58rem;
+    border-radius: 14px;
   }
 
-  .ph-toast {
-    font-size: 7px;
-  }
-
-  .ph-modal-card {
-    width: 86%;
-    padding: 14px;
-  }
-
-  .ph-modal-actions {
-    grid-template-columns: 1fr;
+  .playerhub-stage > .wallet-status-panel .secondary-btn,
+  .playerhub-stage > .entry-readiness-panel .secondary-btn,
+  .playerhub-stage > .wallet-status-panel button {
+    min-height: 30px;
+    padding: 0.25rem 0.35rem;
+    font-size: 0.58rem;
   }
 }
