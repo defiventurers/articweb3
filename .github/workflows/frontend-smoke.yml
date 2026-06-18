@@ -1,0 +1,11 @@
+name: Frontend Smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Smoke workflow placeholder
+        run: echo frontend smoke workflow ready
