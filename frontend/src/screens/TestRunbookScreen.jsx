@@ -8,6 +8,8 @@ import { BetaGasPolicyPanel } from "../components/BetaGasPolicyPanel.jsx";
 import { BetaIssueReviewPanel } from "../components/BetaIssueReviewPanel.jsx";
 import { BetaKpiPanel } from "../components/BetaKpiPanel.jsx";
 import { BetaLaunchGuardPanel } from "../components/BetaLaunchGuardPanel.jsx";
+import { BetaMainnetCutoverPanel } from "../components/BetaMainnetCutoverPanel.jsx";
+import { BetaMainnetReadinessPanel } from "../components/BetaMainnetReadinessPanel.jsx";
 import { BetaNextWavePlanPanel } from "../components/BetaNextWavePlanPanel.jsx";
 import { BetaOpsSnapshotPanel } from "../components/BetaOpsSnapshotPanel.jsx";
 import { BetaReleaseDecisionPanel } from "../components/BetaReleaseDecisionPanel.jsx";
@@ -50,6 +52,8 @@ export function TestRunbookScreen({ onBack }) {
         <BetaReleaseGatePanel />
         <BetaGasPolicyPanel />
         <BetaLaunchGuardPanel />
+        <BetaMainnetReadinessPanel />
+        <BetaMainnetCutoverPanel />
         <BetaBlockerTriagePanel />
         <BetaReleaseDecisionPanel />
         <BetaNextWavePlanPanel />
