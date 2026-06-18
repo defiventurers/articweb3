@@ -7,6 +7,7 @@ import { useChainGuard } from "../hooks/useChainGuard.js";
 import { useDraggablePanel } from "../hooks/useDraggablePanel.js";
 
 const ENTRY_WEI = 1000000000000000n;
+const DEFAULT_PANEL_STYLE = { position: "fixed", top: "104px", right: "12px", left: "auto", bottom: "auto", transform: "none", zIndex: 90, width: "min(310px, 42vw)", maxHeight: "78dvh" };
 const gridStyle = { display: "grid", gap: "0.45rem", marginTop: "0.5rem" };
 const rowStyle = { display: "grid", gridTemplateColumns: "1fr auto", gap: "0.5rem", alignItems: "center", fontSize: "0.76rem" };
 const pillBase = { padding: "0.18rem 0.45rem", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.18)", fontSize: "0.68rem", whiteSpace: "nowrap" };
@@ -15,7 +16,7 @@ const linkRow = { display: "flex", gap: "0.45rem", flexWrap: "wrap", marginTop: 
 export function EntryReadinessPanel() {
   const { address, isConnected } = useAccount();
   const { isWrongChain, expectedNetworkName } = useChainGuard();
-  const drag = useDraggablePanel("artic.playerHub.entryReadiness.position.v1");
+  const drag = useDraggablePanel("artic.playerHub.entryReadiness.position.v2");
   const nativeBalanceQuery = useBalance({ address, query: { enabled: Boolean(address && !isWrongChain) } });
   const availableQuery = useReadContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "availableBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && !isWrongChain && ETH_TARGETS_READY) } });
   const lockedQuery = useReadContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "lockedBalance", args: address ? [address] : undefined, query: { enabled: Boolean(address && !isWrongChain && ETH_TARGETS_READY) } });
@@ -30,7 +31,7 @@ export function EntryReadinessPanel() {
   const directLockReady = isConnected && !isWrongChain && ETH_TARGETS_READY && walletReady;
 
   return (
-    <aside ref={drag.panelRef} style={drag.panelStyle} className={`entry-readiness-panel ${drag.dragging ? "dragging" : ""}`} aria-label="Funding and entry readiness">
+    <aside ref={drag.panelRef} style={{ ...DEFAULT_PANEL_STYLE, ...(drag.panelStyle || {}) }} className={`entry-readiness-panel ${drag.dragging ? "dragging" : ""}`} aria-label="Funding and entry readiness">
       <div className="utility-panel-dragbar">
         <button type="button" className="utility-panel-drag-handle" {...drag.dragHandleProps}>Drag Entry Panel</button>
         <button type="button" className="utility-panel-reset" onClick={drag.resetPosition}>Reset</button>
