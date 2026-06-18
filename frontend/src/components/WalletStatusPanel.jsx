@@ -4,12 +4,14 @@ import { appConfig, getHighStakesConfigIssue } from "../config/chain.js";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
 import { useChainGuard } from "../hooks/useChainGuard.js";
+import { useDraggablePanel } from "../hooks/useDraggablePanel.js";
 import { addressUrl } from "../utils/explorer.js";
 
 export function WalletStatusPanel({ compact = false }) {
   const { address, isConnected } = useAccount();
   const { switchChain, isPending: switchPending } = useSwitchChain();
   const { isWrongChain, connectedChainId, expectedChainId, expectedNetworkName } = useChainGuard();
+  const drag = useDraggablePanel("artic.playerHub.walletStatus.position.v1");
 
   const nativeBalanceQuery = useBalance({
     address,
@@ -52,7 +54,12 @@ export function WalletStatusPanel({ compact = false }) {
   }
 
   return (
-    <aside className={`wallet-status-panel ${compact ? "compact" : ""}`} aria-label="Wallet and balance status">
+    <aside ref={drag.panelRef} style={drag.panelStyle} className={`wallet-status-panel ${compact ? "compact" : ""} ${drag.dragging ? "dragging" : ""}`} aria-label="Wallet and balance status">
+      <div className="utility-panel-dragbar">
+        <button type="button" className="utility-panel-drag-handle" {...drag.dragHandleProps}>Drag Wallet Panel</button>
+        <button type="button" className="utility-panel-reset" onClick={drag.resetPosition}>Reset</button>
+      </div>
+
       <div className="wallet-status-head">
         <div>
           <p className="wallet-status-kicker">Wallet Status</p>
