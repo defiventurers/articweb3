@@ -7,9 +7,13 @@ const STORAGE_KEYS = [
   "artic.closedBeta.blockerTriage.v1",
   "artic.closedBeta.releaseDecision.v1",
   "artic.closedBeta.nextWavePlan.v1",
+  "artic.closedBeta.evidencePacket.v1",
+  "artic.closedBeta.deviceMatrix.v1",
+  "artic.closedBeta.flowCheck.v1",
+  "artic.closedBeta.kpi.v1",
+  "artic.closedBeta.issueReview.v1",
   "artic.closedBeta.cycleProgress.v1",
-  "artic.closedBeta.testerRoster.v1",
-  "artic.closedBeta.evidencePacket.v1"
+  "artic.closedBeta.testerRoster.v1"
 ];
 
 export function BetaOpsSnapshotPanel() {
