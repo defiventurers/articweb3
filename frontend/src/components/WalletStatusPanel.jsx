@@ -7,11 +7,13 @@ import { useChainGuard } from "../hooks/useChainGuard.js";
 import { useDraggablePanel } from "../hooks/useDraggablePanel.js";
 import { addressUrl } from "../utils/explorer.js";
 
+const DEFAULT_PANEL_STYLE = { position: "fixed", top: "104px", left: "12px", right: "auto", bottom: "auto", transform: "none", zIndex: 90, width: "min(310px, 42vw)", maxHeight: "78dvh" };
+
 export function WalletStatusPanel({ compact = false }) {
   const { address, isConnected } = useAccount();
   const { switchChain, isPending: switchPending } = useSwitchChain();
   const { isWrongChain, connectedChainId, expectedChainId, expectedNetworkName } = useChainGuard();
-  const drag = useDraggablePanel("artic.playerHub.walletStatus.position.v1");
+  const drag = useDraggablePanel("artic.playerHub.walletStatus.position.v2");
 
   const nativeBalanceQuery = useBalance({
     address,
@@ -54,7 +56,7 @@ export function WalletStatusPanel({ compact = false }) {
   }
 
   return (
-    <aside ref={drag.panelRef} style={drag.panelStyle} className={`wallet-status-panel ${compact ? "compact" : ""} ${drag.dragging ? "dragging" : ""}`} aria-label="Wallet and balance status">
+    <aside ref={drag.panelRef} style={{ ...DEFAULT_PANEL_STYLE, ...(drag.panelStyle || {}) }} className={`wallet-status-panel ${compact ? "compact" : ""} ${drag.dragging ? "dragging" : ""}`} aria-label="Wallet and balance status">
       <div className="utility-panel-dragbar">
         <button type="button" className="utility-panel-drag-handle" {...drag.dragHandleProps}>Drag Wallet Panel</button>
         <button type="button" className="utility-panel-reset" onClick={drag.resetPosition}>Reset</button>
