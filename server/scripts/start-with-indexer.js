@@ -3,6 +3,7 @@ require("dotenv").config();
 const http = require("http");
 const { runVaultEventIndexer, getVaultIndexerHealth } = require("../vaultEventIndexer.js");
 const { getRecentIndexedVaultEvents, getIndexedVaultEventStats } = require("../vaultEventStore.js");
+const { getMainnetPreflight } = require("../mainnetPreflight.js");
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -17,11 +18,23 @@ http.createServer = function createServerWithIndexerControls(listener) {
   return originalCreateServer(async (req, res) => {
     const fullUrl = new URL(req.url || "/", "http://localhost");
     const path = fullUrl.pathname;
-    const isIndexerPath = path === "/indexer/health" || path === "/indexer/run" || path === "/indexer/events" || path === "/indexer/stats";
+    const isControlPath = path === "/indexer/health" || path === "/indexer/run" || path === "/indexer/events" || path === "/indexer/stats" || path === "/mainnet/preflight";
 
-    if (req.method === "OPTIONS" && isIndexerPath) {
+    if (req.method === "OPTIONS" && isControlPath) {
       res.writeHead(204, CORS_HEADERS);
       res.end();
+      return;
+    }
+
+    if (req.method === "GET" && path === "/mainnet/preflight") {
+      try {
+        const result = await getMainnetPreflight();
+        res.writeHead(200, { ...CORS_HEADERS, "Content-Type": "application/json" });
+        res.end(JSON.stringify(result));
+      } catch (err) {
+        res.writeHead(500, { ...CORS_HEADERS, "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: err.message || "Mainnet preflight failed." }));
+      }
       return;
     }
 
@@ -89,6 +102,7 @@ console.log("[vault-indexer] heartbeat", HEARTBEAT_RUN, "interval", HEARTBEAT_MS
 console.log("[vault-indexer] health endpoint /indexer/health enabled");
 console.log("[vault-indexer] events endpoint /indexer/events enabled");
 console.log("[vault-indexer] stats endpoint /indexer/stats enabled");
+console.log("[vault-indexer] mainnet preflight endpoint /mainnet/preflight enabled");
 console.log("[vault-indexer] protected run endpoint /indexer/run", Boolean(RUN_KEY));
 
 async function runIndexer(label) {
