@@ -2,13 +2,15 @@ import { appConfig, getHighStakesConfigIssue } from "../../config/chain.js";
 import { useChainGuard } from "../../hooks/useChainGuard.js";
 
 export function HighStakesGate({ children, onBack }) {
+  const smokeBypass = isSmokeProfileEnabled();
   const issue = getHighStakesConfigIssue();
   const { isConnected, isWrongChain, connectedChainId, expectedChainId, expectedNetworkName } = useChainGuard();
-  const smokeBypass = isSmokeProfileEnabled();
+
+  if (smokeBypass) return children;
 
   let blockReason = issue;
-  if (!blockReason && !smokeBypass && !isConnected) blockReason = "Connect your Abstract wallet before entering Locked Match Mode.";
-  if (!blockReason && !smokeBypass && isWrongChain) blockReason = `Wrong network. Connected chain ${connectedChainId}; expected ${expectedNetworkName} (${expectedChainId}).`;
+  if (!blockReason && !isConnected) blockReason = "Connect your Abstract wallet before entering Locked Match Mode.";
+  if (!blockReason && isWrongChain) blockReason = `Wrong network. Connected chain ${connectedChainId}; expected ${expectedNetworkName} (${expectedChainId}).`;
 
   if (!blockReason) return children;
 
