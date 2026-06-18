@@ -34,15 +34,18 @@ const SpectatorScreen = lazyNamed(() => import("./screens/SpectatorScreen.jsx"),
 const DevQAScreen = lazyNamed(() => import("./screens/DevQAScreen.jsx"), "DevQAScreen");
 const TestRunbookScreen = lazyNamed(() => import("./screens/TestRunbookScreen.jsx"), "TestRunbookScreen");
 
+const SMOKE_PROFILE = { wallet: "0x0000000000000000000000000000000000000019", name: "Smoke Penguin", points: 0 };
+
 export default function App() {
   const params = new URLSearchParams(window.location.search);
   const calibrationTarget = params.get("calibrate");
-  const skipLoader = params.get("skipLoader") === "1" || Boolean(calibrationTarget);
+  const smokeProfileEnabled = import.meta.env.DEV && params.get("smokeProfile") === "1";
+  const skipLoader = params.get("skipLoader") === "1" || Boolean(calibrationTarget) || smokeProfileEnabled;
   const initialSpectateCode = params.get("spectate") || "";
   const initialHighStakesRoomCode = cleanInviteCode(params.get("highStakesRoom") || params.get("hsRoom") || params.get("lockedRoom") || "");
   const [assetsReady, setAssetsReady] = useState(skipLoader);
-  const [screen, setScreen] = useState(initialSpectateCode ? "spectator" : "cover");
-  const [profile, setProfile] = useState(null);
+  const [screen, setScreen] = useState(initialSpectateCode ? "spectator" : smokeProfileEnabled && initialHighStakesRoomCode ? "high-stakes" : smokeProfileEnabled ? "hub" : "cover");
+  const [profile, setProfile] = useState(smokeProfileEnabled ? SMOKE_PROFILE : null);
   const [room, setRoom] = useState(null);
 
   if (calibrationTarget) return renderLazy(<CalibrationScreen target={calibrationTarget} />, "Loading calibration deck...");
