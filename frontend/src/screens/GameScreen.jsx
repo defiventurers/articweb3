@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { DICE_ROLLS, TEAM_COLOR, TEAM_LABEL, createInitialGameState, currentTeam } from "../game/gameRules.js";
+import { DICE_ROLLS, TEAM_COLOR, TEAM_LABEL, createInitialGameState, currentTeam, hasAnyLegalMoveForTeam } from "../game/gameRules.js";
 import { endGameTurn, getGameState, rollGameDice, selectGameSquare } from "../network/socketClient.js";
 
 const LOCAL_PIECE_ASSET_BASE = "/assets/arctic/pieces";
@@ -19,7 +19,8 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackTo
   const activePlayer = serverRoom?.players?.find((player) => player.team === team);
   const isMyTurn = activePlayer?.wallet === profile.wallet;
   const isBotTurn = Boolean(activePlayer?.wallet?.startsWith("dev-"));
-  const statusText = getStatusText({ game, team, isMyTurn, isBotTurn, busy, error });
+  const hasLegalMoveForRoll = game.dice.rolled ? hasAnyLegalMoveForTeam(game, team) : true;
+  const statusText = getStatusText({ game, team, isMyTurn, isBotTurn, busy, error, hasLegalMoveForRoll });
   const eliminatedTeams = game.eliminatedTeams || [];
   const activeLegalSquares = useMemo(() => new Map((game.legalMoves || []).map((move) => [`${move.toRow},${move.toCol}`, move])), [game.legalMoves]);
 
@@ -36,7 +37,14 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackTo
 
   function updateRoom(nextRoom) { setServerRoom(nextRoom); onRoomUpdate?.(nextRoom); }
   async function runAction(action) { if (busy || !isMyTurn || game.gameOver) return; setBusy(true); setError(""); try { updateRoom(await action()); } catch (err) { setError(err.message || "Game action failed."); } finally { setBusy(false); } }
-  function handleRoll() { runAction(() => rollGameDice({ roomCode: serverRoom.roomCode, profile })); }
+  function handleRoll() {
+    if (game.dice.rolled) {
+      if (!hasLegalMoveForRoll) return runAction(() => endGameTurn({ roomCode: serverRoom.roomCode, profile }));
+      setError("Dice already rolled. Move a piece or press End Turn.");
+      return;
+    }
+    runAction(() => rollGameDice({ roomCode: serverRoom.roomCode, profile }));
+  }
   function handleCell(row, col) { runAction(() => selectGameSquare({ roomCode: serverRoom.roomCode, profile, row, col })); }
   function handleEndTurn() { runAction(() => endGameTurn({ roomCode: serverRoom.roomCode, profile })); }
 
@@ -65,5 +73,5 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackTo
 function DiceFace({ game, index, team }) { const value = game.dice.values[index]; const used = game.dice.used; if (!value) return <span className="die-piece">{index === 0 ? "ROLL" : "DICE"}</span>; if (used[index]) return <span className="die-piece">USED</span>; const pieces = DICE_ROLLS[value] || []; return <span className="die-piece">{value}: {pieces.map((piece) => piece.toUpperCase()).join("/")}</span>; }
 function PieceImage({ piece, className }) { const color = TEAM_ASSET_COLOR[piece.team]; const type = PIECE_ASSET_TYPE[piece.type]; if (!color || !type) return <span>{PIECE_LETTER[piece.type] || "?"}</span>; const filename = `${color}-${type}.png`; const remoteSrc = `${REMOTE_PIECE_ASSET_BASE}/${filename}`; const localSrc = `${LOCAL_PIECE_ASSET_BASE}/${filename}`; return <img src={remoteSrc} alt={`${TEAM_LABEL[piece.team]} ${piece.type}`} className={className} draggable="false" decoding="async" onError={(event) => { if (event.currentTarget.src !== localSrc) event.currentTarget.src = localSrc; }} />; }
 function renderBoardRows(board) { const cells = []; board.forEach((rowItems, row) => { rowItems.forEach((piece, col) => cells.push({ piece, row, col })); }); return cells; }
-function getStatusText({ game, team, isMyTurn, isBotTurn, busy, error }) { if (error) return error; if (game.gameOver) return "Match complete."; if (isBotTurn) return "Bot is moving..."; if (!isMyTurn) return "Waiting for your turn."; if (busy) return "Submitting move..."; if (!game.dice.rolled) return "Roll dice."; return `${TEAM_LABEL[team]} rolled ${game.dice.values.join(" and ")}. Choose a legal move.`; }
+function getStatusText({ game, team, isMyTurn, isBotTurn, busy, error, hasLegalMoveForRoll }) { if (error) return error; if (game.gameOver) return "Match complete."; if (isBotTurn) return "Bot is moving..."; if (!isMyTurn) return "Waiting for your turn."; if (busy) return "Submitting move..."; if (!game.dice.rolled) return "Roll dice."; if (!hasLegalMoveForRoll) return "No legal moves for this roll. Press End Turn, or tap Roll Dice to auto-skip."; return `${TEAM_LABEL[team]} rolled ${game.dice.values.join(" and ")}. Choose a legal move.`; }
 function winnerText(game) { if (!game.winner) return "Draw"; return `${TEAM_LABEL[game.winner]} Wins`; }
