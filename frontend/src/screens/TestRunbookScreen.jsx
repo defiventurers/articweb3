@@ -1,3 +1,4 @@
+import { BetaBackendPreflightPanel } from "../components/BetaBackendPreflightPanel.jsx";
 import { BetaBlockerTriagePanel } from "../components/BetaBlockerTriagePanel.jsx";
 import { BetaContractVerificationPanel } from "../components/BetaContractVerificationPanel.jsx";
 import { BetaCycleProgressPanel } from "../components/BetaCycleProgressPanel.jsx";
@@ -54,6 +55,7 @@ export function TestRunbookScreen({ onBack }) {
           <p className="data-subtitle">Keep testing on the planned environment until every gate and triage item is clean.</p>
         </section>
 
+        <BetaBackendPreflightPanel />
         <BetaReleaseGatePanel />
         <BetaGasPolicyPanel />
         <BetaLaunchGuardPanel />
@@ -80,6 +82,7 @@ export function TestRunbookScreen({ onBack }) {
         <section className="data-detail-panel">
           <strong>Quick operator links</strong>
           <div className="detail-chip-grid">
+            {indexerBase && <a className="stat-chip" href={`${indexerBase}/mainnet/preflight`} target="_blank" rel="noreferrer">Backend Preflight</a>}
             {indexerBase && <a className="stat-chip" href={`${indexerBase}/indexer/health`} target="_blank" rel="noreferrer">Indexer Health</a>}
             {indexerBase && <a className="stat-chip" href={`${indexerBase}/indexer/stats`} target="_blank" rel="noreferrer">Indexer Stats</a>}
             {indexerBase && <a className="stat-chip" href={`${indexerBase}/indexer/events?limit=10`} target="_blank" rel="noreferrer">Recent Events</a>}
