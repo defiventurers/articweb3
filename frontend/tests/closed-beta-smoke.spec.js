@@ -14,7 +14,7 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByLabel("Player Hub")).toBeVisible();
     await expect(page.getByText("Smoke Penguin")).toBeVisible();
     await expect(page.getByRole("button", { name: "High Stakes Lab" })).toBeVisible();
-    await page.getByRole("button", { name: "Closed Beta Test Runbook" }).click();
+    await page.getByRole("button", { name: "RUN" }).click();
     await expect(page.getByRole("heading", { name: "Test Runbook" })).toBeVisible();
     await expect(page.getByText("Mainnet readiness")).toBeVisible();
     await expect(page.getByText("Mainnet rehearsal drill")).toBeVisible();
@@ -33,7 +33,7 @@ test.describe("closed beta smoke", () => {
   test("invite deep link opens invited room panel", async ({ page }) => {
     await page.goto("/?skipLoader=1&smokeProfile=1&highStakesRoom=ABCD");
     await expect(page.getByLabel("Locked Match Mode")).toBeVisible();
-    await expect(page.getByText("ABCD")).toBeVisible();
+    await expect(page.getByText("Invited Room ABCD")).toBeVisible();
     await expect(page.getByRole("button", { name: "Join Invited Room" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Copy Invite Link" })).toBeVisible();
   });
@@ -43,7 +43,7 @@ test.describe("closed beta smoke", () => {
     await page.goto(smokePath);
     await expect(page.getByLabel("Player Hub")).toBeVisible();
     await expect(page.getByRole("button", { name: "High Stakes Lab" })).toBeVisible();
-    await page.getByRole("button", { name: "Closed Beta Test Runbook" }).click();
+    await page.getByRole("button", { name: "RUN" }).click();
     await expect(page.getByRole("heading", { name: "Test Runbook" })).toBeVisible();
     await expect(page.getByText("Device matrix")).toBeVisible();
   });
