@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 const STORAGE_KEYS = [
+  "artic.closedBeta.backendPreflight.v1",
   "artic.closedBeta.releaseGate.v1",
   "artic.closedBeta.gasPolicy.v1",
   "artic.closedBeta.launchGuard.v1",
