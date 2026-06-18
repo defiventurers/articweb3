@@ -4,10 +4,11 @@ import { useChainGuard } from "../../hooks/useChainGuard.js";
 export function HighStakesGate({ children, onBack }) {
   const issue = getHighStakesConfigIssue();
   const { isConnected, isWrongChain, connectedChainId, expectedChainId, expectedNetworkName } = useChainGuard();
+  const smokeBypass = isSmokeProfileEnabled();
 
   let blockReason = issue;
-  if (!blockReason && !isConnected) blockReason = "Connect your Abstract wallet before entering Locked Match Mode.";
-  if (!blockReason && isWrongChain) blockReason = `Wrong network. Connected chain ${connectedChainId}; expected ${expectedNetworkName} (${expectedChainId}).`;
+  if (!blockReason && !smokeBypass && !isConnected) blockReason = "Connect your Abstract wallet before entering Locked Match Mode.";
+  if (!blockReason && !smokeBypass && isWrongChain) blockReason = `Wrong network. Connected chain ${connectedChainId}; expected ${expectedNetworkName} (${expectedChainId}).`;
 
   if (!blockReason) return children;
 
@@ -29,4 +30,9 @@ export function HighStakesGate({ children, onBack }) {
       </div>
     </section>
   );
+}
+
+function isSmokeProfileEnabled() {
+  if (!import.meta.env.DEV || typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("smokeProfile") === "1";
 }
