@@ -39,12 +39,29 @@ jobs:
 
       - name: Verify mainnet vault
         working-directory: contracts
+        shell: bash
         run: |
-          npx hardhat verify \
+          set +e
+          output=$(npx hardhat verify \
             --network abstractMainnet \
             --contract contracts/EthGameEscrow.sol:EthGameEscrow \
             "$VAULT_ADDRESS" \
-            "$GAME_SERVER_ADDRESS"
+            "$GAME_SERVER_ADDRESS" 2>&1)
+          status=$?
+          set -e
+
+          printf '%s\n' "$output"
+
+          if [ "$status" -eq 0 ]; then
+            exit 0
+          fi
+
+          if printf '%s\n' "$output" | grep -qi "contract source code already verified"; then
+            echo "Contract was already verified; continuing to public API confirmation."
+            exit 0
+          fi
+
+          exit "$status"
 
       - name: Confirm source and ABI are publicly published
         shell: bash
