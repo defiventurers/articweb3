@@ -1,0 +1,56 @@
+name: Verify Mainnet ETH Vault
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify EthGameEscrow on Abscan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+      VAULT_ADDRESS: "0x61a13b26096c6c696603ba96951faee3828a33ce"
+      GAME_SERVER_ADDRESS: "0x4725FE6E9fC3b261d7D273586F6B05b529C42dcE"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Require Etherscan API key
+        shell: bash
+        run: |
+          if [ -z "$ETHERSCAN_API_KEY" ]; then
+            echo "::error::Add ETHERSCAN_API_KEY in repository Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - name: Install contract dependencies
+        working-directory: contracts
+        run: npm install
+
+      - name: Verify mainnet vault
+        working-directory: contracts
+        run: |
+          npx hardhat verify \
+            --network abstractMainnet \
+            --contract contracts/EthGameEscrow.sol:EthGameEscrow \
+            "$VAULT_ADDRESS" \
+            "$GAME_SERVER_ADDRESS"
+
+      - name: Add verification summary
+        shell: bash
+        run: |
+          echo "## Mainnet vault verification submitted" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Contract: $VAULT_ADDRESS" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Compiler: Solidity 0.8.24 / zkSolc 1.5.15" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Explorer: https://abscan.org/address/$VAULT_ADDRESS#code" >> "$GITHUB_STEP_SUMMARY"
