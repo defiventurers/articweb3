@@ -46,11 +46,60 @@ jobs:
             "$VAULT_ADDRESS" \
             "$GAME_SERVER_ADDRESS"
 
-      - name: Add verification summary
+      - name: Confirm source and ABI are publicly published
         shell: bash
         run: |
-          echo "## Mainnet vault verification submitted" >> "$GITHUB_STEP_SUMMARY"
+          for attempt in {1..12}; do
+            curl --fail --silent --show-error \
+              "https://api.etherscan.io/v2/api?chainid=2741&module=contract&action=getsourcecode&address=$VAULT_ADDRESS&apikey=$ETHERSCAN_API_KEY" \
+              > verification-status.json
+
+            if node <<'NODE'
+          const fs = require("node:fs");
+          const response = JSON.parse(fs.readFileSync("verification-status.json", "utf8"));
+          const contract = Array.isArray(response.result) ? response.result[0] : null;
+          const sourcePublished = Boolean(contract?.SourceCode?.trim());
+          const abiPublished = Boolean(
+            contract?.ABI?.trim() &&
+            contract.ABI !== "Contract source code not verified"
+          );
+
+          if (response.status !== "1" || !sourcePublished || !abiPublished) {
+            console.error(JSON.stringify({
+              status: response.status,
+              message: response.message,
+              result: typeof response.result === "string" ? response.result : undefined,
+              sourcePublished,
+              abiPublished
+            }, null, 2));
+            process.exit(1);
+          }
+
+          console.log(JSON.stringify({
+            verified: true,
+            contractName: contract.ContractName,
+            compilerVersion: contract.CompilerVersion,
+            optimizationUsed: contract.OptimizationUsed,
+            runs: contract.Runs
+          }, null, 2));
+          NODE
+            then
+              exit 0
+            fi
+
+            echo "Verification is not public yet; retrying in 10 seconds ($attempt/12)."
+            sleep 10
+          done
+
+          echo "::error::Hardhat returned success, but Etherscan V2 still does not return published source and ABI."
+          exit 1
+
+      - name: Add verified summary
+        shell: bash
+        run: |
+          echo "## Mainnet vault verification confirmed" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Contract: $VAULT_ADDRESS" >> "$GITHUB_STEP_SUMMARY"
           echo "- Compiler: Solidity 0.8.24 / zkSolc 1.5.15" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Public source and ABI: confirmed through Etherscan V2" >> "$GITHUB_STEP_SUMMARY"
           echo "- Explorer: https://abscan.org/address/$VAULT_ADDRESS#code" >> "$GITHUB_STEP_SUMMARY"
