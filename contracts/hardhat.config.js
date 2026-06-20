@@ -21,5 +21,29 @@ module.exports = {
   },
   solidity: {
     version: "0.8.24"
+  },
+  etherscan: {
+    apiKey: {
+      abstractTestnet: process.env.ETHERSCAN_API_KEY || "",
+      abstractMainnet: process.env.ETHERSCAN_API_KEY || ""
+    },
+    customChains: [
+      {
+        network: "abstractTestnet",
+        chainId: 11124,
+        urls: {
+          apiURL: "https://api.etherscan.io/v2/api",
+          browserURL: "https://sepolia.abscan.org/"
+        }
+      },
+      {
+        network: "abstractMainnet",
+        chainId: 2741,
+        urls: {
+          apiURL: "https://api.etherscan.io/v2/api",
+          browserURL: "https://abscan.org/"
+        }
+      }
+    ]
   }
 };
