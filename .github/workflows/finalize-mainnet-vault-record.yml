@@ -1,0 +1,58 @@
+name: Finalize Verified Mainnet Vault Record
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  finalize:
+    name: Write and validate verified deployment record
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Write verified deployment record
+        run: |
+          node scripts/write-mainnet-deployment-record.mjs \
+            --vault "0x61a13b26096c6c696603ba96951faee3828a33ce" \
+            --deployTx "0x819a2b0d9f7d8bce05aaca6177a7b54f3cd0e13e6c50ce1c89274a4d157b5f19" \
+            --owner "0xd0dcD20EB9b90A04Ef99fB36Eb64064dB5f43416" \
+            --gameServer "0x4725FE6E9fC3b261d7D273586F6B05b529C42dcE" \
+            --frontendCommit "${{ github.sha }}" \
+            --backendCommit "${{ github.sha }}" \
+            --contractCommit "69c5ed0967e9f031b439b15b866f9310d068e324" \
+            --verified true \
+            --verificationUrl "https://abscan.org/address/0x61a13b26096c6c696603ba96951faee3828a33ce#code" \
+            --compiler "solc-0.8.24+commit.e11b9ed9 / zksolc-1.5.15" \
+            --constructorArgs '["0x4725FE6E9fC3b261d7D273586F6B05b529C42dcE"]' \
+            --status READY_FOR_REHEARSAL
+
+      - name: Validate deployment record
+        run: node scripts/validate-mainnet-deployment.mjs ops/mainnet/deployment-record.json
+
+      - name: Show record summary
+        shell: bash
+        run: |
+          echo "## Verified mainnet vault record" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Vault: 0x61a13b26096c6c696603ba96951faee3828a33ce" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Status: READY_FOR_REHEARSAL" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Explorer verified: true" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload verified deployment record
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-mainnet-deployment-record
+          path: ops/mainnet/deployment-record.json
+          if-no-files-found: error
+          retention-days: 30
