@@ -1,0 +1,220 @@
+name: Mainnet Rehearsal Evidence Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      room_code:
+        description: "Four-character rehearsal room code"
+        required: true
+      contract_match_id:
+        description: "On-chain bytes32 contract match ID"
+        required: true
+      winner_wallet:
+        description: "Winning player wallet"
+        required: true
+      settlement_tx:
+        description: "MatchSettled transaction hash"
+        required: true
+      ui_passed:
+        description: "Did the complete match UI pass?"
+        required: true
+        type: choice
+        options: ["false", "true"]
+        default: "false"
+      history_passed:
+        description: "Is the settled match visible in Match History?"
+        required: true
+        type: choice
+        options: ["false", "true"]
+        default: "false"
+      notes:
+        description: "Operator notes"
+        required: false
+        default: "One capped internal mainnet rehearsal; no public users or rewards."
+
+permissions:
+  contents: read
+
+env:
+  EXPECTED_VAULT: "0x61a13b26096c6c696603ba96951faee3828a33ce"
+  EVIDENCE_OUT: ops/evidence/mainnet-rehearsal/github-action-${{ github.run_number }}
+
+jobs:
+  evidence-gate:
+    name: Validate mainnet rehearsal evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Generate and validate evidence
+        env:
+          ROOM_CODE: ${{ inputs.room_code }}
+          CONTRACT_MATCH_ID: ${{ inputs.contract_match_id }}
+          WINNER_WALLET: ${{ inputs.winner_wallet }}
+          SETTLEMENT_TX: ${{ inputs.settlement_tx }}
+          UI_PASSED: ${{ inputs.ui_passed }}
+          HISTORY_PASSED: ${{ inputs.history_passed }}
+          OPERATOR_NOTES: ${{ inputs.notes }}
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const backendUrl = "https://articweb3.onrender.com";
+          const expectedVault = lower(process.env.EXPECTED_VAULT);
+          const roomCode = String(process.env.ROOM_CODE || "").trim().toUpperCase();
+          const matchId = lower(process.env.CONTRACT_MATCH_ID);
+          const winner = lower(process.env.WINNER_WALLET);
+          const settlementTx = lower(process.env.SETTLEMENT_TX);
+          const uiPassed = process.env.UI_PASSED === "true";
+          const historyPassed = process.env.HISTORY_PASSED === "true";
+          const outDir = path.resolve(process.env.EVIDENCE_OUT);
+          const ADDRESS_RE = /^0x[a-f0-9]{40}$/;
+          const HASH_RE = /^0x[a-f0-9]{64}$/;
+
+          main().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+
+          async function main() {
+            selfTest();
+            const encodedMatchId = encodeURIComponent(matchId);
+            const endpoints = await Promise.all([
+              fetchEndpoint("health", `${backendUrl}/health`),
+              fetchEndpoint("preflight", `${backendUrl}/mainnet/preflight`),
+              fetchEndpoint("stats", `${backendUrl}/indexer/stats`),
+              fetchEndpoint("events", `${backendUrl}/indexer/events?limit=100&matchId=${encodedMatchId}`)
+            ]);
+            const byName = Object.fromEntries(endpoints.map((item) => [item.name, item]));
+            const decision = evaluate({
+              health: byName.health.data || {},
+              preflight: byName.preflight.data || {},
+              events: byName.events.data?.events || []
+            });
+
+            for (const endpoint of endpoints) {
+              if (!endpoint.ok) {
+                decision.gates[`endpoint_${endpoint.name}`] = false;
+                decision.blockers.push(`${endpoint.name} endpoint failed: ${endpoint.error}`);
+              }
+            }
+            decision.passed = decision.blockers.length === 0;
+            decision.status = decision.passed ? "REHEARSAL_PASSED" : "BLOCKED";
+
+            const packet = {
+              schema: "artic.mainnet.rehearsal.evidence.v1",
+              generatedAt: new Date().toISOString(),
+              backendUrl,
+              expectedVault,
+              claims: { roomCode, contractMatchId: matchId, winnerWallet: winner, settlementTxHash: settlementTx, uiPassed, historyPassed, notes: process.env.OPERATOR_NOTES || "" },
+              commit: process.env.GITHUB_SHA || "",
+              endpoints: byName,
+              indexerStats: byName.stats.data?.stats || byName.stats.data || {},
+              decision
+            };
+
+            fs.mkdirSync(outDir, { recursive: true });
+            fs.writeFileSync(path.join(outDir, "mainnet-rehearsal-evidence.json"), JSON.stringify(packet, null, 2) + "\n");
+            fs.writeFileSync(path.join(outDir, "mainnet-rehearsal-evidence.md"), markdown(packet) + "\n");
+            console.log(JSON.stringify({ status: decision.status, blockers: decision.blockers }, null, 2));
+            if (!decision.passed) process.exitCode = 1;
+          }
+
+          function evaluate({ health, preflight, events }) {
+            const matched = events.filter((event) => lower(event.matchId) === matchId);
+            const locks = matched.filter((event) => event.eventName === "EntryLocked");
+            const settlements = matched.filter((event) => event.eventName === "MatchSettled");
+            const players = unique(locks.map((event) => lower(event.player)).filter(Boolean));
+            const entryTxs = unique(locks.map((event) => lower(event.txHash)).filter(Boolean));
+            const settlementTxs = unique(settlements.map((event) => lower(event.txHash)).filter(Boolean));
+            const lockedWei = sum(locks.map((event) => event.amountWei));
+            const settledWei = sum(settlements.map((event) => event.amountWei));
+            const gates = {
+              validRoomCode: /^[A-Z0-9]{4}$/.test(roomCode),
+              validContractMatchId: HASH_RE.test(matchId),
+              validWinnerWallet: ADDRESS_RE.test(winner),
+              validSettlementTxHash: HASH_RE.test(settlementTx),
+              backendHealthOk: health.ok === true,
+              preflightReady: preflight.readiness === "READY_FOR_CAPPED_MAINNET_REHEARSAL",
+              mainnetChainConfirmed: preflight.chain?.env === "mainnet" && Number(preflight.chain?.chainId) === 2741,
+              expectedVaultConfirmed: lower(preflight.vault?.address) === expectedVault && preflight.vault?.usableAddress === true,
+              settlementSignerValid: preflight.settlementSigner?.valid === true,
+              databaseReady: preflight.database?.databaseReady === true,
+              indexerHasRun: preflight.gates?.indexerHasRun === true,
+              exactlyFourEntryLocks: locks.length === 4,
+              fourUniquePlayers: players.length === 4,
+              fourUniqueEntryTransactions: entryTxs.length === 4 && entryTxs.every((hash) => HASH_RE.test(hash)),
+              positiveLockedTotal: BigInt(lockedWei) > 0n,
+              exactlyOneSettlement: settlements.length === 1,
+              settlementTransactionMatches: settlements.length === 1 && settlementTxs.length === 1 && settlementTxs[0] === settlementTx,
+              settlementTotalMatchesLockedTotal: settlements.length === 1 && lockedWei === settledWei,
+              winnerWasLockedPlayer: players.includes(winner),
+              indexedEventsUseExpectedVault: matched.length > 0 && matched.every((event) => lower(event.contractAddress) === expectedVault),
+              indexedEventsUseMainnet: matched.length > 0 && matched.every((event) => Number(event.chainId) === 2741),
+              matchHistoryConfirmed: historyPassed,
+              uiConfirmed: uiPassed
+            };
+            const blockers = Object.entries(gates).filter(([, pass]) => !pass).map(([name]) => `Gate failed: ${name}`);
+            return { status: blockers.length ? "BLOCKED" : "REHEARSAL_PASSED", passed: blockers.length === 0, gates, blockers, entryLockedCount: locks.length, entryPlayers: players, entryTxHashes: entryTxs, lockedTotalWei: lockedWei, matchSettledCount: settlements.length, settlementTxHash: settlementTxs[0] || null, settlementTotalWei: settledWei, matchedEvents: matched };
+          }
+
+          async function fetchEndpoint(name, url) {
+            try {
+              const response = await fetch(url, { headers: { Accept: "application/json" } });
+              const text = await response.text();
+              let data;
+              try { data = JSON.parse(text); } catch { return { name, url, ok: false, status: response.status, data: null, error: `Expected JSON, received ${text.slice(0, 100)}` }; }
+              const ok = response.ok && data?.ok !== false;
+              return { name, url, ok, status: response.status, data, error: ok ? null : data?.error || `HTTP ${response.status}` };
+            } catch (error) { return { name, url, ok: false, status: null, data: null, error: error.message || String(error) }; }
+          }
+
+          function markdown(packet) {
+            const d = packet.decision;
+            const lines = ["# Mainnet Rehearsal Evidence Gate", "", `Generated: ${packet.generatedAt}`, `Decision: **${d.status}**`, `Room: ${roomCode}`, `Contract match ID: ${matchId}`, `Vault: ${expectedVault}`, "", "## Gate Results", "", "| Gate | Result |", "|---|---|"];
+            Object.entries(d.gates).forEach(([name, pass]) => lines.push(`| ${name} | ${pass ? "PASS" : "FAIL"} |`));
+            lines.push("", "## On-chain Evidence", "", `- EntryLocked: ${d.entryLockedCount}`, `- Unique players: ${d.entryPlayers.length}`, `- Locked wei: ${d.lockedTotalWei}`, `- MatchSettled: ${d.matchSettledCount}`, `- Settlement wei: ${d.settlementTotalWei}`, `- Settlement tx: ${d.settlementTxHash || "missing"}`, `- Winner: ${winner}`, "", "## Entry Transactions", "");
+            d.entryTxHashes.forEach((hash) => lines.push(`- ${hash}`));
+            if (!d.entryTxHashes.length) lines.push("- none");
+            lines.push("", "## Blockers", "");
+            d.blockers.length ? d.blockers.forEach((item) => lines.push(`- ${item}`)) : lines.push("- None. All gates passed.");
+            lines.push("", "## Scope", "", "REHEARSAL_PASSED applies only to this capped internal rehearsal. It does not approve public paid launch, rewards, or unrestricted mainnet access.");
+            return lines.join("\n");
+          }
+
+          function selfTest() {
+            const values = ["1", "2", "3", "4"];
+            if (sum(values) !== "10") throw new Error("Evidence arithmetic self-test failed.");
+            if (unique(["a", "a", "b"]).length !== 2) throw new Error("Evidence uniqueness self-test failed.");
+          }
+          function sum(values) { return values.reduce((total, value) => { try { return total + BigInt(value || "0"); } catch { return total; } }, 0n).toString(); }
+          function unique(values) { return [...new Set(values)]; }
+          function lower(value) { return String(value || "").trim().toLowerCase(); }
+          NODE
+
+      - name: Add report to workflow summary
+        if: always()
+        run: |
+          if [ -f "$EVIDENCE_OUT/mainnet-rehearsal-evidence.md" ]; then
+            cat "$EVIDENCE_OUT/mainnet-rehearsal-evidence.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## Mainnet Rehearsal Evidence Gate" >> "$GITHUB_STEP_SUMMARY"
+            echo "Evidence generation failed before the report was written." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload evidence packet
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mainnet-rehearsal-evidence-${{ github.run_number }}
+          path: ${{ env.EVIDENCE_OUT }}
+          if-no-files-found: warn
+          retention-days: 90
