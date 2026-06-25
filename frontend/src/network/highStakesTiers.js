@@ -28,7 +28,7 @@ export function getFallbackTierSnapshot() {
 }
 
 function apiBaseUrl() {
-  const explicit = String(import.meta.env.VITE_API_BASE_URL || "").trim();
+  const explicit = String(import.meta.env.VITE_BACKEND_HTTP_URL || import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "").trim();
   if (explicit) return explicit.replace(/\/$/, "");
   const wsUrl = String(import.meta.env.VITE_WS_URL || "ws://localhost:10000").trim();
   return wsUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:").replace(/\/$/, "");
