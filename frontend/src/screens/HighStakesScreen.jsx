@@ -8,14 +8,10 @@ import { ethVaultAbi } from "../contracts/abis.js";
 import { ExpiredLockRecovery } from "../components/ExpiredLockRecovery.jsx";
 import { InvitedRoomPanel } from "../components/InvitedRoomPanel.jsx";
 import { confirmEntryLock, createRoom, joinRoom, listRooms } from "../network/socketClient.js";
+import { FALLBACK_HIGH_STAKES_TIERS, getFallbackTierSnapshot, getHighStakesTiers } from "../network/highStakesTiers.js";
 import "../styles/highStakes.css";
 
-const TIERS = [
-  { code: "1", label: "1 USD Entry", fallbackWei: "1000000000000000" },
-  { code: "4", label: "4 USD Entry", fallbackWei: "4000000000000000" },
-  { code: "16", label: "16 USD Entry", fallbackWei: "16000000000000000" }
-];
-
+const FALLBACK_TIERS = FALLBACK_HIGH_STAKES_TIERS;
 const ROOM_PAGE_SIZE = 9;
 const CALIBRATION_QUERY_KEY = "calibrateHighstakes";
 const NETWORK_LOCK_COPY = appConfig.isMainnet ? "mainnet lock" : "testnet lock";
@@ -34,6 +30,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   const [status, setStatus] = useState("");
   const [tierPickerMode, setTierPickerMode] = useState(null);
   const [hasCurrentRoomLock, setHasCurrentRoomLock] = useState(false);
+  const [tierSnapshot, setTierSnapshot] = useState(() => getFallbackTierSnapshot());
 
   const calibrateHighstakes = useMemo(() => isHighstakesCalibrationEnabled(), []);
   const invitedRoomCode = useMemo(() => clean(initialRoomCode), [initialRoomCode]);
@@ -68,9 +65,11 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   const walletBalance = walletBalanceQuery.data?.value || 0n;
   const roomEntryWei = room ? BigInt(room.entryWei || "0") : 0n;
   const hasWalletForRoom = !room || roomEntryWei <= 0n || walletBalance >= roomEntryWei;
+  const tiers = tierSnapshot.tiers?.length ? tierSnapshot.tiers : FALLBACK_TIERS;
 
   useEffect(() => {
     refreshRooms();
+    refreshTiers();
     const onPacket = (event) => {
       const packet = event.detail;
       const nextRoom = packet?.payload?.room;
@@ -93,6 +92,14 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
     setHasCurrentRoomLock(false);
   }, [room?.contractMatchId, address]);
 
+  async function refreshTiers() {
+    try {
+      setTierSnapshot(await getHighStakesTiers());
+    } catch (err) {
+      setTierSnapshot((current) => ({ ...(current?.tiers?.length ? current : getFallbackTierSnapshot()), ok: false, error: err.message || "Tier refresh failed." }));
+    }
+  }
+
   async function refreshBalances() {
     await Promise.all([availableQuery.refetch?.(), lockedQuery.refetch?.(), walletBalanceQuery.refetch?.()]);
   }
@@ -108,7 +115,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   }
 
   async function refreshAfterRecovery() {
-    await Promise.all([refreshBalances(), refreshRooms()]);
+    await Promise.all([refreshBalances(), refreshRooms(), refreshTiers()]);
     setHasCurrentRoomLock(false);
   }
 
@@ -124,8 +131,8 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   async function depositTier(tier) {
     if (!abstractClient) return setError("Wallet client is not ready. Reconnect AGW and try again.");
     await run(async () => {
-      const value = BigInt(tier.fallbackWei || "0");
-      setStatus(`Open AGW to deposit ${formatEntry(value.toString())} ETH on ${appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"}.`);
+      const value = BigInt(tier.entryWei || tier.fallbackWei || "0");
+      setStatus(`Open AGW to deposit ${formatEntry(value.toString())} ETH for ${tier.label || `$${tier.entryFeeUsd}`} on ${appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"}.`);
       await abstractClient.writeContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "deposit", value });
       setTierPickerMode(null);
       await refreshBalances();
@@ -286,7 +293,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
             <div className="hs-room-code" data-calibrate={`room-${slotIndex}-code`}>{slotRoom.roomCode}</div>
             <div className="hs-room-count" data-calibrate={`room-${slotIndex}-users`}>{slotRoom.playerCount || 0}/{slotRoom.maxPlayers || 4}</div>
             <div className="hs-room-fee" data-calibrate={`room-${slotIndex}-eth`}>{formatEntry(slotRoom.entryWei)} ETH</div>
-            <div className="hs-room-usd" data-calibrate={`room-${slotIndex}-usd`}>{getUsdEntryLabelFromWei(slotRoom.entryWei) || "ENTRY"}</div>
+            <div className="hs-room-usd" data-calibrate={`room-${slotIndex}-usd`}>{getUsdEntryLabel(slotRoom) || "ENTRY"}</div>
           </>
         )}
         {slotRoom && <button className="screen-hitbox hs-room-join-hitbox" data-calibrate={`room-${slotIndex}-join`} aria-label={`Join room ${slotRoom.roomCode}`} disabled={busy || (!isSample && !canJoin(slotRoom))} onClick={() => !isSample && enterRoom(slotRoom.roomCode)} />}
@@ -314,7 +321,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
 
           <div className="hitbox-layer highstakes-hitboxes">
             <button id="highStakesCreateRoomBtn" className="screen-hitbox hs-create-room-hitbox" data-calibrate="create-room-hitbox" aria-label="Create Room" disabled={busy} onClick={() => setTierPickerMode("create")} />
-            <button id="highStakesRefreshRoomsBtn" className="screen-hitbox hs-refresh-rooms-hitbox" data-calibrate="refresh-rooms-hitbox" aria-label="Refresh Rooms" disabled={busy} onClick={refreshRooms} />
+            <button id="highStakesRefreshRoomsBtn" className="screen-hitbox hs-refresh-rooms-hitbox" data-calibrate="refresh-rooms-hitbox" aria-label="Refresh Rooms" disabled={busy} onClick={() => { refreshRooms(); refreshTiers(); }} />
             <button id="highStakesPrevPageBtn" className="screen-hitbox hs-prev-page-hitbox" data-calibrate="prev-page-hitbox" aria-label="Previous Page" disabled={busy || !hasPrevPage} onClick={prevPage} />
             <button id="highStakesNextPageBtn" className="screen-hitbox hs-next-page-hitbox" data-calibrate="next-page-hitbox" aria-label="Next Page" disabled={busy || !hasNextPage} onClick={nextPage} />
             <button id="highStakesDepositBtn" className="screen-hitbox hs-deposit-hitbox" data-calibrate="deposit-hitbox" aria-label="Deposit" disabled={busy || !ETH_TARGETS_READY} onClick={() => setTierPickerMode("deposit")} />
@@ -344,13 +351,16 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
                 <h3>{tierPickerMode === "create" ? "Choose Entry" : `Deposit ${NETWORK_ETH_COPY}`}</h3>
                 <p>{tierPickerMode === "create" ? `Pick the ${NETWORK_LOCK_COPY} amount for the new room.` : `Pick how much ${NETWORK_ETH_COPY} to deposit into available balance.`}</p>
                 <div className="highstakes-tier-grid">
-                  {TIERS.map((tier) => (
+                  {tiers.map((tier) => (
                     <button key={tier.code} type="button" className={`highstakes-tier-btn entry-${tier.code}`} disabled={busy} onClick={() => tierPickerMode === "create" ? makeRoom(tier) : depositTier(tier)}>
-                      <strong>{tier.label}</strong>
-                      <span>{formatEntry(tier.fallbackWei)} ETH</span>
+                      <strong>{tier.label || `$${tier.entryFeeUsd} Entry`}</strong>
+                      <span>{formatEntry(tier.entryWei || tier.fallbackWei)} ETH</span>
                     </button>
                   ))}
                 </div>
+                <p className="highstakes-modal-note">
+                  ETH/USD {tierSnapshot.ethUsd ? `$${Number(tierSnapshot.ethUsd).toLocaleString("en-US", { maximumFractionDigits: 2 })}` : "unavailable"} · {tierSnapshot.ok ? "daily backend rate" : "fallback rate"}
+                </p>
                 <button type="button" className="highstakes-modal-cancel" disabled={busy} onClick={() => setTierPickerMode(null)}>Cancel</button>
               </div>
             </div>
@@ -360,7 +370,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
             <div className="highstakes-modal" role="dialog" aria-modal="true" aria-label={`Confirm ${NETWORK_LOCK_COPY}`}>
               <div className="highstakes-modal-card">
                 <h3>Room {room.roomCode}</h3>
-                <p>{getUsdEntryLabelFromWei(room.entryWei) || "Entry"} · Required lock {formatEntry(room.entryWei)} ETH</p>
+                <p>{getUsdEntryLabel(room) || "Entry"} · Required lock {formatEntry(room.entryWei)} ETH</p>
                 <p>Wallet {formatAmount(walletBalance)} ETH · Vault available {formatAmount(availableBalance)} ETH</p>
                 {!hasWalletForRoom && <p className="error">Wallet ETH is below this room lock. Fund wallet or choose a smaller room.</p>}
                 <p>{room.playerCount || 1}/4 players · {room.players?.filter((player) => player.entryLocked).length || 0} locked</p>
@@ -405,28 +415,22 @@ function getDisplayName(profile, address) {
 
 function getCalibrationRoom(index) {
   const samples = [
-    { roomCode: "YS3B", entryWei: "1000000000000000", playerCount: 2, maxPlayers: 4 },
-    { roomCode: "A352", entryWei: "2000000000000000", playerCount: 1, maxPlayers: 4 },
-    { roomCode: "FTY2", entryWei: "3000000000000000", playerCount: 3, maxPlayers: 4 },
-    { roomCode: "J4VE", entryWei: "4000000000000000", playerCount: 2, maxPlayers: 4 },
-    { roomCode: "T6RK", entryWei: "1000000000000000", playerCount: 4, maxPlayers: 4 },
-    { roomCode: "H9CY", entryWei: "2000000000000000", playerCount: 1, maxPlayers: 4 },
-    { roomCode: "B3UA", entryWei: "3000000000000000", playerCount: 3, maxPlayers: 4 },
-    { roomCode: "W5DN", entryWei: "4000000000000000", playerCount: 1, maxPlayers: 4 },
-    { roomCode: "Z1GF", entryWei: "1000000000000000", playerCount: 2, maxPlayers: 4 }
+    { roomCode: "YS3B", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 2, maxPlayers: 4 },
+    { roomCode: "A352", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4 },
+    { roomCode: "FTY2", entryFeeUsd: 16, entryWei: FALLBACK_TIERS[2].entryWei, playerCount: 3, maxPlayers: 4 },
+    { roomCode: "J4VE", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 2, maxPlayers: 4 },
+    { roomCode: "T6RK", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 4, maxPlayers: 4 },
+    { roomCode: "H9CY", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4 },
+    { roomCode: "B3UA", entryFeeUsd: 16, entryWei: FALLBACK_TIERS[2].entryWei, playerCount: 3, maxPlayers: 4 },
+    { roomCode: "W5DN", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4 },
+    { roomCode: "Z1GF", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 2, maxPlayers: 4 }
   ];
   return samples[index] || null;
 }
 
-function getUsdEntryLabel(entryEth) {
-  const ethAmount = Number(entryEth);
-  if (!Number.isFinite(ethAmount) || ethAmount <= 0) return "";
-  const usdAmount = Math.round(ethAmount * 1000);
-  return `${usdAmount} USD`;
-}
-
-function getUsdEntryLabelFromWei(value) {
-  return getUsdEntryLabel(formatEntry(value));
+function getUsdEntryLabel(room) {
+  const usd = Number(room?.entryFeeUsd || 0);
+  return Number.isFinite(usd) && usd > 0 ? `$${usd} Entry` : "";
 }
 
 function formatEntry(value) {
@@ -439,7 +443,7 @@ function formatAmount(value) {
 
 function trimEth(value) {
   const [whole, decimal = ""] = String(value || "0").split(".");
-  const cleanDecimal = decimal.slice(0, 6).replace(/0+$/, "");
+  const cleanDecimal = decimal.slice(0, 8).replace(/0+$/, "");
   return cleanDecimal ? `${whole}.${cleanDecimal}` : whole;
 }
 
