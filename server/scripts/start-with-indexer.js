@@ -4,7 +4,7 @@ const http = require("http");
 const { runVaultEventIndexer, getVaultIndexerHealth } = require("../vaultEventIndexer.js");
 const { getRecentIndexedVaultEvents, getIndexedVaultEventStats } = require("../vaultEventStore.js");
 const { getMainnetPreflight } = require("../mainnetPreflight.js");
-const { getHighStakesTierSnapshot, refreshHighStakesTierSnapshot, startHighStakesTierRefresh } = require("../highStakesTiers.js");
+const { getHighStakesTierSnapshot, refreshHighStakesTierSnapshot } = require("../highStakesTiers.js");
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -115,8 +115,6 @@ async function boot() {
   console.log("[vault-indexer] mainnet preflight endpoint /mainnet/preflight enabled");
   console.log("[vault-indexer] high stakes tiers endpoint /high-stakes/tiers enabled");
   console.log("[vault-indexer] protected run endpoint /indexer/run", Boolean(RUN_KEY));
-
-  startHighStakesTierRefresh();
 
   async function runIndexer(label) {
     try {
