@@ -1,0 +1,24 @@
+.die-piece-visual {
+  height: 86%;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  grid-template-rows: 1fr;
+}
+
+.die-piece-icons {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.dice-piece-icon {
+  width: min(50%, 56px);
+  height: min(100%, 62px);
+  object-fit: contain;
+  border-radius: 999px;
+  filter: drop-shadow(0 2px 3px rgba(0, 25, 65, .32));
+}
