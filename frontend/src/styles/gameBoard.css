@@ -172,9 +172,47 @@
 }
 
 .die-piece {
-  width: 80%;
+  width: 86%;
   overflow-wrap: anywhere;
   line-height: 1.05;
+}
+
+.die-piece-visual {
+  height: 82%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-items: center;
+  justify-items: center;
+  gap: 2px;
+}
+
+.die-value {
+  font-size: clamp(13px, 3vw, 22px);
+  font-weight: 1000;
+  color: #123d73;
+  text-shadow: 0 1px 0 rgba(255,255,255,.72);
+}
+
+.die-piece-icons {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.dice-piece-icon {
+  width: min(46%, 44px);
+  height: min(92%, 54px);
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(0, 25, 65, .32));
+}
+
+.dice-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 42%;
 }
 
 .game-action-layer {
