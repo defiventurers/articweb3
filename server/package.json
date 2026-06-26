@@ -4,9 +4,9 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node scripts/start-with-indexer.js",
-    "start:testnet": "node scripts/check-env.mjs testnet && node -r dotenv/config scripts/start-with-indexer.js dotenv_config_path=.env.testnet",
-    "start:mainnet": "node scripts/check-env.mjs mainnet && node -r dotenv/config scripts/start-with-indexer.js dotenv_config_path=.env.mainnet",
+    "start": "node scripts/start-with-runtime-status.js",
+    "start:testnet": "node scripts/check-env.mjs testnet && node -r dotenv/config scripts/start-with-runtime-status.js dotenv_config_path=.env.testnet",
+    "start:mainnet": "node scripts/check-env.mjs mainnet && node -r dotenv/config scripts/start-with-runtime-status.js dotenv_config_path=.env.mainnet",
     "check:testnet": "node scripts/check-env.mjs testnet",
     "check:mainnet": "node scripts/check-env.mjs mainnet",
     "index:vault": "node scripts/index-vault-events.js"
