@@ -27,6 +27,13 @@ function booleanEnv(name, fallback = false) {
   return raw === "true";
 }
 
+function walletListEnv(name) {
+  return envValue(name)
+    .split(",")
+    .map((wallet) => wallet.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 function chainEnv() {
   const value = requiredEnv("VITE_CHAIN_ENV");
   if (value !== "testnet" && value !== "mainnet") throw new Error(`Invalid VITE_CHAIN_ENV: ${value}`);
@@ -44,6 +51,7 @@ export function isZeroAddress(address) {
 }
 
 const selectedChainEnv = chainEnv();
+const closedBetaWallets = walletListEnv("VITE_CLOSED_BETA_WALLETS");
 
 export const abstractChain = selectedChainEnv === "mainnet" ? abstract : abstractTestnet;
 
@@ -63,6 +71,10 @@ export const appConfig = Object.freeze({
     sessionKeys: booleanEnv("VITE_ENABLE_SESSION_KEYS", false),
     sponsoredTx: booleanEnv("VITE_ENABLE_SPONSORED_TX", false)
   }),
+  closedBeta: Object.freeze({
+    highStakes: booleanEnv("VITE_CLOSED_BETA_HIGH_STAKES", selectedChainEnv === "mainnet"),
+    allowedWallets: closedBetaWallets
+  }),
   contracts: Object.freeze({
     ethVault: addressEnv("VITE_ETH_VAULT_ADDRESS"),
     gameVerifier: addressEnv("VITE_GAME_VERIFIER_CONTRACT_ADDRESS"),
@@ -74,6 +86,18 @@ export const appConfig = Object.freeze({
 export function assertExpectedAbstractConfig() {
   if (appConfig.isMainnet && appConfig.chainId !== 2741) throw new Error(`Mainnet build has wrong chain ID: ${appConfig.chainId}`);
   if (appConfig.isTestnet && appConfig.chainId !== 11124) throw new Error(`Testnet build has wrong chain ID: ${appConfig.chainId}`);
+}
+
+export function isClosedBetaWallet(address) {
+  if (!address) return false;
+  return appConfig.closedBeta.allowedWallets.includes(String(address).toLowerCase());
+}
+
+export function getClosedBetaAccessIssue(address) {
+  if (!appConfig.closedBeta.highStakes) return "";
+  if (!appConfig.closedBeta.allowedWallets.length) return "Closed beta access list is not configured.";
+  if (!isClosedBetaWallet(address)) return "This wallet is not approved for Closed Beta High Stakes rooms.";
+  return "";
 }
 
 export function getHighStakesConfigIssue() {
