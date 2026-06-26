@@ -110,8 +110,7 @@ function DiceFace({ game, index, team }) {
   if (used) return <span className="die-piece dice-placeholder">USED</span>;
   const pieces = DICE_ROLLS[value] || [];
   return (
-    <div className="die-piece die-piece-visual" aria-label={`${value}: ${pieces.join(" or ")}`}>
-      <span className="die-value">{value}</span>
+    <div className="die-piece die-piece-visual" aria-label={`${value}: ${pieces.join(" or ")}`} title={`${value}: ${pieces.join(" or ")}`}>
       <span className="die-piece-icons">
         {pieces.map((pieceType) => (
           <PieceImage key={pieceType} piece={{ team, type: pieceType }} className="dice-piece-icon" />
