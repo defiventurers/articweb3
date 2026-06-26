@@ -1,10 +1,13 @@
 const assert = require("assert/strict");
+const fs = require("fs");
+const path = require("path");
 const {
   getLaunchStatus,
   getHighStakesLaunchBlockReason,
   normalizeLockedMatchMode,
   normalizeLaunchMode
 } = require("../launchMode.js");
+const { transformBackendSource } = require("../loadPrizeBackend.js");
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -83,6 +86,12 @@ assertBlocked("public mode on testnet", {
   LOCKED_MATCH_MODE: "public",
   LEGAL_PUBLIC_MAINNET_APPROVED: "true"
 }, /requires Abstract Mainnet/);
+
+const backendSource = fs.readFileSync(path.join(__dirname, "..", "index.js"), "utf8");
+const transformedBackend = transformBackendSource(backendSource);
+assert.match(transformedBackend, /getHighStakesLaunchBlockReason/);
+assert.match(transformedBackend, /launchBlocked: true/);
+assert.match(transformedBackend, /const entry = BigInt\(room\.entryWei \|\| "0"\)/);
 
 resetEnv();
 console.log("[launch-mode] simple switch evidence passed");
