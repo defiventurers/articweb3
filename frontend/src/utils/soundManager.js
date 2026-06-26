@@ -6,23 +6,23 @@ const SOUND_DEFS = {
   capture: { file: "capture.mp3", volume: 0.82 },
   countdownGo: { file: "countdown-go.mp3", volume: 0.82 },
   countdownTick: { file: "countdown-tick.mp3", volume: 0.62 },
-  coverScreen: { file: "cover-screen.mp3", volume: 0.42 },
-  createProfile: { file: "create-profile.mp3", volume: 0.58 },
+  coverScreen: { file: "cover-screen.mp3", volume: 0.42, track: true },
+  createProfile: { file: "create-profile.mp3", volume: 0.58, track: true },
   diceRoll: { file: "dice-roll.mp3", volume: 0.72 },
   gameStart: { file: "game-start.mp3", volume: 0.82 },
-  highStakes: { file: "high-stakes.mp3", volume: 0.64 },
+  highStakes: { file: "high-stakes.mp3", volume: 0.64, track: true },
   invalidAction: { file: "invalid-action.mp3", volume: 0.7 },
-  mainMenu: { file: "main-menu.mp3", volume: 0.48 },
+  mainMenu: { file: "main-menu.mp3", volume: 0.48, track: true },
   moveElephant: { file: "move-elephant.mp3", volume: 0.72 },
   moveHorse: { file: "move-horse.mp3", volume: 0.66 },
   moveKing: { file: "move-king.mp3", volume: 0.68 },
   movePawn: { file: "move-pawn.mp3", volume: 0.58 },
   moveShip: { file: "move-ship.mp3", volume: 0.72 },
-  openIce: { file: "open-ice.mp3", volume: 0.58 },
+  openIce: { file: "open-ice.mp3", volume: 0.58, track: true },
   pieceMove: { file: "piece-move.mp3", volume: 0.62 },
   pieceSelect: { file: "piece-select.mp3", volume: 0.56 },
-  playNow: { file: "play-now.mp3", volume: 0.68 },
-  playerHub: { file: "player-hub.mp3", volume: 0.52 },
+  playNow: { file: "play-now.mp3", volume: 0.68, track: true },
+  playerHub: { file: "player-hub.mp3", volume: 0.52, track: true },
   promotion: { file: "promotion.mp3", volume: 0.78 },
   readyToggle: { file: "ready-toggle.mp3", volume: 0.7 },
   roomJoin: { file: "room-join.mp3", volume: 0.72 },
@@ -39,7 +39,7 @@ const SOUND_DEFS = {
   victory: { file: "victory.mp3", volume: 0.88 }
 };
 
-const SCREEN_STINGERS = {
+const SCREEN_TRACKS = {
   cover: "coverScreen",
   menu: "mainMenu",
   profile: "createProfile",
@@ -55,7 +55,7 @@ let loaded = false;
 let unlocked = false;
 let enabled = true;
 let lastScreen = null;
-let playedScreen = null;
+let currentTrack = null;
 
 function canUseAudio() {
   return typeof window !== "undefined" && typeof Audio !== "undefined";
@@ -104,7 +104,7 @@ function setMuted(muted) {
   load();
   enabled = !muted;
   if (canUseAudio()) window.localStorage.setItem(STORAGE_KEY, muted ? "true" : "false");
-  if (muted) stopAllLoops();
+  if (muted) stopAllAudio();
   else handleScreen(lastScreen);
   notify();
 }
@@ -136,6 +136,38 @@ function play(name, options = {}) {
   }
 }
 
+function playTrack(name, options = {}) {
+  load();
+  if (!enabled || !unlocked) return;
+
+  const audio = audioByName.get(name);
+  if (!audio) return;
+
+  const restart = options.restart !== false;
+  if (currentTrack && currentTrack !== name) stopTrack(currentTrack);
+  if (currentTrack === name && !restart && !audio.paused) return;
+
+  currentTrack = name;
+  try {
+    audio.loop = Boolean(SOUND_DEFS[name]?.loop);
+    audio.volume = Number(options.volume ?? SOUND_DEFS[name]?.volume ?? audio.volume ?? 0.7);
+    if (restart) audio.currentTime = 0;
+    audio.play().catch(() => {});
+  } catch {
+    // Ignore cosmetic audio failures.
+  }
+}
+
+function stopTrack(name = currentTrack) {
+  if (!name) return;
+  const audio = audioByName.get(name);
+  if (audio) {
+    audio.pause();
+    try { audio.currentTime = 0; } catch {}
+  }
+  if (currentTrack === name) currentTrack = null;
+}
+
 function startLoop(name) {
   load();
   if (!enabled || !unlocked) return;
@@ -155,24 +187,33 @@ function stopLoop(name) {
   audio.pause();
 }
 
-function stopAllLoops() {
+function stopAllAudio() {
   audioByName.forEach((audio) => {
-    if (!audio.loop) return;
     audio.pause();
+    if (audio.loop || SOUND_DEFS[currentTrack]?.track) {
+      try { audio.currentTime = 0; } catch {}
+    }
   });
+  currentTrack = null;
 }
 
 function handleScreen(screen) {
   lastScreen = screen;
   if (!screen) return;
 
-  if (screen === "game") startLoop("ambientIce");
-  else stopLoop("ambientIce");
+  if (screen === "game") {
+    stopTrack();
+    startLoop("ambientIce");
+    return;
+  }
 
-  const stinger = SCREEN_STINGERS[screen];
-  if (stinger && playedScreen !== screen) {
-    play(stinger, { cooldownMs: 1200 });
-    if (enabled && unlocked) playedScreen = screen;
+  stopLoop("ambientIce");
+
+  const track = SCREEN_TRACKS[screen];
+  if (track) {
+    playTrack(track, { restart: currentTrack !== track });
+  } else {
+    stopTrack();
   }
 }
 
@@ -203,6 +244,8 @@ export const soundManager = {
   setMuted,
   toggleMuted,
   play,
+  playTrack,
+  stopTrack,
   startLoop,
   stopLoop,
   handleScreen,
