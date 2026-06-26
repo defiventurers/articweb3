@@ -79,9 +79,14 @@ async function linkWithdrawalToHistory({ wallet, amountWei, txHash }) {
        FROM match_history
        WHERE wallet = $1
          AND payout_wei = $2
+         AND contract_match_id IS NOT NULL
+         AND room_mode = 'high_stakes'
          AND (withdrawal_tx_hash IS NULL OR withdrawal_tx_hash = $3)
-       ORDER BY finished_at DESC
-       LIMIT 2`,
+         AND COALESCE(settlement_status, '') IN ('submitted', 'settlement_pending', 'settled')
+       ORDER BY
+         CASE WHEN withdrawal_tx_hash = $3 THEN 0 ELSE 1 END,
+         finished_at DESC
+       LIMIT 1`,
       [key, amount, hash]
     );
 
@@ -102,7 +107,8 @@ async function linkWithdrawalToHistory({ wallet, amountWei, txHash }) {
       matchId: row.match_id,
       contractMatchId: row.contract_match_id,
       payoutWei: row.payout_wei,
-      withdrawalTxHash: hash
+      withdrawalTxHash: hash,
+      attributionSource: "latest_unmatched_high_stakes_history"
     };
   }
 
@@ -122,7 +128,7 @@ async function getHistoryForWallet(wallet) {
 function historyStoreStatus() { return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError }; }
 function saveMemory(entry) { const key = normalizeWallet(entry.wallet); const normalized = { ...entry, wallet: key }; memoryEntries.set(normalized.id, normalized); const ids = memoryByWallet.get(key) || []; memoryByWallet.set(key, [normalized.id, ...ids.filter((id) => id !== normalized.id)].slice(0, MAX_HISTORY_PER_WALLET)); }
 function updateMemoryWithdrawal(id, txHash) { const existing = memoryEntries.get(id); if (existing) memoryEntries.set(id, { ...existing, withdrawalTxHash: txHash || existing.withdrawalTxHash || null, withdrawalStatus: "indexed" }); }
-function linkMemoryWithdrawal(wallet, amountWei, txHash) { const ids = memoryByWallet.get(wallet) || []; const matches = ids.map((id) => memoryEntries.get(id)).filter(Boolean).filter((entry) => String(entry.payoutWei || "0") === amountWei).filter((entry) => !entry.withdrawalTxHash || entry.withdrawalTxHash === txHash).slice(0, 2); if (matches.length !== 1) return null; const match = matches[0]; updateMemoryWithdrawal(match.id, txHash); return { id: match.id, roomCode: match.roomCode, matchId: match.matchId, contractMatchId: match.contractMatchId, payoutWei: match.payoutWei, withdrawalTxHash: txHash }; }
+function linkMemoryWithdrawal(wallet, amountWei, txHash) { const ids = memoryByWallet.get(wallet) || []; const matches = ids.map((id) => memoryEntries.get(id)).filter(Boolean).filter((entry) => entry.roomMode === "high_stakes").filter((entry) => entry.contractMatchId).filter((entry) => ["submitted", "settlement_pending", "settled"].includes(entry.settlementStatus || "")).filter((entry) => String(entry.payoutWei || "0") === amountWei).filter((entry) => !entry.withdrawalTxHash || entry.withdrawalTxHash === txHash).slice(0, 1); if (matches.length !== 1) return null; const match = matches[0]; updateMemoryWithdrawal(match.id, txHash); return { id: match.id, roomCode: match.roomCode, matchId: match.matchId, contractMatchId: match.contractMatchId, payoutWei: match.payoutWei, withdrawalTxHash: txHash, attributionSource: "latest_unmatched_high_stakes_memory" }; }
 function entryToParams(entry) { return [entry.id, normalizeWallet(entry.wallet), entry.roomCode, entry.matchId, entry.contractMatchId || null, entry.roomMode, entry.currency || null, entry.entryTier || null, entry.entryWei || "0", entry.entryTxHash || null, entry.playerName || null, entry.team || null, entry.position || null, Boolean(entry.won), entry.payoutWei || "0", Number(entry.points || 0), entry.settlementStatus || null, entry.settlementTxHash || null, entry.settlementError || null, JSON.stringify(entry.players || []), JSON.stringify(entry.finalBoardState || null), JSON.stringify(entry.auditLog || []), entry.proofHash || null, JSON.stringify(entry.randomness || null), entry.withdrawalTxHash || null, entry.withdrawalStatus || null, Number(entry.finishedAt || Date.now())]; }
 function parseJson(value, fallback) { try { return value ? JSON.parse(value) : fallback; } catch { return fallback; } }
 function rowToEntry(row) { return { id: row.id, wallet: row.wallet, roomCode: row.room_code, matchId: row.match_id, contractMatchId: row.contract_match_id, roomMode: row.room_mode, currency: row.currency, entryTier: row.entry_tier, entryWei: row.entry_wei || "0", entryTxHash: row.entry_tx_hash, playerName: row.player_name, team: row.team, position: row.position, won: row.won, payoutWei: row.payout_wei || "0", points: row.points || 0, settlementStatus: row.settlement_status, settlementTxHash: row.settlement_tx_hash, settlementError: row.settlement_error, players: parseJson(row.players_json, []), finalBoardState: parseJson(row.final_state_json, null), auditLog: parseJson(row.audit_log_json, []), proofHash: row.proof_hash, randomness: parseJson(row.randomness_json, null), withdrawalTxHash: row.withdrawal_tx_hash, withdrawalStatus: row.withdrawal_status, finishedAt: row.finished_at ? new Date(row.finished_at).getTime() : null }; }
