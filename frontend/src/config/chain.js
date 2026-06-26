@@ -3,6 +3,14 @@ import { abstract, abstractTestnet } from "viem/chains";
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
+const VALID_LAUNCH_MODES = new Set([
+  "free_play",
+  "testnet_lock_lab",
+  "capped_mainnet_rehearsal",
+  "closed_beta_mainnet",
+  "public_mainnet"
+]);
+
 function envValue(name, fallback = "") {
   const value = import.meta.env[name];
   return value === undefined || value === null ? fallback : String(value).trim();
@@ -39,17 +47,24 @@ function addressEnv(name, fallback = ZERO_ADDRESS) {
   return value;
 }
 
+function launchModeEnv(isMainnet) {
+  const raw = envValue("VITE_APP_LAUNCH_MODE", envValue("VITE_LAUNCH_MODE", "")).toLowerCase();
+  if (VALID_LAUNCH_MODES.has(raw)) return raw;
+  return isMainnet ? "capped_mainnet_rehearsal" : "testnet_lock_lab";
+}
+
 export function isZeroAddress(address) {
   return String(address || "").toLowerCase() === ZERO_ADDRESS.toLowerCase();
 }
 
 const selectedChainEnv = chainEnv();
+const selectedIsMainnet = selectedChainEnv === "mainnet";
 
-export const abstractChain = selectedChainEnv === "mainnet" ? abstract : abstractTestnet;
+export const abstractChain = selectedIsMainnet ? abstract : abstractTestnet;
 
 export const appConfig = Object.freeze({
   chainEnv: selectedChainEnv,
-  isMainnet: selectedChainEnv === "mainnet",
+  isMainnet: selectedIsMainnet,
   isTestnet: selectedChainEnv === "testnet",
   chainId: numberEnv("VITE_ABSTRACT_CHAIN_ID"),
   rpcUrl: requiredEnv("VITE_ABSTRACT_RPC"),
@@ -62,6 +77,12 @@ export const appConfig = Object.freeze({
     highStakes: booleanEnv("VITE_ENABLE_HIGH_STAKES", false),
     sessionKeys: booleanEnv("VITE_ENABLE_SESSION_KEYS", false),
     sponsoredTx: booleanEnv("VITE_ENABLE_SPONSORED_TX", false)
+  }),
+  launch: Object.freeze({
+    mode: launchModeEnv(selectedIsMainnet),
+    internalMainnetRehearsalEnabled: booleanEnv("VITE_INTERNAL_MAINNET_REHEARSAL_ENABLED", false),
+    closedBetaMainnetEnabled: booleanEnv("VITE_CLOSED_BETA_MAINNET_ENABLED", false),
+    legalPublicMainnetApproved: booleanEnv("VITE_LEGAL_PUBLIC_MAINNET_APPROVED", false) || booleanEnv("VITE_PUBLIC_MAINNET_APPROVED", false)
   }),
   contracts: Object.freeze({
     ethVault: addressEnv("VITE_ETH_VAULT_ADDRESS"),
@@ -76,6 +97,28 @@ export function assertExpectedAbstractConfig() {
   if (appConfig.isTestnet && appConfig.chainId !== 11124) throw new Error(`Testnet build has wrong chain ID: ${appConfig.chainId}`);
 }
 
+export function getLaunchModeIssue() {
+  const launch = appConfig.launch;
+  if (launch.mode === "free_play") return "Locked Match Lab is disabled in Free Play launch mode.";
+  if (launch.mode === "testnet_lock_lab") return appConfig.isMainnet ? "Testnet Lock Lab cannot run on mainnet." : "";
+  if (launch.mode === "capped_mainnet_rehearsal") {
+    if (!appConfig.isMainnet) return "Capped mainnet rehearsal mode requires Abstract Mainnet.";
+    if (!launch.internalMainnetRehearsalEnabled) return "Internal mainnet rehearsal is disabled by launch controls.";
+    return "";
+  }
+  if (launch.mode === "closed_beta_mainnet") {
+    if (!appConfig.isMainnet) return "Closed Beta Mainnet mode requires Abstract Mainnet.";
+    if (!launch.closedBetaMainnetEnabled) return "Closed Beta Mainnet is disabled by launch controls.";
+    return "";
+  }
+  if (launch.mode === "public_mainnet") {
+    if (!appConfig.isMainnet) return "Public Mainnet mode requires Abstract Mainnet.";
+    if (!launch.legalPublicMainnetApproved) return "Public Mainnet is disabled until legal/compliance approval is recorded.";
+    return "";
+  }
+  return "Unknown launch mode.";
+}
+
 export function getHighStakesConfigIssue() {
   try {
     assertExpectedAbstractConfig();
@@ -83,6 +126,8 @@ export function getHighStakesConfigIssue() {
     return err.message || "Invalid Abstract chain configuration.";
   }
 
+  const launchIssue = getLaunchModeIssue();
+  if (launchIssue) return launchIssue;
   if (!appConfig.features.highStakes) return "Locked Match Mode is disabled for this environment.";
   if (isZeroAddress(appConfig.contracts.ethVault)) return "ETH vault contract address is not configured.";
   if (!isAddress(appConfig.contracts.ethVault)) return "ETH vault contract address is invalid.";
