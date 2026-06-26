@@ -30,6 +30,7 @@ async function initHistoryStore() {
       await getPool().query(`ALTER TABLE match_history ADD COLUMN IF NOT EXISTS withdrawal_tx_hash TEXT`);
       await getPool().query(`ALTER TABLE match_history ADD COLUMN IF NOT EXISTS withdrawal_status TEXT`);
       await getPool().query(`CREATE INDEX IF NOT EXISTS match_history_wallet_finished_idx ON match_history (wallet, finished_at DESC)`);
+      await getPool().query(`CREATE INDEX IF NOT EXISTS match_history_wallet_payout_withdrawal_idx ON match_history (wallet, payout_wei, withdrawal_tx_hash, finished_at DESC)`);
       ready = true;
       initError = null;
       return true;
@@ -66,6 +67,48 @@ async function updateHistoryEntries(ids, patch) {
   );
 }
 
+async function linkWithdrawalToHistory({ wallet, amountWei, txHash }) {
+  const key = normalizeWallet(wallet);
+  const amount = String(amountWei || "0");
+  const hash = txHash ? String(txHash).toLowerCase() : null;
+  if (!key || !amount || amount === "0") return null;
+
+  if (await initHistoryStore()) {
+    const result = await getPool().query(
+      `SELECT id, room_code, match_id, contract_match_id, payout_wei
+       FROM match_history
+       WHERE wallet = $1
+         AND payout_wei = $2
+         AND (withdrawal_tx_hash IS NULL OR withdrawal_tx_hash = $3)
+       ORDER BY finished_at DESC
+       LIMIT 2`,
+      [key, amount, hash]
+    );
+
+    if (result.rows.length !== 1) return null;
+
+    const row = result.rows[0];
+    await getPool().query(
+      `UPDATE match_history
+       SET withdrawal_tx_hash = COALESCE($2, withdrawal_tx_hash), withdrawal_status = 'indexed', updated_at = NOW()
+       WHERE id = $1`,
+      [row.id, hash]
+    );
+    updateMemoryWithdrawal(row.id, hash);
+
+    return {
+      id: row.id,
+      roomCode: row.room_code,
+      matchId: row.match_id,
+      contractMatchId: row.contract_match_id,
+      payoutWei: row.payout_wei,
+      withdrawalTxHash: hash
+    };
+  }
+
+  return linkMemoryWithdrawal(key, amount, hash);
+}
+
 async function getHistoryForWallet(wallet) {
   const key = normalizeWallet(wallet);
   if (await initHistoryStore()) {
@@ -78,9 +121,11 @@ async function getHistoryForWallet(wallet) {
 
 function historyStoreStatus() { return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError }; }
 function saveMemory(entry) { const key = normalizeWallet(entry.wallet); const normalized = { ...entry, wallet: key }; memoryEntries.set(normalized.id, normalized); const ids = memoryByWallet.get(key) || []; memoryByWallet.set(key, [normalized.id, ...ids.filter((id) => id !== normalized.id)].slice(0, MAX_HISTORY_PER_WALLET)); }
+function updateMemoryWithdrawal(id, txHash) { const existing = memoryEntries.get(id); if (existing) memoryEntries.set(id, { ...existing, withdrawalTxHash: txHash || existing.withdrawalTxHash || null, withdrawalStatus: "indexed" }); }
+function linkMemoryWithdrawal(wallet, amountWei, txHash) { const ids = memoryByWallet.get(wallet) || []; const matches = ids.map((id) => memoryEntries.get(id)).filter(Boolean).filter((entry) => String(entry.payoutWei || "0") === amountWei).filter((entry) => !entry.withdrawalTxHash || entry.withdrawalTxHash === txHash).slice(0, 2); if (matches.length !== 1) return null; const match = matches[0]; updateMemoryWithdrawal(match.id, txHash); return { id: match.id, roomCode: match.roomCode, matchId: match.matchId, contractMatchId: match.contractMatchId, payoutWei: match.payoutWei, withdrawalTxHash: txHash }; }
 function entryToParams(entry) { return [entry.id, normalizeWallet(entry.wallet), entry.roomCode, entry.matchId, entry.contractMatchId || null, entry.roomMode, entry.currency || null, entry.entryTier || null, entry.entryWei || "0", entry.entryTxHash || null, entry.playerName || null, entry.team || null, entry.position || null, Boolean(entry.won), entry.payoutWei || "0", Number(entry.points || 0), entry.settlementStatus || null, entry.settlementTxHash || null, entry.settlementError || null, JSON.stringify(entry.players || []), JSON.stringify(entry.finalBoardState || null), JSON.stringify(entry.auditLog || []), entry.proofHash || null, JSON.stringify(entry.randomness || null), entry.withdrawalTxHash || null, entry.withdrawalStatus || null, Number(entry.finishedAt || Date.now())]; }
 function parseJson(value, fallback) { try { return value ? JSON.parse(value) : fallback; } catch { return fallback; } }
 function rowToEntry(row) { return { id: row.id, wallet: row.wallet, roomCode: row.room_code, matchId: row.match_id, contractMatchId: row.contract_match_id, roomMode: row.room_mode, currency: row.currency, entryTier: row.entry_tier, entryWei: row.entry_wei || "0", entryTxHash: row.entry_tx_hash, playerName: row.player_name, team: row.team, position: row.position, won: row.won, payoutWei: row.payout_wei || "0", points: row.points || 0, settlementStatus: row.settlement_status, settlementTxHash: row.settlement_tx_hash, settlementError: row.settlement_error, players: parseJson(row.players_json, []), finalBoardState: parseJson(row.final_state_json, null), auditLog: parseJson(row.audit_log_json, []), proofHash: row.proof_hash, randomness: parseJson(row.randomness_json, null), withdrawalTxHash: row.withdrawal_tx_hash, withdrawalStatus: row.withdrawal_status, finishedAt: row.finished_at ? new Date(row.finished_at).getTime() : null }; }
 function normalizeWallet(wallet) { return String(wallet || "").toLowerCase(); }
 
-module.exports = { initHistoryStore, saveHistoryEntry, updateHistoryEntries, getHistoryForWallet, historyStoreStatus };
+module.exports = { initHistoryStore, saveHistoryEntry, updateHistoryEntries, linkWithdrawalToHistory, getHistoryForWallet, historyStoreStatus };
