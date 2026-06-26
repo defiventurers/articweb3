@@ -55,7 +55,8 @@ http.createServer = function createServerWithIndexerControls(listener) {
       const limit = Number(fullUrl.searchParams.get("limit") || 25);
       const player = fullUrl.searchParams.get("player") || "";
       const eventName = fullUrl.searchParams.get("eventName") || "";
-      const events = await getRecentIndexedVaultEvents({ limit, player, eventName });
+      const matchId = fullUrl.searchParams.get("matchId") || "";
+      const events = await getRecentIndexedVaultEvents({ limit, player, eventName, matchId });
       res.writeHead(200, { ...CORS_HEADERS, "Content-Type": "application/json" });
       res.end(JSON.stringify({ ok: true, events }));
       return;
