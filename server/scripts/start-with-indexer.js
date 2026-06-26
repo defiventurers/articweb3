@@ -5,6 +5,7 @@ const { runVaultEventIndexer, getVaultIndexerHealth } = require("../vaultEventIn
 const { getRecentIndexedVaultEvents, getIndexedVaultEventStats } = require("../vaultEventStore.js");
 const { getMainnetPreflight } = require("../mainnetPreflight.js");
 const { getHighStakesTierSnapshot, refreshHighStakesTierSnapshot } = require("../highStakesTiers.js");
+const { getLaunchStatus } = require("../launchMode.js");
 const { loadRooms, roomStoreStatus } = require("../roomStore.js");
 const { historyStoreStatus } = require("../historyStore.js");
 
@@ -24,11 +25,17 @@ http.createServer = function createServerWithIndexerControls(listener) {
     const fullUrl = new URL(req.url || "/", "http://localhost");
     const path = fullUrl.pathname;
     const isSettlementOpsPath = path === "/ops/settlement/rooms" || path === "/ops/settlement/debug";
-    const isControlPath = path === "/indexer/health" || path === "/indexer/run" || path === "/indexer/events" || path === "/indexer/stats" || path === "/mainnet/preflight" || path === "/high-stakes/tiers" || isSettlementOpsPath;
+    const isControlPath = path === "/indexer/health" || path === "/indexer/run" || path === "/indexer/events" || path === "/indexer/stats" || path === "/mainnet/preflight" || path === "/high-stakes/tiers" || path === "/launch/status" || isSettlementOpsPath;
 
     if (req.method === "OPTIONS" && isControlPath) {
       res.writeHead(204, CORS_HEADERS);
       res.end();
+      return;
+    }
+
+    if (req.method === "GET" && path === "/launch/status") {
+      res.writeHead(200, { ...CORS_HEADERS, "Content-Type": "application/json", "Cache-Control": "no-store" });
+      res.end(JSON.stringify(getLaunchStatus()));
       return;
     }
 
@@ -140,6 +147,7 @@ async function boot() {
   console.log("[vault-indexer] stats endpoint /indexer/stats enabled");
   console.log("[vault-indexer] mainnet preflight endpoint /mainnet/preflight enabled");
   console.log("[vault-indexer] high stakes tiers endpoint /high-stakes/tiers enabled");
+  console.log("[vault-indexer] launch status endpoint /launch/status enabled", JSON.stringify(getLaunchStatus()));
   console.log("[vault-indexer] settlement ops endpoints enabled", Boolean(SETTLEMENT_OPERATOR_KEY));
   console.log("[vault-indexer] protected run endpoint /indexer/run", Boolean(RUN_KEY));
 
