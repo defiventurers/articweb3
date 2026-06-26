@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { devFillRoom } from "../network/socketClient.js";
+import { soundManager } from "../utils/soundManager.js";
 
 const TEAM_LABELS = {
   green: "Abster",
@@ -23,6 +24,8 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const previousCountsRef = useRef(null);
+  const lastCountdownRef = useRef(null);
 
   const isEscrowTestRoom = currentRoom.roomMode === "high_stakes";
   const myPlayer = currentRoom.players.find((player) => player.wallet === profile.wallet);
@@ -56,6 +59,7 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
       onRoomUpdate(updatedRoom);
 
       if (updatedRoom.status === "playing") {
+        soundManager.play("gameStart", { cooldownMs: 1200 });
         onGameStart(updatedRoom);
       }
     }
@@ -81,28 +85,56 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
     return () => clearInterval(timer);
   }, [currentRoom]);
 
+  useEffect(() => {
+    const previous = previousCountsRef.current;
+    const next = { playerCount: currentRoom.playerCount, readyTeams, lockedPlayers };
+
+    if (previous) {
+      if (next.playerCount > previous.playerCount) soundManager.play("roomJoin", { cooldownMs: 500 });
+      if (next.readyTeams > previous.readyTeams || next.lockedPlayers > previous.lockedPlayers) soundManager.play("readyToggle", { cooldownMs: 220 });
+    }
+
+    previousCountsRef.current = next;
+  }, [currentRoom.playerCount, readyTeams, lockedPlayers]);
+
+  useEffect(() => {
+    if (secondsLeft === null) {
+      lastCountdownRef.current = null;
+      return;
+    }
+
+    if (lastCountdownRef.current === secondsLeft) return;
+    lastCountdownRef.current = secondsLeft;
+    soundManager.play(secondsLeft === 0 ? "countdownGo" : "countdownTick", { cooldownMs: 120 });
+  }, [secondsLeft]);
+
   async function handleCopyCode() {
     try {
       await navigator.clipboard.writeText(currentRoom.roomCode);
+      soundManager.play("uiConfirm");
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
     } catch {
+      soundManager.play("uiError");
       setError("Could not copy room code.");
     }
   }
 
   async function handleStartWithBots() {
     if (isEscrowTestRoom) {
+      soundManager.play("invalidAction");
       setError("Bots are disabled in this mode.");
       return;
     }
 
     if (!hasPickedTeam) {
+      soundManager.play("invalidAction");
       setError("Choose your team first.");
       return;
     }
 
     try {
+      soundManager.play("uiConfirm");
       setBusy(true);
       setError("");
       const updatedRoom = await devFillRoom({
@@ -112,6 +144,7 @@ export function WaitingRoomScreen({ room, profile, onRoomUpdate, onGameStart }) 
       setCurrentRoom(updatedRoom);
       onRoomUpdate(updatedRoom);
     } catch (err) {
+      soundManager.play("uiError");
       setError(err.message || "Could not start with bots.");
     } finally {
       setBusy(false);
