@@ -1,0 +1,52 @@
+name: Phase 30 Readiness Probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: "Live backend URL"
+        required: true
+        type: string
+      rpc_url:
+        description: "Abstract RPC URL"
+        required: true
+        default: "https://api.mainnet.abs.xyz"
+        type: string
+      chain_id:
+        description: "Expected chain ID"
+        required: true
+        default: "2741"
+        type: string
+      vault_address:
+        description: "Vault contract address"
+        required: true
+        type: string
+      game_server_address:
+        description: "Expected vault gameServer address"
+        required: true
+        type: string
+
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm install --no-audit --no-fund
+
+      - name: Run Phase 30 readiness probe
+        env:
+          BACKEND_URL: ${{ inputs.backend_url }}
+          RPC_URL: ${{ inputs.rpc_url }}
+          CHAIN_ID: ${{ inputs.chain_id }}
+          VAULT_ADDRESS: ${{ inputs.vault_address }}
+          GAME_SERVER_ADDRESS: ${{ inputs.game_server_address }}
+        run: node server/tests/phase30-readiness.test.js
