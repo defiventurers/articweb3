@@ -98,14 +98,18 @@ function replaceBuildPayoutPlan(source) {
   return `${source.slice(0, start)}${replacement}${source.slice(end)}`;
 }
 
+function injectLaunchModeRequire(source) {
+  if (source.includes("getHighStakesLaunchBlockReason")) return source;
+
+  const roomStoreRequirePattern = /const\s+\{[^}]*\bloadRooms\b[^}]*\bsaveRoom\b[^}]*\}\s*=\s*require\(\"\.\/roomStore\.js\"\);|const\s+\{[^}]*\bsaveRoom\b[^}]*\bloadRooms\b[^}]*\}\s*=\s*require\(\"\.\/roomStore\.js\"\);/;
+  const match = source.match(roomStoreRequirePattern);
+  if (!match) throw new Error("Unable to locate roomStore require for launch mode gate.");
+
+  return source.replace(match[0], `${match[0]}\nconst { getHighStakesLaunchBlockReason } = require("./launchMode.js");`);
+}
+
 function replaceLaunchModeGate(source) {
-  let transformed = source;
-  if (!transformed.includes("getHighStakesLaunchBlockReason")) {
-    const requireAnchor = 'const { loadRooms, saveRoom } = require("./roomStore.js");';
-    const requireReplacement = `${requireAnchor}\nconst { getHighStakesLaunchBlockReason } = require("./launchMode.js");`;
-    if (!transformed.includes(requireAnchor)) throw new Error("Unable to locate roomStore require for launch mode gate.");
-    transformed = transformed.replace(requireAnchor, requireReplacement);
-  }
+  let transformed = injectLaunchModeRequire(source);
 
   const listNeedle = 'function list(ws, requestId, payload = {}) { const roomMode = normalizeRoomMode(payload.roomMode); const publicRooms = [...rooms.values()]';
   const listReplacement = 'function list(ws, requestId, payload = {}) { const roomMode = normalizeRoomMode(payload.roomMode); const launchReason = getHighStakesLaunchBlockReason(roomMode); if (launchReason) return ok(ws, requestId, "room_list_result", { rooms: [], launchBlocked: true, reason: launchReason }); const publicRooms = [...rooms.values()]';
