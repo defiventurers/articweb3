@@ -7,6 +7,20 @@
     <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
     <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
     <title>Arctic Dominion</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body, #root { margin: 0; min-height: 100%; background: #061b3a; color: white; font-family: Arial, sans-serif; overflow: hidden; }
+      button, input { font: inherit; }
+      .art-screen { position: fixed; inset: 0; display: flex; justify-content: center; align-items: flex-start; background: #061b3a; overflow: hidden; }
+      .art-stage { position: relative; width: min(100vw, calc(100dvh * 9 / 16)); height: min(100dvh, calc(100vw * 16 / 9)); aspect-ratio: 9 / 16; margin: 0 auto; overflow: hidden; border: 0; padding: 0; background: #061b3a; }
+      .screen-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; object-position: center center; display: block; user-select: none; pointer-events: none; border: 0; }
+      .closed-beta-banner { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 9999; display: grid; gap: 2px; width: min(92vw, 720px); padding: 8px 14px; border: 1px solid rgba(155, 226, 255, 0.55); border-radius: 999px; background: rgba(3, 20, 40, 0.84); color: #f5fbff; text-align: center; pointer-events: none; backdrop-filter: blur(8px); }
+      .closed-beta-banner strong { font-size: 0.74rem; line-height: 1.05; letter-spacing: 0.08em; text-transform: uppercase; }
+      .closed-beta-banner span { font-size: 0.68rem; line-height: 1.15; opacity: 0.9; }
+      .network-badge { position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); z-index: 10000; display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; border: 1px solid rgba(210, 244, 255, 0.72); border-radius: 999px; background: rgba(4, 20, 45, 0.82); color: #eefbff; font: 800 12px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 0.02em; pointer-events: none; }
+      .network-badge-dot { width: 8px; height: 8px; border-radius: 999px; background: #9ff4ff; box-shadow: 0 0 12px rgba(159,244,255,0.85); }
+      @media (max-width: 640px) { .closed-beta-banner { top: max(6px, env(safe-area-inset-top)); width: min(94vw, 420px); padding: 6px 10px; border-radius: 18px; } .closed-beta-banner strong { font-size: 0.64rem; } .closed-beta-banner span { font-size: 0.58rem; } }
+    </style>
   </head>
   <body>
     <div id="root"></div>
