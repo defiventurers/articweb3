@@ -96,7 +96,7 @@ async function boot() {
   await refreshHighStakesTierSnapshot();
 
   console.log("[vault-indexer] wrapper loaded");
-  require("../index.js");
+  require("../loadPrizeBackend.js").loadPrizeBackend();
   console.log("[vault-indexer] backend loaded");
 
   const AUTO_RUN = process.env.ETH_INDEXER_AUTO_RUN !== "false";
