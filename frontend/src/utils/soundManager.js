@@ -203,7 +203,7 @@ function handleScreen(screen) {
 
   if (screen === "game") {
     stopTrack();
-    startLoop("ambientIce");
+    stopLoop("ambientIce");
     return;
   }
 
