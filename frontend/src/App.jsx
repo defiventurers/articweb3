@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import {
   FrostLoadingScreen,
   FrostRouteLoader,
@@ -37,6 +37,8 @@ const DevQAScreen = lazyNamed(() => import("./screens/DevQAScreen.jsx"), "DevQAS
 const TestRunbookScreen = lazyNamed(() => import("./screens/TestRunbookScreen.jsx"), "TestRunbookScreen");
 
 const SMOKE_PROFILE = { wallet: "0x0000000000000000000000000000000000000019", name: "Smoke Penguin", points: 0 };
+const COVER_TRACK_DELAY_MS = 650;
+const PLAY_NOW_TRACK_DELAY_MS = 500;
 
 export default function App() {
   const params = new URLSearchParams(window.location.search);
@@ -49,8 +51,9 @@ export default function App() {
   const [screen, setScreen] = useState(initialSpectateCode ? "spectator" : smokeProfileEnabled && initialHighStakesRoomCode ? "high-stakes" : smokeProfileEnabled ? "hub" : "cover");
   const [profile, setProfile] = useState(smokeProfileEnabled ? SMOKE_PROFILE : null);
   const [room, setRoom] = useState(null);
+  const transitionTimerRef = useRef(null);
 
-  useEffect(() => { soundManager.load(); }, []);
+  useEffect(() => { soundManager.load(); return () => window.clearTimeout(transitionTimerRef.current); }, []);
   useEffect(() => { if (assetsReady) soundManager.handleScreen(screen); }, [assetsReady, screen]);
 
   if (calibrationTarget) return renderLazy(<CalibrationScreen target={calibrationTarget} />, "Loading calibration deck...");
@@ -60,11 +63,19 @@ export default function App() {
     return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu";
   }
 
-  function goTo(nextScreen) {
-    soundManager.play("uiTap", { cooldownMs: 80 });
+  function goTo(nextScreen, options = {}) {
+    window.clearTimeout(transitionTimerRef.current);
+    if (options.tapSound !== false) soundManager.play("uiTap", { cooldownMs: 80 });
     if (nextScreen === "how-to-play") warmHowToPlayAssets();
     if (nextScreen === "game" || nextScreen === "team-select" || nextScreen === "waiting") warmGameAssets();
     setScreen(nextScreen);
+  }
+
+  function playTrackThenGo(trackName, nextScreen, delayMs) {
+    window.clearTimeout(transitionTimerRef.current);
+    soundManager.unlock();
+    soundManager.playTrack(trackName, { restart: true });
+    transitionTimerRef.current = window.setTimeout(() => goTo(nextScreen, { tapSound: false }), delayMs);
   }
 
   function withClosedBetaBanner(node) {
@@ -79,8 +90,8 @@ export default function App() {
     return goTo("team-select");
   }
 
-  if (screen === "cover") return withClosedBetaBanner(<CoverScreen onContinue={() => goTo(initialHighStakesRoomCode ? "profile" : "menu")} />);
-  if (screen === "menu") return withClosedBetaBanner(<MainMenu onPlay={() => { soundManager.play("playNow", { cooldownMs: 600 }); goTo("profile"); }} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} />);
+  if (screen === "cover") return withClosedBetaBanner(<CoverScreen onContinue={() => playTrackThenGo("coverScreen", initialHighStakesRoomCode ? "profile" : "menu", COVER_TRACK_DELAY_MS)} />);
+  if (screen === "menu") return withClosedBetaBanner(<MainMenu onPlay={() => playTrackThenGo("playNow", "profile", PLAY_NOW_TRACK_DELAY_MS)} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} />);
   if (screen === "how-to-play") return withClosedBetaBanner(renderLazy(<HowToPlayScreen onBack={() => goTo("menu")} onStart={() => goTo("profile")} />));
   if (screen === "spectator") return withClosedBetaBanner(renderLazy(<SpectatorScreen initialRoomCode={initialSpectateCode} onBack={() => goTo(profile ? "hub" : "menu")} />));
   if (screen === "profile") return withClosedBetaBanner(renderLazy(<ProfileScreen onComplete={(createdProfile) => { soundManager.play("uiConfirm"); setProfile(createdProfile); goTo(initialHighStakesRoomCode ? "high-stakes" : "hub"); }} onBack={() => goTo("menu")} />));
