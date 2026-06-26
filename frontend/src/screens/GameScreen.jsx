@@ -103,7 +103,23 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackTo
   );
 }
 
-function DiceFace({ game, index, team }) { const value = game.dice.values[index]; const used = game.dice.used; if (!value) return <span className="die-piece">{index === 0 ? "ROLL" : "DICE"}</span>; if (used[index]) return <span className="die-piece">USED</span>; const pieces = DICE_ROLLS[value] || []; return <span className="die-piece">{value}: {pieces.map((piece) => piece.toUpperCase()).join("/")}</span>; }
+function DiceFace({ game, index, team }) {
+  const value = game.dice.values[index];
+  const used = game.dice.used?.[index];
+  if (!value) return <span className="die-piece dice-placeholder">{index === 0 ? "ROLL" : "DICE"}</span>;
+  if (used) return <span className="die-piece dice-placeholder">USED</span>;
+  const pieces = DICE_ROLLS[value] || [];
+  return (
+    <div className="die-piece die-piece-visual" aria-label={`${value}: ${pieces.join(" or ")}`}>
+      <span className="die-value">{value}</span>
+      <span className="die-piece-icons">
+        {pieces.map((pieceType) => (
+          <PieceImage key={pieceType} piece={{ team, type: pieceType }} className="dice-piece-icon" />
+        ))}
+      </span>
+    </div>
+  );
+}
 function PieceImage({ piece, className }) { const color = TEAM_ASSET_COLOR[piece.team]; const type = PIECE_ASSET_TYPE[piece.type]; if (!color || !type) return <span>{PIECE_LETTER[piece.type] || "?"}</span>; const filename = `${color}-${type}.png`; const remoteSrc = `${REMOTE_PIECE_ASSET_BASE}/${filename}`; const localSrc = `${LOCAL_PIECE_ASSET_BASE}/${filename}`; return <img src={remoteSrc} alt={`${TEAM_LABEL[piece.team]} ${piece.type}`} className={className} draggable="false" decoding="async" onError={(event) => { if (event.currentTarget.src !== localSrc) event.currentTarget.src = localSrc; }} />; }
 function renderBoardRows(board) { const cells = []; board.forEach((rowItems, row) => { rowItems.forEach((piece, col) => cells.push({ piece, row, col })); }); return cells; }
 function getStatusText({ game, team, isMyTurn, isBotTurn, busy, error, hasLegalMoveForRoll }) { if (error) return error; if (game.gameOver) return "Match complete."; if (isBotTurn) return "Bot is moving..."; if (!isMyTurn) return "Waiting for your turn."; if (busy) return "Submitting move..."; if (!game.dice.rolled) return "Roll dice."; if (!hasLegalMoveForRoll) return "No legal moves for this roll. Press End Turn, or tap Roll Dice to auto-skip."; return `${TEAM_LABEL[team]} rolled ${game.dice.values.join(" and ")}. Choose a legal move.`; }
