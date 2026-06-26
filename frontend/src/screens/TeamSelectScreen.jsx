@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { OptimizedImage } from "../components/OptimizedImage.jsx";
 import { selectRoomTeam } from "../network/socketClient.js";
+import { soundManager } from "../utils/soundManager.js";
 
 const OPTIONS = {
   retsba: { name: "RETSBA", team: "red" },
@@ -26,20 +27,24 @@ export function TeamSelectScreen({ room, profile, onRoomUpdate, onContinue, onBa
     const option = OPTIONS[id];
     if (!option) return;
     if (takenTeams.has(option.team)) {
+      soundManager.play("invalidAction");
       setError(`${option.name} is already taken.`);
       return;
     }
+    soundManager.play(soundManager.teamSound(option.team), { cooldownMs: 300 });
     setSelected(id);
     setError("");
   }
 
   async function continueToWaitingRoom() {
     if (!selected) {
+      soundManager.play("invalidAction");
       setError("Choose a team first.");
       return;
     }
 
     try {
+      soundManager.play("uiConfirm");
       setBusy(true);
       setError("");
       const updatedRoom = await selectRoomTeam({
@@ -50,10 +55,16 @@ export function TeamSelectScreen({ room, profile, onRoomUpdate, onContinue, onBa
       onRoomUpdate(updatedRoom);
       onContinue(updatedRoom);
     } catch (err) {
+      soundManager.play("uiError");
       setError(err.message || "Could not select team.");
     } finally {
       setBusy(false);
     }
+  }
+
+  function handleBack() {
+    soundManager.play("uiBack");
+    onBack();
   }
 
   return (
@@ -85,7 +96,7 @@ export function TeamSelectScreen({ room, profile, onRoomUpdate, onContinue, onBa
           );
         })}
 
-        <button className="team-select-back" onClick={onBack} disabled={busy}>Back</button>
+        <button className="team-select-back" onClick={handleBack} disabled={busy}>Back</button>
 
         {(selected || error) && (
           <div className="team-select-status" aria-live="polite">
