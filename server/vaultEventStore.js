@@ -39,6 +39,7 @@ async function initVaultEventStore() {
       `);
       await getPool().query(`CREATE INDEX IF NOT EXISTS vault_indexed_events_contract_block_idx ON vault_indexed_events (contract_address, block_number DESC)`);
       await getPool().query(`CREATE INDEX IF NOT EXISTS vault_indexed_events_player_idx ON vault_indexed_events (player, block_number DESC)`);
+      await getPool().query(`CREATE INDEX IF NOT EXISTS vault_indexed_events_match_idx ON vault_indexed_events (match_id, block_number DESC)`);
       await getPool().query(`
         CREATE TABLE IF NOT EXISTS vault_indexer_state (
           state_key TEXT PRIMARY KEY,
@@ -66,7 +67,7 @@ async function saveIndexedVaultEvent(event) {
   await getPool().query(
     `INSERT INTO vault_indexed_events (id, contract_address, chain_id, block_number, log_index, tx_hash, event_name, player, match_id, amount_wei, deadline, payload_json, created_at)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW())
-     ON CONFLICT (id) DO UPDATE SET payload_json = EXCLUDED.payload_json`,
+     ON CONFLICT (id) DO UPDATE SET player = EXCLUDED.player, match_id = COALESCE(EXCLUDED.match_id, vault_indexed_events.match_id), amount_wei = EXCLUDED.amount_wei, deadline = EXCLUDED.deadline, payload_json = EXCLUDED.payload_json`,
     [entry.id, entry.contractAddress, entry.chainId, entry.blockNumber, entry.logIndex, entry.txHash, entry.eventName, entry.player, entry.matchId, entry.amountWei, entry.deadline, entry.payloadJson]
   );
   return entry;
@@ -76,11 +77,13 @@ async function getRecentIndexedVaultEvents(options = {}) {
   const limit = Math.min(100, Math.max(1, Number(options.limit || 25)));
   const player = options.player ? String(options.player).toLowerCase() : "";
   const eventName = options.eventName ? String(options.eventName).trim() : "";
+  const matchId = options.matchId ? String(options.matchId).toLowerCase() : "";
   if (await initVaultEventStore()) {
     const filters = [];
     const params = [];
     if (player) { params.push(player); filters.push(`player = $${params.length}`); }
     if (eventName) { params.push(eventName); filters.push(`event_name = $${params.length}`); }
+    if (matchId) { params.push(matchId); filters.push(`LOWER(match_id) = $${params.length}`); }
     const where = filters.length ? `WHERE ${filters.join(" AND ")}` : "";
     params.push(limit);
     const result = await getPool().query(
@@ -110,6 +113,7 @@ async function getRecentIndexedVaultEvents(options = {}) {
   return [...memoryEvents.values()]
     .filter((event) => !player || event.player === player)
     .filter((event) => !eventName || event.eventName === eventName)
+    .filter((event) => !matchId || String(event.matchId || "").toLowerCase() === matchId)
     .sort((a, b) => (b.blockNumber - a.blockNumber) || (b.logIndex - a.logIndex))
     .slice(0, limit);
 }
@@ -198,7 +202,7 @@ function normalizeEvent(event) {
     txHash,
     eventName,
     player: event.player ? String(event.player).toLowerCase() : null,
-    matchId: event.matchId || null,
+    matchId: event.matchId ? String(event.matchId).toLowerCase() : null,
     amountWei: event.amountWei ? String(event.amountWei) : null,
     deadline: event.deadline ? String(event.deadline) : null,
     payloadJson: event.payloadJson || {}
