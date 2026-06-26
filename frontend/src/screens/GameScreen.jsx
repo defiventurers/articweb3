@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DICE_ROLLS, TEAM_COLOR, TEAM_LABEL, createInitialGameState, currentTeam, hasAnyLegalMoveForTeam } from "../game/gameRules.js";
 import { endGameTurn, getGameState, rollGameDice, selectGameSquare } from "../network/socketClient.js";
+import { soundManager } from "../utils/soundManager.js";
 
 const LOCAL_PIECE_ASSET_BASE = "/assets/arctic/pieces";
 const REMOTE_PIECE_ASSET_BASE =
@@ -14,6 +15,7 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackTo
   const [serverRoom, setServerRoom] = useState(room);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const previousRoomRef = useRef(null);
   const game = serverRoom?.gameState || createInitialGameState();
   const team = currentTeam(game);
   const activePlayer = serverRoom?.players?.find((player) => player.team === team);
@@ -29,24 +31,55 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackTo
 
   useEffect(() => {
     let cancelled = false;
-    getGameState({ roomCode: room.roomCode, profile }).then((nextRoom) => { if (!cancelled) updateRoom(nextRoom); }).catch((err) => { if (!cancelled) setError(err.message || "Could not load game state."); });
+    getGameState({ roomCode: room.roomCode, profile }).then((nextRoom) => { if (!cancelled) updateRoom(nextRoom); }).catch((err) => { if (!cancelled) { soundManager.play("uiError"); setError(err.message || "Could not load game state."); } });
     function handlePacket(event) { const packet = event.detail; const nextRoom = packet?.payload?.room; if (packet?.type !== "room_state" || !nextRoom) return; if (nextRoom.roomCode !== room.roomCode) return; updateRoom(nextRoom); }
     window.addEventListener("server-packet", handlePacket);
     return () => { cancelled = true; window.removeEventListener("server-packet", handlePacket); };
   }, [room.roomCode, profile]);
 
+  useEffect(() => {
+    const previousRoom = previousRoomRef.current;
+    if (previousRoom?.gameState && serverRoom?.gameState) {
+      const previousTeam = previousRoom.gameState.gameOver ? null : currentTeam(previousRoom.gameState);
+      const nextTeam = game.gameOver ? null : currentTeam(game);
+      if (previousTeam && nextTeam && previousTeam !== nextTeam) soundManager.play("turnChange", { cooldownMs: 260 });
+      if ((game.eliminatedTeams || []).length > (previousRoom.gameState.eliminatedTeams || []).length) soundManager.play("teamEliminated", { cooldownMs: 800 });
+    }
+    if (previousRoom?.status !== "finished" && serverRoom?.status === "finished") soundManager.play("victory", { cooldownMs: 1200 });
+    previousRoomRef.current = serverRoom;
+  }, [serverRoom, game]);
+
   function updateRoom(nextRoom) { setServerRoom(nextRoom); onRoomUpdate?.(nextRoom); }
-  async function runAction(action) { if (busy || !isMyTurn || game.gameOver) return; setBusy(true); setError(""); try { updateRoom(await action()); } catch (err) { setError(err.message || "Game action failed."); } finally { setBusy(false); } }
+  async function runAction(action) { if (busy || !isMyTurn || game.gameOver) { soundManager.play("invalidAction", { cooldownMs: 160 }); return; } setBusy(true); setError(""); try { updateRoom(await action()); } catch (err) { soundManager.play("uiError"); setError(err.message || "Game action failed."); } finally { setBusy(false); } }
   function handleRoll() {
     if (game.dice.rolled) {
-      if (!hasLegalMoveForRoll) return runAction(() => endGameTurn({ roomCode: serverRoom.roomCode, profile }));
+      if (!hasLegalMoveForRoll) {
+        soundManager.play("turnChange", { cooldownMs: 260 });
+        return runAction(() => endGameTurn({ roomCode: serverRoom.roomCode, profile }));
+      }
+      soundManager.play("invalidAction");
       setError("Dice already rolled. Move a piece or press End Turn.");
       return;
     }
+    soundManager.play("diceRoll", { cooldownMs: 220 });
     runAction(() => rollGameDice({ roomCode: serverRoom.roomCode, profile }));
   }
-  function handleCell(row, col) { runAction(() => selectGameSquare({ roomCode: serverRoom.roomCode, profile, row, col })); }
-  function handleEndTurn() { runAction(() => endGameTurn({ roomCode: serverRoom.roomCode, profile })); }
+  function handleCell(row, col) {
+    const move = activeLegalSquares.get(`${row},${col}`);
+    const clickedPiece = game.board?.[row]?.[col];
+    const selectedPiece = game.selected ? game.board?.[game.selected.row]?.[game.selected.col] : null;
+
+    if (move && selectedPiece) {
+      soundManager.play(move.captured ? "capture" : soundManager.pieceMoveSound(selectedPiece.type), { cooldownMs: 120 });
+    } else if (clickedPiece && clickedPiece.team === team) {
+      soundManager.play("pieceSelect", { cooldownMs: 120 });
+    } else {
+      soundManager.play("invalidAction", { cooldownMs: 160 });
+    }
+
+    runAction(() => selectGameSquare({ roomCode: serverRoom.roomCode, profile, row, col }));
+  }
+  function handleEndTurn() { soundManager.play("turnChange", { cooldownMs: 260 }); runAction(() => endGameTurn({ roomCode: serverRoom.roomCode, profile })); }
 
   return (
     <section className="game-screen-page" aria-label="Game screen">
