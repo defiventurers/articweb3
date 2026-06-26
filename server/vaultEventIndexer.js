@@ -1,5 +1,6 @@
 const { ethers } = require("ethers");
 const { saveVaultActivity } = require("./vaultActivityStore.js");
+const { linkWithdrawalToHistory } = require("./historyStore.js");
 const { initVaultEventStore, saveIndexedVaultEvent, getLastIndexedBlock, setLastIndexedBlock, vaultEventStoreStatus } = require("./vaultEventStore.js");
 
 const VAULT_ABI = [
@@ -61,8 +62,9 @@ async function runVaultEventIndexer(options = {}) {
         for (const log of logs) {
           const parsed = parseLog(log, { chainId, vaultAddress });
           if (!parsed) continue;
-          await saveIndexedVaultEvent(parsed);
-          await mirrorActivity(parsed);
+          const enriched = await enrichIndexedEvent(parsed);
+          await saveIndexedVaultEvent(enriched);
+          await mirrorActivity(enriched);
           indexed += 1;
         }
         await setLastIndexedBlock(stateKey, toBlock);
@@ -113,6 +115,23 @@ function parseLog(log, context) {
   } catch {
     return null;
   }
+}
+
+async function enrichIndexedEvent(event) {
+  if (event.eventName !== "Withdrawn" || event.matchId) return event;
+  const linked = await linkWithdrawalToHistory({ wallet: event.player, amountWei: event.amountWei, txHash: event.txHash });
+  if (!linked?.contractMatchId) return event;
+  return {
+    ...event,
+    matchId: linked.contractMatchId,
+    payloadJson: {
+      ...(event.payloadJson || {}),
+      attributedMatchId: linked.contractMatchId,
+      attributedAppMatchId: linked.matchId || null,
+      attributedRoomCode: linked.roomCode || null,
+      attributionSource: "match_history_withdrawal_link"
+    }
+  };
 }
 
 async function mirrorActivity(event) {
