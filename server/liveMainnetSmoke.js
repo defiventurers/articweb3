@@ -21,16 +21,26 @@ async function runLiveMainnetSmoke(options = {}) {
   results.push(check("high stakes allowed", runtime.highStakes?.allowed === true, runtime.highStakes?.blockReason || "blocked"));
   results.push(check("legal public approval false for rehearsal", runtime.launch?.legalPublicMainnetApproved === false, `legalPublicMainnetApproved=${runtime.launch?.legalPublicMainnetApproved}`));
   results.push(check("tier snapshot has tiers", Number(runtime.highStakes?.tiers?.count || 0) >= 1, `count=${runtime.highStakes?.tiers?.count}`));
+  if (expectedMode === "internal") {
+    results.push(check("internal mode allowed tiers capped to $1", sameSet(runtime.highStakes?.allowedTierCodes || runtime.launch?.allowedTierCodes || [], ["1"]), `allowed=${JSON.stringify(runtime.highStakes?.allowedTierCodes || runtime.launch?.allowedTierCodes || [])}`));
+  }
   results.push(check("room store readable", runtime.checks?.roomStoreReadable === true));
   results.push(check("history store readable", runtime.checks?.historyStoreReadable === true));
 
   const launch = await fetchJson(`${backendUrl}/launch/status`);
   results.push(check("launch endpoint mode matches runtime", launch.lockedMatchMode === runtime.launch?.lockedMatchMode, `launch=${launch.lockedMatchMode} runtime=${runtime.launch?.lockedMatchMode}`));
   results.push(check("launch endpoint allows high stakes", launch.highStakesAllowed === true, launch.highStakesBlockReason || "blocked"));
+  if (expectedMode === "internal") {
+    results.push(check("launch endpoint allowed tiers capped to $1", sameSet(launch.allowedTierCodes || [], ["1"]), `allowed=${JSON.stringify(launch.allowedTierCodes || [])}`));
+  }
 
   const tiers = await fetchJson(`${backendUrl}/high-stakes/tiers`);
   results.push(check("tiers endpoint readable", tiers.ok !== false));
   results.push(check("tiers endpoint has 3 tiers", Array.isArray(tiers.tiers) && tiers.tiers.length === 3, `tiers=${Array.isArray(tiers.tiers) ? tiers.tiers.length : "none"}`));
+  if (expectedMode === "internal") {
+    const enabled = (tiers.tiers || []).filter((tier) => tier.enabled !== false).map((tier) => String(tier.code));
+    results.push(check("tiers endpoint enables only $1", sameSet(enabled, ["1"]), `enabled=${JSON.stringify(enabled)}`));
+  }
 
   const indexer = await fetchJson(`${backendUrl}/indexer/health`);
   results.push(check("indexer endpoint readable", typeof indexer.running === "boolean"));
@@ -52,6 +62,12 @@ async function runLiveMainnetSmoke(options = {}) {
 
 function check(name, ok, detail = "") {
   return { name, ok: Boolean(ok), detail };
+}
+
+function sameSet(actual, expected) {
+  const left = [...new Set((actual || []).map(String))].sort();
+  const right = [...new Set((expected || []).map(String))].sort();
+  return left.length === right.length && left.every((item, index) => item === right[index]);
 }
 
 async function fetchJson(url) {
