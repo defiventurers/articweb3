@@ -11,7 +11,7 @@ const ORIGINAL_ENV = { ...process.env };
 
 function resetEnv(overrides = {}) {
   process.env = { ...ORIGINAL_ENV, ...overrides };
-  for (const key of ["UNLOCK_ALL_REHEARSAL_TIERS", "ALLOWED_REHEARSAL_TIERS"]) {
+  for (const key of ["LOCKED_MATCH_MODE", "UNLOCK_ALL_REHEARSAL_TIERS", "ALLOWED_REHEARSAL_TIERS"]) {
     if (!(key in overrides)) delete process.env[key];
   }
 }
@@ -24,6 +24,12 @@ assert.deepEqual(getAllowedHighStakesTierCodes(internal), ["1"]);
 assert.equal(isHighStakesTierAllowed("1", internal), true);
 assert.equal(isHighStakesTierAllowed("4", internal), false);
 assert.match(getHighStakesTierBlockReason("16", internal), /internal mainnet rehearsal/);
+
+resetEnv({ LOCKED_MATCH_MODE: "internal" });
+assert.deepEqual(getAllowedHighStakesTierCodes(), ["1"]);
+assert.equal(isHighStakesTierAllowed("1"), true);
+assert.equal(isHighStakesTierAllowed("4"), false);
+assert.match(getHighStakesTierBlockReason("4"), /Use the \$1 tier/);
 
 resetEnv({ ALLOWED_REHEARSAL_TIERS: "1,4" });
 assert.deepEqual(getAllowedHighStakesTierCodes(internal), ["1", "4"]);
