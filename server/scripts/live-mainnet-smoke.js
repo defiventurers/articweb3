@@ -4,35 +4,40 @@ const fs = require("fs");
 const path = require("path");
 const { runLiveMainnetSmoke } = require("../liveMainnetSmoke.js");
 
-runLiveMainnetSmoke()
-  .then((report) => {
-    for (const result of report.results) {
-      const marker = result.ok ? "PASS" : "FAIL";
-      const detail = result.detail ? ` - ${result.detail}` : "";
-      console.log(`[${marker}] ${result.name}${detail}`);
-    }
+if (require.main === module) {
+  runLiveMainnetSmoke()
+    .then((report) => {
+      for (const result of report.results) {
+        const marker = result.ok ? "PASS" : "FAIL";
+        const detail = result.detail ? ` - ${result.detail}` : "";
+        console.log(`[${marker}] ${result.name}${detail}`);
+      }
 
-    const summary = {
-      ok: report.ok,
-      backendUrl: report.backendUrl,
-      expectedMode: report.expectedMode,
-      expectedChainId: report.expectedChainId,
-      passed: report.passed,
-      failed: report.failed,
-      generatedAt: report.generatedAt
-    };
+      const summary = summarizeReport(report);
+      console.log(JSON.stringify(summary, null, 2));
+      writeReports(report, summary);
 
-    console.log(JSON.stringify(summary, null, 2));
-    writeReports(report, summary);
+      if (!report.ok) process.exitCode = 1;
+    })
+    .catch((err) => {
+      console.error(`[FAIL] live mainnet smoke crashed: ${err.message || err}`);
+      process.exitCode = 1;
+    });
+}
 
-    if (!report.ok) process.exitCode = 1;
-  })
-  .catch((err) => {
-    console.error(`[FAIL] live mainnet smoke crashed: ${err.message || err}`);
-    process.exitCode = 1;
-  });
+function summarizeReport(report) {
+  return {
+    ok: report.ok,
+    backendUrl: report.backendUrl,
+    expectedMode: report.expectedMode,
+    expectedChainId: report.expectedChainId,
+    passed: report.passed,
+    failed: report.failed,
+    generatedAt: report.generatedAt
+  };
+}
 
-function writeReports(report, summary) {
+function writeReports(report, summary = summarizeReport(report)) {
   const reportPath = process.env.SMOKE_REPORT_PATH || "";
   const markdownPath = process.env.SMOKE_MARKDOWN_PATH || "";
   const githubSummaryPath = process.env.GITHUB_STEP_SUMMARY || "";
@@ -44,7 +49,7 @@ function writeReports(report, summary) {
   if (githubSummaryPath) fs.appendFileSync(githubSummaryPath, markdown, "utf8");
 }
 
-function buildMarkdownReport(report, summary) {
+function buildMarkdownReport(report, summary = summarizeReport(report)) {
   const rows = report.results
     .map((result) => `| ${result.ok ? "PASS" : "FAIL"} | ${escapePipe(result.name)} | ${escapePipe(result.detail || "")} |`)
     .join("\n");
@@ -73,3 +78,9 @@ function writeFile(filePath, content) {
 function escapePipe(value) {
   return String(value ?? "").replace(/\|/g, "\\|");
 }
+
+module.exports = {
+  buildMarkdownReport,
+  summarizeReport,
+  writeReports
+};
