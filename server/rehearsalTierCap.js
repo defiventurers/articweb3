@@ -21,8 +21,12 @@ function normalizeTierCode(value) {
   return ALL_TIER_CODES.includes(code) ? code : "1";
 }
 
+function launchModeFromStatus(launchStatus = {}) {
+  return String(launchStatus.lockedMatchMode || launchStatus.mode || process.env.LOCKED_MATCH_MODE || "off").trim().toLowerCase();
+}
+
 function getAllowedHighStakesTierCodes(launchStatus = {}) {
-  const mode = launchStatus.lockedMatchMode || launchStatus.mode || "off";
+  const mode = launchModeFromStatus(launchStatus);
   if (mode === "internal") {
     if (truthyEnv("UNLOCK_ALL_REHEARSAL_TIERS", false)) return [...ALL_TIER_CODES];
     const configured = csvEnv("ALLOWED_REHEARSAL_TIERS", DEFAULT_INTERNAL_ALLOWED_TIERS)
@@ -44,13 +48,14 @@ function getHighStakesTierBlockReason(code, launchStatus = {}) {
 }
 
 function applyTierCapToSnapshot(snapshot = {}, launchStatus = {}) {
+  const mode = launchModeFromStatus(launchStatus);
   const allowedTierCodes = getAllowedHighStakesTierCodes(launchStatus);
   const tiers = Array.isArray(snapshot.tiers) ? snapshot.tiers : [];
   return {
     ...snapshot,
     allowedTierCodes,
     tierCap: {
-      mode: launchStatus.lockedMatchMode || launchStatus.mode || "off",
+      mode,
       allowedTierCodes,
       unlockAllEnv: "UNLOCK_ALL_REHEARSAL_TIERS",
       allowedTiersEnv: "ALLOWED_REHEARSAL_TIERS"
