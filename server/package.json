@@ -9,7 +9,8 @@
     "start:mainnet": "node scripts/check-env.mjs mainnet && node -r dotenv/config scripts/start-with-runtime-status.js dotenv_config_path=.env.mainnet",
     "check:testnet": "node scripts/check-env.mjs testnet",
     "check:mainnet": "node scripts/check-env.mjs mainnet",
-    "index:vault": "node scripts/index-vault-events.js"
+    "index:vault": "node scripts/index-vault-events.js",
+    "smoke:mainnet": "node scripts/live-mainnet-smoke.js"
   },
   "dependencies": {
     "dotenv": "latest",
