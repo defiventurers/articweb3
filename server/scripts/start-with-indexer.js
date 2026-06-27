@@ -282,7 +282,7 @@ function payoutTotalWei(room) {
 }
 
 function lastAuditAt(room, type) {
-  const item = [...(room.auditLog || [])].reverse().find((event) => event?.type);
+  const item = [...(room.auditLog || [])].reverse().find((event) => event?.type === type);
   return item?.at || null;
 }
 
