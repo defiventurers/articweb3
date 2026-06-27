@@ -17,7 +17,10 @@ on:
       - "server/tests/live-mainnet-smoke.test.js"
       - "server/tests/locked-match-rehearsal-evidence.test.js"
       - "server/tests/anti-cheat-transform.test.js"
+      - "server/tests/server-hardening-phases.test.js"
       - "ops/smoke/live-mainnet-smoke-checklist.md"
+      - "ops/security/phase-45-anti-cheat-checklist.md"
+      - "ops/security/phase-46-50-hardening-checklist.md"
       - ".github/workflows/launch-mode.yml"
       - ".github/workflows/live-mainnet-smoke.yml"
       - ".github/workflows/locked-match-rehearsal-evidence.yml"
@@ -37,7 +40,10 @@ on:
       - "server/tests/live-mainnet-smoke.test.js"
       - "server/tests/locked-match-rehearsal-evidence.test.js"
       - "server/tests/anti-cheat-transform.test.js"
+      - "server/tests/server-hardening-phases.test.js"
       - "ops/smoke/live-mainnet-smoke-checklist.md"
+      - "ops/security/phase-45-anti-cheat-checklist.md"
+      - "ops/security/phase-46-50-hardening-checklist.md"
       - ".github/workflows/launch-mode.yml"
       - ".github/workflows/live-mainnet-smoke.yml"
       - ".github/workflows/locked-match-rehearsal-evidence.yml"
@@ -70,3 +76,6 @@ jobs:
 
       - name: Run anti-cheat transform evidence test
         run: node server/tests/anti-cheat-transform.test.js
+
+      - name: Run server hardening phase evidence test
+        run: node server/tests/server-hardening-phases.test.js
