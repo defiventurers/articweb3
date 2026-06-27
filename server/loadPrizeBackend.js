@@ -168,12 +168,12 @@ function replaceMessageIngressGates(source) {
 }
 
 function replaceAuditHashChain(source) {
-  const replacement = 'function audit(room, event) { room.auditLog = room.auditLog || []; const seq = room.auditLog.length + 1; const previousHash = room.lastAuditHash || null; const eventBody = { at: Date.now(), seq, previousHash, ...event }; const eventHash = sha256(JSON.stringify({ roomCode: room.roomCode, matchId: room.matchId, contractMatchId: room.contractMatchId, event: eventBody })); room.lastAuditHash = eventHash; room.auditLog.push({ ...eventBody, eventHash }); }';
+  const replacement = 'function audit(room, event) { room.auditLog = room.auditLog || []; const seq = room.auditLog.length + 1; const previousHash = room.lastAuditHash || room.auditLog[room.auditLog.length - 1]?.eventHash || null; const eventBody = { at: Date.now(), seq, previousHash, ...event }; const eventHash = sha256(JSON.stringify({ roomCode: room.roomCode, matchId: room.matchId, contractMatchId: room.contractMatchId, event: eventBody })); room.lastAuditHash = eventHash; room.auditLog.push({ ...eventBody, eventHash }); }';
   return replaceFunctionByName(source, "function audit(room, event)", replacement);
 }
 
 function replaceLeaderboardAwardGuard(source) {
-  const replacement = 'function addPoints(wallet, points, won) { const normalizedWallet = walletOf(wallet); if (!normalizedWallet || isBotWallet(normalizedWallet)) return; const profile = profileFor(normalizedWallet); if (!profile) return; profile.points += points; profile.gamesPlayed += 1; if (won) profile.wins += 1; profiles.set(normalizedWallet, profile); addProfileStats(normalizedWallet, points, won).catch((err) => console.error(`[profile-db] stat update failed wallet=${normalizedWallet}: ${err.message}`)); }';
+  const replacement = 'function addPoints(wallet, points, won) { const normalizedWallet = walletOf(wallet); if (!normalizedWallet || isBotWallet(normalizedWallet)) return; const profile = profileFor(normalizedWallet); if (profile) { profile.points += points; profile.gamesPlayed += 1; if (won) profile.wins += 1; profiles.set(normalizedWallet, profile); } addProfileStats(normalizedWallet, points, won).catch((err) => console.error(`[profile-db] stat update failed wallet=${normalizedWallet}: ${err.message}`)); }';
   return replaceFunctionByName(source, "function addPoints(wallet, points, won)", replacement);
 }
 
