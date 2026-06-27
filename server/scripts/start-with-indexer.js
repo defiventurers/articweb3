@@ -6,6 +6,7 @@ const { getRecentIndexedVaultEvents, getIndexedVaultEventStats } = require("../v
 const { getMainnetPreflight } = require("../mainnetPreflight.js");
 const { getHighStakesTierSnapshot, refreshHighStakesTierSnapshot } = require("../highStakesTiers.js");
 const { getLaunchStatus } = require("../launchMode.js");
+const { applyTierCapToSnapshot } = require("../rehearsalTierCap.js");
 const { loadRooms, roomStoreStatus } = require("../roomStore.js");
 const { historyStoreStatus } = require("../historyStore.js");
 
@@ -41,7 +42,7 @@ http.createServer = function createServerWithIndexerControls(listener) {
 
     if (req.method === "GET" && path === "/high-stakes/tiers") {
       res.writeHead(200, { ...CORS_HEADERS, "Content-Type": "application/json", "Cache-Control": "no-store" });
-      res.end(JSON.stringify(getHighStakesTierSnapshot()));
+      res.end(JSON.stringify(applyTierCapToSnapshot(getHighStakesTierSnapshot(), getLaunchStatus())));
       return;
     }
 
