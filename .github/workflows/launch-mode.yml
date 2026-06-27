@@ -7,9 +7,13 @@ on:
       - "server/loadPrizeBackend.js"
       - "server/runtimeStatus.js"
       - "server/runtimeStatusBootstrap.js"
+      - "server/liveMainnetSmoke.js"
       - "server/scripts/start-with-runtime-status.js"
+      - "server/scripts/live-mainnet-smoke.js"
       - "server/tests/launch-mode.test.js"
       - "server/tests/runtime-status.test.js"
+      - "server/tests/live-mainnet-smoke.test.js"
+      - "ops/smoke/live-mainnet-smoke-checklist.md"
       - ".github/workflows/launch-mode.yml"
   pull_request:
     paths:
@@ -17,9 +21,13 @@ on:
       - "server/loadPrizeBackend.js"
       - "server/runtimeStatus.js"
       - "server/runtimeStatusBootstrap.js"
+      - "server/liveMainnetSmoke.js"
       - "server/scripts/start-with-runtime-status.js"
+      - "server/scripts/live-mainnet-smoke.js"
       - "server/tests/launch-mode.test.js"
       - "server/tests/runtime-status.test.js"
+      - "server/tests/live-mainnet-smoke.test.js"
+      - "ops/smoke/live-mainnet-smoke-checklist.md"
       - ".github/workflows/launch-mode.yml"
   workflow_dispatch:
 
@@ -41,3 +49,6 @@ jobs:
 
       - name: Run runtime status evidence test
         run: node server/tests/runtime-status.test.js
+
+      - name: Run live mainnet smoke evidence test
+        run: node server/tests/live-mainnet-smoke.test.js
