@@ -70,18 +70,19 @@ function findFunctionEnd(source, startIndex) {
     }
   }
 
-  throw new Error("Unable to locate end of buildPayoutPlan.");
+  throw new Error("Unable to locate function end.");
+}
+
+function replaceFunctionByName(source, signature, replacement) {
+  const start = source.indexOf(signature);
+  if (start === -1) throw new Error(`Unable to locate ${signature}.`);
+  const openBrace = source.indexOf("{", start);
+  if (openBrace === -1) throw new Error(`Unable to locate ${signature} body.`);
+  const end = findFunctionEnd(source, openBrace);
+  return `${source.slice(0, start)}${replacement}${source.slice(end)}`;
 }
 
 function replaceBuildPayoutPlan(source) {
-  const signature = "function buildPayoutPlan(room, placements)";
-  const start = source.indexOf(signature);
-  if (start === -1) throw new Error("Unable to locate buildPayoutPlan.");
-
-  const openBrace = source.indexOf("{", start);
-  if (openBrace === -1) throw new Error("Unable to locate buildPayoutPlan body.");
-
-  const end = findFunctionEnd(source, openBrace);
   const replacement = `function buildPayoutPlan(room, placements) {
   const entry = BigInt(room.entryWei || "0");
   const payouts = [entry * 3n, entry * 1n, 0n, 0n];
@@ -95,7 +96,7 @@ function replaceBuildPayoutPlan(source) {
   }));
 }`;
 
-  return `${source.slice(0, start)}${replacement}${source.slice(end)}`;
+  return replaceFunctionByName(source, "function buildPayoutPlan(room, placements)", replacement);
 }
 
 function injectLaunchModeRequire(source) {
@@ -142,8 +143,29 @@ function replaceLaunchModeGate(source) {
   return transformed;
 }
 
+function replaceClientVaultActivityWrites(source) {
+  const replacement = 'async function recordVaultActivity(ws, requestId, payload = {}) { return fail(ws, requestId, "Client-side vault activity writes are disabled. Vault activity is recorded by verified server flows only."); }';
+  return replaceFunctionByName(source, "async function recordVaultActivity(ws, requestId, payload = {})", replacement);
+}
+
+function replaceEndTurnGate(source) {
+  const replacement = 'function gameEndTurn(ws, requestId, payload) { const room = requirePlayingRoom(ws, requestId, payload); if (!room) return; const activeTeam = currentTeam(room.gameState); if (!room.gameState.dice.rolled) return fail(ws, requestId, "Roll dice before ending your turn."); if (hasAnyLegalMoveForTeam(room.gameState, activeTeam)) return fail(ws, requestId, "You still have a legal move."); audit(room, { type: "turn_ended", wallet: walletOf(payload.wallet), team: activeTeam }); room.gameState = endTurn(room.gameState); finalizeGameIfOver(room); ok(ws, requestId, "game_action_result", { room: view(room) }); broadcast(room); scheduleBotIfNeeded(room); }';
+  return replaceFunctionByName(source, "function gameEndTurn(ws, requestId, payload)", replacement);
+}
+
+function replaceHealthAntiCheatFlags(source) {
+  const needle = "settlementOnce: true, onChainSettlementCheck: true";
+  const replacement = "settlementOnce: true, onChainSettlementCheck: true, serverOnlyVaultActivity: true, noVoluntarySkipWithLegalMoves: true";
+  if (!source.includes(needle) || source.includes("serverOnlyVaultActivity")) return source;
+  return source.replace(needle, replacement);
+}
+
+function replaceAntiCheatGates(source) {
+  return replaceHealthAntiCheatFlags(replaceEndTurnGate(replaceClientVaultActivityWrites(source)));
+}
+
 function transformBackendSource(source) {
-  return replaceLaunchModeGate(replaceBuildPayoutPlan(source));
+  return replaceAntiCheatGates(replaceLaunchModeGate(replaceBuildPayoutPlan(source)));
 }
 
 function loadPrizeBackend() {
@@ -164,6 +186,9 @@ module.exports = {
   loadPrizeBackend,
   replaceBuildPayoutPlan,
   replaceLaunchModeGate,
+  replaceAntiCheatGates,
+  replaceClientVaultActivityWrites,
+  replaceEndTurnGate,
   transformBackendSource,
   HIGH_STAKES_PAYOUT_MULTIPLIERS,
   HIGH_STAKES_POINTS
