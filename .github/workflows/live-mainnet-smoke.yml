@@ -1,0 +1,53 @@
+name: Live Mainnet Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: "Render backend HTTPS URL, for example https://your-service.onrender.com"
+        required: true
+        type: string
+      expected_mode:
+        description: "Expected LOCKED_MATCH_MODE"
+        required: true
+        default: "internal"
+        type: choice
+        options:
+          - internal
+          - testnet
+          - off
+          - public
+      expected_chain_id:
+        description: "Expected Abstract chain ID"
+        required: true
+        default: "2741"
+        type: string
+
+jobs:
+  live-mainnet-smoke:
+    name: Smoke deployed backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Run live mainnet smoke
+        working-directory: server
+        env:
+          BACKEND_URL: ${{ inputs.backend_url }}
+          EXPECTED_LOCKED_MATCH_MODE: ${{ inputs.expected_mode }}
+          EXPECTED_ABSTRACT_CHAIN_ID: ${{ inputs.expected_chain_id }}
+        run: npm run smoke:mainnet
