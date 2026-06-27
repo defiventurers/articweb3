@@ -1,3 +1,5 @@
+const { getAllowedHighStakesTierCodes } = require("./rehearsalTierCap.js");
+
 const VALID_LOCKED_MATCH_MODES = new Set(["off", "testnet", "internal", "public"]);
 
 function truthyEnv(name, fallback = false) {
@@ -48,6 +50,13 @@ function getLaunchStatus() {
 
   status.highStakesBlockReason = highStakesBlockReasonForStatus(status);
   status.highStakesAllowed = !status.highStakesBlockReason;
+  status.allowedTierCodes = getAllowedHighStakesTierCodes(status);
+  status.tierCap = {
+    mode,
+    allowedTierCodes: status.allowedTierCodes,
+    unlockAllEnv: "UNLOCK_ALL_REHEARSAL_TIERS",
+    allowedTiersEnv: "ALLOWED_REHEARSAL_TIERS"
+  };
   return status;
 }
 
