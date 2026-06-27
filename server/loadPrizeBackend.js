@@ -153,19 +153,84 @@ function replaceEndTurnGate(source) {
   return replaceFunctionByName(source, "function gameEndTurn(ws, requestId, payload)", replacement);
 }
 
-function replaceHealthAntiCheatFlags(source) {
-  const needle = "settlementOnce: true, onChainSettlementCheck: true";
-  const replacement = "settlementOnce: true, onChainSettlementCheck: true, serverOnlyVaultActivity: true, noVoluntarySkipWithLegalMoves: true";
-  if (!source.includes(needle) || source.includes("serverOnlyVaultActivity")) return source;
+function replaceLoginSessionBinding(source) {
+  const needle = 'profiles.set(wallet, profile); sockets.set(wallet, ws); return ok(ws, requestId, "profile_login_result", { profile });';
+  const replacement = 'profiles.set(wallet, profile); ws.authorizedWallet = wallet; sockets.set(wallet, ws); return ok(ws, requestId, "profile_login_result", { profile });';
+  if (!source.includes(needle) || source.includes("ws.authorizedWallet = wallet")) return source;
   return source.replace(needle, replacement);
+}
+
+function replaceMessageIngressGates(source) {
+  const needle = 'const { type, requestId, payload = {} } = packet; if (type === "profile_login")';
+  const replacement = 'const { type, requestId, payload = {} } = packet; const now = Date.now(); ws.rateLimit = ws.rateLimit || { windowStartedAt: now, count: 0, roomCreateStartedAt: now, roomCreateCount: 0 }; if (now - ws.rateLimit.windowStartedAt > 10000) ws.rateLimit = { ...ws.rateLimit, windowStartedAt: now, count: 0 }; ws.rateLimit.count += 1; if (ws.rateLimit.count > 120) return fail(ws, requestId, "Too many requests. Slow down."); if (type === "room_create") { if (now - ws.rateLimit.roomCreateStartedAt > 60000) { ws.rateLimit.roomCreateStartedAt = now; ws.rateLimit.roomCreateCount = 0; } ws.rateLimit.roomCreateCount += 1; if (ws.rateLimit.roomCreateCount > 8) return fail(ws, requestId, "Too many room create attempts. Try again later."); } const protectedTypes = new Set(["game_history", "my_rooms", "vault_activity", "vault_activity_record", "room_create", "room_join", "room_confirm_entry", "room_select_team", "dev_fill_room", "game_state", "game_roll_dice", "game_select_square", "game_end_turn"]); const payloadWallet = walletOf(payload.wallet || payload.address); if (protectedTypes.has(type) && !ws.authorizedWallet) return fail(ws, requestId, "Login with this wallet before using this action."); if (payloadWallet && ws.authorizedWallet && payloadWallet !== ws.authorizedWallet) return fail(ws, requestId, "Wallet session mismatch. Log in again with this wallet."); if (type === "profile_login")';
+  if (!source.includes(needle) || source.includes("Wallet session mismatch. Log in again with this wallet.")) return source;
+  return source.replace(needle, replacement);
+}
+
+function replaceAuditHashChain(source) {
+  const replacement = 'function audit(room, event) { room.auditLog = room.auditLog || []; const seq = room.auditLog.length + 1; const previousHash = room.lastAuditHash || null; const eventBody = { at: Date.now(), seq, previousHash, ...event }; const eventHash = sha256(JSON.stringify({ roomCode: room.roomCode, matchId: room.matchId, contractMatchId: room.contractMatchId, event: eventBody })); room.lastAuditHash = eventHash; room.auditLog.push({ ...eventBody, eventHash }); }';
+  return replaceFunctionByName(source, "function audit(room, event)", replacement);
+}
+
+function replaceLeaderboardAwardGuard(source) {
+  const replacement = 'function addPoints(wallet, points, won) { const normalizedWallet = walletOf(wallet); if (!normalizedWallet || isBotWallet(normalizedWallet)) return; const profile = profileFor(normalizedWallet); if (!profile) return; profile.points += points; profile.gamesPlayed += 1; if (won) profile.wins += 1; profiles.set(normalizedWallet, profile); addProfileStats(normalizedWallet, points, won).catch((err) => console.error(`[profile-db] stat update failed wallet=${normalizedWallet}: ${err.message}`)); }';
+  return replaceFunctionByName(source, "function addPoints(wallet, points, won)", replacement);
+}
+
+function injectHighStakesRoomStatus(source) {
+  if (source.includes("function highStakesRoomStatus(room)")) return source;
+  const needle = 'function highStakesReady(room) { const ps = players(room); return ps.length === 4 && realPlayers(room).length === 4 && ps.every((p) => p.entryLocked) && teamsAreReady(room); }';
+  const helper = `${needle}\nfunction highStakesRoomStatus(room) { if (room.roomMode !== ROOM_MODES.HIGH_STAKES) return null; const ps = players(room); const lockedCount = ps.filter((p) => p.entryLocked).length; const requiredCount = 4; let nextAction = "waiting_for_players"; if (ps.length === 4 && lockedCount < requiredCount) nextAction = "waiting_for_entry_locks"; else if (ps.length === 4 && !teamsAreReady(room)) nextAction = "waiting_for_teams"; else if (room.status === "playing") nextAction = "match_in_progress"; else if (room.status === "finished" && room.settlementStatus === "settled") nextAction = "settled"; else if (room.status === "finished") nextAction = room.settlementStatus || "settlement_pending"; else if (roomCanCountdown(room)) nextAction = "ready_countdown"; return { enabled: true, lockedCount, requiredCount, allEntriesLocked: lockedCount === requiredCount, realPlayerCount: realPlayers(room).length, settlementStatus: room.settlementStatus || null, settlementTxHash: room.settlementTxHash || null, settlementError: room.settlementError || null, settlementAttempts: room.settlementAttempts || 0, nextAction }; }`;
+  if (!source.includes(needle)) throw new Error("Unable to locate highStakesReady for room status helper.");
+  return source.replace(needle, helper);
+}
+
+function injectHighStakesStatusInView(source) {
+  const needle = 'settlementCheckedAt: room.settlementCheckedAt || null, proofHash: room.proofHash || null,';
+  const replacement = 'settlementCheckedAt: room.settlementCheckedAt || null, highStakesStatus: highStakesRoomStatus(room), proofHash: room.proofHash || null,';
+  if (!source.includes(needle) || source.includes("highStakesStatus: highStakesRoomStatus(room)")) return source;
+  return source.replace(needle, replacement);
+}
+
+function appendAntiCheatFlag(source, anchor, flag) {
+  if (source.includes(flag)) return source;
+  if (!source.includes(anchor)) throw new Error(`Unable to locate anti-cheat health flag anchor: ${anchor}`);
+  return source.replace(anchor, `${anchor}, ${flag}`);
+}
+
+function replaceHealthAntiCheatFlags(source) {
+  let transformed = source;
+  transformed = appendAntiCheatFlag(transformed, "onChainSettlementCheck: true", "serverOnlyVaultActivity: true");
+  transformed = appendAntiCheatFlag(transformed, "serverOnlyVaultActivity: true", "noVoluntarySkipWithLegalMoves: true");
+  transformed = appendAntiCheatFlag(transformed, "noVoluntarySkipWithLegalMoves: true", "walletSessionBound: true");
+  transformed = appendAntiCheatFlag(transformed, "walletSessionBound: true", "rateLimitedWsActions: true");
+  transformed = appendAntiCheatFlag(transformed, "rateLimitedWsActions: true", "auditHashChain: true");
+  transformed = appendAntiCheatFlag(transformed, "auditHashChain: true", "leaderboardServerAwardOnly: true");
+  return transformed;
 }
 
 function replaceAntiCheatGates(source) {
   return replaceHealthAntiCheatFlags(replaceEndTurnGate(replaceClientVaultActivityWrites(source)));
 }
 
+function replaceSessionAndRateLimitGates(source) {
+  return replaceMessageIngressGates(replaceLoginSessionBinding(source));
+}
+
+function replaceReplayEvidence(source) {
+  return replaceAuditHashChain(source);
+}
+
+function replaceLeaderboardIntegrity(source) {
+  return replaceLeaderboardAwardGuard(source);
+}
+
+function replaceHighStakesUxStatus(source) {
+  return injectHighStakesStatusInView(injectHighStakesRoomStatus(source));
+}
+
 function transformBackendSource(source) {
-  return replaceAntiCheatGates(replaceLaunchModeGate(replaceBuildPayoutPlan(source)));
+  return replaceHighStakesUxStatus(replaceLeaderboardIntegrity(replaceReplayEvidence(replaceSessionAndRateLimitGates(replaceAntiCheatGates(replaceLaunchModeGate(replaceBuildPayoutPlan(source)))))));
 }
 
 function loadPrizeBackend() {
@@ -189,6 +254,12 @@ module.exports = {
   replaceAntiCheatGates,
   replaceClientVaultActivityWrites,
   replaceEndTurnGate,
+  replaceSessionAndRateLimitGates,
+  replaceLoginSessionBinding,
+  replaceMessageIngressGates,
+  replaceReplayEvidence,
+  replaceLeaderboardIntegrity,
+  replaceHighStakesUxStatus,
   transformBackendSource,
   HIGH_STAKES_PAYOUT_MULTIPLIERS,
   HIGH_STAKES_POINTS
