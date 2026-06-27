@@ -28,7 +28,8 @@ Protected actions include room create/join, entry confirmation, team selection, 
 ## Phase 49: Leaderboard Integrity
 
 - Bot wallets are not awarded leaderboard stats.
-- Missing-profile wallets are not awarded persisted stats.
+- In-memory profile stats update only when the profile is loaded.
+- Persisted DB stats still update through `addProfileStats`, which only updates existing profile rows.
 - Points remain awarded only through server-side match finalization.
 
 ## Phase 50: Mainnet Rehearsal UX Cleanup
