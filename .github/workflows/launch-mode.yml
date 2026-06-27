@@ -8,14 +8,18 @@ on:
       - "server/runtimeStatus.js"
       - "server/runtimeStatusBootstrap.js"
       - "server/liveMainnetSmoke.js"
+      - "server/lockedMatchRehearsalEvidence.js"
       - "server/scripts/start-with-runtime-status.js"
       - "server/scripts/live-mainnet-smoke.js"
+      - "server/scripts/locked-match-rehearsal-evidence.js"
       - "server/tests/launch-mode.test.js"
       - "server/tests/runtime-status.test.js"
       - "server/tests/live-mainnet-smoke.test.js"
+      - "server/tests/locked-match-rehearsal-evidence.test.js"
       - "ops/smoke/live-mainnet-smoke-checklist.md"
       - ".github/workflows/launch-mode.yml"
       - ".github/workflows/live-mainnet-smoke.yml"
+      - ".github/workflows/locked-match-rehearsal-evidence.yml"
   pull_request:
     paths:
       - "server/launchMode.js"
@@ -23,14 +27,18 @@ on:
       - "server/runtimeStatus.js"
       - "server/runtimeStatusBootstrap.js"
       - "server/liveMainnetSmoke.js"
+      - "server/lockedMatchRehearsalEvidence.js"
       - "server/scripts/start-with-runtime-status.js"
       - "server/scripts/live-mainnet-smoke.js"
+      - "server/scripts/locked-match-rehearsal-evidence.js"
       - "server/tests/launch-mode.test.js"
       - "server/tests/runtime-status.test.js"
       - "server/tests/live-mainnet-smoke.test.js"
+      - "server/tests/locked-match-rehearsal-evidence.test.js"
       - "ops/smoke/live-mainnet-smoke-checklist.md"
       - ".github/workflows/launch-mode.yml"
       - ".github/workflows/live-mainnet-smoke.yml"
+      - ".github/workflows/locked-match-rehearsal-evidence.yml"
   workflow_dispatch:
 
 jobs:
@@ -54,3 +62,6 @@ jobs:
 
       - name: Run live mainnet smoke evidence test
         run: node server/tests/live-mainnet-smoke.test.js
+
+      - name: Run locked match rehearsal evidence test
+        run: node server/tests/locked-match-rehearsal-evidence.test.js
