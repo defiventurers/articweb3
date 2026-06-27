@@ -99,20 +99,13 @@ function replaceBuildPayoutPlan(source) {
 }
 
 function injectLaunchModeRequire(source) {
-  let transformed = source;
+  if (source.includes("getHighStakesLaunchBlockReason")) return source;
+
   const roomStoreRequirePattern = /const\s+\{[^}]*\bloadRooms\b[^}]*\bsaveRoom\b[^}]*\}\s*=\s*require\(\"\.\/roomStore\.js\"\);|const\s+\{[^}]*\bsaveRoom\b[^}]*\bloadRooms\b[^}]*\}\s*=\s*require\(\"\.\/roomStore\.js\"\);/;
-  const match = transformed.match(roomStoreRequirePattern);
+  const match = source.match(roomStoreRequirePattern);
   if (!match) throw new Error("Unable to locate roomStore require for launch mode gate.");
 
-  const inserts = [];
-  if (!transformed.includes("getHighStakesLaunchBlockReason")) {
-    inserts.push('const { getHighStakesLaunchBlockReason } = require("./launchMode.js");');
-  }
-  if (!transformed.includes("getHighStakesTierBlockReason")) {
-    inserts.push('const { getHighStakesTierBlockReason } = require("./rehearsalTierCap.js");');
-  }
-  if (!inserts.length) return transformed;
-  return transformed.replace(match[0], `${match[0]}\n${inserts.join("\n")}`);
+  return source.replace(match[0], `${match[0]}\nconst { getHighStakesLaunchBlockReason } = require("./launchMode.js");`);
 }
 
 function replaceLaunchModeGate(source) {
@@ -126,7 +119,7 @@ function replaceLaunchModeGate(source) {
   }
 
   const createNeedle = 'const roomMode = normalizeRoomMode(payload.roomMode); const entryTier = normalizeEntryTier(payload.entryTier); if (roomMode === ROOM_MODES.HIGH_STAKES && !HIGH_STAKES_ENABLED) return fail(ws, requestId, "High Stakes rooms are not enabled yet.");';
-  const createReplacement = 'const roomMode = normalizeRoomMode(payload.roomMode); const entryTier = normalizeEntryTier(payload.entryTier); const launchReason = getHighStakesLaunchBlockReason(roomMode); if (launchReason) return fail(ws, requestId, launchReason); const tierReason = roomMode === ROOM_MODES.HIGH_STAKES ? getHighStakesTierBlockReason(entryTier.code) : ""; if (tierReason) return fail(ws, requestId, tierReason); if (roomMode === ROOM_MODES.HIGH_STAKES && !HIGH_STAKES_ENABLED) return fail(ws, requestId, "High Stakes rooms are not enabled yet.");';
+  const createReplacement = 'const roomMode = normalizeRoomMode(payload.roomMode); const entryTier = normalizeEntryTier(payload.entryTier); const launchReason = getHighStakesLaunchBlockReason(roomMode); if (launchReason) return fail(ws, requestId, launchReason); if (roomMode === ROOM_MODES.HIGH_STAKES && !HIGH_STAKES_ENABLED) return fail(ws, requestId, "High Stakes rooms are not enabled yet.");';
   if (!transformed.includes(createReplacement)) {
     if (!transformed.includes(createNeedle)) throw new Error("Unable to locate createRoom for launch mode gate.");
     transformed = transformed.replace(createNeedle, createReplacement);
