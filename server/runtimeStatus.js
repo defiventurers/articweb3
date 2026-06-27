@@ -1,10 +1,7 @@
-const { applyTierCapToSnapshot } = require("./rehearsalTierCap.js");
-
 function buildRuntimeStatus(deps = {}) {
   const launch = safeRead(deps.getLaunchStatus, { ok: false, error: "launch status unavailable" });
   const indexer = safeRead(deps.getVaultIndexerHealth, { running: false, lastError: "indexer health unavailable" });
-  const rawTiers = safeRead(deps.getHighStakesTierSnapshot, { ok: false, error: "tier snapshot unavailable" });
-  const tiers = applyTierCapToSnapshot(rawTiers, launch);
+  const tiers = safeRead(deps.getHighStakesTierSnapshot, { ok: false, error: "tier snapshot unavailable" });
   const roomStore = safeRead(deps.roomStoreStatus, { databaseReady: false, error: "room store status unavailable" });
   const historyStore = safeRead(deps.historyStoreStatus, { databaseReady: false, error: "history store status unavailable" });
 
@@ -21,8 +18,6 @@ function buildRuntimeStatus(deps = {}) {
     highStakes: {
       allowed: Boolean(launch.highStakesAllowed),
       blockReason: launch.highStakesBlockReason || "",
-      allowedTierCodes: tiers.allowedTierCodes || [],
-      tierCap: tiers.tierCap || null,
       tiers: tierSummary
     },
     indexer: indexerSummary,
@@ -64,15 +59,12 @@ function summarizeTiers(snapshot = {}) {
     source: snapshot.source || null,
     refreshedAt: snapshot.refreshedAt || snapshot.updatedAt || null,
     error: snapshot.error || "",
-    allowedTierCodes: snapshot.allowedTierCodes || [],
     tiers: tiers.map((tier) => ({
       code: tier.code,
       label: tier.label,
       entryFeeUsd: tier.entryFeeUsd,
       entryWei: tier.entryWei,
-      pointMultiplier: tier.pointMultiplier,
-      enabled: tier.enabled !== false,
-      disabledReason: tier.disabledReason || ""
+      pointMultiplier: tier.pointMultiplier
     }))
   };
 }
