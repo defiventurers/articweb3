@@ -48,4 +48,14 @@ jobs:
           BACKEND_URL: ${{ inputs.backend_url }}
           EXPECTED_LOCKED_MATCH_MODE: ${{ inputs.expected_mode }}
           EXPECTED_ABSTRACT_CHAIN_ID: ${{ inputs.expected_chain_id }}
+          SMOKE_REPORT_PATH: ../smoke-artifacts/live-mainnet-smoke-report.json
+          SMOKE_MARKDOWN_PATH: ../smoke-artifacts/live-mainnet-smoke-report.md
         run: npm run smoke:mainnet
+
+      - name: Upload smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-mainnet-smoke-evidence
+          path: smoke-artifacts/
+          if-no-files-found: warn
