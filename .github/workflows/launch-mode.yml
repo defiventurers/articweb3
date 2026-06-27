@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "server/launchMode.js"
+      - "server/rehearsalTierCap.js"
       - "server/loadPrizeBackend.js"
       - "server/runtimeStatus.js"
       - "server/runtimeStatusBootstrap.js"
@@ -13,6 +14,7 @@ on:
       - "server/scripts/live-mainnet-smoke.js"
       - "server/scripts/locked-match-rehearsal-evidence.js"
       - "server/tests/launch-mode.test.js"
+      - "server/tests/rehearsal-tier-cap.test.js"
       - "server/tests/runtime-status.test.js"
       - "server/tests/live-mainnet-smoke.test.js"
       - "server/tests/locked-match-rehearsal-evidence.test.js"
@@ -23,6 +25,7 @@ on:
   pull_request:
     paths:
       - "server/launchMode.js"
+      - "server/rehearsalTierCap.js"
       - "server/loadPrizeBackend.js"
       - "server/runtimeStatus.js"
       - "server/runtimeStatusBootstrap.js"
@@ -32,6 +35,7 @@ on:
       - "server/scripts/live-mainnet-smoke.js"
       - "server/scripts/locked-match-rehearsal-evidence.js"
       - "server/tests/launch-mode.test.js"
+      - "server/tests/rehearsal-tier-cap.test.js"
       - "server/tests/runtime-status.test.js"
       - "server/tests/live-mainnet-smoke.test.js"
       - "server/tests/locked-match-rehearsal-evidence.test.js"
@@ -56,6 +60,9 @@ jobs:
 
       - name: Run launch mode evidence test
         run: node server/tests/launch-mode.test.js
+
+      - name: Run rehearsal tier cap evidence test
+        run: node server/tests/rehearsal-tier-cap.test.js
 
       - name: Run runtime status evidence test
         run: node server/tests/runtime-status.test.js
