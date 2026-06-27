@@ -1,0 +1,75 @@
+name: Locked Match Rehearsal Evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: "Render backend HTTPS URL, for example https://your-service.onrender.com"
+        required: true
+        type: string
+      room_code:
+        description: "Finished $1 High Stakes room code"
+        required: true
+        type: string
+      expected_entry_tier:
+        description: "Expected entry tier code"
+        required: true
+        default: "1"
+        type: choice
+        options:
+          - "1"
+          - "4"
+          - "16"
+      expected_mode:
+        description: "Expected LOCKED_MATCH_MODE"
+        required: true
+        default: "internal"
+        type: choice
+        options:
+          - internal
+          - public
+      notes:
+        description: "Short rehearsal notes"
+        required: false
+        type: string
+
+jobs:
+  locked-match-rehearsal-evidence:
+    name: Capture locked match evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Capture rehearsal evidence
+        working-directory: server
+        env:
+          BACKEND_URL: ${{ inputs.backend_url }}
+          ROOM_CODE: ${{ inputs.room_code }}
+          EXPECTED_ENTRY_TIER: ${{ inputs.expected_entry_tier }}
+          EXPECTED_LOCKED_MATCH_MODE: ${{ inputs.expected_mode }}
+          EXPECTED_ABSTRACT_CHAIN_ID: "2741"
+          REHEARSAL_NOTES: ${{ inputs.notes }}
+          SETTLEMENT_OPERATOR_KEY: ${{ secrets.SETTLEMENT_OPERATOR_KEY }}
+          REHEARSAL_REPORT_PATH: ../rehearsal-artifacts/locked-match-rehearsal-evidence.json
+          REHEARSAL_MARKDOWN_PATH: ../rehearsal-artifacts/locked-match-rehearsal-evidence.md
+        run: node scripts/locked-match-rehearsal-evidence.js
+
+      - name: Upload rehearsal evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: locked-match-rehearsal-evidence
+          path: rehearsal-artifacts/
+          if-no-files-found: warn
