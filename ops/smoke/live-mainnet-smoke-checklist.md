@@ -16,15 +16,6 @@ ETH_VAULT_ADDRESS=<mainnet vault>
 DATABASE_URL=<postgres url>
 ```
 
-Keep these unset unless you deliberately want to unlock higher rehearsal tiers:
-
-```txt
-UNLOCK_ALL_REHEARSAL_TIERS
-ALLOWED_REHEARSAL_TIERS
-```
-
-Default internal rehearsal allows only the `$1` tier.
-
 ## Expected Frontend Env
 
 ```txt
@@ -52,8 +43,6 @@ Pass criteria:
 - `legalPublicMainnetApproved` is `false`.
 - `highStakes.allowed` is `true`.
 - tier count is `3`.
-- internal mode reports `allowedTierCodes: ["1"]`.
-- `/high-stakes/tiers` keeps `$1` enabled and marks `$4` / `$16` disabled.
 - room store and history store are readable.
 - indexer endpoint is readable and has no `lastError`.
 
@@ -82,22 +71,6 @@ Use a wallet with only the small amount needed for rehearsal.
 19. Confirm final placements and payout plan are shown.
 20. Confirm settlement status changes or produces a clear operator/debug state.
 
-## Higher Tier Unlocks
-
-Do not unlock `$4` or `$16` during internal rehearsal unless `$1` has already completed cleanly.
-
-To allow `$1` and `$4` only:
-
-```txt
-ALLOWED_REHEARSAL_TIERS=1,4
-```
-
-To allow all rehearsal tiers:
-
-```txt
-UNLOCK_ALL_REHEARSAL_TIERS=true
-```
-
 ## Operator Endpoint Smoke
 
 If settlement operator key is configured, test with a finished High Stakes room:
@@ -123,7 +96,6 @@ Stop testing immediately if any of these happen:
 - wallet transaction shows an unexpected contract.
 - entry amount differs from selected tier by more than expected ETH price movement.
 - `/runtime/status` says `highStakes.allowed: false`.
-- internal mode enables `$4` or `$16` without an explicit tier unlock env.
 - indexer `lastError` is non-empty.
 - room store or history store is not readable.
 - settlement debug data is missing wallets, payouts, or contract match ID.
@@ -133,4 +105,4 @@ Stop testing immediately if any of these happen:
 
 Internal rehearsal can continue only when all automated backend checks pass and one full small-tier Locked Match flow completes with clean room history, lock records, and settlement/debug visibility.
 
-Public mainnet remains blocked until legal/compliance approval is explicitly recorded and the launch switch is intentionally changed to `public`. 
+Public mainnet remains blocked until legal/compliance approval is explicitly recorded and the launch switch is intentionally changed to `public`.
