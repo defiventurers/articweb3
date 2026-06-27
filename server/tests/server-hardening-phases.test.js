@@ -31,7 +31,8 @@ assert.match(transformed, /auditHashChain: true/, "health anti-cheat flags must 
 
 // Phase 49: leaderboard integrity.
 assert.match(transformed, /isBotWallet\(normalizedWallet\)/, "bot wallets must not receive leaderboard stats");
-assert.match(transformed, /if \(!profile\) return/, "missing profiles must not receive persisted stats");
+assert.match(transformed, /if \(profile\)/, "in-memory profile stats should update only when a profile is loaded");
+assert.match(transformed, /addProfileStats\(normalizedWallet, points, won\)/, "legitimate DB profiles should still receive match stats after restarts");
 assert.match(transformed, /leaderboardServerAwardOnly: true/, "health anti-cheat flags must expose server-only awards");
 
 // Phase 50: mainnet rehearsal UX status.
