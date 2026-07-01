@@ -43,7 +43,7 @@ function summarizeIndexer(health = {}) {
     running: Boolean(health.running),
     totalRuns: Number(health.totalRuns || 0),
     totalIndexed: Number(health.totalIndexed || 0),
-    lastError: health.lastError || health.error || "",
+    lastError: health.error || health.lastError || "",
     lastRunOk: health.lastRun?.ok ?? null,
     lastRunLatest: health.lastRun?.latest ?? null,
     lastRunIndexed: health.lastRun?.indexed ?? null,
