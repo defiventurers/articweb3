@@ -104,7 +104,7 @@ export function OpenIceMenuScreen({ profile, onCreateRoom, onJoinRoom, onRoomJoi
   return (
     <section className="open-ice-image-page openicehub-page" aria-label="Open Ice Hub">
       <div className="open-ice-image-stage openicehub-stage">
-        <OptimizedImage className="open-ice-screen-art" src="/assets/screens/openicehub.png" alt="Open Ice Hub" />
+        <OptimizedImage className="open-ice-screen-art" src="/assets/screens/openicehub.png" desktopSrc="/assets/screens/openicehub-desktop.png" alt="Open Ice Hub" />
 
         {Array.from({ length: OPEN_ICE_ROOMS_PER_PAGE }, (_, index) => roomSlot(index))}
 
