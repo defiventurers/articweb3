@@ -24,6 +24,7 @@ import "./styles/dataScreensPolish.css";
 import "./styles/calibration.css";
 import "./styles/calibratedOverrides.css";
 import "./styles/desktopCalibrationFixes.css";
+import "./utils/playerHubCalibrationSeed.js";
 import "./utils/highstakesCalibrationExport.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
