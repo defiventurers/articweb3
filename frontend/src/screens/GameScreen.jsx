@@ -11,7 +11,7 @@ const TEAM_ASSET_COLOR = { green: "green", red: "red", blue: "blue", yellow: "pi
 const PIECE_ASSET_TYPE = { king: "frost-king", elephant: "war-mammoth", horse: "aurora-unicorn", ship: "icebreaker", pawn: "snow-guard" };
 const PIECE_LETTER = { king: "K", elephant: "E", horse: "H", ship: "S", pawn: "P" };
 
-export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackToLobby }) {
+export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onMainMenu, onBackToLobby }) {
   const [serverRoom, setServerRoom] = useState(room);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -95,7 +95,7 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onBackTo
           </div>
           <div className="board-overlay"><div className="board-grid" aria-label="8 by 8 Arctic Dominion board">{renderBoardRows(game.board).map(({ piece, row, col }) => { const selected = game.selected?.row === row && game.selected?.col === col; const move = activeLegalSquares.get(`${row},${col}`); const classes = ["board-cell"]; if (selected) classes.push("selected"); if (move?.captured) classes.push("capture"); else if (move) classes.push("legal"); return <button key={`${row}-${col}`} className={classes.join(" ")} aria-label={piece ? `${piece.team} ${piece.type}` : `empty ${row + 1},${col + 1}`} onClick={() => handleCell(row, col)}>{piece && <PieceImage piece={piece} className="game-piece" />}</button>; })}</div></div>
           <div className="dice-overlay">{[0, 1].map((index) => <div className="dice-slot" key={index}><DiceFace game={game} index={index} team={team} /></div>)}</div>
-          <div className="game-action-layer"><button className="game-action-hitbox roll-hitbox" aria-label="Roll dice" onClick={handleRoll} /><button className="game-action-hitbox end-turn-hitbox" aria-label="End turn" onClick={handleEndTurn} /><button className="game-action-hitbox new-game-hitbox" aria-label="Results" onClick={onFinishDemo} /><button className="game-back-button" onClick={onBackToLobby}>Lobby</button></div>
+          <div className="game-action-layer"><button className="game-action-hitbox roll-hitbox" aria-label="Roll dice" onClick={handleRoll} /><button className="game-action-hitbox end-turn-hitbox" aria-label="End turn" onClick={handleEndTurn} /><button className="game-action-hitbox new-game-hitbox" aria-label="Main Menu" onClick={onMainMenu || onBackToLobby || onFinishDemo} /><button className="game-back-button" onClick={onBackToLobby}>Lobby</button></div>
           {error && <div className="game-log" aria-live="polite"><span>{error}</span></div>}
         </div>
       </div>
