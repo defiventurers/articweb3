@@ -7,6 +7,7 @@ export function MainMenu(props) {
         <OptimizedImage
           className="screen-art"
           src="/assets/screens/main-menu.png"
+          desktopSrc="/assets/screens/main-menu-desktop.png"
           alt="Artic Web3 main menu"
           fetchPriority="high"
         />
