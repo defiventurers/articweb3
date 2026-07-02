@@ -1,0 +1,9 @@
+.cal-box.board,
+.cal-board-grid-overlay {
+  aspect-ratio: 1 / 1 !important;
+  height: auto !important;
+}
+
+.cal-box.board {
+  min-height: 0 !important;
+}
