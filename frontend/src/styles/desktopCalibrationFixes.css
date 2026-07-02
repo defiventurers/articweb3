@@ -1,36 +1,54 @@
 /* Final desktop-only corrections for calibrated Arctic Dominion screens.
    This file intentionally loads after calibratedOverrides.css. */
 @media (min-width: 900px) and (orientation: landscape) {
+  .playerhub-screen.art-screen {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    overflow: hidden !important;
+  }
+
   .playerhub-screen .menu-screen-shell,
+  .playerhub-screen .art-stage.playerhub-stage,
+  .playerhub-screen .screen-stage.playerhub-stage,
   .playerhub-stage {
-    position: relative;
-    width: min(100vw, calc(100dvh * 16 / 9));
-    height: min(100dvh, calc(100vw * 9 / 16));
-    max-width: 100vw;
-    max-height: 100dvh;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    padding: 0;
-    box-sizing: border-box;
+    position: relative !important;
+    width: min(100vw, calc(100dvh * 16 / 9)) !important;
+    height: min(100dvh, calc(100vw * 9 / 16)) !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: 16 / 9 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
   }
 
   .playerhub-stage > picture {
-    position: absolute;
-    inset: 0;
-    display: block;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    aspect-ratio: 16 / 9 !important;
+    z-index: 0 !important;
   }
 
   .playerhub-stage > picture > .screen-art,
   .playerhub-stage > .screen-art {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-    object-position: center;
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    object-fit: fill !important;
+    object-position: center !important;
   }
 
   .playerhub-overlay,
