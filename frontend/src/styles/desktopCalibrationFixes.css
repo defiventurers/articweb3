@@ -99,37 +99,37 @@
   }
 
   .game-stage {
-    --board-left: 31.60%;
-    --board-top: 23.50%;
-    --board-size: 40.83%;
+    --board-left: 29.27%;
+    --board-top: 12.56%;
+    --board-size: 42.41%;
   }
 
   .roll-hitbox {
-    left: 23.26%;
-    top: 91.10%;
-    width: 14.70%;
-    height: 7.67%;
-  }
-
-  .new-game-hitbox {
-    left: 41.80%;
-    top: 92.67%;
-    width: 16.60%;
-    height: 6.26%;
+    left: 77.20%;
+    top: 40.00%;
+    width: 15.60%;
+    height: 8.00%;
   }
 
   .end-turn-hitbox {
-    left: 61.50%;
-    top: 92.00%;
+    left: 77.20%;
+    top: 50.00%;
     width: 15.60%;
-    height: 5.60%;
+    height: 8.00%;
+  }
+
+  .new-game-hitbox {
+    left: 77.20%;
+    top: 60.00%;
+    width: 15.60%;
+    height: 8.00%;
   }
 
   .dice-overlay {
-    left: 37.60%;
-    top: 83.36%;
-    width: 25.02%;
-    height: 8.05%;
+    left: 73.50%;
+    top: 28.50%;
+    width: 22.00%;
+    height: 8.00%;
   }
 
   .game-status-overlay {
