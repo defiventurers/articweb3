@@ -115,6 +115,12 @@
   width: calc(min(calc(100dvh - 92px), calc((100vw - 470px) * 1672 / 941)) * 941 / 1672);
 }
 
+.game-cal-stage,
+.player-hub-cal-stage {
+  width: min(calc(100vw - 470px), calc((100dvh - 92px) * 16 / 9));
+  height: calc(min(calc(100vw - 470px), calc((100dvh - 92px) * 16 / 9)) * 9 / 16);
+}
+
 .cal-art-stage img {
   position: absolute;
   inset: 0;
@@ -123,6 +129,32 @@
   object-fit: fill;
   user-select: none;
   pointer-events: none;
+}
+
+.cal-board-grid-overlay {
+  position: absolute;
+  z-index: 12;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  border: 2px solid rgba(0, 255, 255, .95);
+  background: rgba(0, 255, 255, .035);
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .35), 0 0 18px rgba(0, 255, 255, .34);
+}
+
+.cal-board-grid-overlay span {
+  border-right: 1px solid rgba(0, 255, 255, .9);
+  border-bottom: 1px solid rgba(0, 255, 255, .9);
+  background: rgba(255, 255, 255, .02);
+}
+
+.cal-board-grid-overlay span:nth-child(8n) {
+  border-right: 0;
+}
+
+.cal-board-grid-overlay span:nth-last-child(-n + 8) {
+  border-bottom: 0;
 }
 
 .cal-box {
@@ -153,6 +185,11 @@
 .cal-box.card {
   border-color: rgba(120, 230, 255, .9);
   background: rgba(120, 230, 255, .06);
+}
+
+.cal-box.board {
+  border-color: rgba(0, 255, 255, .95);
+  background: rgba(0, 255, 255, .05);
 }
 
 .cal-box.selected {
@@ -322,6 +359,12 @@
 
   .open-ice-cal-stage {
     height: min(72dvh, calc(100vw * 1672 / 941));
+  }
+
+  .game-cal-stage,
+  .player-hub-cal-stage {
+    width: 100vw;
+    height: calc(100vw * 9 / 16);
   }
 
   .cal-topbar {
