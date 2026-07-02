@@ -43,33 +43,16 @@
   }
 
   .playerhub-stage > .wallet-status-panel,
-  .playerhub-stage > .entry-readiness-panel {
-    display: none;
-  }
-
+  .playerhub-stage > .entry-readiness-panel,
   .playerhub-stage .playerhub-wallet-text,
   .playerhub-stage .playerhub-points-text,
-  .playerhub-stage .playerhub-balance-value,
-  .playerhub-stage .playerhub-amount-input,
   .playerhub-stage .ph-toast,
   .playerhub-stage .ph-approve {
     display: none;
   }
 
-  .game-stage {
-    --dice-left: 37.1%;
-    --dice-top: 84.5%;
-    --dice-width: 25.8%;
-    --dice-height: 7.8%;
-    --dice-gap: 8%;
-  }
-
   .dice-overlay {
-    left: var(--dice-left);
-    top: var(--dice-top);
-    width: var(--dice-width);
-    height: var(--dice-height);
-    gap: var(--dice-gap);
+    gap: var(--dice-gap, 8%);
     align-items: center;
     z-index: 35;
   }
@@ -95,5 +78,162 @@
     min-height: 0;
     font-size: clamp(10px, 0.9vw, 15px);
     line-height: 1;
+  }
+
+  .game-stage {
+    --board-left: 31.60%;
+    --board-top: 23.50%;
+    --board-size: 40.83%;
+  }
+
+  .roll-hitbox {
+    left: 23.26%;
+    top: 91.10%;
+    width: 14.70%;
+    height: 7.67%;
+  }
+
+  .new-game-hitbox {
+    left: 41.80%;
+    top: 92.67%;
+    width: 16.60%;
+    height: 6.26%;
+  }
+
+  .end-turn-hitbox {
+    left: 61.50%;
+    top: 92.00%;
+    width: 15.60%;
+    height: 5.60%;
+  }
+
+  .dice-overlay {
+    left: 37.60%;
+    top: 83.36%;
+    width: 25.02%;
+    height: 8.05%;
+  }
+
+  .game-status-overlay {
+    left: 31.77%;
+    top: 14.10%;
+    width: 29.04%;
+    height: 5.30%;
+    font-size: 1.1cqh;
+  }
+
+  .game-status-badge {
+    left: 61.30%;
+    top: 14.90%;
+    width: 7.15%;
+    height: 4.06%;
+    font-size: 1.0cqh;
+    position: absolute;
+  }
+
+  .open-ice-hitbox {
+    left: 38.63%;
+    top: 27.51%;
+    width: 24.43%;
+    height: 29.12%;
+  }
+
+  .high-stakes-hitbox {
+    left: 38.47%;
+    top: 57.36%;
+    width: 23.97%;
+    height: 26.15%;
+  }
+
+  .match-history-hitbox {
+    left: 12.83%;
+    top: 36.97%;
+    width: 11.47%;
+    height: 21.48%;
+  }
+
+  .leaderboard-hitbox {
+    left: 24.30%;
+    top: 37.30%;
+    width: 11.93%;
+    height: 20.16%;
+  }
+
+  .account-activity-hitbox {
+    left: 12.83%;
+    top: 58.60%;
+    width: 11.56%;
+    height: 19.99%;
+  }
+
+  .my-rooms-hitbox {
+    left: 24.77%;
+    top: 58.60%;
+    width: 11.09%;
+    height: 20.32%;
+  }
+
+  .wallet-value {
+    left: 77.24%;
+    top: 41.44%;
+    width: 13.28%;
+    height: 4.99%;
+    font-size: 1.8cqh;
+    display: grid;
+  }
+
+  .available-value {
+    left: 77.06%;
+    top: 47.08%;
+    width: 13.65%;
+    height: 5.32%;
+    font-size: 1.8cqh;
+    display: grid;
+  }
+
+  .locked-value {
+    left: 77.06%;
+    top: 52.88%;
+    width: 13.74%;
+    height: 5.49%;
+    font-size: 1.8cqh;
+    display: grid;
+  }
+
+  .playerhub-amount-input {
+    left: 72.48%;
+    top: 60.28%;
+    width: 18.40%;
+    height: 4.80%;
+    font-size: 1.8cqh;
+    display: block;
+  }
+
+  .refresh-hitbox {
+    left: 65.09%;
+    top: 67.02%;
+    width: 8.12%;
+    height: 7.59%;
+  }
+
+  .deposit-hitbox {
+    left: 73.64%;
+    top: 67.19%;
+    width: 8.40%;
+    height: 7.10%;
+  }
+
+  .withdraw-hitbox {
+    left: 82.93%;
+    top: 67.35%;
+    width: 8.40%;
+    height: 6.60%;
+  }
+
+  .playerhub-back-hitbox {
+    left: 37.91%;
+    top: 83.69%;
+    width: 24.17%;
+    height: 10.95%;
   }
 }
