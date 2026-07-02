@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { OptimizedImage } from "../components/OptimizedImage.jsx";
 import { joinRoom } from "../network/socketClient.js";
 
 export function JoinRoomScreen({ profile, onRoomJoined, onBack }) {
@@ -41,7 +42,7 @@ export function JoinRoomScreen({ profile, onRoomJoined, onBack }) {
   return (
     <section className="open-ice-image-page">
       <div className="open-ice-image-stage join-room-stage">
-        <img className="open-ice-screen-art" src="/assets/screens/join-room.png" alt="Join Room" />
+        <OptimizedImage className="open-ice-screen-art" src="/assets/screens/join-room.png" desktopSrc="/assets/screens/join-room-desktop.png" alt="Join Room" />
 
         <input
           ref={inputRef}
