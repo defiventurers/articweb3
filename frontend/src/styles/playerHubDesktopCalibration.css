@@ -1,0 +1,107 @@
+@media (min-width: 900px) and (orientation: landscape) {
+  .playerhub-stage .open-ice-hitbox {
+    left: 38.56% !important;
+    top: 27.01% !important;
+    width: 24.43% !important;
+    height: 29.12% !important;
+  }
+
+  .playerhub-stage .high-stakes-hitbox {
+    left: 38.47% !important;
+    top: 57.36% !important;
+    width: 23.97% !important;
+    height: 26.15% !important;
+  }
+
+  .playerhub-stage .match-history-hitbox {
+    left: 12.83% !important;
+    top: 36.97% !important;
+    width: 11.47% !important;
+    height: 21.48% !important;
+  }
+
+  .playerhub-stage .leaderboard-hitbox {
+    left: 24.30% !important;
+    top: 37.30% !important;
+    width: 11.93% !important;
+    height: 20.16% !important;
+  }
+
+  .playerhub-stage .account-activity-hitbox {
+    left: 12.83% !important;
+    top: 58.60% !important;
+    width: 11.56% !important;
+    height: 19.99% !important;
+  }
+
+  .playerhub-stage .my-rooms-hitbox {
+    left: 24.77% !important;
+    top: 58.60% !important;
+    width: 11.09% !important;
+    height: 20.32% !important;
+  }
+
+  .playerhub-stage .wallet-value {
+    left: 77.24% !important;
+    top: 41.44% !important;
+    width: 13.28% !important;
+    height: 4.99% !important;
+    font-size: 1.8cqh !important;
+    display: grid !important;
+  }
+
+  .playerhub-stage .available-value {
+    left: 77.06% !important;
+    top: 47.33% !important;
+    width: 13.65% !important;
+    height: 5.32% !important;
+    font-size: 1.8cqh !important;
+    display: grid !important;
+  }
+
+  .playerhub-stage .locked-value {
+    left: 77.13% !important;
+    top: 53.01% !important;
+    width: 13.67% !important;
+    height: 5.11% !important;
+    font-size: 1.8cqh !important;
+    display: grid !important;
+  }
+
+  .playerhub-stage .playerhub-amount-input {
+    left: 72.48% !important;
+    top: 60.28% !important;
+    width: 18.40% !important;
+    height: 4.80% !important;
+    font-size: 1.8cqh !important;
+    display: block !important;
+  }
+
+  .playerhub-stage .refresh-hitbox {
+    left: 65.09% !important;
+    top: 67.02% !important;
+    width: 8.12% !important;
+    height: 7.59% !important;
+  }
+
+  .playerhub-stage .deposit-hitbox {
+    left: 73.64% !important;
+    top: 67.19% !important;
+    width: 8.40% !important;
+    height: 7.10% !important;
+  }
+
+  .playerhub-stage .withdraw-hitbox {
+    left: 82.93% !important;
+    top: 67.35% !important;
+    width: 8.40% !important;
+    height: 6.60% !important;
+  }
+
+  .playerhub-stage .playerhub-back-hitbox {
+    left: 37.91% !important;
+    top: 83.69% !important;
+    width: 24.17% !important;
+    height: 10.95% !important;
+  }
+}
