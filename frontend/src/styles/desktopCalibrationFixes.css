@@ -152,8 +152,8 @@
 
 @media (min-width: 900px) and (orientation: landscape) {
   .open-ice-hitbox {
-    left: 38.63%;
-    top: 27.51%;
+    left: 38.56%;
+    top: 27.01%;
     width: 24.43%;
     height: 29.12%;
   }
@@ -204,7 +204,7 @@
 
   .available-value {
     left: 77.06%;
-    top: 47.08%;
+    top: 47.33%;
     width: 13.65%;
     height: 5.32%;
     font-size: 1.8cqh;
@@ -212,10 +212,10 @@
   }
 
   .locked-value {
-    left: 77.06%;
-    top: 52.88%;
-    width: 13.74%;
-    height: 5.49%;
+    left: 77.13%;
+    top: 53.01%;
+    width: 13.67%;
+    height: 5.11%;
     font-size: 1.8cqh;
     display: grid;
   }
