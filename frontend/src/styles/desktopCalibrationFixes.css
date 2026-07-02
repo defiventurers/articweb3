@@ -1,0 +1,85 @@
+/* Final desktop-only corrections for calibrated Arctic Dominion screens.
+   This file intentionally loads after calibratedOverrides.css. */
+@media (min-width: 900px) and (orientation: landscape) {
+  .playerhub-stage {
+    position: relative;
+    width: min(100vw, calc(100dvh * 16 / 9));
+    height: min(100dvh, calc(100vw * 9 / 16));
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+
+  .playerhub-stage > picture {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  .playerhub-stage > picture > .screen-art,
+  .playerhub-stage > .screen-art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    object-position: center;
+  }
+
+  .playerhub-overlay,
+  .playerhub-stage > .wallet-panel,
+  .playerhub-stage > .deposit-panel,
+  .playerhub-stage > .hitbox-layer,
+  .playerhub-stage > .ph-dev-rail {
+    position: absolute;
+    z-index: 12;
+  }
+
+  .playerhub-stage > .wallet-status-panel,
+  .playerhub-stage > .entry-readiness-panel {
+    display: none;
+  }
+
+  .game-stage {
+    --dice-left: 37.1%;
+    --dice-top: 84.5%;
+    --dice-width: 25.8%;
+    --dice-height: 7.8%;
+    --dice-gap: 8%;
+  }
+
+  .dice-overlay {
+    left: var(--dice-left);
+    top: var(--dice-top);
+    width: var(--dice-width);
+    height: var(--dice-height);
+    gap: var(--dice-gap);
+    align-items: center;
+    z-index: 35;
+  }
+
+  .dice-slot {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    font-size: clamp(10px, 1vw, 16px);
+  }
+
+  .die-piece-visual {
+    width: 100%;
+    height: 100%;
+  }
+
+  .dice-piece-icon {
+    width: min(42%, 46px);
+    height: min(86%, 58px);
+  }
+
+  .dice-placeholder {
+    min-height: 0;
+    font-size: clamp(10px, 0.9vw, 15px);
+    line-height: 1;
+  }
+}
