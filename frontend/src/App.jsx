@@ -110,7 +110,7 @@ export default function App() {
   if (screen === "join-room") return withClosedBetaBanner(renderLazy(<JoinRoomScreen profile={profile} onRoomJoined={(joinedRoom) => { soundManager.play("roomJoin"); setRoom(joinedRoom); goTo("team-select"); }} onBack={() => goTo("open-ice-menu")} />));
   if (screen === "team-select") return withClosedBetaBanner(renderLazy(<TeamSelectScreen room={room} profile={profile} onRoomUpdate={setRoom} onContinue={(updatedRoom) => { setRoom(updatedRoom); goTo("waiting"); }} onBack={() => goTo(roomLobbyScreen())} />));
   if (screen === "waiting") return withClosedBetaBanner(renderLazy(<WaitingRoomScreen room={room} profile={profile} onRoomUpdate={setRoom} onGameStart={(startedRoom) => { soundManager.play("gameStart"); setRoom(startedRoom); goTo("game"); }} />));
-  if (screen === "game") return withClosedBetaBanner(renderLazy(<GameScreen room={room} profile={profile} onRoomUpdate={setRoom} onFinishDemo={() => goTo("results")} onBackToLobby={() => goTo(roomLobbyScreen())} />, "Preparing battlefield..."));
+  if (screen === "game") return withClosedBetaBanner(renderLazy(<GameScreen room={room} profile={profile} onRoomUpdate={setRoom} onFinishDemo={() => goTo("results")} onMainMenu={() => goTo("hub")} onBackToLobby={() => goTo(roomLobbyScreen())} />, "Preparing battlefield..."));
   if (screen === "results") return withClosedBetaBanner(renderLazy(<ResultsScreen room={room} profile={profile} onBackToLobby={() => goTo(roomLobbyScreen())} />));
   return null;
 }
