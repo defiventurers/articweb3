@@ -347,3 +347,180 @@
   font-size: 1.5cqh;
   bottom: auto;
 }
+
+/* Arctic Dominion desktop hitbox overrides.
+   Keep this block last. It is intentionally desktop-landscape only so the existing
+   portrait mobile art and mobile calibration remain unchanged. */
+@media (min-width: 900px) and (orientation: landscape) {
+  .art-stage,
+  .menu-screen-shell,
+  .playerhub-stage,
+  .highstakes-shell,
+  .highstakes-stage,
+  .open-ice-image-stage,
+  .profile-stage,
+  .team-select-stage,
+  .game-stage {
+    width: min(100vw, calc(100dvh * 16 / 9));
+    height: min(100dvh, calc(100vw * 9 / 16));
+    max-width: 100vw;
+    max-height: 100dvh;
+    aspect-ratio: 16 / 9;
+  }
+
+  .screen-art,
+  .open-ice-screen-art,
+  .profile-art,
+  .team-select-art {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+  }
+
+  .game-stage {
+    --board-left: 31.6%;
+    --board-top: 23.5%;
+    --board-size: 41.18%;
+    background-image: url("/assets/screens/arctic-dominion-game-base-desktop.png");
+  }
+
+  .profile-stage .profile-art { content: url("/assets/screens/profile-desktop.png"); }
+  .team-select-stage .team-select-art { content: url("/assets/screens/team-select-desktop.png"); }
+  .highstakes-stage > .screen-art { content: url("/assets/screens/highstakes-desktop.png"); }
+
+  .new-game-hitbox { left: 41.8%; top: 92.67%; width: 16.6%; height: 6.26%; }
+  .end-turn-hitbox { left: 61.5%; top: 92%; width: 15.6%; height: 5.6%; }
+  .roll-hitbox { left: 23.26%; top: 91.1%; width: 14.7%; height: 7.67%; }
+
+  .full-hitbox { left: 0%; top: 0%; width: 100%; height: 100%; }
+
+  .menu-play-hitbox { left: 32.7%; top: 84.2%; width: 35.48%; height: 14.5%; }
+  .menu-how-hitbox { left: 70.33%; top: 86.14%; width: 23.36%; height: 12.73%; }
+  .menu-spectate-hitbox { left: 1.99%; top: 86.54%; width: 24.04%; height: 8.12%; }
+
+  .hs-create-room-hitbox { left: 5.55%; top: 45.35%; width: 18%; height: 8.6%; }
+  .hs-deposit-hitbox { left: 10.71%; top: 75.59%; width: 13%; height: 6%; }
+  .hs-refresh-rooms-hitbox { left: 62.42%; top: 28.17%; width: 9.69%; height: 3.9%; }
+  .hs-join-private-hitbox { left: 77.26%; top: 51.34%; width: 16.84%; height: 6.63%; }
+  .highstakes-private-input { left: 80.38%; top: 44.83%; width: 13.04%; height: 5.3%; }
+  .hs-back-hitbox { left: 33.78%; top: 81.04%; width: 32.5%; height: 11.15%; }
+
+  .highstakes-room-card { left: 0; top: 0; width: 100%; height: 100%; }
+  .hs-room-8 { display: none; }
+  .hs-room-code, .hs-room-count, .hs-room-fee, .hs-room-usd, .hs-room-join-hitbox { position: absolute; }
+  .hs-room-0 .hs-room-code { left: 30.33%; top: 36.69%; width: 7.81%; height: 3.37%; }
+  .hs-room-1 .hs-room-code { left: 41.84%; top: 36.53%; width: 7.53%; height: 3.53%; }
+  .hs-room-2 .hs-room-code { left: 53.44%; top: 36.71%; width: 7.53%; height: 3.2%; }
+  .hs-room-3 .hs-room-code { left: 64.95%; top: 36.88%; width: 6.88%; height: 3.04%; }
+  .hs-room-4 .hs-room-code { left: 30.26%; top: 58.08%; width: 7.91%; height: 2.87%; }
+  .hs-room-5 .hs-room-code { left: 42%; top: 57.91%; width: 7.53%; height: 3.04%; }
+  .hs-room-6 .hs-room-code { left: 53.47%; top: 57.9%; width: 7.44%; height: 3.2%; }
+  .hs-room-7 .hs-room-code { left: 64.74%; top: 58.06%; width: 6.98%; height: 3.04%; }
+  .hs-room-0 .hs-room-count { left: 30.14%; top: 40%; width: 2.6%; height: 3.7%; }
+  .hs-room-1 .hs-room-count { left: 42.02%; top: 40.01%; width: 2.23%; height: 3.53%; }
+  .hs-room-2 .hs-room-count { left: 53.26%; top: 40.18%; width: 2.23%; height: 3.2%; }
+  .hs-room-3 .hs-room-count { left: 64.86%; top: 40.19%; width: 2.23%; height: 3.2%; }
+  .hs-room-4 .hs-room-count { left: 30.23%; top: 61.36%; width: 2.23%; height: 3.2%; }
+  .hs-room-5 .hs-room-count { left: 41.93%; top: 61.37%; width: 2.23%; height: 3.2%; }
+  .hs-room-6 .hs-room-count { left: 53.51%; top: 61.39%; width: 2.23%; height: 3.2%; }
+  .hs-room-7 .hs-room-count { left: 64.93%; top: 61.4%; width: 2.33%; height: 2.87%; }
+  .hs-room-0 .hs-room-fee { left: 34.05%; top: 40.33%; width: 4%; height: 3.2%; }
+  .hs-room-1 .hs-room-fee { left: 45.37%; top: 40.34%; width: 4%; height: 3.2%; }
+  .hs-room-2 .hs-room-fee { left: 56.98%; top: 40.35%; width: 4%; height: 3.2%; }
+  .hs-room-3 .hs-room-fee { left: 68.12%; top: 40.02%; width: 4%; height: 3.2%; }
+  .hs-room-4 .hs-room-fee { left: 33.95%; top: 61.36%; width: 4%; height: 3.2%; }
+  .hs-room-5 .hs-room-fee { left: 45.47%; top: 61.37%; width: 4%; height: 3.2%; }
+  .hs-room-6 .hs-room-fee { left: 56.88%; top: 61.21%; width: 4%; height: 3.2%; }
+  .hs-room-7 .hs-room-fee { left: 68.49%; top: 61.22%; width: 4%; height: 3.2%; }
+  .hs-room-0 .hs-room-usd { left: 30.14%; top: 43.8%; width: 8.09%; height: 3.37%; }
+  .hs-room-1 .hs-room-usd { left: 42.02%; top: 43.65%; width: 7.44%; height: 3.53%; }
+  .hs-room-2 .hs-room-usd { left: 53.35%; top: 43.65%; width: 7.44%; height: 3.53%; }
+  .hs-room-3 .hs-room-usd { left: 64.49%; top: 43.5%; width: 7.44%; height: 3.53%; }
+  .hs-room-4 .hs-room-usd { left: 30.14%; top: 65%; width: 7.53%; height: 3.04%; }
+  .hs-room-5 .hs-room-usd { left: 41.93%; top: 64.84%; width: 7.53%; height: 3.04%; }
+  .hs-room-6 .hs-room-usd { left: 53.44%; top: 65.02%; width: 7.53%; height: 3.04%; }
+  .hs-room-7 .hs-room-usd { left: 64.86%; top: 64.86%; width: 6.7%; height: 3.04%; }
+  .hs-room-0 .hs-room-join-hitbox { left: 28.37%; top: 47.28%; width: 9.67%; height: 5.02%; }
+  .hs-room-1 .hs-room-join-hitbox { left: 40.07%; top: 47.61%; width: 9.67%; height: 5.02%; }
+  .hs-room-2 .hs-room-join-hitbox { left: 51.53%; top: 47.94%; width: 9.77%; height: 4.53%; }
+  .hs-room-3 .hs-room-join-hitbox { left: 63.05%; top: 47.61%; width: 9.77%; height: 4.53%; }
+  .hs-room-4 .hs-room-join-hitbox { left: 28.51%; top: 68.79%; width: 9.77%; height: 4.53%; }
+  .hs-room-5 .hs-room-join-hitbox { left: 40.3%; top: 68.47%; width: 9.77%; height: 4.53%; }
+  .hs-room-6 .hs-room-join-hitbox { left: 51.63%; top: 68.81%; width: 9.77%; height: 4.53%; }
+  .hs-room-7 .hs-room-join-hitbox { left: 62.95%; top: 68.65%; width: 9.77%; height: 4.53%; }
+
+  .join-code-hit { left: 28.98%; top: 46.01%; width: 41.58%; height: 29.94%; }
+  .digit-0 { left: 32.39%; top: 55.31%; width: 8%; height: 12%; }
+  .digit-1 { left: 41.53%; top: 55.48%; width: 8%; height: 12%; }
+  .digit-2 { left: 50.6%; top: 55.64%; width: 8%; height: 12%; }
+  .digit-3 { left: 59.85%; top: 55.81%; width: 8%; height: 12%; }
+  .join-continue-hit { left: 35.53%; top: 75.97%; width: 27.44%; height: 12.48%; }
+  .join-back-hit { left: 39.16%; top: 88.35%; width: 20.65%; height: 9.61%; }
+
+  .create-public-hit { left: 19.16%; top: 58.2%; width: 30.41%; height: 25.63%; }
+  .create-private-hit { left: 51.3%; top: 58.2%; width: 31.06%; height: 25.96%; }
+  .create-back-hit { left: 40.4%; top: 86%; width: 19.49%; height: 12%; }
+
+  .openicehub-create-hit { left: 52.07%; top: 22.55%; width: 18.95%; height: 8.18%; }
+  .openicehub-refresh-hit { left: 67.87%; top: 33.2%; width: 9.41%; height: 4.33%; }
+  .openicehub-next-page-hit { left: 39.99%; top: 66.68%; width: 21.56%; height: 4.5%; }
+  .openicehub-private-code-hit { left: 26.5%; top: 80.55%; width: 8.41%; height: 4.73%; }
+  .openicehub-private-input { left: 26.6%; top: 80.75%; width: 8.58%; height: 4.43%; }
+  .openicehub-join-private-hit { left: 35.89%; top: 79.62%; width: 10.97%; height: 6.29%; }
+  .openicehub-back-hit { left: 36.91%; top: 88.23%; width: 25.89%; height: 8.88%; }
+  .openicehub-room-card { left: 0; top: 0; width: 100%; height: 100%; }
+  .openicehub-room-8 { display: none; }
+  .openicehub-room-code, .openicehub-users-count, .openicehub-room-join-hit { position: absolute; }
+  .openicehub-room-0 .openicehub-room-code { left: 22.1%; top: 40.68%; width: 10.42%; height: 3.27%; }
+  .openicehub-room-1 .openicehub-room-code { left: 36.5%; top: 40.68%; width: 10.42%; height: 3.27%; }
+  .openicehub-room-2 .openicehub-room-code { left: 50.61%; top: 41.02%; width: 10.7%; height: 3.1%; }
+  .openicehub-room-3 .openicehub-room-code { left: 65.01%; top: 40.87%; width: 10.7%; height: 3.1%; }
+  .openicehub-room-4 .openicehub-room-code { left: 22.38%; top: 55.43%; width: 10.51%; height: 2.94%; }
+  .openicehub-room-5 .openicehub-room-code { left: 36.68%; top: 55.76%; width: 10.51%; height: 2.94%; }
+  .openicehub-room-6 .openicehub-room-code { left: 50.61%; top: 55.61%; width: 10.32%; height: 3.1%; }
+  .openicehub-room-7 .openicehub-room-code { left: 65.01%; top: 55.45%; width: 10.32%; height: 3.1%; }
+  .openicehub-room-0 .openicehub-room-join-hit { left: 21.71%; top: 46.66%; width: 11.58%; height: 4.54%; }
+  .openicehub-room-1 .openicehub-room-join-hit { left: 35.9%; top: 46.82%; width: 11.49%; height: 4.04%; }
+  .openicehub-room-2 .openicehub-room-join-hit { left: 50%; top: 46%; width: 11.58%; height: 5.53%; }
+  .openicehub-room-3 .openicehub-room-join-hit { left: 64.01%; top: 46.66%; width: 11.77%; height: 5.2%; }
+  .openicehub-room-4 .openicehub-room-join-hit { left: 22.08%; top: 61.35%; width: 11.3%; height: 4.7%; }
+  .openicehub-room-5 .openicehub-room-join-hit { left: 35.81%; top: 61.19%; width: 11.95%; height: 4.87%; }
+  .openicehub-room-6 .openicehub-room-join-hit { left: 50.19%; top: 60.69%; width: 11.77%; height: 5.2%; }
+  .openicehub-room-7 .openicehub-room-join-hit { left: 64.29%; top: 61.19%; width: 11.39%; height: 5.53%; }
+
+  .open-ice-hitbox { left: 38.56%; top: 27.01%; width: 24.43%; height: 29.12%; }
+  .high-stakes-hitbox { left: 38.47%; top: 57.36%; width: 23.97%; height: 26.15%; }
+  .match-history-hitbox { left: 12.83%; top: 36.97%; width: 11.47%; height: 21.48%; }
+  .leaderboard-hitbox { left: 24.3%; top: 37.3%; width: 11.93%; height: 20.16%; }
+  .account-activity-hitbox { left: 12.83%; top: 58.6%; width: 11.56%; height: 19.99%; }
+  .my-rooms-hitbox { left: 24.77%; top: 58.6%; width: 11.09%; height: 20.32%; }
+  .eth-tab-hitbox { left: 65.74%; top: 34.07%; width: 11.79%; height: 5.7%; }
+  .usdc-tab-hitbox { left: 78.29%; top: 33.9%; width: 12.5%; height: 6.03%; }
+  .wallet-value { left: 77.24%; top: 40.94%; width: 13.28%; height: 4.99%; }
+  .available-value { left: 77.06%; top: 47.08%; width: 13.65%; height: 5.32%; }
+  .locked-value { left: 77.06%; top: 52.88%; width: 13.74%; height: 5.49%; }
+  .playerhub-amount-input { left: 72.48%; top: 60.28%; width: 18.4%; height: 4.8%; }
+  .refresh-hitbox { left: 65.09%; top: 67.02%; width: 8.12%; height: 7.59%; }
+  .deposit-hitbox { left: 73.64%; top: 67.19%; width: 8.4%; height: 7.1%; }
+  .withdraw-hitbox { left: 82.93%; top: 67.35%; width: 8.4%; height: 6.6%; }
+  .playerhub-back-hitbox { left: 37.91%; top: 83.69%; width: 24.17%; height: 10.95%; }
+
+  .profile-connect-hit { left: 20.02%; top: 33.45%; width: 29.11%; height: 16.31%; }
+  .profile-connect-disabled { left: 20.02%; top: 33.45%; width: 29.11%; height: 16.31%; }
+  .profile-disconnect-hit { left: 28.2%; top: 36.4%; width: 12.8%; height: 4.4%; }
+  .profile-wallet-display { left: 21.71%; top: 55.02%; width: 26.29%; height: 6.73%; }
+  .profile-copy-hit { left: 43.91%; top: 55.18%; width: 4%; height: 6.4%; }
+  .profile-name-input { left: 53.5%; top: 41.12%; width: 21.86%; height: 6.83%; }
+  .profile-complete-hit { left: 33.84%; top: 71.09%; width: 32.98%; height: 12.14%; }
+  .profile-back-hit { left: 39.63%; top: 84.04%; width: 22.23%; height: 9.15%; }
+
+  .hit-continue { left: 42.16%; top: 19.88%; width: 14.74%; height: 6.53%; }
+  .hit-retsba-team { left: 16.21%; top: 14.7%; width: 31.3%; height: 42.28%; }
+  .hit-abster-team { left: 51.85%; top: 14.72%; width: 30.09%; height: 43.27%; }
+  .hit-polly-team { left: 17.23%; top: 57.32%; width: 30.28%; height: 42.43%; }
+  .hit-pengu-team { left: 51.38%; top: 58.98%; width: 30.74%; height: 42.43%; }
+  .hit-retsba-label { left: 23.78%; top: 51.19%; width: 16%; height: 7.16%; }
+  .hit-abster-label { left: 56.44%; top: 50.69%; width: 18.05%; height: 7.49%; }
+  .hit-polly-label { left: 21.92%; top: 89.49%; width: 18.51%; height: 8.81%; }
+  .hit-pengu-label { left: 57.28%; top: 89.49%; width: 18.33%; height: 8.81%; }
+}
