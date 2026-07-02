@@ -12,7 +12,7 @@ export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHisto
     <section id="screenPlayerHub" className="art-screen playerhub-screen" aria-label="Player Hub">
       <div className="menu-screen-shell">
         <div className="art-stage screen-stage playerhub-stage">
-          <OptimizedImage className="screen-art" src="/assets/screens/playerhub.png" alt="Player Hub" />
+          <OptimizedImage className="screen-art" src="/assets/screens/playerhub.png" desktopSrc="/assets/screens/playerhub-desktop.png" alt="Player Hub" />
 
           <div className="playerhub-overlay" aria-hidden="true">
             <div id="playerHubWalletText" className="playerhub-wallet-text">{profile.name}</div>
