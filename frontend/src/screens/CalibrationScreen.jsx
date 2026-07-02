@@ -41,13 +41,13 @@ const OPEN_ICE_ITEMS = [
 ];
 
 const GAME_ITEMS = [
-  { id: "game-board", label: "Board Square", selector: ".game-stage", kind: "board", left: 31.6, top: 23.5, width: 41.18, height: 41.18, cssVarPrefix: "board" },
+  { id: "game-board", label: "8x8 Board Square", selector: ".game-stage", kind: "board", left: 31.6, top: 23.5, width: 40.83, height: 40.83, cssVarPrefix: "board" },
   { id: "game-roll", label: "Roll Dice Hitbox", selector: ".roll-hitbox", kind: "button", left: 23.26, top: 91.1, width: 14.7, height: 7.67 },
   { id: "game-main-menu", label: "Main Menu Hitbox", selector: ".new-game-hitbox", kind: "button", left: 41.8, top: 92.67, width: 16.6, height: 6.26 },
   { id: "game-end-turn", label: "End Turn Hitbox", selector: ".end-turn-hitbox", kind: "button", left: 61.5, top: 92.0, width: 15.6, height: 5.6 },
-  { id: "game-dice", label: "Dice Overlay Area", selector: ".dice-overlay", kind: "card", left: 37.1, top: 84.5, width: 25.8, height: 7.8 },
-  { id: "game-status", label: "Status Text", selector: ".game-status-overlay", kind: "text", left: 20.2, top: 21.8, width: 59.2, height: 4.8, fontSize: "1.1cqh" },
-  { id: "game-room-badge", label: "Room Badge", selector: ".game-status-badge", kind: "text", left: 75.0, top: 26.0, width: 6.8, height: 2.8, fontSize: "1.0cqh", extraCss: ["position: absolute;"] }
+  { id: "game-dice", label: "Dice Overlay Area", selector: ".dice-overlay", kind: "card", left: 37.6, top: 83.36, width: 25.02, height: 8.05 },
+  { id: "game-status", label: "Turn / Status Text", selector: ".game-status-overlay", kind: "text", left: 31.77, top: 14.1, width: 29.04, height: 5.3, fontSize: "1.1cqh" },
+  { id: "game-room-badge", label: "Room Badge", selector: ".game-status-badge", kind: "text", left: 61.3, top: 14.9, width: 7.15, height: 4.06, fontSize: "1.0cqh", extraCss: ["position: absolute;"] }
 ];
 
 const PLAYER_HUB_ITEMS = [
@@ -57,9 +57,9 @@ const PLAYER_HUB_ITEMS = [
   { id: "hub-leaderboard", label: "Leaderboard", selector: ".leaderboard-hitbox", kind: "button", left: 24.3, top: 37.3, width: 11.93, height: 20.16 },
   { id: "hub-account-activity", label: "Account Activity", selector: ".account-activity-hitbox", kind: "button", left: 12.83, top: 58.6, width: 11.56, height: 19.99 },
   { id: "hub-my-rooms", label: "My Rooms", selector: ".my-rooms-hitbox", kind: "button", left: 24.77, top: 58.6, width: 11.09, height: 20.32 },
-  { id: "hub-wallet-value", label: "Wallet Value", selector: ".wallet-value", kind: "text", left: 77.24, top: 40.94, width: 13.28, height: 4.99, fontSize: "1.8cqh", extraCss: ["display: grid;"] },
-  { id: "hub-available-value", label: "Available Value", selector: ".available-value", kind: "text", left: 77.06, top: 47.08, width: 13.65, height: 5.32, fontSize: "1.8cqh", extraCss: ["display: grid;"] },
-  { id: "hub-locked-value", label: "Locked Value", selector: ".locked-value", kind: "text", left: 77.06, top: 52.88, width: 13.74, height: 5.49, fontSize: "1.8cqh", extraCss: ["display: grid;"] },
+  { id: "hub-wallet-value", label: "Wallet Value", selector: ".wallet-value", kind: "text", left: 77.24, top: 41.44, width: 13.28, height: 4.99, fontSize: "1.8cqh", extraCss: ["display: grid;"] },
+  { id: "hub-available-value", label: "Available Value", selector: ".available-value", kind: "text", left: 77.06, top: 47.33, width: 13.65, height: 5.32, fontSize: "1.8cqh", extraCss: ["display: grid;"] },
+  { id: "hub-locked-value", label: "Locked Value", selector: ".locked-value", kind: "text", left: 77.13, top: 53.01, width: 13.67, height: 5.11, fontSize: "1.8cqh", extraCss: ["display: grid;"] },
   { id: "hub-amount", label: "Amount Input", selector: ".playerhub-amount-input", kind: "input", left: 72.48, top: 60.28, width: 18.4, height: 4.8, fontSize: "1.8cqh", extraCss: ["display: block;"] },
   { id: "hub-refresh", label: "Refresh", selector: ".refresh-hitbox", kind: "button", left: 65.09, top: 67.02, width: 8.12, height: 7.59 },
   { id: "hub-deposit", label: "Deposit", selector: ".deposit-hitbox", kind: "button", left: 73.64, top: 67.19, width: 8.4, height: 7.1 },
@@ -97,6 +97,19 @@ const CALIBRATION_CONFIGS = {
     cssFileName: "game-desktop-calibration.css",
     jsConstName: "GAME_DESKTOP_CALIBRATION",
     desktopOnly: true,
+    showBoardGrid: true,
+    items: GAME_ITEMS
+  },
+  "game-grid": {
+    title: "Game 8x8 Grid Desktop Calibration",
+    image: "/assets/screens/arctic-dominion-game-base-desktop.png",
+    aspectRatio: "16 / 9",
+    stageClass: "cal-art-stage game-cal-stage game-grid-cal-stage",
+    storageKey: "arcticCalibrationGameGridDesktop",
+    cssFileName: "game-grid-desktop-calibration.css",
+    jsConstName: "GAME_GRID_DESKTOP_CALIBRATION",
+    desktopOnly: true,
+    showBoardGrid: true,
     items: GAME_ITEMS
   },
   "player-hub": {
@@ -252,12 +265,13 @@ export function CalibrationScreen({ target = "main-menu" }) {
       <div className="cal-topbar">
         <div>
           <strong>{config.title}</strong>
-          <span>Temporary links: <code>?calibrate=main-menu</code> / <code>?calibrate=open-ice</code> / <code>?calibrate=game</code> / <code>?calibrate=player-hub</code></span>
+          <span>Temporary links: <code>?calibrate=main-menu</code> / <code>?calibrate=open-ice</code> / <code>?calibrate=game-grid</code> / <code>?calibrate=player-hub</code></span>
         </div>
         <div className="cal-link-row">
           <a href="?calibrate=main-menu">Main Menu</a>
           <a href="?calibrate=open-ice">Open Ice</a>
-          <a href="?calibrate=game">Game</a>
+          <a href="?calibrate=game-grid">Game Grid</a>
+          <a href="?calibrate=game">Game Old</a>
           <a href="?calibrate=player-hub">Player Hub</a>
           <a href="/">Exit</a>
         </div>
@@ -267,6 +281,7 @@ export function CalibrationScreen({ target = "main-menu" }) {
         <div className="cal-stage-wrap">
           <div className={config.stageClass} style={{ aspectRatio: config.aspectRatio }} ref={stageRef}>
             <img src={config.image} alt={config.title} draggable="false" />
+            {config.showBoardGrid && <BoardGridOverlay boardItem={itemMap.get("game-board")} />}
             {items.map((item) => {
               const box = percentBoxToStageBox(item, item.parent ? itemMap.get(item.parent) : null);
               const isChild = Boolean(item.parent);
@@ -337,6 +352,20 @@ export function CalibrationScreen({ target = "main-menu" }) {
         </aside>
       </div>
     </section>
+  );
+}
+
+function BoardGridOverlay({ boardItem }) {
+  if (!boardItem) return null;
+  const size = Math.min(boardItem.width, boardItem.height);
+  return (
+    <div
+      className="cal-board-grid-overlay"
+      aria-hidden="true"
+      style={{ left: `${boardItem.left}%`, top: `${boardItem.top}%`, width: `${size}%`, height: `${size}%` }}
+    >
+      {Array.from({ length: 64 }, (_, index) => <span key={index} />)}
+    </div>
   );
 }
 
