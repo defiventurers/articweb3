@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { OptimizedImage } from "../components/OptimizedImage.jsx";
 import { createRoom } from "../network/socketClient.js";
 
 export function CreateRoomScreen({ profile, onRoomCreated, onBack }) {
@@ -27,7 +28,7 @@ export function CreateRoomScreen({ profile, onRoomCreated, onBack }) {
   return (
     <section className="open-ice-image-page">
       <div className="open-ice-image-stage create-room-stage">
-        <img className="open-ice-screen-art" src="/assets/screens/openice-createroom.png" alt="Create Room" />
+        <OptimizedImage className="open-ice-screen-art" src="/assets/screens/openice-createroom.png" desktopSrc="/assets/screens/openice-createroom-desktop.png" alt="Create Room" />
 
         <button className="open-ice-hit create-public-hit" disabled={busy} onClick={() => createOpenIceRoom("public")} />
         <button className="open-ice-hit create-private-hit" disabled={busy} onClick={() => createOpenIceRoom("private")} />
