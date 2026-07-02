@@ -1,12 +1,17 @@
 /* Final desktop-only corrections for calibrated Arctic Dominion screens.
    This file intentionally loads after calibratedOverrides.css. */
 @media (min-width: 900px) and (orientation: landscape) {
+  .playerhub-screen .menu-screen-shell,
   .playerhub-stage {
     position: relative;
     width: min(100vw, calc(100dvh * 16 / 9));
     height: min(100dvh, calc(100vw * 9 / 16));
+    max-width: 100vw;
+    max-height: 100dvh;
     aspect-ratio: 16 / 9;
     overflow: hidden;
+    padding: 0;
+    box-sizing: border-box;
   }
 
   .playerhub-stage > picture {
@@ -39,6 +44,15 @@
 
   .playerhub-stage > .wallet-status-panel,
   .playerhub-stage > .entry-readiness-panel {
+    display: none;
+  }
+
+  .playerhub-stage .playerhub-wallet-text,
+  .playerhub-stage .playerhub-points-text,
+  .playerhub-stage .playerhub-balance-value,
+  .playerhub-stage .playerhub-amount-input,
+  .playerhub-stage .ph-toast,
+  .playerhub-stage .ph-approve {
     display: none;
   }
 
