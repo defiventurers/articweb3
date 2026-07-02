@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 
+const DESKTOP_MEDIA_QUERY = "@media (min-width: 900px) and (orientation: landscape)";
+
 const MAIN_MENU_ITEMS = [
   { id: "menu-play", label: "Start Game", selector: ".menu-play-hitbox", kind: "button", left: 13.16, top: 75.33, width: 74.41, height: 12.92 },
   { id: "menu-how", label: "Rules / How To Play", selector: ".menu-how-hitbox", kind: "button", left: 22.37, top: 88.93, width: 54.51, height: 5.95 },
@@ -38,6 +40,33 @@ const OPEN_ICE_ITEMS = [
   { id: "openice-status", label: "Status Text", selector: ".openicehub-status", kind: "text", left: 12.0, top: 95.8, width: 76.0, height: 2.9, fontSize: "1.5cqh", extraCss: ["bottom: auto;"] }
 ];
 
+const GAME_ITEMS = [
+  { id: "game-board", label: "Board Square", selector: ".game-stage", kind: "board", left: 31.6, top: 23.5, width: 41.18, height: 41.18, cssVarPrefix: "board" },
+  { id: "game-roll", label: "Roll Dice Hitbox", selector: ".roll-hitbox", kind: "button", left: 23.26, top: 91.1, width: 14.7, height: 7.67 },
+  { id: "game-main-menu", label: "Main Menu Hitbox", selector: ".new-game-hitbox", kind: "button", left: 41.8, top: 92.67, width: 16.6, height: 6.26 },
+  { id: "game-end-turn", label: "End Turn Hitbox", selector: ".end-turn-hitbox", kind: "button", left: 61.5, top: 92.0, width: 15.6, height: 5.6 },
+  { id: "game-dice", label: "Dice Overlay Area", selector: ".dice-overlay", kind: "card", left: 37.1, top: 84.5, width: 25.8, height: 7.8 },
+  { id: "game-status", label: "Status Text", selector: ".game-status-overlay", kind: "text", left: 20.2, top: 21.8, width: 59.2, height: 4.8, fontSize: "1.1cqh" },
+  { id: "game-room-badge", label: "Room Badge", selector: ".game-status-badge", kind: "text", left: 75.0, top: 26.0, width: 6.8, height: 2.8, fontSize: "1.0cqh", extraCss: ["position: absolute;"] }
+];
+
+const PLAYER_HUB_ITEMS = [
+  { id: "hub-open-ice", label: "Open Ice", selector: ".open-ice-hitbox", kind: "button", left: 38.56, top: 27.01, width: 24.43, height: 29.12 },
+  { id: "hub-high-stakes", label: "High Stakes", selector: ".high-stakes-hitbox", kind: "button", left: 38.47, top: 57.36, width: 23.97, height: 26.15 },
+  { id: "hub-match-history", label: "Match History", selector: ".match-history-hitbox", kind: "button", left: 12.83, top: 36.97, width: 11.47, height: 21.48 },
+  { id: "hub-leaderboard", label: "Leaderboard", selector: ".leaderboard-hitbox", kind: "button", left: 24.3, top: 37.3, width: 11.93, height: 20.16 },
+  { id: "hub-account-activity", label: "Account Activity", selector: ".account-activity-hitbox", kind: "button", left: 12.83, top: 58.6, width: 11.56, height: 19.99 },
+  { id: "hub-my-rooms", label: "My Rooms", selector: ".my-rooms-hitbox", kind: "button", left: 24.77, top: 58.6, width: 11.09, height: 20.32 },
+  { id: "hub-wallet-value", label: "Wallet Value", selector: ".wallet-value", kind: "text", left: 77.24, top: 40.94, width: 13.28, height: 4.99, fontSize: "1.8cqh", extraCss: ["display: grid;"] },
+  { id: "hub-available-value", label: "Available Value", selector: ".available-value", kind: "text", left: 77.06, top: 47.08, width: 13.65, height: 5.32, fontSize: "1.8cqh", extraCss: ["display: grid;"] },
+  { id: "hub-locked-value", label: "Locked Value", selector: ".locked-value", kind: "text", left: 77.06, top: 52.88, width: 13.74, height: 5.49, fontSize: "1.8cqh", extraCss: ["display: grid;"] },
+  { id: "hub-amount", label: "Amount Input", selector: ".playerhub-amount-input", kind: "input", left: 72.48, top: 60.28, width: 18.4, height: 4.8, fontSize: "1.8cqh", extraCss: ["display: block;"] },
+  { id: "hub-refresh", label: "Refresh", selector: ".refresh-hitbox", kind: "button", left: 65.09, top: 67.02, width: 8.12, height: 7.59 },
+  { id: "hub-deposit", label: "Deposit", selector: ".deposit-hitbox", kind: "button", left: 73.64, top: 67.19, width: 8.4, height: 7.1 },
+  { id: "hub-withdraw", label: "Withdraw", selector: ".withdraw-hitbox", kind: "button", left: 82.93, top: 67.35, width: 8.4, height: 6.6 },
+  { id: "hub-back", label: "Back", selector: ".playerhub-back-hitbox", kind: "button", left: 37.91, top: 83.69, width: 24.17, height: 10.95 }
+];
+
 const CALIBRATION_CONFIGS = {
   "main-menu": {
     title: "Main Menu Calibration",
@@ -58,6 +87,28 @@ const CALIBRATION_CONFIGS = {
     cssFileName: "open-ice-calibration.css",
     jsConstName: "OPEN_ICE_CALIBRATION",
     items: OPEN_ICE_ITEMS
+  },
+  game: {
+    title: "Game Screen Desktop Calibration",
+    image: "/assets/screens/arctic-dominion-game-base-desktop.png",
+    aspectRatio: "16 / 9",
+    stageClass: "cal-art-stage game-cal-stage",
+    storageKey: "arcticCalibrationGameDesktop",
+    cssFileName: "game-desktop-calibration.css",
+    jsConstName: "GAME_DESKTOP_CALIBRATION",
+    desktopOnly: true,
+    items: GAME_ITEMS
+  },
+  "player-hub": {
+    title: "Player Hub Desktop Calibration",
+    image: "/assets/screens/playerhub-desktop.png",
+    aspectRatio: "16 / 9",
+    stageClass: "cal-art-stage player-hub-cal-stage",
+    storageKey: "arcticCalibrationPlayerHubDesktop",
+    cssFileName: "player-hub-desktop-calibration.css",
+    jsConstName: "PLAYER_HUB_DESKTOP_CALIBRATION",
+    desktopOnly: true,
+    items: PLAYER_HUB_ITEMS
   }
 };
 
@@ -72,7 +123,7 @@ export function CalibrationScreen({ target = "main-menu" }) {
   const dragRef = useRef(null);
 
   const itemMap = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
-  const output = outputMode === "css" ? buildCssOutput(items) : buildJsOutput(config.jsConstName, items);
+  const output = outputMode === "css" ? buildCssOutput(items, config) : buildJsOutput(config.jsConstName, items);
 
   function updateItem(id, patch) {
     setItems((current) => {
@@ -201,11 +252,13 @@ export function CalibrationScreen({ target = "main-menu" }) {
       <div className="cal-topbar">
         <div>
           <strong>{config.title}</strong>
-          <span>Temporary links: <code>?calibrate=main-menu</code> / <code>?calibrate=open-ice</code></span>
+          <span>Temporary links: <code>?calibrate=main-menu</code> / <code>?calibrate=open-ice</code> / <code>?calibrate=game</code> / <code>?calibrate=player-hub</code></span>
         </div>
         <div className="cal-link-row">
           <a href="?calibrate=main-menu">Main Menu</a>
           <a href="?calibrate=open-ice">Open Ice</a>
+          <a href="?calibrate=game">Game</a>
+          <a href="?calibrate=player-hub">Player Hub</a>
           <a href="/">Exit</a>
         </div>
       </div>
@@ -297,18 +350,37 @@ function percentBoxToStageBox(item, parent) {
   };
 }
 
-function buildCssOutput(items) {
-  return items.map((item) => {
+function buildCssOutput(items, config) {
+  const css = items.map((item) => buildCssRule(item)).join("\n\n");
+  if (!config.desktopOnly) return css;
+  return `${DESKTOP_MEDIA_QUERY} {\n${indentCss(css)}\n}`;
+}
+
+function buildCssRule(item) {
+  if (item.cssVarPrefix === "board") {
+    const size = Math.min(item.width, item.height);
     const lines = [
-      `  left: ${formatPct(item.left)};`,
-      `  top: ${formatPct(item.top)};`,
-      `  width: ${formatPct(item.width)};`,
-      `  height: ${formatPct(item.height)};`,
-      item.fontSize ? `  font-size: ${item.fontSize};` : "",
+      `  --board-left: ${formatPct(item.left)};`,
+      `  --board-top: ${formatPct(item.top)};`,
+      `  --board-size: ${formatPct(size)};`,
       ...(item.extraCss || []).map((line) => `  ${line}`)
-    ].filter(Boolean);
+    ];
     return `${item.selector} {\n${lines.join("\n")}\n}`;
-  }).join("\n\n");
+  }
+
+  const lines = [
+    `  left: ${formatPct(item.left)};`,
+    `  top: ${formatPct(item.top)};`,
+    `  width: ${formatPct(item.width)};`,
+    `  height: ${formatPct(item.height)};`,
+    item.fontSize ? `  font-size: ${item.fontSize};` : "",
+    ...(item.extraCss || []).map((line) => `  ${line}`)
+  ].filter(Boolean);
+  return `${item.selector} {\n${lines.join("\n")}\n}`;
+}
+
+function indentCss(css) {
+  return css.split("\n").map((line) => line ? `  ${line}` : line).join("\n");
 }
 
 function buildJsOutput(name, items) {
@@ -321,7 +393,8 @@ function buildJsOutput(name, items) {
       top: Number(item.top.toFixed(2)),
       width: Number(item.width.toFixed(2)),
       height: Number(item.height.toFixed(2)),
-      ...(item.fontSize ? { fontSize: item.fontSize } : {})
+      ...(item.fontSize ? { fontSize: item.fontSize } : {}),
+      ...(item.cssVarPrefix ? { cssVarPrefix: item.cssVarPrefix } : {})
     };
     return acc;
   }, {});
