@@ -7,6 +7,7 @@ export function CoverScreen({ onContinue }) {
         <OptimizedImage
           className="screen-art"
           src="/assets/screens/cover.png"
+          desktopSrc="/assets/screens/cover-desktop.png"
           alt="Artic Web3 cover"
           fetchPriority="high"
         />
