@@ -1,9 +1,20 @@
-.cal-box.board,
-.cal-board-grid-overlay {
-  aspect-ratio: 1 / 1 !important;
+.game-grid-cal-stage .cal-box.board,
+.game-grid-cal-stage .cal-board-grid-overlay,
+.game-cal-stage .cal-box.board,
+.game-cal-stage .cal-board-grid-overlay {
+  width: var(--cal-board-width, auto) !important;
   height: auto !important;
+  aspect-ratio: 1 / 1 !important;
 }
 
-.cal-box.board {
+.game-grid-cal-stage .cal-box.board,
+.game-cal-stage .cal-box.board {
   min-height: 0 !important;
+  resize: none !important;
+}
+
+.game-grid-cal-stage .cal-box.board i,
+.game-cal-stage .cal-box.board i {
+  right: -9px;
+  bottom: -9px;
 }
