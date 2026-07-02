@@ -148,7 +148,9 @@
     font-size: 1.0cqh;
     position: absolute;
   }
+}
 
+@media (min-width: 900px) and (orientation: landscape) {
   .open-ice-hitbox {
     left: 38.63%;
     top: 27.51%;
