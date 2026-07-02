@@ -3,6 +3,7 @@ import { EntryReadinessPanel } from "../components/EntryReadinessPanel.jsx";
 import { OptimizedImage } from "../components/OptimizedImage.jsx";
 import { WalletStatusPanel } from "../components/WalletStatusPanel.jsx";
 import "../styles/playerHub.css";
+import "../styles/playerHubDesktopCalibration.css";
 
 const SHOW_VAULT_DEPLOYER = import.meta.env.VITE_ENABLE_VAULT_DEPLOYER === "true";
 const SHOW_SETTLEMENT_ADMIN = import.meta.env.VITE_ENABLE_SETTLEMENT_ADMIN === "true";
