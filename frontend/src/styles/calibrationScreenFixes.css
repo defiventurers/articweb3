@@ -1,5 +1,13 @@
 .game-grid-cal-stage {
-  background: #08213f;
+  background-color: #08213f;
+  background-image: url("https://raw.githubusercontent.com/defiventurers/articweb3/main/frontend/public/assets/screens/arctic-dominion-game-base-desktop.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.game-grid-cal-stage > img {
+  display: none;
 }
 
 .game-grid-cal-stage .cal-box.board {
