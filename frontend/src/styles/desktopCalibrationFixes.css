@@ -89,6 +89,25 @@
     --board-size: 42.41%;
   }
 
+  .game-stage-art {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: fill !important;
+    object-position: center !important;
+    pointer-events: none !important;
+    user-select: none !important;
+    z-index: 0 !important;
+  }
+
+  .game-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 1 !important;
+  }
+
   .dice-overlay {
     gap: var(--dice-gap, 8%);
     align-items: center;
