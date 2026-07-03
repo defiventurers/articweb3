@@ -23,6 +23,7 @@ import "./styles/dataScreens.css";
 import "./styles/dataScreensPolish.css";
 import "./styles/calibration.css";
 import "./styles/calibrationBoardSquareFix.css";
+import "./styles/calibrationScreenFixes.css";
 import "./styles/calibratedOverrides.css";
 import "./styles/desktopCalibrationFixes.css";
 import "./utils/gameGridCalibrationSeed.js";
