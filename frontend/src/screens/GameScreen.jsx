@@ -84,6 +84,21 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onMainMe
   return (
     <section className="game-screen-page" aria-label="Game screen">
       <div className="game-stage" style={{ "--active-player-color": TEAM_COLOR[team] }}>
+        <img
+          className="game-stage-art"
+          src="/assets/screens/arctic-dominion-game-base-desktop.png"
+          alt=""
+          aria-hidden="true"
+          draggable="false"
+          decoding="async"
+          data-webp-preferred="true"
+          onError={(event) => {
+            if (!event.currentTarget.dataset.fallbackApplied) {
+              event.currentTarget.dataset.fallbackApplied = "true";
+              event.currentTarget.src = "/assets/screens/arctic-dominion-game-base.webp";
+            }
+          }}
+        />
         <div className="game-overlay">
           <div className="game-status-overlay" aria-live="polite">
             <div>
