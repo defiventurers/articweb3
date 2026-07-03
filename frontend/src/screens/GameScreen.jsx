@@ -6,6 +6,8 @@ import { soundManager } from "../utils/soundManager.js";
 const LOCAL_PIECE_ASSET_BASE = "/assets/arctic/pieces";
 const REMOTE_PIECE_ASSET_BASE =
   "https://raw.githubusercontent.com/defiventurers/chaturanga-game/36d8ee9ae33fa08a21ba3d644b6053b9e13273e4/public/assets/arctic/pieces";
+const REMOTE_DESKTOP_GAME_ART =
+  "https://raw.githubusercontent.com/defiventurers/articweb3/main/frontend/public/assets/screens/arctic-dominion-game-base-desktop.png";
 
 const TEAM_ASSET_COLOR = { green: "green", red: "red", blue: "blue", yellow: "pink" };
 const PIECE_ASSET_TYPE = { king: "frost-king", elephant: "war-mammoth", horse: "aurora-unicorn", ship: "icebreaker", pawn: "snow-guard" };
@@ -93,9 +95,9 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onMainMe
           decoding="async"
           data-webp-preferred="true"
           onError={(event) => {
-            if (!event.currentTarget.dataset.fallbackApplied) {
-              event.currentTarget.dataset.fallbackApplied = "true";
-              event.currentTarget.src = "/assets/screens/arctic-dominion-game-base.webp";
+            if (!event.currentTarget.dataset.remoteFallbackApplied) {
+              event.currentTarget.dataset.remoteFallbackApplied = "true";
+              event.currentTarget.src = REMOTE_DESKTOP_GAME_ART;
             }
           }}
         />
