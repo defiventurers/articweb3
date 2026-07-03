@@ -69,6 +69,26 @@
     display: none;
   }
 
+  .game-screen-page {
+    background: #061b3a !important;
+  }
+
+  .game-stage {
+    position: relative !important;
+    width: min(100vw, calc(100dvh * 16 / 9)) !important;
+    height: min(100dvh, calc(100vw * 9 / 16)) !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    aspect-ratio: 16 / 9 !important;
+    background-image: url("/assets/screens/arctic-dominion-game-base-desktop.png") !important;
+    background-size: 100% 100% !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    --board-left: 29.27%;
+    --board-top: 12.56%;
+    --board-size: 42.41%;
+  }
+
   .dice-overlay {
     gap: var(--dice-gap, 8%);
     align-items: center;
@@ -96,12 +116,6 @@
     min-height: 0;
     font-size: clamp(10px, 0.9vw, 15px);
     line-height: 1;
-  }
-
-  .game-stage {
-    --board-left: 29.27%;
-    --board-top: 12.56%;
-    --board-size: 42.41%;
   }
 
   .roll-hitbox {
