@@ -5,3 +5,8 @@
 .game-grid-cal-stage {
   background: #08213f;
 }
+
+.game-grid-cal-stage .cal-box.board {
+  height: auto !important;
+  aspect-ratio: 1 / 1;
+}
