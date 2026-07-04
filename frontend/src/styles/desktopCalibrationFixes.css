@@ -84,9 +84,9 @@
     background-size: 100% 100% !important;
     background-repeat: no-repeat !important;
     background-position: center center !important;
-    --board-left: 29.47%;
-    --board-top: 17.53%;
-    --board-size: 38.12%;
+    --board-left: 29.90%;
+    --board-top: 17.66%;
+    --board-size: 37.48%;
   }
 
   .game-stage-art {
@@ -139,23 +139,23 @@
 
   .roll-hitbox {
     left: 71.14%;
-    top: 48.24%;
-    width: 21.12%;
-    height: 13.21%;
+    top: 52.20%;
+    width: 21.05%;
+    height: 13.72%;
   }
 
   .new-game-hitbox {
-    left: 1.8%;
-    top: 2.2%;
-    width: 14.5%;
-    height: 5.4%;
+    left: 13.66%;
+    top: 59.54%;
+    width: 12.40%;
+    height: 8.79%;
     border-radius: 999px;
     background: rgba(4, 31, 66, .72);
     border: 1px solid rgba(190, 245, 255, .42);
     color: #fff;
     display: grid;
     place-items: center;
-    font-size: clamp(10px, .85vw, 14px);
+    font-size: clamp(12px, 1.05vw, 18px);
     font-weight: 1000;
     letter-spacing: .03em;
     text-transform: uppercase;
@@ -167,32 +167,32 @@
 
   .end-turn-hitbox {
     left: 71.07%;
-    top: 62.23%;
+    top: 66.19%;
     width: 21.25%;
-    height: 13.45%;
+    height: 13.96%;
   }
 
   .dice-overlay {
-    left: 71.66%;
-    top: 34.92%;
-    width: 21.11%;
-    height: 11.63%;
+    left: 71.88%;
+    top: 37.99%;
+    width: 20.75%;
+    height: 14.06%;
   }
 
   .game-status-overlay {
-    left: 29.45%;
-    top: 6.11%;
-    width: 29.04%;
-    height: 5.30%;
-    font-size: 1.1cqh;
+    left: 29.38%;
+    top: 5.60%;
+    width: 38.38%;
+    height: 7.09%;
+    font-size: 1.35cqh;
   }
 
   .game-status-badge {
-    left: 58.78%;
-    top: 6.79%;
-    width: 7.15%;
-    height: 4.06%;
-    font-size: 1.0cqh;
+    left: 69.92%;
+    top: 9.35%;
+    width: 4.63%;
+    height: 3.93%;
+    font-size: 1.2cqh;
     position: absolute;
   }
 }
