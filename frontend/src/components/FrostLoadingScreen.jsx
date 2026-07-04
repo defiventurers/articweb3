@@ -4,6 +4,8 @@ import { toWebpPath } from "./OptimizedImage.jsx";
 const REMOTE_PIECE_ASSET_BASE =
   "https://raw.githubusercontent.com/defiventurers/chaturanga-game/36d8ee9ae33fa08a21ba3d644b6053b9e13273e4/public/assets/arctic/pieces";
 
+const DESKTOP_MEDIA = "(min-width: 900px) and (orientation: landscape)";
+
 const SCREEN_ASSETS = [
   "/assets/screens/cover.webp",
   "/assets/screens/main-menu.webp",
@@ -14,11 +16,19 @@ const SCREEN_ASSETS = [
   "/assets/screens/arctic-dominion-game-base.webp"
 ];
 
+const DESKTOP_SCREEN_ASSETS = [
+  "/assets/screens/cover-desktop.png",
+  "/assets/screens/main-menu-desktop.png",
+  "/assets/screens/playerhub-desktop.png",
+  "/assets/screens/openicehub-desktop.png",
+  "/assets/screens/openice-createroom-desktop.png",
+  "/assets/screens/join-room-desktop.png",
+  "/assets/screens/arctic-dominion-game-base-desktop.png"
+];
+
 const PIECE_COLORS = ["red", "blue", "green", "pink"];
 const PIECE_TYPES = ["snow-guard", "icebreaker", "war-mammoth", "aurora-unicorn", "frost-king"];
 const PIECE_ASSETS = PIECE_COLORS.flatMap((color) => PIECE_TYPES.map((piece) => `${REMOTE_PIECE_ASSET_BASE}/${color}-${piece}.png`));
-
-const CRITICAL_ASSETS = [...SCREEN_ASSETS, ...PIECE_ASSETS];
 
 const SECONDARY_ASSETS = [
   "/assets/how-to-play/retsba-kingdom.webp",
@@ -46,8 +56,9 @@ export function FrostLoadingScreen({ onReady }) {
   const [failed, setFailed] = useState(0);
   const [phase, setPhase] = useState(STATUS_LINES[0]);
   const readyCalled = useRef(false);
+  const criticalAssets = useMemo(() => getCriticalAssets(), []);
 
-  const total = CRITICAL_ASSETS.length;
+  const total = criticalAssets.length;
   const percent = Math.min(100, Math.round((loaded / total) * 100));
 
   useEffect(() => {
@@ -56,7 +67,7 @@ export function FrostLoadingScreen({ onReady }) {
 
     async function runPreload() {
       const results = await Promise.all(
-        CRITICAL_ASSETS.map((src, index) => preloadImage(src).then((result) => {
+        criticalAssets.map((src, index) => preloadImage(src).then((result) => {
           if (cancelled) return result;
           setLoaded((current) => Math.min(total, current + 1));
           if (result.status !== "loaded") setFailed((current) => current + 1);
@@ -82,7 +93,7 @@ export function FrostLoadingScreen({ onReady }) {
     return () => {
       cancelled = true;
     };
-  }, [onReady, total]);
+  }, [onReady, total, criticalAssets]);
 
   const detailLine = useMemo(() => {
     if (percent >= 100) return failed ? "Frost Gate ready. Some fallback assets will retry when needed." : "Frost Gate ready.";
@@ -141,7 +152,7 @@ export function warmSecondaryAssets() {
 
 export function warmGameAssets() {
   runWhenIdle(() => {
-    ["/assets/screens/arctic-dominion-game-base.webp", ...PIECE_ASSETS].forEach((src) => preloadImage(src));
+    getGameWarmAssets().forEach((src) => preloadImage(src));
   });
 }
 
@@ -149,6 +160,23 @@ export function warmHowToPlayAssets() {
   runWhenIdle(() => {
     SECONDARY_ASSETS.forEach((src) => preloadImage(src));
   });
+}
+
+function getCriticalAssets() {
+  const assets = [...SCREEN_ASSETS, ...PIECE_ASSETS];
+  if (isDesktopLandscape()) assets.push(...DESKTOP_SCREEN_ASSETS);
+  return assets;
+}
+
+function getGameWarmAssets() {
+  const assets = ["/assets/screens/arctic-dominion-game-base.webp", ...PIECE_ASSETS];
+  if (isDesktopLandscape()) assets.unshift("/assets/screens/arctic-dominion-game-base-desktop.png");
+  return assets;
+}
+
+function isDesktopLandscape() {
+  if (typeof window === "undefined" || !window.matchMedia) return false;
+  return window.matchMedia(DESKTOP_MEDIA).matches;
 }
 
 function preloadImage(src) {
