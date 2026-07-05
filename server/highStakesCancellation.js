@@ -36,6 +36,10 @@ function createHighStakesCancellationManager({
     return now >= deadline;
   }
 
+  function needsRefundRetry(room) {
+    return room?.roomMode === ROOM_MODES.HIGH_STAKES && room.status === "cancelled" && ["pending", "failed", "submitting"].includes(room.refundStatus || "");
+  }
+
   function viewFields(room) {
     return {
       highStakesWaitTimeoutMs: room?.roomMode === ROOM_MODES.HIGH_STAKES ? waitTimeoutMs : null,
@@ -50,6 +54,10 @@ function createHighStakesCancellationManager({
   }
 
   function checkTimeout(room) {
+    if (needsRefundRetry(room)) {
+      refundCancelled(room).then(() => broadcast(room));
+      return true;
+    }
     if (!shouldCancel(room)) return false;
     cancelRoom(room);
     refundCancelled(room).then(() => broadcast(room));
@@ -73,7 +81,8 @@ function createHighStakesCancellationManager({
 
   async function refundCancelled(room) {
     if (!room || room.roomMode !== ROOM_MODES.HIGH_STAKES || room.status !== "cancelled") return;
-    if (["refunded", "not_required", "submitting", "needs_refund_review"].includes(room.refundStatus)) return;
+    if (room.refundInFlight) return;
+    if (["refunded", "not_required", "needs_refund_review"].includes(room.refundStatus)) return;
     if (!ETH_VAULT_ADDRESS) {
       room.refundStatus = "needs_vault_config";
       room.refundError = "ETH vault is not configured on the server.";
@@ -100,6 +109,7 @@ function createHighStakesCancellationManager({
       return;
     }
 
+    room.refundInFlight = true;
     try {
       const provider = new Provider(ABSTRACT_RPC_URL);
       const wallet = new Wallet(normalizeSecret(signerSecret), provider);
@@ -172,6 +182,8 @@ function createHighStakesCancellationManager({
       room.refundError = settlementErrorMessage(err);
       audit(room, { type: "refund_failed", error: room.refundError, attempt: room.refundAttempts || 0 });
       saveRoomSafe(room);
+    } finally {
+      room.refundInFlight = false;
     }
   }
 
