@@ -26,6 +26,7 @@ import "./styles/calibrationBoardSquareFix.css";
 import "./styles/calibrationScreenFixes.css";
 import "./styles/calibratedOverrides.css";
 import "./styles/desktopCalibrationFixes.css";
+import "./styles/highStakesDesktopCalibration.css";
 import "./utils/gameGridCalibrationSeed.js";
 import "./utils/playerHubCalibrationSeed.js";
 import "./utils/highstakesCalibrationExport.js";
