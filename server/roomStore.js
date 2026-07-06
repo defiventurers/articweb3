@@ -89,12 +89,20 @@ async function saveRoom(room) {
 
 async function loadRooms() {
   if (!(await initRoomStore())) return [];
-  const result = await getPool().query(`SELECT room_json FROM rooms WHERE status IN ('waiting','playing','finished') ORDER BY updated_at DESC LIMIT 200`);
-  return result.rows.map((row) => row.room_json).filter(Boolean).map(sanitizeRoom);
+  const result = await getPool().query(`SELECT room_json, created_at FROM rooms WHERE status IN ('waiting','playing','finished','cancelled') ORDER BY updated_at DESC LIMIT 200`);
+  return result.rows.map(rowToRoom).filter(Boolean).map(sanitizeRoom);
+}
+
+function rowToRoom(row) {
+  const room = row?.room_json;
+  if (!room) return null;
+  const dbCreatedAt = row.created_at ? new Date(row.created_at).getTime() : null;
+  if (!Number(room.createdAt || 0) && dbCreatedAt) return { ...room, createdAt: dbCreatedAt };
+  return room;
 }
 
 function sanitizeRoom(room) {
-  const { botTimer, ...safeRoom } = room || {};
+  const { botTimer, refundInFlight, ...safeRoom } = room || {};
   return safeRoom;
 }
 
