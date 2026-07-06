@@ -16,6 +16,8 @@ const ROOM_PAGE_SIZE = 9;
 const CALIBRATION_QUERY_KEY = "calibrateHighstakes";
 const NETWORK_LOCK_COPY = appConfig.isMainnet ? "mainnet lock" : "testnet lock";
 const NETWORK_ETH_COPY = appConfig.isMainnet ? "mainnet ETH" : "testnet ETH";
+const DEFAULT_HIGH_STAKES_WAIT_TIMEOUT_MS = 2 * 60 * 60 * 1000;
+const ROOM_SEEN_STORAGE_PREFIX = "artic-highstakes-room-seen-at:";
 
 export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, onBack }) {
   const { address } = useAccount();
@@ -77,7 +79,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
     const roomRefresh = setInterval(() => refreshRooms(), 15000);
     const onPacket = (event) => {
       const packet = event.detail;
-      const nextRoom = packet?.payload?.room;
+      const nextRoom = normalizeRoomCountdown(packet?.payload?.room);
       if (packet?.type !== "room_state" || nextRoom?.roomMode !== "high_stakes") return;
       setPublicRooms((current) => mergeRoomList(current, nextRoom));
       setRoom((currentRoom) => (currentRoom?.roomCode === nextRoom.roomCode ? nextRoom : currentRoom));
@@ -126,7 +128,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   async function refreshRooms() {
     try {
       const rooms = await listRooms({ roomMode: "high_stakes" });
-      const liveRooms = rooms.filter((candidate) => !isExpiredRoom(candidate, Date.now()));
+      const liveRooms = rooms.map(normalizeRoomCountdown).filter((candidate) => !isExpiredRoom(candidate, Date.now()));
       setPublicRooms(liveRooms);
       setRoomPage((page) => clampPage(page, liveRooms.length));
     } catch (err) {
@@ -141,7 +143,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
 
   async function makeRoom(tier) {
     await run(async () => {
-      const created = await createRoom({ visibility: "public", roomMode: "high_stakes", entryTier: tier.code, profile });
+      const created = normalizeRoomCountdown(await createRoom({ visibility: "public", roomMode: "high_stakes", entryTier: tier.code, profile }));
       setRoom(created);
       setTierPickerMode(null);
       await refreshRooms();
@@ -163,7 +165,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
     const code = clean(codeValue);
     if (code.length !== 4) return setError("Enter a 4-character room code.");
     await run(async () => {
-      const joined = await joinRoom({ roomCode: code, profile });
+      const joined = normalizeRoomCountdown(await joinRoom({ roomCode: code, profile }));
       setRoom(joined);
       setJoinCode("");
       setShowInvitePanel(false);
@@ -203,7 +205,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
         value
       });
       setStatus("Confirming on server...");
-      const nextRoom = await waitForLock(txHash);
+      const nextRoom = normalizeRoomCountdown(await waitForLock(txHash));
       setHasCurrentRoomLock(true);
       onRoomReady(nextRoom);
     });
@@ -313,7 +315,8 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
       <div className={`highstakes-room-card hs-room-${slotIndex}`} key={`slot-${slotIndex}`}>
         {slotRoom && (
           <>
-            <div className="hs-room-code" data-calibrate={`room-${slotIndex}-code`} title={countdown ? `Auto-cancel ${countdown}` : undefined}>{slotRoom.roomCode}{countdown && <span className="hs-room-countdown">({countdown})</span>}</div>
+            <div className="hs-room-code" data-calibrate={`room-${slotIndex}-code`} title={countdown ? `Auto-cancel ${countdown}` : undefined}>{slotRoom.roomCode}</div>
+            {countdown && <div className="hs-room-autocancel" data-calibrate={`room-${slotIndex}-autocancel`}>({countdown})</div>}
             <div className="hs-room-count" data-calibrate={`room-${slotIndex}-users`}>{slotRoom.playerCount || 0}/{slotRoom.maxPlayers || 4}</div>
             <div className="hs-room-fee" data-calibrate={`room-${slotIndex}-eth`}>{formatEntry(slotRoom.entryWei)} ETH</div>
             <div className="hs-room-usd" data-calibrate={`room-${slotIndex}-usd`}>{getUsdEntryLabel(slotRoom) || "ENTRY"}</div>
@@ -334,7 +337,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
           <div className="highstakes-overlay">
             <div id="highStakesWalletText" className="highstakes-wallet-text" data-calibrate="wallet-text">{displayName}</div>
             <div id="highStakesPointsText" className="highstakes-points-text" data-calibrate="points-text">{profile?.points ?? ""}</div>
-            <div id="HighStakesAvailableBalance" className="highstakes-lock-value available-lock-value" data-calibrate="available-lock">{formatAmount(availableBalance)} ETH</div>
+            <div id="highStakesAvailableBalance" className="highstakes-lock-value available-lock-value" data-calibrate="available-lock">{formatAmount(availableBalance)} ETH</div>
             <div id="highStakesLockedBalance" className="highstakes-lock-value locked-lock-value" data-calibrate="locked-lock">{formatAmount(lockedBalance)} ETH</div>
             <div className="highstakes-page-text" data-calibrate="page-text">Page {roomPage + 1}/{pageCount}</div>
             {hasPrevPage && <div className="highstakes-prev-page-label">PREV PAGE</div>}
@@ -418,9 +421,10 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
 }
 
 function mergeRoomList(current, nextRoom) {
-  const roomStillListed = nextRoom.visibility === "public" && nextRoom.status === "waiting" && !isExpiredRoom(nextRoom, Date.now());
-  const filtered = current.filter((item) => item.roomCode !== nextRoom.roomCode);
-  return roomStillListed ? [nextRoom, ...filtered] : filtered;
+  const normalizedRoom = normalizeRoomCountdown(nextRoom);
+  const roomStillListed = normalizedRoom?.visibility === "public" && normalizedRoom.status === "waiting" && !isExpiredRoom(normalizedRoom, Date.now());
+  const filtered = current.filter((item) => item.roomCode !== normalizedRoom?.roomCode);
+  return roomStillListed ? [normalizedRoom, ...filtered] : filtered;
 }
 
 function canJoin(room, nowMs = Date.now()) {
@@ -454,6 +458,26 @@ function getCalibrationRoom(index, nowMs = Date.now()) {
   return samples[index] || null;
 }
 
+function normalizeRoomCountdown(room) {
+  if (!room || room.roomMode !== "high_stakes" || room.status !== "waiting") return room;
+  const serverExpiresAt = Number(room.highStakesExpiresAt || 0);
+  if (Number.isFinite(serverExpiresAt) && serverExpiresAt > 0) return room;
+  const timeoutMs = Number(room.highStakesWaitTimeoutMs || DEFAULT_HIGH_STAKES_WAIT_TIMEOUT_MS);
+  const createdAt = Number(room.createdAt || 0);
+  const firstSeenAt = createdAt > 0 ? createdAt : getRoomFirstSeenAt(room.roomCode);
+  return { ...room, highStakesWaitTimeoutMs: timeoutMs, highStakesExpiresAt: firstSeenAt + timeoutMs, highStakesCountdownFallback: true };
+}
+
+function getRoomFirstSeenAt(roomCode) {
+  const key = `${ROOM_SEEN_STORAGE_PREFIX}${clean(roomCode)}`;
+  const now = Date.now();
+  if (typeof window === "undefined" || !window.localStorage) return now;
+  const existing = Number(window.localStorage.getItem(key) || 0);
+  if (Number.isFinite(existing) && existing > 0) return existing;
+  window.localStorage.setItem(key, String(now));
+  return now;
+}
+
 function getUsdEntryLabel(room) {
   const usd = Number(room?.entryFeeUsd || 0);
   return Number.isFinite(usd) && usd > 0 ? `$${usd} Entry` : "";
@@ -461,7 +485,8 @@ function getUsdEntryLabel(room) {
 
 function formatRoomCountdown(room, nowMs = Date.now()) {
   if (!room || room.status !== "waiting") return "";
-  const expiresAt = Number(room.highStakesExpiresAt || 0);
+  const normalizedRoom = normalizeRoomCountdown(room);
+  const expiresAt = Number(normalizedRoom.highStakesExpiresAt || 0);
   if (!Number.isFinite(expiresAt) || expiresAt <= 0) return "";
   const remainingMs = Math.max(0, expiresAt - nowMs);
   if (remainingMs <= 0) return "canceling";
@@ -473,7 +498,8 @@ function formatRoomCountdown(room, nowMs = Date.now()) {
 
 function isExpiredRoom(room, nowMs = Date.now()) {
   if (!room || room.status !== "waiting") return false;
-  const expiresAt = Number(room.highStakesExpiresAt || 0);
+  const normalizedRoom = normalizeRoomCountdown(room);
+  const expiresAt = Number(normalizedRoom.highStakesExpiresAt || 0);
   return Number.isFinite(expiresAt) && expiresAt > 0 && nowMs >= expiresAt;
 }
 
