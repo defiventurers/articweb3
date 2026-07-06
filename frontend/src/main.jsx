@@ -7,6 +7,7 @@ import "./styles/global.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";
+import "./styles/highStakesCountdown.css";
 import "./styles/networkAndConfig.css";
 import "./styles/walletStatus.css";
 import "./styles/gameBoard.css";
