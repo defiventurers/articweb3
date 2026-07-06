@@ -31,6 +31,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   const [tierPickerMode, setTierPickerMode] = useState(null);
   const [hasCurrentRoomLock, setHasCurrentRoomLock] = useState(false);
   const [tierSnapshot, setTierSnapshot] = useState(() => getFallbackTierSnapshot());
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const calibrateHighstakes = useMemo(() => isHighstakesCalibrationEnabled(), []);
   const invitedRoomCode = useMemo(() => clean(initialRoomCode), [initialRoomCode]);
@@ -53,11 +54,13 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
     query: { enabled: Boolean(address && ETH_TARGETS_READY) }
   });
 
-  const pageCount = Math.max(1, Math.ceil(publicRooms.length / ROOM_PAGE_SIZE));
+  const activePublicRooms = useMemo(() => publicRooms.filter((candidate) => !isExpiredRoom(candidate, nowMs)), [publicRooms, nowMs]);
+  const hasExpiredPublicRooms = activePublicRooms.length !== publicRooms.length;
+  const pageCount = Math.max(1, Math.ceil(activePublicRooms.length / ROOM_PAGE_SIZE));
   const visibleRooms = useMemo(() => {
     const start = roomPage * ROOM_PAGE_SIZE;
-    return publicRooms.slice(start, start + ROOM_PAGE_SIZE);
-  }, [publicRooms, roomPage]);
+    return activePublicRooms.slice(start, start + ROOM_PAGE_SIZE);
+  }, [activePublicRooms, roomPage]);
   const hasNextPage = roomPage < pageCount - 1;
   const hasPrevPage = roomPage > 0;
   const availableBalance = availableQuery.data || 0n;
@@ -70,6 +73,8 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   useEffect(() => {
     refreshRooms();
     refreshTiers();
+    const clock = setInterval(() => setNowMs(Date.now()), 1000);
+    const roomRefresh = setInterval(() => refreshRooms(), 15000);
     const onPacket = (event) => {
       const packet = event.detail;
       const nextRoom = packet?.payload?.room;
@@ -78,7 +83,11 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
       setRoom((currentRoom) => (currentRoom?.roomCode === nextRoom.roomCode ? nextRoom : currentRoom));
     };
     window.addEventListener("server-packet", onPacket);
-    return () => window.removeEventListener("server-packet", onPacket);
+    return () => {
+      clearInterval(clock);
+      clearInterval(roomRefresh);
+      window.removeEventListener("server-packet", onPacket);
+    };
   }, []);
 
   useEffect(() => {
@@ -87,6 +96,16 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
       setShowInvitePanel(true);
     }
   }, [invitedRoomCode]);
+
+  useEffect(() => {
+    setRoomPage((page) => clampPage(page, activePublicRooms.length));
+  }, [activePublicRooms.length]);
+
+  useEffect(() => {
+    if (!hasExpiredPublicRooms) return;
+    const timer = setTimeout(() => refreshRooms(), 1000);
+    return () => clearTimeout(timer);
+  }, [hasExpiredPublicRooms]);
 
   useEffect(() => {
     setHasCurrentRoomLock(false);
@@ -107,8 +126,9 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   async function refreshRooms() {
     try {
       const rooms = await listRooms({ roomMode: "high_stakes" });
-      setPublicRooms(rooms);
-      setRoomPage((page) => clampPage(page, rooms.length));
+      const liveRooms = rooms.filter((candidate) => !isExpiredRoom(candidate, Date.now()));
+      setPublicRooms(liveRooms);
+      setRoomPage((page) => clampPage(page, liveRooms.length));
     } catch (err) {
       setError(err.message || "Could not load rooms.");
     }
@@ -239,6 +259,8 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
       `Vault locked ETH: ${formatAmount(lockedBalance)}`,
       `Players: ${room.playerCount || 1}/${room.maxPlayers || 4}`,
       `Locked players: ${lockedCount}`,
+      `Auto-cancel: ${formatRoomCountdown(room, Date.now()) || "—"}`,
+      `Refund status: ${room.refundStatus || "—"}`,
       `Status: ${room.status || "—"}`
     ];
     await copyLines(lines, "Lock debug context copied.");
@@ -281,22 +303,23 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
 
   function roomSlot(slotIndex) {
     const realRoom = visibleRooms[slotIndex];
-    const sampleRoom = calibrateHighstakes ? getCalibrationRoom(slotIndex) : null;
+    const sampleRoom = calibrateHighstakes ? getCalibrationRoom(slotIndex, nowMs) : null;
     const slotRoom = realRoom || sampleRoom;
     const globalIndex = roomPage * ROOM_PAGE_SIZE + slotIndex;
     const isSample = !realRoom && Boolean(sampleRoom);
+    const countdown = formatRoomCountdown(slotRoom, nowMs);
 
     return (
       <div className={`highstakes-room-card hs-room-${slotIndex}`} key={`slot-${slotIndex}`}>
         {slotRoom && (
           <>
-            <div className="hs-room-code" data-calibrate={`room-${slotIndex}-code`}>{slotRoom.roomCode}</div>
+            <div className="hs-room-code" data-calibrate={`room-${slotIndex}-code`} title={countdown ? `Auto-cancel ${countdown}` : undefined}>{slotRoom.roomCode}{countdown && <span className="hs-room-countdown">({countdown})</span>}</div>
             <div className="hs-room-count" data-calibrate={`room-${slotIndex}-users`}>{slotRoom.playerCount || 0}/{slotRoom.maxPlayers || 4}</div>
             <div className="hs-room-fee" data-calibrate={`room-${slotIndex}-eth`}>{formatEntry(slotRoom.entryWei)} ETH</div>
             <div className="hs-room-usd" data-calibrate={`room-${slotIndex}-usd`}>{getUsdEntryLabel(slotRoom) || "ENTRY"}</div>
           </>
         )}
-        {slotRoom && <button className="screen-hitbox hs-room-join-hitbox" data-calibrate={`room-${slotIndex}-join`} aria-label={`Join room ${slotRoom.roomCode}`} disabled={busy || (!isSample && !canJoin(slotRoom))} onClick={() => !isSample && enterRoom(slotRoom.roomCode)} />}
+        {slotRoom && <button className="screen-hitbox hs-room-join-hitbox" data-calibrate={`room-${slotIndex}-join`} aria-label={`Join room ${slotRoom.roomCode}`} disabled={busy || (!isSample && !canJoin(slotRoom, nowMs))} onClick={() => !isSample && enterRoom(slotRoom.roomCode)} />}
         {!slotRoom && <div className="hs-room-empty">{globalIndex === 0 ? "No public rooms" : ""}</div>}
       </div>
     );
@@ -311,7 +334,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
           <div className="highstakes-overlay">
             <div id="highStakesWalletText" className="highstakes-wallet-text" data-calibrate="wallet-text">{displayName}</div>
             <div id="highStakesPointsText" className="highstakes-points-text" data-calibrate="points-text">{profile?.points ?? ""}</div>
-            <div id="highStakesAvailableBalance" className="highstakes-lock-value available-lock-value" data-calibrate="available-lock">{formatAmount(availableBalance)} ETH</div>
+            <div id="HighStakesAvailableBalance" className="highstakes-lock-value available-lock-value" data-calibrate="available-lock">{formatAmount(availableBalance)} ETH</div>
             <div id="highStakesLockedBalance" className="highstakes-lock-value locked-lock-value" data-calibrate="locked-lock">{formatAmount(lockedBalance)} ETH</div>
             <div className="highstakes-page-text" data-calibrate="page-text">Page {roomPage + 1}/{pageCount}</div>
             {hasPrevPage && <div className="highstakes-prev-page-label">PREV PAGE</div>}
@@ -372,6 +395,8 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
                 <h3>Room {room.roomCode}</h3>
                 <p>{getUsdEntryLabel(room) || "Entry"} · Required lock {formatEntry(room.entryWei)} ETH</p>
                 <p>Wallet {formatAmount(walletBalance)} ETH · Vault available {formatAmount(availableBalance)} ETH</p>
+                {formatRoomCountdown(room, nowMs) && <p>Auto-cancels in {formatRoomCountdown(room, nowMs)} if fewer than 4 players join.</p>}
+                {room.refundStatus && <p>Refund status: {room.refundStatus}</p>}
                 {!hasWalletForRoom && <p className="error">Wallet ETH is below this room lock. Fund wallet or choose a smaller room.</p>}
                 <p>{room.playerCount || 1}/4 players · {room.players?.filter((player) => player.entryLocked).length || 0} locked</p>
                 <button type="button" className="highstakes-modal-cancel" disabled={busy} onClick={copyRoomInvite}>Copy Room Invite</button>
@@ -380,7 +405,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
                 {hasCurrentRoomLock ? (
                   <button type="button" className="highstakes-modal-primary" disabled>Entry Lock Confirmed</button>
                 ) : (
-                  <button type="button" className="highstakes-modal-primary" disabled={busy || !hasWalletForRoom} onClick={confirmWithWallet}>{busy ? "Working..." : `Confirm ${appConfig.isMainnet ? "Mainnet" : "Testnet"} Lock`}</button>
+                  <button type="button" className="highstakes-modal-primary" disabled={busy || !hasWalletForRoom || isExpiredRoom(room, nowMs)} onClick={confirmWithWallet}>{busy ? "Working..." : `Confirm ${appConfig.isMainnet ? "Mainnet" : "Testnet"} Lock`}</button>
                 )}
                 <button type="button" className="highstakes-modal-cancel" disabled={busy} onClick={() => setRoom(null)}>Choose Another Room</button>
               </div>
@@ -393,13 +418,13 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
 }
 
 function mergeRoomList(current, nextRoom) {
-  const roomStillListed = nextRoom.visibility === "public" && nextRoom.status === "waiting";
+  const roomStillListed = nextRoom.visibility === "public" && nextRoom.status === "waiting" && !isExpiredRoom(nextRoom, Date.now());
   const filtered = current.filter((item) => item.roomCode !== nextRoom.roomCode);
   return roomStillListed ? [nextRoom, ...filtered] : filtered;
 }
 
-function canJoin(room) {
-  return room && room.status === "waiting" && !room.countdownStartTime && Number(room.playerCount || 0) < Number(room.maxPlayers || 4);
+function canJoin(room, nowMs = Date.now()) {
+  return room && room.status === "waiting" && !room.countdownStartTime && Number(room.playerCount || 0) < Number(room.maxPlayers || 4) && !isExpiredRoom(room, nowMs);
 }
 
 function clampPage(page, totalRooms) {
@@ -413,17 +438,18 @@ function getDisplayName(profile, address) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-function getCalibrationRoom(index) {
+function getCalibrationRoom(index, nowMs = Date.now()) {
+  const expiresAt = nowMs + (2 * 60 * 60 * 1000) - (index * 7 * 60 * 1000);
   const samples = [
-    { roomCode: "YS3B", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 2, maxPlayers: 4 },
-    { roomCode: "A352", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4 },
-    { roomCode: "FTY2", entryFeeUsd: 16, entryWei: FALLBACK_TIERS[2].entryWei, playerCount: 3, maxPlayers: 4 },
-    { roomCode: "J4VE", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 2, maxPlayers: 4 },
-    { roomCode: "T6RK", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 4, maxPlayers: 4 },
-    { roomCode: "H9CY", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4 },
-    { roomCode: "B3UA", entryFeeUsd: 16, entryWei: FALLBACK_TIERS[2].entryWei, playerCount: 3, maxPlayers: 4 },
-    { roomCode: "W5DN", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4 },
-    { roomCode: "Z1GF", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 2, maxPlayers: 4 }
+    { roomCode: "YS3B", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 2, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
+    { roomCode: "A352", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
+    { roomCode: "FTY2", entryFeeUsd: 16, entryWei: FALLBACK_TIERS[2].entryWei, playerCount: 3, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
+    { roomCode: "J4VE", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 2, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
+    { roomCode: "T6RK", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 4, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
+    { roomCode: "H9CY", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
+    { roomCode: "B3UA", entryFeeUsd: 16, entryWei: FALLBACK_TIERS[2].entryWei, playerCount: 3, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
+    { roomCode: "W5DN", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
+    { roomCode: "Z1GF", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 2, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt }
   ];
   return samples[index] || null;
 }
@@ -431,6 +457,24 @@ function getCalibrationRoom(index) {
 function getUsdEntryLabel(room) {
   const usd = Number(room?.entryFeeUsd || 0);
   return Number.isFinite(usd) && usd > 0 ? `$${usd} Entry` : "";
+}
+
+function formatRoomCountdown(room, nowMs = Date.now()) {
+  if (!room || room.status !== "waiting") return "";
+  const expiresAt = Number(room.highStakesExpiresAt || 0);
+  if (!Number.isFinite(expiresAt) || expiresAt <= 0) return "";
+  const remainingMs = Math.max(0, expiresAt - nowMs);
+  if (remainingMs <= 0) return "canceling";
+  const totalMinutes = Math.max(1, Math.ceil(remainingMs / 60000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return hours > 0 ? `${hours}h${String(minutes).padStart(2, "0")}m` : `${minutes}m`;
+}
+
+function isExpiredRoom(room, nowMs = Date.now()) {
+  if (!room || room.status !== "waiting") return false;
+  const expiresAt = Number(room.highStakesExpiresAt || 0);
+  return Number.isFinite(expiresAt) && expiresAt > 0 && nowMs >= expiresAt;
 }
 
 function formatEntry(value) {
