@@ -6,6 +6,7 @@ import { createProfile } from "../network/socketClient.js";
 import "../styles/profileScreen.css";
 
 const PROFILE_CALIBRATION_QUERY_KEY = "calibrateProfile";
+const PROFILE_STORAGE_KEY = "artic-profile-by-wallet-v1";
 const PROFILE_CALIBRATION_TARGETS = [
   "agw-rectangle",
   "wallet-rectangle",
@@ -24,6 +25,7 @@ const PROFILE_CALIBRATION_TARGETS = [
 export function ProfileScreen({ onComplete, onBack }) {
   const [name, setName] = useState("");
   const [nameTouched, setNameTouched] = useState(false);
+  const [existingProfile, setExistingProfile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [lookupBusy, setLookupBusy] = useState(false);
   const [error, setError] = useState("");
@@ -40,7 +42,24 @@ export function ProfileScreen({ onComplete, onBack }) {
   const { signMessageAsync } = useSignMessage();
 
   useEffect(() => {
-    if (!address || !isConnected || nameTouched) return;
+    if (!address || !isConnected) {
+      setExistingProfile(null);
+      return;
+    }
+
+    const storedProfile = readStoredProfile(address);
+    if (!storedProfile) {
+      setExistingProfile(null);
+      return;
+    }
+
+    setExistingProfile(storedProfile);
+    if (!nameTouched) setName(storedProfile.name);
+    setNotice("Saved profile found. Continue to enter the lobby.");
+  }, [address, isConnected, nameTouched]);
+
+  useEffect(() => {
+    if (!address || !isConnected || nameTouched || readStoredProfile(address)) return;
 
     let cancelled = false;
     setLookupBusy(true);
@@ -132,6 +151,7 @@ export function ProfileScreen({ onComplete, onBack }) {
       setCopied(false);
       setName("");
       setNameTouched(false);
+      setExistingProfile(null);
       disconnect();
       setNotice("Wallet disconnected.");
     } catch (err) {
@@ -171,22 +191,42 @@ export function ProfileScreen({ onComplete, onBack }) {
         return;
       }
 
-      if (name.trim().length < 3) {
+      const cleanName = name.trim();
+      const storedProfile = existingProfile || readStoredProfile(address);
+      const canReuseStoredProfile = storedProfile && (!nameTouched || cleanName === storedProfile.name);
+
+      if (canReuseStoredProfile) {
+        onComplete(normalizeStoredProfile({ ...storedProfile, wallet: address }));
+        return;
+      }
+
+      if (cleanName.length < 3) {
         setError("Name must be at least 3 characters.");
         return;
       }
 
       setBusy(true);
 
-      const profile = await createProfile({
-        address,
-        name: name.trim(),
-        signMessageAsync
-      });
-
-      onComplete(profile);
+      try {
+        const profile = await createProfile({
+          address,
+          name: cleanName,
+          signMessageAsync
+        });
+        const savedProfile = writeStoredProfile(profile);
+        onComplete(savedProfile || profile);
+      } catch (err) {
+        const fallbackProfile = normalizeStoredProfile({ wallet: address, name: cleanName, points: 0, gamesPlayed: 0, wins: 0, createdAt: Date.now() });
+        if (isTimeoutError(err)) {
+          writeStoredProfile(fallbackProfile);
+          setNotice("Lobby response timed out. Continuing with this profile.");
+          onComplete(fallbackProfile);
+          return;
+        }
+        setError(`${err.message || "Profile creation failed."} Try again.`);
+      }
     } catch (err) {
-      setError(err.message || "Profile creation failed.");
+      setError(err.message || "Profile creation failed. Try again.");
     } finally {
       setBusy(false);
     }
@@ -194,6 +234,7 @@ export function ProfileScreen({ onComplete, onBack }) {
 
   function handleNameChange(event) {
     setNameTouched(true);
+    setExistingProfile(null);
     setName(event.target.value);
   }
 
@@ -415,6 +456,52 @@ function cleanProfileName(value) {
 function compactAddress(address) {
   if (!address) return "";
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+function readStoredProfile(address) {
+  if (typeof window === "undefined") return null;
+  const wallet = walletKey(address);
+  if (!wallet) return null;
+  try {
+    const profiles = JSON.parse(window.localStorage.getItem(PROFILE_STORAGE_KEY) || "{}");
+    return normalizeStoredProfile(profiles[wallet]);
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredProfile(profile) {
+  if (typeof window === "undefined") return normalizeStoredProfile(profile);
+  const savedProfile = normalizeStoredProfile(profile);
+  if (!savedProfile) return null;
+  try {
+    const profiles = JSON.parse(window.localStorage.getItem(PROFILE_STORAGE_KEY) || "{}");
+    profiles[savedProfile.wallet] = savedProfile;
+    window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profiles));
+  } catch {}
+  return savedProfile;
+}
+
+function normalizeStoredProfile(profile) {
+  if (!profile || !profile.wallet || !profile.name) return null;
+  const name = cleanProfileName(profile.name);
+  if (name.length < 3) return null;
+  return {
+    wallet: walletKey(profile.wallet),
+    name,
+    points: Number(profile.points || 0),
+    gamesPlayed: Number(profile.gamesPlayed || 0),
+    wins: Number(profile.wins || 0),
+    createdAt: Number(profile.createdAt || Date.now())
+  };
+}
+
+function walletKey(address) {
+  return String(address || "").toLowerCase();
+}
+
+function isTimeoutError(err) {
+  return /timed?\s*out|timeout/i.test(String(err?.message || err || ""));
 }
 
 function isProfileCalibrationEnabled() {
