@@ -1,80 +1,537 @@
 @media (min-width: 900px) and (orientation: landscape) {
-  .highstakes-wallet-text { left: 82.55%; top: 6.85%; width: 19.83%; height: 2.61%; font-size: 10.1484px; }
-  .highstakes-points-text { left: 86.87%; top: 6.54%; width: 6.80%; height: 2.60%; font-size: 8.18418px; }
-  .available-lock-value { left: 9.83%; top: 70.01%; width: 14.30%; height: 2.60%; font-size: 12px; }
-  .locked-lock-value { left: 18.20%; top: 70.00%; width: 13.00%; height: 2.60%; font-size: 12px; }
-  .highstakes-page-text { left: 47.22%; top: 74.87%; width: 11.02%; height: 2.13%; font-size: 9px; }
-
-  .hs-room-0 .hs-room-code { left: 30.51%; top: 36.47%; width: 7.81%; height: 3.37%; font-size: 13.4221px; }
-  .hs-room-0 .hs-room-count { left: 30.45%; top: 39.56%; width: 2.60%; height: 3.70%; font-size: 12.25px; }
-  .hs-room-0 .hs-room-fee { left: 34.05%; top: 40.14%; width: 4.00%; height: 3.58%; font-size: 10.75px; }
-  .hs-room-0 .hs-room-usd { left: 30.32%; top: 43.80%; width: 8.09%; height: 3.37%; font-size: 10.4757px; }
-  .hs-room-0 .hs-room-join-hitbox { left: 28.37%; top: 47.28%; width: 9.67%; height: 5.02%; font-size: 16px; }
-
-  .hs-room-1 .hs-room-code { left: 42.15%; top: 36.42%; width: 7.53%; height: 3.53%; font-size: 13.4221px; }
-  .hs-room-1 .hs-room-count { left: 42.33%; top: 39.68%; width: 2.23%; height: 3.53%; font-size: 12.25px; }
-  .hs-room-1 .hs-room-fee { left: 45.37%; top: 40.15%; width: 4.00%; height: 3.58%; font-size: 10.75px; }
-  .hs-room-1 .hs-room-usd { left: 42.02%; top: 43.65%; width: 7.44%; height: 3.53%; font-size: 10.4757px; }
-  .hs-room-1 .hs-room-join-hitbox { left: 40.07%; top: 47.61%; width: 9.67%; height: 5.02%; font-size: 16px; }
-
-  .hs-room-2 .hs-room-code { left: 53.63%; top: 36.49%; width: 7.53%; height: 3.20%; font-size: 13.4221px; }
-  .hs-room-2 .hs-room-count { left: 53.57%; top: 39.85%; width: 2.23%; height: 3.20%; font-size: 12.25px; }
-  .hs-room-2 .hs-room-fee { left: 56.98%; top: 40.16%; width: 4.00%; height: 3.58%; font-size: 10.75px; }
-  .hs-room-2 .hs-room-usd { left: 53.66%; top: 43.65%; width: 7.44%; height: 3.53%; font-size: 10.4757px; }
-  .hs-room-2 .hs-room-join-hitbox { left: 51.53%; top: 47.94%; width: 9.77%; height: 4.53%; font-size: 16px; }
-
-  .hs-room-3 .hs-room-code { left: 65.07%; top: 36.55%; width: 6.88%; height: 3.04%; font-size: 13.4221px; }
-  .hs-room-3 .hs-room-count { left: 64.86%; top: 40.19%; width: 2.23%; height: 3.20%; font-size: 12.25px; }
-  .hs-room-3 .hs-room-fee { left: 68.55%; top: 39.72%; width: 4.00%; height: 4.01%; font-size: 10.75px; }
-  .hs-room-3 .hs-room-usd { left: 65.17%; top: 43.39%; width: 7.44%; height: 3.53%; font-size: 10.4757px; }
-  .hs-room-3 .hs-room-join-hitbox { left: 63.05%; top: 47.61%; width: 9.77%; height: 4.53%; font-size: 16px; }
-
-  .hs-room-4 .hs-room-code { left: 30.26%; top: 58.08%; width: 7.91%; height: 2.87%; font-size: 13.4221px; }
-  .hs-room-4 .hs-room-count { left: 30.23%; top: 61.36%; width: 2.23%; height: 3.20%; font-size: 12.25px; }
-  .hs-room-4 .hs-room-fee { left: 33.95%; top: 61.17%; width: 4.00%; height: 3.58%; font-size: 10.75px; }
-  .hs-room-4 .hs-room-usd { left: 30.45%; top: 64.56%; width: 7.53%; height: 3.04%; font-size: 10.4757px; }
-  .hs-room-4 .hs-room-join-hitbox { left: 28.51%; top: 68.79%; width: 9.77%; height: 4.53%; font-size: 16px; }
-
-  .hs-room-5 .hs-room-code { left: 42.31%; top: 58.02%; width: 7.53%; height: 3.04%; font-size: 13.4221px; }
-  .hs-room-5 .hs-room-count { left: 42.11%; top: 61.04%; width: 2.23%; height: 3.20%; font-size: 12.25px; }
-  .hs-room-5 .hs-room-fee { left: 45.47%; top: 61.18%; width: 4.00%; height: 3.58%; font-size: 10.75px; }
-  .hs-room-5 .hs-room-usd { left: 41.93%; top: 64.84%; width: 7.53%; height: 3.04%; font-size: 10.4757px; }
-  .hs-room-5 .hs-room-join-hitbox { left: 40.30%; top: 68.47%; width: 9.77%; height: 4.53%; font-size: 16px; }
-
-  .hs-room-6 .hs-room-code { left: 53.65%; top: 57.57%; width: 7.44%; height: 3.20%; font-size: 13.4221px; }
-  .hs-room-6 .hs-room-count { left: 53.57%; top: 60.95%; width: 2.23%; height: 3.20%; font-size: 12.25px; }
-  .hs-room-6 .hs-room-fee { left: 57.13%; top: 60.80%; width: 4.00%; height: 4.01%; font-size: 10.75px; }
-  .hs-room-6 .hs-room-usd { left: 53.44%; top: 64.69%; width: 7.53%; height: 3.04%; font-size: 10.4757px; }
-  .hs-room-6 .hs-room-join-hitbox { left: 51.63%; top: 68.81%; width: 9.77%; height: 4.53%; font-size: 16px; }
-
-  .hs-room-7 .hs-room-code { left: 64.74%; top: 58.06%; width: 6.98%; height: 3.04%; font-size: 13.4221px; }
-  .hs-room-7 .hs-room-count { left: 64.99%; top: 61.18%; width: 2.33%; height: 2.87%; font-size: 12.25px; }
-  .hs-room-7 .hs-room-fee { left: 68.49%; top: 61.03%; width: 4.00%; height: 3.58%; font-size: 10.75px; }
-  .hs-room-7 .hs-room-usd { left: 64.86%; top: 64.86%; width: 6.70%; height: 3.04%; font-size: 10.4757px; }
-  .hs-room-7 .hs-room-join-hitbox { left: 62.95%; top: 68.65%; width: 9.77%; height: 4.53%; font-size: 16px; }
-
-  .hs-room-8 .hs-room-code,
-  .hs-room-8 .hs-room-count,
-  .hs-room-8 .hs-room-fee,
-  .hs-room-8 .hs-room-usd,
-  .hs-room-8 .hs-room-join-hitbox {
-    left: 0%;
-    top: 0%;
-    width: 0%;
-    height: 0%;
+  .highstakes-wallet-text {
+    left: 84.03%;
+    top: 4.55%;
+    width: 19.83%;
+    height: 2.61%;
+    font-size: 10.1484px;
   }
-  .hs-room-8 .hs-room-code { font-size: 13.4221px; }
-  .hs-room-8 .hs-room-count { font-size: 12.25px; }
-  .hs-room-8 .hs-room-fee { font-size: 10.75px; }
-  .hs-room-8 .hs-room-usd { font-size: 10.4757px; }
-  .hs-room-8 .hs-room-join-hitbox { font-size: 16px; }
 
-  .hs-create-room-hitbox { left: 5.55%; top: 45.35%; width: 18.00%; height: 8.60%; font-size: 16px; }
-  .hs-refresh-rooms-hitbox { left: 62.42%; top: 28.17%; width: 9.69%; height: 3.90%; font-size: 16px; }
-  .hs-prev-page-hitbox { left: 28.76%; top: 74.42%; width: 17.48%; height: 1.93%; font-size: 16px; }
-  .hs-next-page-hitbox { left: 33.50%; top: 70.79%; width: 31.00%; height: 3.14%; font-size: 16px; }
-  .hs-deposit-hitbox { left: 10.71%; top: 75.59%; width: 13.00%; height: 6.00%; font-size: 16px; }
-  .hs-back-hitbox { left: 33.90%; top: 81.04%; width: 32.50%; height: 11.15%; font-size: 16px; }
-  .highstakes-private-input { left: 78.41%; top: 45.16%; width: 13.04%; height: 5.30%; font-size: 14px; }
-  .hs-join-private-hitbox { left: 77.26%; top: 51.34%; width: 16.84%; height: 6.63%; font-size: 16px; }
+  .highstakes-points-text {
+    left: 84.09%;
+    top: 6.54%;
+    width: 6.80%;
+    height: 2.60%;
+    font-size: 8.18418px;
+  }
+
+  .available-lock-value {
+    left: 25.01%;
+    top: 88.10%;
+    width: 14.30%;
+    height: 2.60%;
+    font-size: 12px;
+  }
+
+  .locked-lock-value {
+    left: 52.00%;
+    top: 88.20%;
+    width: 13.00%;
+    height: 2.60%;
+    font-size: 12px;
+  }
+
+  .highstakes-page-text {
+    left: 48.64%;
+    top: 75.34%;
+    width: 4.91%;
+    height: 2.60%;
+    font-size: 9px;
+  }
+
+  .hs-room-0 .hs-room-code {
+    left: 22.08%;
+    top: 20.15%;
+    width: 67.00%;
+    height: 15.48%;
+    font-size: 13.4221px;
+  }
+
+  [data-calibrate="room-0-autocancel"] {
+    left: 51.99%;
+    top: 20.15%;
+    width: 42.00%;
+    height: 15.48%;
+    font-size: 9px;
+  }
+
+  .hs-room-0 .hs-room-count {
+    left: 22.12%;
+    top: 39.20%;
+    width: 25.00%;
+    height: 17.49%;
+    font-size: 12.25px;
+  }
+
+  .hs-room-0 .hs-room-fee {
+    left: 54.84%;
+    top: 37.31%;
+    width: 41.48%;
+    height: 19.59%;
+    font-size: 10.75px;
+  }
+
+  .hs-room-0 .hs-room-usd {
+    left: 24.16%;
+    top: 58.01%;
+    width: 67.96%;
+    height: 13.98%;
+    font-size: 10.4757px;
+  }
+
+  .hs-room-0 .hs-room-join-hitbox {
+    left: 7.97%;
+    top: 77.98%;
+    width: 86.08%;
+    height: 19.13%;
+    font-size: 16px;
+  }
+
+  .hs-room-1 .hs-room-code {
+    left: 19.99%;
+    top: 20.15%;
+    width: 67.00%;
+    height: 15.48%;
+    font-size: 13.4221px;
+  }
+
+  [data-calibrate="room-1-autocancel"] {
+    left: 51.99%;
+    top: 20.15%;
+    width: 42.00%;
+    height: 15.48%;
+    font-size: 9px;
+  }
+
+  .hs-room-1 .hs-room-count {
+    left: 17.94%;
+    top: 38.33%;
+    width: 18.06%;
+    height: 17.49%;
+    font-size: 12.25px;
+  }
+
+  .hs-room-1 .hs-room-fee {
+    left: 50.67%;
+    top: 38.15%;
+    width: 41.48%;
+    height: 19.59%;
+    font-size: 10.75px;
+  }
+
+  .hs-room-1 .hs-room-usd {
+    left: 18.59%;
+    top: 58.01%;
+    width: 67.96%;
+    height: 13.98%;
+    font-size: 10.4757px;
+  }
+
+  .hs-room-1 .hs-room-join-hitbox {
+    left: 3.13%;
+    top: 76.31%;
+    width: 86.77%;
+    height: 19.97%;
+    font-size: 16px;
+  }
+
+  .hs-room-2 .hs-room-code {
+    left: 16.50%;
+    top: 20.15%;
+    width: 67.00%;
+    height: 15.48%;
+    font-size: 13.4221px;
+  }
+
+  [data-calibrate="room-2-autocancel"] {
+    left: 51.99%;
+    top: 20.15%;
+    width: 42.00%;
+    height: 15.48%;
+    font-size: 9px;
+  }
+
+  .hs-room-2 .hs-room-count {
+    left: 15.19%;
+    top: 38.36%;
+    width: 25.00%;
+    height: 17.49%;
+    font-size: 12.25px;
+  }
+
+  .hs-room-2 .hs-room-fee {
+    left: 47.89%;
+    top: 37.31%;
+    width: 41.48%;
+    height: 19.59%;
+    font-size: 10.75px;
+  }
+
+  .hs-room-2 .hs-room-usd {
+    left: 15.82%;
+    top: 56.32%;
+    width: 67.95%;
+    height: 13.98%;
+    font-size: 10.4757px;
+  }
+
+  .hs-room-2 .hs-room-join-hitbox {
+    left: -0.29%;
+    top: 75.47%;
+    width: 93.00%;
+    height: 21.64%;
+    font-size: 16px;
+  }
+
+  .hs-room-3 .hs-room-code {
+    left: 22.74%;
+    top: 23.44%;
+    width: 71.84%;
+    height: 16.31%;
+    font-size: 13.4221px;
+  }
+
+  [data-calibrate="room-3-autocancel"] {
+    left: 51.99%;
+    top: 20.15%;
+    width: 42.00%;
+    height: 15.48%;
+    font-size: 9px;
+  }
+
+  .hs-room-3 .hs-room-count {
+    left: 22.85%;
+    top: 42.50%;
+    width: 25.00%;
+    height: 17.49%;
+    font-size: 12.25px;
+  }
+
+  .hs-room-3 .hs-room-fee {
+    left: 55.52%;
+    top: 41.45%;
+    width: 41.48%;
+    height: 19.59%;
+    font-size: 10.75px;
+  }
+
+  .hs-room-3 .hs-room-usd {
+    left: 19.99%;
+    top: 62.98%;
+    width: 67.98%;
+    height: 13.98%;
+    font-size: 10.4757px;
+  }
+
+  .hs-room-3 .hs-room-join-hitbox {
+    left: 7.97%;
+    top: 77.98%;
+    width: 83.99%;
+    height: 19.97%;
+    font-size: 16px;
+  }
+
+  .hs-room-4 .hs-room-code {
+    left: 19.99%;
+    top: 23.44%;
+    width: 67.00%;
+    height: 15.48%;
+    font-size: 13.4221px;
+  }
+
+  [data-calibrate="room-4-autocancel"] {
+    left: 51.99%;
+    top: 20.15%;
+    width: 42.00%;
+    height: 15.48%;
+    font-size: 9px;
+  }
+
+  .hs-room-4 .hs-room-count {
+    left: 19.37%;
+    top: 41.67%;
+    width: 25.00%;
+    height: 17.49%;
+    font-size: 12.25px;
+  }
+
+  .hs-room-4 .hs-room-fee {
+    left: 50.00%;
+    top: 42.29%;
+    width: 41.48%;
+    height: 19.59%;
+    font-size: 10.75px;
+  }
+
+  .hs-room-4 .hs-room-usd {
+    left: 19.99%;
+    top: 58.84%;
+    width: 67.96%;
+    height: 13.98%;
+    font-size: 10.4757px;
+  }
+
+  .hs-room-4 .hs-room-join-hitbox {
+    left: 1.72%;
+    top: 77.98%;
+    width: 88.15%;
+    height: 20.81%;
+    font-size: 16px;
+  }
+
+  .hs-room-5 .hs-room-code {
+    left: 16.50%;
+    top: 20.99%;
+    width: 67.00%;
+    height: 15.48%;
+    font-size: 13.4221px;
+  }
+
+  [data-calibrate="room-5-autocancel"] {
+    left: 51.99%;
+    top: 20.15%;
+    width: 42.00%;
+    height: 15.48%;
+    font-size: 9px;
+  }
+
+  .hs-room-5 .hs-room-count {
+    left: 16.59%;
+    top: 41.67%;
+    width: 25.00%;
+    height: 17.49%;
+    font-size: 12.25px;
+  }
+
+  .hs-room-5 .hs-room-fee {
+    left: 48.58%;
+    top: 40.62%;
+    width: 41.48%;
+    height: 19.59%;
+    font-size: 10.75px;
+  }
+
+  .hs-room-5 .hs-room-usd {
+    left: 19.99%;
+    top: 62.98%;
+    width: 67.98%;
+    height: 13.98%;
+    font-size: 10.4757px;
+  }
+
+  .hs-room-5 .hs-room-join-hitbox {
+    left: 1.72%;
+    top: 78.82%;
+    width: 88.84%;
+    height: 19.97%;
+    font-size: 16px;
+  }
+
+  .hs-room-6 .hs-room-code {
+    left: 23.43%;
+    top: 25.96%;
+    width: 67.00%;
+    height: 15.48%;
+    font-size: 13.4221px;
+  }
+
+  [data-calibrate="room-6-autocancel"] {
+    left: 51.99%;
+    top: 20.15%;
+    width: 42.00%;
+    height: 15.48%;
+    font-size: 9px;
+  }
+
+  .hs-room-6 .hs-room-count {
+    left: 22.80%;
+    top: 44.14%;
+    width: 25.00%;
+    height: 17.49%;
+    font-size: 12.25px;
+  }
+
+  .hs-room-6 .hs-room-fee {
+    left: 52.75%;
+    top: 43.93%;
+    width: 41.48%;
+    height: 19.59%;
+    font-size: 10.75px;
+  }
+
+  .hs-room-6 .hs-room-usd {
+    left: 24.16%;
+    top: 62.98%;
+    width: 67.95%;
+    height: 13.98%;
+    font-size: 10.4757px;
+  }
+
+  .hs-room-6 .hs-room-join-hitbox {
+    left: 8.66%;
+    top: 81.28%;
+    width: 83.99%;
+    height: 19.97%;
+    font-size: 16px;
+  }
+
+  .hs-room-7 .hs-room-code {
+    left: 21.36%;
+    top: 26.78%;
+    width: 67.00%;
+    height: 15.48%;
+    font-size: 13.4221px;
+  }
+
+  [data-calibrate="room-7-autocancel"] {
+    left: 51.99%;
+    top: 20.15%;
+    width: 42.00%;
+    height: 15.48%;
+    font-size: 9px;
+  }
+
+  .hs-room-7 .hs-room-count {
+    left: 19.37%;
+    top: 44.98%;
+    width: 25.00%;
+    height: 17.49%;
+    font-size: 12.25px;
+  }
+
+  .hs-room-7 .hs-room-fee {
+    left: 50.00%;
+    top: 43.93%;
+    width: 41.48%;
+    height: 19.59%;
+    font-size: 10.75px;
+  }
+
+  .hs-room-7 .hs-room-usd {
+    left: 19.99%;
+    top: 63.82%;
+    width: 67.96%;
+    height: 13.98%;
+    font-size: 10.4757px;
+  }
+
+  .hs-room-7 .hs-room-join-hitbox {
+    left: 3.13%;
+    top: 82.12%;
+    width: 87.44%;
+    height: 20.81%;
+    font-size: 16px;
+  }
+
+  .hs-room-8 .hs-room-code {
+    left: 16.50%;
+    top: 25.96%;
+    width: 67.00%;
+    height: 15.48%;
+    font-size: 13.4221px;
+  }
+
+  [data-calibrate="room-8-autocancel"] {
+    left: 51.99%;
+    top: 20.15%;
+    width: 42.00%;
+    height: 15.48%;
+    font-size: 9px;
+  }
+
+  .hs-room-8 .hs-room-count {
+    left: 14.51%;
+    top: 44.14%;
+    width: 25.00%;
+    height: 17.49%;
+    font-size: 12.25px;
+  }
+
+  .hs-room-8 .hs-room-fee {
+    left: 48.57%;
+    top: 43.93%;
+    width: 41.48%;
+    height: 19.59%;
+    font-size: 10.75px;
+  }
+
+  .hs-room-8 .hs-room-usd {
+    left: 16.50%;
+    top: 63.82%;
+    width: 67.96%;
+    height: 13.98%;
+    font-size: 10.4757px;
+  }
+
+  .hs-room-8 .hs-room-join-hitbox {
+    left: 1.04%;
+    top: 81.28%;
+    width: 90.20%;
+    height: 21.64%;
+    font-size: 16px;
+  }
+
+  .hs-create-room-hitbox {
+    left: 50.46%;
+    top: 18.60%;
+    width: 32.53%;
+    height: 6.20%;
+    font-size: 16px;
+  }
+
+  .hs-refresh-rooms-hitbox {
+    left: 73.20%;
+    top: 27.85%;
+    width: 18.70%;
+    height: 2.70%;
+    font-size: 16px;
+  }
+
+  .hs-prev-page-hitbox {
+    left: 30.18%;
+    top: 74.73%;
+    width: 17.57%;
+    height: 3.34%;
+    font-size: 16px;
+  }
+
+  .hs-next-page-hitbox {
+    left: 54.39%;
+    top: 74.41%;
+    width: 17.55%;
+    height: 4.08%;
+    font-size: 16px;
+  }
+
+  .hs-deposit-hitbox {
+    left: 66.80%;
+    top: 87.16%;
+    width: 17.43%;
+    height: 3.68%;
+    font-size: 16px;
+  }
+
+  .hs-back-hitbox {
+    left: 23.20%;
+    top: 92.80%;
+    width: 52.50%;
+    height: 5.95%;
+    font-size: 16px;
+  }
+
+  .highstakes-private-input {
+    left: 78.32%;
+    top: 44.69%;
+    width: 13.04%;
+    height: 5.30%;
+    font-size: 14px;
+  }
+
+  .hs-join-private-hitbox {
+    left: 54.40%;
+    top: 78.65%;
+    width: 24.80%;
+    height: 3.65%;
+    font-size: 16px;
+  }
 }
