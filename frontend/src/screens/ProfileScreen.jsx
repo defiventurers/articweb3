@@ -7,6 +7,8 @@ import "../styles/profileScreen.css";
 
 const PROFILE_CALIBRATION_QUERY_KEY = "calibrateProfile";
 const PROFILE_STORAGE_KEY = "artic-profile-by-wallet-v1";
+const CACHED_PROFILE_SAVE_TIMEOUT_MS = 6000;
+const NEW_PROFILE_SAVE_TIMEOUT_MS = 12000;
 const PROFILE_CALIBRATION_TARGETS = [
   "agw-rectangle",
   "wallet-rectangle",
@@ -194,13 +196,9 @@ export function ProfileScreen({ onComplete, onBack }) {
       const cleanName = name.trim();
       const storedProfile = existingProfile || readStoredProfile(address);
       const canReuseStoredProfile = storedProfile && (!nameTouched || cleanName === storedProfile.name);
+      const profileName = canReuseStoredProfile ? storedProfile.name : cleanName;
 
-      if (canReuseStoredProfile) {
-        onComplete(normalizeStoredProfile({ ...storedProfile, wallet: address }));
-        return;
-      }
-
-      if (cleanName.length < 3) {
+      if (profileName.length < 3) {
         setError("Name must be at least 3 characters.");
         return;
       }
@@ -208,16 +206,23 @@ export function ProfileScreen({ onComplete, onBack }) {
       setBusy(true);
 
       try {
-        const profile = await createProfile({
-          address,
-          name: cleanName,
-          signMessageAsync
-        });
+        const profile = await withProfileSaveTimeout(
+          createProfile({
+            address,
+            name: profileName,
+            signMessageAsync
+          }),
+          canReuseStoredProfile ? CACHED_PROFILE_SAVE_TIMEOUT_MS : NEW_PROFILE_SAVE_TIMEOUT_MS
+        );
         const savedProfile = writeStoredProfile(profile);
         onComplete(savedProfile || profile);
       } catch (err) {
-        const fallbackProfile = normalizeStoredProfile({ wallet: address, name: cleanName, points: 0, gamesPlayed: 0, wins: 0, createdAt: Date.now() });
-        if (isTimeoutError(err)) {
+        const fallbackProfile = normalizeStoredProfile(
+          canReuseStoredProfile
+            ? { ...storedProfile, wallet: address }
+            : { wallet: address, name: profileName, points: 0, gamesPlayed: 0, wins: 0, createdAt: Date.now() }
+        );
+        if (isTimeoutError(err) && fallbackProfile) {
           writeStoredProfile(fallbackProfile);
           setNotice("Lobby response timed out. Continuing with this profile.");
           onComplete(fallbackProfile);
@@ -498,6 +503,14 @@ function normalizeStoredProfile(profile) {
 
 function walletKey(address) {
   return String(address || "").toLowerCase();
+}
+
+function withProfileSaveTimeout(promise, timeoutMs) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = window.setTimeout(() => reject(new Error("Lobby server timed out.")), timeoutMs);
+  });
+  return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timer));
 }
 
 function isTimeoutError(err) {
