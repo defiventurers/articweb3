@@ -2,17 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import { appConfig, getHighStakesConfigIssue } from "../../config/chain.js";
 import { useChainGuard } from "../../hooks/useChainGuard.js";
 
+const LAUNCH_STATUS_TIMEOUT_MS = 8000;
+
 export function HighStakesGate({ children, onBack }) {
   const smokeBypass = isSmokeProfileEnabled();
   const staticIssue = getHighStakesConfigIssue();
-  const launchStatusUrl = useMemo(() => deriveLaunchStatusUrl(), []);
+  const launchStatusUrls = useMemo(() => deriveLaunchStatusUrls(), []);
+  const [launchStatusUrl, setLaunchStatusUrl] = useState("");
   const [launchStatus, setLaunchStatus] = useState(null);
   const [launchError, setLaunchError] = useState("");
-  const [launchLoading, setLaunchLoading] = useState(Boolean(launchStatusUrl));
+  const [launchLoading, setLaunchLoading] = useState(Boolean(launchStatusUrls.length));
   const { isConnected, isWrongChain, connectedChainId, expectedChainId, expectedNetworkName } = useChainGuard();
 
   useEffect(() => {
-    if (!launchStatusUrl) {
+    if (!launchStatusUrls.length) {
       setLaunchLoading(false);
       setLaunchError("Backend launch status URL is not configured.");
       return;
@@ -20,13 +23,27 @@ export function HighStakesGate({ children, onBack }) {
 
     let cancelled = false;
     async function loadLaunchStatus() {
+      const errors = [];
       try {
         setLaunchLoading(true);
         setLaunchError("");
-        const response = await fetch(launchStatusUrl, { cache: "no-store" });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok || payload.ok === false) throw new Error(payload.error || `Launch status returned ${response.status}.`);
-        if (!cancelled) setLaunchStatus(payload);
+        setLaunchStatus(null);
+        setLaunchStatusUrl("");
+
+        for (const url of launchStatusUrls) {
+          try {
+            const payload = await fetchLaunchStatus(url);
+            if (!cancelled) {
+              setLaunchStatus(payload);
+              setLaunchStatusUrl(url);
+            }
+            return;
+          } catch (err) {
+            errors.push(`${compactUrl(url)}: ${err.message || "failed"}`);
+          }
+        }
+
+        throw new Error(`No backend launch status endpoint responded. ${errors.join("; ")}`);
       } catch (err) {
         if (!cancelled) {
           setLaunchStatus(null);
@@ -39,7 +56,7 @@ export function HighStakesGate({ children, onBack }) {
 
     loadLaunchStatus();
     return () => { cancelled = true; };
-  }, [launchStatusUrl]);
+  }, [launchStatusUrls]);
 
   if (smokeBypass) return children;
 
@@ -64,6 +81,7 @@ export function HighStakesGate({ children, onBack }) {
             <div><dt>Expected chain</dt><dd>{expectedChainId}</dd></div>
             <div><dt>Locked mode flag</dt><dd>{String(appConfig.features.highStakes)}</dd></div>
             <div><dt>Backend switch</dt><dd>{launchStatus?.lockedMatchMode || launchStatus?.mode || (launchLoading ? "checking" : "unverified")}</dd></div>
+            <div><dt>Backend endpoint</dt><dd>{launchStatusUrl ? compactUrl(launchStatusUrl) : launchStatusUrls.length ? "checking" : "not configured"}</dd></div>
             <div><dt>Backend allowed</dt><dd>{launchStatus ? String(Boolean(launchStatus.highStakesAllowed)) : "—"}</dd></div>
             <div><dt>Legal approval</dt><dd>{launchStatus ? String(Boolean(launchStatus.legalPublicMainnetApproved)) : "—"}</dd></div>
             <div><dt>ETH vault</dt><dd>{appConfig.contracts.ethVault}</dd></div>
@@ -76,14 +94,62 @@ export function HighStakesGate({ children, onBack }) {
   );
 }
 
-function deriveLaunchStatusUrl() {
-  const raw = import.meta.env.VITE_BACKEND_HTTP_URL || import.meta.env.VITE_API_URL || import.meta.env.VITE_WS_URL || "";
+async function fetchLaunchStatus(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), LAUNCH_STATUS_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, { cache: "no-store", headers: { Accept: "application/json" }, signal: controller.signal });
+    const raw = await response.text();
+    let payload = null;
+    try {
+      payload = raw ? JSON.parse(raw) : null;
+    } catch {
+      throw new Error(`Launch status was not JSON (HTTP ${response.status}).`);
+    }
+
+    if (!response.ok || payload?.ok === false) throw new Error(payload?.error || `Launch status returned HTTP ${response.status}.`);
+    if (!payload || typeof payload !== "object" || !("highStakesAllowed" in payload) || !(payload.lockedMatchMode || payload.mode)) {
+      throw new Error("Launch status response was incomplete.");
+    }
+    return payload;
+  } catch (err) {
+    if (err?.name === "AbortError") throw new Error(`timed out after ${Math.round(LAUNCH_STATUS_TIMEOUT_MS / 1000)}s`);
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function deriveLaunchStatusUrls() {
+  const candidates = [
+    import.meta.env.VITE_BACKEND_HTTP_URL,
+    import.meta.env.VITE_API_BASE_URL,
+    import.meta.env.VITE_API_URL,
+    import.meta.env.VITE_WS_URL
+  ];
+
+  return [...new Set(candidates.map(toLaunchStatusUrl).filter(Boolean))];
+}
+
+function toLaunchStatusUrl(raw) {
   if (!raw) return "";
   let base = String(raw).trim();
+  if (!base) return "";
   if (base.startsWith("wss://")) base = "https://" + base.slice(6);
   if (base.startsWith("ws://")) base = "http://" + base.slice(5);
   if (base.endsWith("/")) base = base.slice(0, -1);
+  if (base.endsWith("/launch/status")) return base;
   return `${base}/launch/status`;
+}
+
+function compactUrl(value) {
+  try {
+    const url = new URL(value);
+    return `${url.host}${url.pathname}`;
+  } catch {
+    return value;
+  }
 }
 
 function isSmokeProfileEnabled() {
