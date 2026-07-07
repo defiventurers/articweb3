@@ -40,6 +40,7 @@ function createHighStakesCancellationManager({
 
   function viewFields(room) {
     return {
+      highStakesCreatedAt: room?.roomMode === ROOM_MODES.HIGH_STAKES ? room?.createdAt || null : null,
       highStakesWaitTimeoutMs: room?.roomMode === ROOM_MODES.HIGH_STAKES ? waitTimeoutMs : null,
       highStakesExpiresAt: expiresAt(room),
       cancelReason: room?.cancelReason || null,
