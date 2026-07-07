@@ -1,4 +1,4 @@
-const CANCEL_REASON_NOT_ENOUGH_PLAYERS = "not_enough_players_timeout";
+const CANCEL_REASON_ROOM_TIMEOUT = "room_creation_timeout";
 
 function createHighStakesCancellationManager({
   ROOM_MODES,
@@ -31,8 +31,6 @@ function createHighStakesCancellationManager({
     const deadline = expiresAt(room);
     if (!deadline) return false;
     if (room.status !== "waiting") return false;
-    if (room.countdownStartTime) return false;
-    if (realPlayers(room).length >= 4) return false;
     return now >= deadline;
   }
 
@@ -66,15 +64,24 @@ function createHighStakesCancellationManager({
 
   function cancelRoom(room) {
     if (!room || room.status === "cancelled") return;
+    const deadline = expiresAt(room);
+    const playerCount = realPlayers(room).length;
     room.status = "cancelled";
     room.cancelledAt = Date.now();
-    room.cancelReason = CANCEL_REASON_NOT_ENOUGH_PLAYERS;
+    room.cancelReason = CANCEL_REASON_ROOM_TIMEOUT;
     room.countdownStartTime = null;
-    room.refundStatus = ETH_VAULT_ADDRESS && realPlayers(room).length ? "pending" : "not_required";
+    room.refundStatus = ETH_VAULT_ADDRESS && playerCount ? "pending" : "not_required";
     room.refundAttempts = Number(room.refundAttempts || 0);
     room.refundTxHashes = room.refundTxHashes || [];
     room.refundError = null;
-    audit(room, { type: "high_stakes_room_cancelled", reason: room.cancelReason, realPlayerCount: realPlayers(room).length, timeoutMs: waitTimeoutMs });
+    audit(room, {
+      type: "high_stakes_room_cancelled",
+      reason: room.cancelReason,
+      realPlayerCount: playerCount,
+      createdAt: room.createdAt || null,
+      deadline,
+      timeoutMs: waitTimeoutMs
+    });
     saveRoomSafe(room);
     broadcast(room);
   }
@@ -152,7 +159,7 @@ function createHighStakesCancellationManager({
           contractMatchId: room.contractMatchId,
           txHash: tx.hash,
           status: "submitted",
-          note: "Room cancelled because fewer than four players joined before timeout."
+          note: "Room cancelled because it stayed waiting past its auto-cancel deadline."
         }).catch(() => {});
 
         const receipt = await tx.wait();
@@ -169,7 +176,7 @@ function createHighStakesCancellationManager({
           contractMatchId: room.contractMatchId,
           txHash: tx.hash,
           status: "refunded",
-          note: "Room cancelled because fewer than four players joined before timeout."
+          note: "Room cancelled because it stayed waiting past its auto-cancel deadline."
         }).catch(() => {});
       }
 
