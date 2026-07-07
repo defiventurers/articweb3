@@ -133,8 +133,8 @@ function replaceLaunchModeGate(source) {
     transformed = transformed.replace(joinNeedle, joinReplacement);
   }
 
-  const confirmNeedle = 'if (room.roomMode !== ROOM_MODES.HIGH_STAKES) return fail(ws, requestId, "Entry locking is only for High Stakes."); if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");';
-  const confirmReplacement = 'if (room.roomMode !== ROOM_MODES.HIGH_STAKES) return fail(ws, requestId, "Entry locking is only for High Stakes."); const launchReason = getHighStakesLaunchBlockReason(room.roomMode); if (launchReason) return fail(ws, requestId, launchReason); if (!room.players[wallet]) return fail(ws, requestId, "Join the room first.");';
+  const confirmNeedle = 'if (room.roomMode !== ROOM_MODES.HIGH_STAKES) return fail(ws, requestId, "Entry locking is only for High Stakes.");';
+  const confirmReplacement = 'if (room.roomMode !== ROOM_MODES.HIGH_STAKES) return fail(ws, requestId, "Entry locking is only for High Stakes."); const launchReason = getHighStakesLaunchBlockReason(room.roomMode); if (launchReason) return fail(ws, requestId, launchReason);';
   if (!transformed.includes(confirmReplacement)) {
     if (!transformed.includes(confirmNeedle)) throw new Error("Unable to locate confirmEntryLock for launch mode gate.");
     transformed = transformed.replace(confirmNeedle, confirmReplacement);
