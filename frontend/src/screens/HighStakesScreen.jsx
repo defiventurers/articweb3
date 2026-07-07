@@ -260,7 +260,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
       `Vault locked ETH: ${formatAmount(lockedBalance)}`,
       `Players: ${room.playerCount || 1}/${room.maxPlayers || 4}`,
       `Locked players: ${lockedCount}`,
-      `Auto-cancel: ${formatRoomCountdown(room, Date.now()) || "-"}`,
+      `Auto-cancel: ${roomDeadlineLabel(room, Date.now()) || "-"}`,
       `Refund status: ${room.refundStatus || "-"}`,
       `Status: ${room.status || "-"}`
     ];
@@ -308,7 +308,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
     const slotRoom = realRoom || sampleRoom;
     const globalIndex = roomPage * ROOM_PAGE_SIZE + slotIndex;
     const isSample = !realRoom && Boolean(sampleRoom);
-    const countdown = formatRoomCountdown(slotRoom, nowMs);
+    const countdown = roomDeadlineLabel(slotRoom, nowMs);
 
     return (
       <div className={`highstakes-room-card hs-room-${slotIndex}`} key={`slot-${slotIndex}`}>
@@ -397,7 +397,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
                 <h3>Room {room.roomCode}</h3>
                 <p>{getUsdEntryLabel(room) || "Entry"} · Required lock {formatEntry(room.entryWei)} ETH</p>
                 <p>Wallet {formatAmount(walletBalance)} ETH · Vault available {formatAmount(availableBalance)} ETH</p>
-                {formatRoomCountdown(room, nowMs) && <p>Auto-cancels in {formatRoomCountdown(room, nowMs)} if the room has not started.</p>}
+                {roomDeadlineLabel(room, nowMs) && <p>{roomExpiresAt(room) ? `Auto-cancels in ${roomDeadlineLabel(room, nowMs)} if the room has not started.` : "Auto-cancel deadline is syncing with the lobby server."}</p>}
                 {room.refundStatus && <p>Refund status: {room.refundStatus}</p>}
                 {!hasWalletForRoom && <p className="error">Wallet ETH is below this room lock. Fund wallet or choose a smaller room.</p>}
                 <p>{room.playerCount || 1}/4 players · {room.players?.filter((player) => player.entryLocked).length || 0} locked</p>
@@ -484,6 +484,11 @@ function formatRoomCountdown(room, nowMs = Date.now()) {
   const seconds = totalSeconds % 60;
   if (hours > 0) return `${hours}h ${String(minutes).padStart(2, "0")}m`;
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function roomDeadlineLabel(room, nowMs = Date.now()) {
+  if (!room || room.status !== "waiting") return "";
+  return formatRoomCountdown(room, nowMs) || "syncing";
 }
 
 function isExpiredRoom(room, nowMs = Date.now()) {
