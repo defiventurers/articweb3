@@ -16,6 +16,7 @@ const ROOM_PAGE_SIZE = 9;
 const CALIBRATION_QUERY_KEY = "calibrateHighstakes";
 const NETWORK_LOCK_COPY = appConfig.isMainnet ? "mainnet lock" : "testnet lock";
 const NETWORK_ETH_COPY = appConfig.isMainnet ? "mainnet ETH" : "testnet ETH";
+const DEFAULT_HIGH_STAKES_TIMEOUT_MS = 2 * 60 * 60 * 1000;
 
 export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, onBack }) {
   const { address } = useAccount();
@@ -313,10 +314,8 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
       <div className={`highstakes-room-card hs-room-${slotIndex}`} key={`slot-${slotIndex}`}>
         {slotRoom && (
           <>
-            <div className="hs-room-code" data-calibrate={`room-${slotIndex}-code`} title={countdown ? `Auto-cancel ${countdown}` : undefined}>
-              {slotRoom.roomCode}
-              {countdown && <span className="hs-room-autocancel">({countdown})</span>}
-            </div>
+            <div className="hs-room-code" data-calibrate={`room-${slotIndex}-code`} title={countdown ? `Auto-cancel ${countdown}` : undefined}>{slotRoom.roomCode}</div>
+            {countdown && <div className="hs-room-autocancel" data-calibrate={`room-${slotIndex}-autocancel`}>({countdown})</div>}
             <div className="hs-room-count" data-calibrate={`room-${slotIndex}-users`}>{slotRoom.playerCount || 0}/{slotRoom.maxPlayers || 4}</div>
             <div className="hs-room-fee" data-calibrate={`room-${slotIndex}-eth`}>{formatEntry(slotRoom.entryWei)} ETH</div>
             <div className="hs-room-usd" data-calibrate={`room-${slotIndex}-usd`}>{getUsdEntryLabel(slotRoom) || "ENTRY"}</div>
@@ -442,17 +441,18 @@ function getDisplayName(profile, address) {
 }
 
 function getCalibrationRoom(index, nowMs = Date.now()) {
-  const expiresAt = nowMs + (2 * 60 * 60 * 1000) - (index * 7 * 60 * 1000);
+  const createdAt = nowMs - (index * 7 * 60 * 1000);
+  const expiresAt = createdAt + DEFAULT_HIGH_STAKES_TIMEOUT_MS;
   const samples = [
-    { roomCode: "YS3B", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 2, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
-    { roomCode: "A352", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
-    { roomCode: "FTY2", entryFeeUsd: 16, entryWei: FALLBACK_TIERS[2].entryWei, playerCount: 3, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
-    { roomCode: "J4VE", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 2, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
-    { roomCode: "T6RK", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 4, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
-    { roomCode: "H9CY", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
-    { roomCode: "B3UA", entryFeeUsd: 16, entryWei: FALLBACK_TIERS[2].entryWei, playerCount: 3, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
-    { roomCode: "W5DN", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt },
-    { roomCode: "Z1GF", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 2, maxPlayers: 4, status: "waiting", highStakesExpiresAt: expiresAt }
+    { roomCode: "YS3B", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 2, maxPlayers: 4, status: "waiting", highStakesCreatedAt: createdAt, highStakesWaitTimeoutMs: DEFAULT_HIGH_STAKES_TIMEOUT_MS, highStakesExpiresAt: expiresAt },
+    { roomCode: "A352", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4, status: "waiting", highStakesCreatedAt: createdAt, highStakesWaitTimeoutMs: DEFAULT_HIGH_STAKES_TIMEOUT_MS, highStakesExpiresAt: expiresAt },
+    { roomCode: "FTY2", entryFeeUsd: 16, entryWei: FALLBACK_TIERS[2].entryWei, playerCount: 3, maxPlayers: 4, status: "waiting", highStakesCreatedAt: createdAt, highStakesWaitTimeoutMs: DEFAULT_HIGH_STAKES_TIMEOUT_MS, highStakesExpiresAt: expiresAt },
+    { roomCode: "J4VE", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 2, maxPlayers: 4, status: "waiting", highStakesCreatedAt: createdAt, highStakesWaitTimeoutMs: DEFAULT_HIGH_STAKES_TIMEOUT_MS, highStakesExpiresAt: expiresAt },
+    { roomCode: "T6RK", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 4, maxPlayers: 4, status: "waiting", highStakesCreatedAt: createdAt, highStakesWaitTimeoutMs: DEFAULT_HIGH_STAKES_TIMEOUT_MS, highStakesExpiresAt: expiresAt },
+    { roomCode: "H9CY", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4, status: "waiting", highStakesCreatedAt: createdAt, highStakesWaitTimeoutMs: DEFAULT_HIGH_STAKES_TIMEOUT_MS, highStakesExpiresAt: expiresAt },
+    { roomCode: "B3UA", entryFeeUsd: 16, entryWei: FALLBACK_TIERS[2].entryWei, playerCount: 3, maxPlayers: 4, status: "waiting", highStakesCreatedAt: createdAt, highStakesWaitTimeoutMs: DEFAULT_HIGH_STAKES_TIMEOUT_MS, highStakesExpiresAt: expiresAt },
+    { roomCode: "W5DN", entryFeeUsd: 4, entryWei: FALLBACK_TIERS[1].entryWei, playerCount: 1, maxPlayers: 4, status: "waiting", highStakesCreatedAt: createdAt, highStakesWaitTimeoutMs: DEFAULT_HIGH_STAKES_TIMEOUT_MS, highStakesExpiresAt: expiresAt },
+    { roomCode: "Z1GF", entryFeeUsd: 1, entryWei: FALLBACK_TIERS[0].entryWei, playerCount: 2, maxPlayers: 4, status: "waiting", highStakesCreatedAt: createdAt, highStakesWaitTimeoutMs: DEFAULT_HIGH_STAKES_TIMEOUT_MS, highStakesExpiresAt: expiresAt }
   ];
   return samples[index] || null;
 }
@@ -462,22 +462,34 @@ function getUsdEntryLabel(room) {
   return Number.isFinite(usd) && usd > 0 ? `$${usd} Entry` : "";
 }
 
+function roomExpiresAt(room) {
+  const explicit = Number(room?.highStakesExpiresAt || 0);
+  if (Number.isFinite(explicit) && explicit > 0) return explicit;
+
+  const createdAt = Number(room?.highStakesCreatedAt || room?.createdAt || 0);
+  const timeoutMs = Number(room?.highStakesWaitTimeoutMs || DEFAULT_HIGH_STAKES_TIMEOUT_MS);
+  if (Number.isFinite(createdAt) && createdAt > 0 && Number.isFinite(timeoutMs) && timeoutMs > 0) return createdAt + timeoutMs;
+  return 0;
+}
+
 function formatRoomCountdown(room, nowMs = Date.now()) {
   if (!room || room.status !== "waiting") return "";
-  const expiresAt = Number(room.highStakesExpiresAt || 0);
-  if (!Number.isFinite(expiresAt) || expiresAt <= 0) return "";
+  const expiresAt = roomExpiresAt(room);
+  if (!expiresAt) return "";
   const remainingMs = Math.max(0, expiresAt - nowMs);
   if (remainingMs <= 0) return "canceling";
-  const totalMinutes = Math.max(1, Math.ceil(remainingMs / 60000));
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return hours > 0 ? `${hours}h${String(minutes).padStart(2, "0")}m` : `${minutes}m`;
+  const totalSeconds = Math.max(1, Math.ceil(remainingMs / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours}h ${String(minutes).padStart(2, "0")}m`;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 function isExpiredRoom(room, nowMs = Date.now()) {
   if (!room || room.status !== "waiting") return false;
-  const expiresAt = Number(room.highStakesExpiresAt || 0);
-  return Number.isFinite(expiresAt) && expiresAt > 0 && nowMs >= expiresAt;
+  const expiresAt = roomExpiresAt(room);
+  return expiresAt > 0 && nowMs >= expiresAt;
 }
 
 function formatEntry(value) {
