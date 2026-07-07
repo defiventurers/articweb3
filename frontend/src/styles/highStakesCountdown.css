@@ -1,20 +1,13 @@
 .hs-room-autocancel {
-  position: absolute;
-  left: 52%;
-  top: 20.15%;
-  width: 42%;
-  height: 15.49%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  display: inline-block;
+  margin-left: 0.28em;
   color: #fff3c7;
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 1000;
-  font-size: 9px;
+  font-size: 0.72em;
   line-height: 1;
   letter-spacing: 0;
   white-space: nowrap;
-  overflow: visible;
   pointer-events: none;
   text-shadow:
     0 1px 0 rgba(255,255,255,0.18),
@@ -23,18 +16,13 @@
 }
 
 @media (min-width: 900px) and (orientation: landscape) {
-  .hs-room-autocancel {
-    font-size: 8px;
-    z-index: 13;
+  .hs-room-code {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
   }
 
-  .hs-room-0 .hs-room-autocancel { left: 34.95%; top: 36.47%; width: 5.60%; height: 3.37%; }
-  .hs-room-1 .hs-room-autocancel { left: 46.25%; top: 36.42%; width: 5.60%; height: 3.53%; }
-  .hs-room-2 .hs-room-autocancel { left: 57.78%; top: 36.49%; width: 5.60%; height: 3.20%; }
-  .hs-room-3 .hs-room-autocancel { left: 68.90%; top: 36.55%; width: 5.20%; height: 3.04%; }
-  .hs-room-4 .hs-room-autocancel { left: 34.70%; top: 58.08%; width: 5.60%; height: 2.87%; }
-  .hs-room-5 .hs-room-autocancel { left: 46.45%; top: 58.02%; width: 5.60%; height: 3.04%; }
-  .hs-room-6 .hs-room-autocancel { left: 57.74%; top: 57.57%; width: 5.60%; height: 3.20%; }
-  .hs-room-7 .hs-room-autocancel { left: 68.48%; top: 58.06%; width: 5.20%; height: 3.04%; }
-  .hs-room-8 .hs-room-autocancel { left: 0%; top: 0%; width: 0%; height: 0%; }
+  .hs-room-autocancel {
+    font-size: 0.58em;
+  }
 }
