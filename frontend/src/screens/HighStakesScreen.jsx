@@ -250,18 +250,18 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
       "Locked Match Debug Context",
       `Room code: ${room.roomCode}`,
       `Invite link: ${buildRoomInviteUrl(room.roomCode)}`,
-      `Contract match id: ${room.contractMatchId || "—"}`,
-      `Entry wei: ${room.entryWei || "—"}`,
+      `Contract match id: ${room.contractMatchId || "-"}`,
+      `Entry wei: ${room.entryWei || "-"}`,
       `Entry ETH: ${formatEntry(room.entryWei)}`,
-      `Wallet: ${address || "—"}`,
+      `Wallet: ${address || "-"}`,
       `Wallet ETH: ${formatAmount(walletBalance)}`,
       `Vault available ETH: ${formatAmount(availableBalance)}`,
       `Vault locked ETH: ${formatAmount(lockedBalance)}`,
       `Players: ${room.playerCount || 1}/${room.maxPlayers || 4}`,
       `Locked players: ${lockedCount}`,
-      `Auto-cancel: ${formatRoomCountdown(room, Date.now()) || "—"}`,
-      `Refund status: ${room.refundStatus || "—"}`,
-      `Status: ${room.status || "—"}`
+      `Auto-cancel: ${formatRoomCountdown(room, Date.now()) || "-"}`,
+      `Refund status: ${room.refundStatus || "-"}`,
+      `Status: ${room.status || "-"}`
     ];
     await copyLines(lines, "Lock debug context copied.");
   }
@@ -313,8 +313,10 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
       <div className={`highstakes-room-card hs-room-${slotIndex}`} key={`slot-${slotIndex}`}>
         {slotRoom && (
           <>
-            <div className="hs-room-code" data-calibrate={`room-${slotIndex}-code`} title={countdown ? `Auto-cancel ${countdown}` : undefined}>{slotRoom.roomCode}</div>
-            {countdown && <div className="hs-room-autocancel" data-calibrate={`room-${slotIndex}-autocancel`}>({countdown})</div>}
+            <div className="hs-room-code" data-calibrate={`room-${slotIndex}-code`} title={countdown ? `Auto-cancel ${countdown}` : undefined}>
+              {slotRoom.roomCode}
+              {countdown && <span className="hs-room-autocancel">({countdown})</span>}
+            </div>
             <div className="hs-room-count" data-calibrate={`room-${slotIndex}-users`}>{slotRoom.playerCount || 0}/{slotRoom.maxPlayers || 4}</div>
             <div className="hs-room-fee" data-calibrate={`room-${slotIndex}-eth`}>{formatEntry(slotRoom.entryWei)} ETH</div>
             <div className="hs-room-usd" data-calibrate={`room-${slotIndex}-usd`}>{getUsdEntryLabel(slotRoom) || "ENTRY"}</div>
@@ -396,7 +398,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
                 <h3>Room {room.roomCode}</h3>
                 <p>{getUsdEntryLabel(room) || "Entry"} · Required lock {formatEntry(room.entryWei)} ETH</p>
                 <p>Wallet {formatAmount(walletBalance)} ETH · Vault available {formatAmount(availableBalance)} ETH</p>
-                {formatRoomCountdown(room, nowMs) && <p>Auto-cancels in {formatRoomCountdown(room, nowMs)} if fewer than 4 players join.</p>}
+                {formatRoomCountdown(room, nowMs) && <p>Auto-cancels in {formatRoomCountdown(room, nowMs)} if the room has not started.</p>}
                 {room.refundStatus && <p>Refund status: {room.refundStatus}</p>}
                 {!hasWalletForRoom && <p className="error">Wallet ETH is below this room lock. Fund wallet or choose a smaller room.</p>}
                 <p>{room.playerCount || 1}/4 players · {room.players?.filter((player) => player.entryLocked).length || 0} locked</p>
