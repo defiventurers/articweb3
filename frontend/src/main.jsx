@@ -31,6 +31,7 @@ import "./styles/highStakesDesktopCalibration.css";
 import "./utils/gameGridCalibrationSeed.js";
 import "./utils/playerHubCalibrationSeed.js";
 import "./utils/highstakesCalibrationExport.js";
+import "./utils/highStakesRoomCountdownFallback.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
