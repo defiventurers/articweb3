@@ -4,6 +4,7 @@ const ROOM_REFRESH_MS = 15000;
 const TICK_MS = 1000;
 
 let roomDeadlines = new Map();
+let knownRooms = new Set();
 let refreshTimer = null;
 let tickTimer = null;
 let observer = null;
@@ -36,7 +37,7 @@ function deadlineForRoom(room) {
 }
 
 function formatCountdown(deadline, now = Date.now()) {
-  if (!deadline) return "";
+  if (!deadline) return "2h max";
   const remainingMs = Math.max(0, deadline - now);
   if (remainingMs <= 0) return "canceling";
   const totalMinutes = Math.max(1, Math.ceil(remainingMs / 60000));
@@ -49,14 +50,11 @@ function renderCountdowns() {
   if (!isHighStakesVisible()) return;
   document.querySelectorAll("#screenHighStakes .hs-room-code").forEach((element) => {
     const code = roomCodeFromElement(element);
-    const deadline = roomDeadlines.get(code);
+    if (!code || (knownRooms.size && !knownRooms.has(code))) return;
+
+    const deadline = roomDeadlines.get(code) || 0;
     const label = formatCountdown(deadline);
     let countdown = element.querySelector(":scope > .hs-room-autocancel");
-
-    if (!label) {
-      countdown?.remove();
-      return;
-    }
 
     if (!countdown) {
       countdown = document.createElement("span");
@@ -64,7 +62,8 @@ function renderCountdowns() {
       element.appendChild(countdown);
     }
     countdown.textContent = `(${label})`;
-    element.title = `Auto-cancel ${label}`;
+    countdown.dataset.exact = deadline ? "true" : "false";
+    element.title = deadline ? `Auto-cancel ${label}` : "Auto-cancel timing waiting for lobby server metadata";
   });
 }
 
@@ -107,6 +106,7 @@ async function refreshRooms() {
       ws.send(JSON.stringify({ type: "room_list", requestId: id, payload: { roomMode: "high_stakes" } }));
     });
 
+    knownRooms = new Set(rooms.map((room) => String(room.roomCode || "").toUpperCase()).filter(Boolean));
     roomDeadlines = new Map(
       rooms
         .map((room) => [String(room.roomCode || "").toUpperCase(), deadlineForRoom(room)])
@@ -114,7 +114,9 @@ async function refreshRooms() {
     );
     renderCountdowns();
   } catch {
-    // The React-rendered countdown remains the primary path; this fallback stays silent on socket failures.
+    // If the secondary socket cannot read rooms, still show the visible marker beside rendered room codes.
+    knownRooms = new Set();
+    renderCountdowns();
   }
 }
 
