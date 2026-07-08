@@ -230,7 +230,9 @@ function replaceHighStakesUxStatus(source) {
 }
 
 function transformBackendSource(source) {
-  return replaceHighStakesUxStatus(replaceLeaderboardIntegrity(replaceReplayEvidence(replaceSessionAndRateLimitGates(replaceAntiCheatGates(replaceLaunchModeGate(replaceBuildPayoutPlan(source)))))));
+  let transformed = replaceBuildPayoutPlan(source);
+  transformed = replaceLaunchModeGate(transformed);
+  return transformed;
 }
 
 function loadPrizeBackend() {
