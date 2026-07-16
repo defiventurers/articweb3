@@ -5,24 +5,9 @@ import { useChainGuard } from "../hooks/useChainGuard.js";
 import { createProfile } from "../network/socketClient.js";
 import "../styles/profileScreen.css";
 
-const PROFILE_CALIBRATION_QUERY_KEY = "calibrateProfile";
 const PROFILE_STORAGE_KEY = "artic-profile-by-wallet-v1";
 const CACHED_PROFILE_SAVE_TIMEOUT_MS = 6000;
 const NEW_PROFILE_SAVE_TIMEOUT_MS = 12000;
-const PROFILE_CALIBRATION_TARGETS = [
-  "agw-rectangle",
-  "wallet-rectangle",
-  "player-name-rectangle",
-  "connect-hit",
-  "connect-disabled",
-  "disconnect-hit",
-  "wallet-display",
-  "copy-hit",
-  "name-input",
-  "complete-hit",
-  "back-hit",
-  "status-message"
-];
 
 export function ProfileScreen({ onComplete, onBack }) {
   const [name, setName] = useState("");
@@ -33,9 +18,6 @@ export function ProfileScreen({ onComplete, onBack }) {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [notice, setNotice] = useState("");
-  const [calibrationOverrides, setCalibrationOverrides] = useState({});
-
-  const calibrateProfile = useMemo(() => isProfileCalibrationEnabled(), []);
 
   const { login } = useLoginWithAbstract();
   const { address, isConnected } = useAccount();
@@ -81,63 +63,8 @@ export function ProfileScreen({ onComplete, onBack }) {
     };
   }, [address, isConnected, nameTouched]);
 
-  function calibrationStyle(targetId) {
-    return calibrateProfile ? calibrationOverrides[targetId] : undefined;
-  }
-
-  function beginCalibrationDrag(event, targetId) {
-    if (!calibrateProfile) return;
-    const element = event.currentTarget;
-    const stage = document.querySelector(".profile-stage");
-    if (!element || !stage) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    element.setPointerCapture?.(event.pointerId);
-
-    const stageRect = stage.getBoundingClientRect();
-    const rect = element.getBoundingClientRect();
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const startLeft = rect.left - stageRect.left;
-    const startTop = rect.top - stageRect.top;
-
-    const move = (moveEvent) => {
-      moveEvent.preventDefault();
-      const nextLeft = clamp(startLeft + moveEvent.clientX - startX, 0, stageRect.width - rect.width);
-      const nextTop = clamp(startTop + moveEvent.clientY - startY, 0, stageRect.height - rect.height);
-      setCalibrationOverrides((current) => ({
-        ...current,
-        [targetId]: {
-          ...(current[targetId] || {}),
-          left: toPercent(nextLeft, stageRect.width),
-          top: toPercent(nextTop, stageRect.height),
-          width: (current[targetId] || {}).width || toPercent(rect.width, stageRect.width),
-          height: (current[targetId] || {}).height || toPercent(rect.height, stageRect.height)
-        }
-      }));
-    };
-
-    const up = () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-      window.removeEventListener("pointercancel", up);
-    };
-
-    window.addEventListener("pointermove", move, { passive: false });
-    window.addEventListener("pointerup", up, { once: true });
-    window.addEventListener("pointercancel", up, { once: true });
-  }
-
-  function calibrationProps(targetId) {
-    return {
-      "data-calibrate": targetId,
-      style: calibrationStyle(targetId),
-      onPointerDown: calibrateProfile ? (event) => beginCalibrationDrag(event, targetId) : undefined
-    };
-  }
-
   async function handleConnect() {
+    if (isConnected) return;
     try {
       setError("");
       setNotice("");
@@ -245,165 +172,85 @@ export function ProfileScreen({ onComplete, onBack }) {
 
   const chainNotice = isConnected && isWrongChain ? `Wrong network: ${connectedChainId || "unknown"}. Switch to ${expectedNetworkName}.` : "";
   const statusMessage = error || chainNotice || (copied ? "Wallet copied." : busy ? "Creating profile..." : lookupBusy ? "Checking Abstract profile..." : notice);
+  const statusClassName = [
+    "profile-status",
+    "profile-status-message",
+    busy ? "profile-loading-message" : "",
+    error || chainNotice ? "error" : ""
+  ].filter(Boolean).join(" ");
 
   return (
-    <section className={`profile-page ${calibrateProfile ? "is-calibrating" : ""}`} aria-label="Create profile">
+    <section className="profile-page" aria-label="Create profile">
       <div className="profile-stage">
-        <img className="profile-art" src="/assets/screens/profile.png" alt="Create Profile" />
-
-        {calibrateProfile && (
-          <>
-            <div className="profile-calibration-rect profile-agw-rectangle" {...calibrationProps("agw-rectangle")}>AGW AREA</div>
-            <div className="profile-calibration-rect profile-wallet-rectangle" {...calibrationProps("wallet-rectangle")}>WALLET ADDRESS AREA</div>
-            <div className="profile-calibration-rect profile-player-name-rectangle" {...calibrationProps("player-name-rectangle")}>PLAYER NAME AREA</div>
-          </>
-        )}
+        <img className="profile-art" src="/assets/screens/profile.webp" alt="Create Profile" />
 
         <button
-          className={`profile-hit profile-connect-hit ${isConnected ? "connected" : ""}`}
-          {...calibrationProps("connect-hit")}
+          className={`profile-hit profile-connect-hit profile-connect-hitbox ${isConnected ? "connected" : ""}`}
           aria-label={isConnected ? "AGW connected" : "Connect AGW"}
-          onClick={calibrateProfile ? undefined : handleConnect}
-          disabled={!calibrateProfile && (busy || isConnected)}
+          onClick={handleConnect}
+          disabled={busy || isConnected}
         />
 
-        {isConnected && <div className="profile-connect-disabled" {...calibrationProps("connect-disabled")} aria-hidden="true">AGW CONNECTED</div>}
+        {isConnected && (
+          <div className="profile-connect-disabled profile-wallet-status" aria-hidden="true">
+            AGW CONNECTED
+          </div>
+        )}
 
         {isConnected && (
           <button
-            className="profile-hit profile-disconnect-hit"
-            {...calibrationProps("disconnect-hit")}
+            className="profile-hit profile-disconnect-hit profile-disconnect-hitbox"
             aria-label="Disconnect wallet"
-            onClick={calibrateProfile ? undefined : handleDisconnect}
-            disabled={!calibrateProfile && busy}
+            onClick={handleDisconnect}
+            disabled={busy}
             title="Disconnect wallet"
           >
             DISCONNECT
           </button>
         )}
 
-        <div className="profile-wallet-display" {...calibrationProps("wallet-display")} title={address || ""}>
+        <div className="profile-wallet-display profile-wallet-address" title={address || ""}>
           {address ? compactAddress(address) : ""}
         </div>
 
         <button
-          className="profile-hit profile-copy-hit"
-          {...calibrationProps("copy-hit")}
+          className="profile-hit profile-copy-hit profile-wallet-copy-hitbox"
           aria-label="Copy wallet address"
-          onClick={calibrateProfile ? undefined : handleCopyAddress}
-          disabled={!calibrateProfile && (busy || !address)}
+          onClick={handleCopyAddress}
+          disabled={busy || !address}
         />
 
         <input
           className="profile-name-input"
-          {...calibrationProps("name-input")}
           placeholder={lookupBusy ? "Checking Abstract profile..." : "Enter player name"}
           maxLength={20}
           value={name}
           onChange={handleNameChange}
-          disabled={!calibrateProfile && busy}
-          readOnly={calibrateProfile}
+          disabled={busy}
           aria-label="Player name"
         />
 
         <button
-          className="profile-hit profile-complete-hit"
-          {...calibrationProps("complete-hit")}
+          className="profile-hit profile-complete-hit profile-complete-hitbox"
           aria-label="Complete profile"
-          disabled={!calibrateProfile && (busy || isWrongChain)}
-          onClick={calibrateProfile ? undefined : handleComplete}
+          disabled={busy || isWrongChain}
+          onClick={handleComplete}
         />
 
         <button
-          className="profile-hit profile-back-hit"
-          {...calibrationProps("back-hit")}
+          className="profile-hit profile-back-hit profile-back-hitbox"
           aria-label="Back"
-          disabled={!calibrateProfile && busy}
-          onClick={calibrateProfile ? undefined : onBack}
+          disabled={busy}
+          onClick={onBack}
         />
 
         {statusMessage && (
-          <div className={`profile-status ${error || chainNotice ? "error" : ""}`} {...calibrationProps("status-message")} aria-live="polite">
+          <div className={statusClassName} aria-live="polite">
             {statusMessage}
           </div>
         )}
-
-        <ProfileCalibrator enabled={calibrateProfile} targetIds={PROFILE_CALIBRATION_TARGETS} overrides={calibrationOverrides} setOverrides={setCalibrationOverrides} />
       </div>
     </section>
-  );
-}
-
-function ProfileCalibrator({ enabled, targetIds, overrides, setOverrides }) {
-  const [selected, setSelected] = useState(targetIds[0] || "");
-  const [draft, setDraft] = useState({ left: "", top: "", width: "", height: "", fontSize: "" });
-
-  useEffect(() => {
-    if (!enabled || !selected) return;
-    const element = document.querySelector(`[data-calibrate="${selected}"]`);
-    const stage = document.querySelector(".profile-stage");
-    if (!element || !stage) return;
-
-    const stageRect = stage.getBoundingClientRect();
-    const rect = element.getBoundingClientRect();
-    const computed = window.getComputedStyle(element);
-    const override = overrides[selected] || {};
-
-    setDraft({
-      left: override.left || toPercent(rect.left - stageRect.left, stageRect.width),
-      top: override.top || toPercent(rect.top - stageRect.top, stageRect.height),
-      width: override.width || toPercent(rect.width, stageRect.width),
-      height: override.height || toPercent(rect.height, stageRect.height),
-      fontSize: override.fontSize || computed.fontSize || ""
-    });
-  }, [enabled, selected, overrides]);
-
-  if (!enabled) return null;
-
-  function updateField(field, value) {
-    const nextDraft = { ...draft, [field]: value };
-    setDraft(nextDraft);
-    setOverrides((current) => ({ ...current, [selected]: compactStyle(nextDraft) }));
-  }
-
-  function exportPositions() {
-    const stage = document.querySelector(".profile-stage");
-    if (!stage) return;
-    const stageRect = stage.getBoundingClientRect();
-    const result = {};
-    document.querySelectorAll("[data-calibrate]").forEach((element) => {
-      const key = element.getAttribute("data-calibrate");
-      if (!key) return;
-      const rect = element.getBoundingClientRect();
-      const computed = window.getComputedStyle(element);
-      result[key] = {
-        left: toPercent(rect.left - stageRect.left, stageRect.width),
-        top: toPercent(rect.top - stageRect.top, stageRect.height),
-        width: toPercent(rect.width, stageRect.width),
-        height: toPercent(rect.height, stageRect.height),
-        fontSize: computed.fontSize
-      };
-    });
-    const json = JSON.stringify(result, null, 2);
-    console.log("Profile calibration positions", result);
-    navigator.clipboard?.writeText(json).catch(() => {});
-  }
-
-  return (
-    <div className="profile-calibrator">
-      <strong>Profile Calibration</strong>
-      <small>Drag outlined areas directly, or edit numbers below. Use AGW AREA, WALLET ADDRESS AREA, and PLAYER NAME AREA for the large blue rectangles.</small>
-      <select value={selected} onChange={(event) => setSelected(event.target.value)}>
-        {targetIds.map((targetId) => <option key={targetId} value={targetId}>{targetId}</option>)}
-      </select>
-      {["left", "top", "width", "height", "fontSize"].map((field) => (
-        <label key={field}>
-          <span>{field}</span>
-          <input value={draft[field] || ""} onChange={(event) => updateField(field, event.target.value)} placeholder={field === "fontSize" ? "22px" : "0%"} />
-        </label>
-      ))}
-      <button type="button" onClick={exportPositions}>EXPORT POSITIONS</button>
-    </div>
   );
 }
 
@@ -515,22 +362,4 @@ function withProfileSaveTimeout(promise, timeoutMs) {
 
 function isTimeoutError(err) {
   return /timed?\s*out|timeout/i.test(String(err?.message || err || ""));
-}
-
-function isProfileCalibrationEnabled() {
-  if (typeof window === "undefined") return false;
-  return new URLSearchParams(window.location.search).get(PROFILE_CALIBRATION_QUERY_KEY) === "1";
-}
-
-function toPercent(value, total) {
-  if (!total) return "0%";
-  return `${((value / total) * 100).toFixed(2)}%`;
-}
-
-function compactStyle(style) {
-  return Object.fromEntries(Object.entries(style).filter(([, value]) => String(value || "").trim()));
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
 }
