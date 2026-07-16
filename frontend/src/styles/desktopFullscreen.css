@@ -1,0 +1,116 @@
+/* Final desktop full-bleed pass.
+   Keeps mobile portrait untouched and leaves the cover screen unchanged. */
+@media (min-width: 900px) and (orientation: landscape) {
+  html,
+  body,
+  #root {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+    background: #061b3a;
+  }
+
+  .art-screen:not([aria-label="Cover screen"]),
+  .open-ice-image-page,
+  .game-screen-page,
+  .profile-page {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    background: #061b3a !important;
+  }
+
+  /*
+   * Desktop art screens are authored as landscape stages.
+   * Use cover math instead of contain math so there are no side gutters.
+   * The stage remains 16:9, so calibrated hitboxes stay attached to the art.
+   */
+  .art-screen:not([aria-label="Cover screen"]) > .art-stage,
+  .art-screen:not([aria-label="Cover screen"]) .menu-screen-shell,
+  .highstakes-shell,
+  .open-ice-image-stage,
+  .game-stage {
+    position: relative !important;
+    width: max(100vw, calc(100dvh * 16 / 9)) !important;
+    height: max(100dvh, calc(100vw * 9 / 16)) !important;
+    max-width: none !important;
+    max-height: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: 16 / 9 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .art-screen:not([aria-label="Cover screen"]) .menu-screen-shell > .art-stage,
+  .highstakes-shell > .highstakes-stage {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    aspect-ratio: 16 / 9 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .art-screen:not([aria-label="Cover screen"]) .screen-art,
+  .open-ice-image-stage .open-ice-screen-art,
+  .game-stage .game-stage-art {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    object-fit: fill !important;
+    object-position: center center !important;
+    display: block !important;
+  }
+
+  .game-stage {
+    background-size: 100% 100% !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+  }
+
+  /* Profile still uses portrait artwork. Stretch it only on desktop so the flow
+     is visually full-bleed until a proper profile-desktop asset is added. */
+  .profile-stage {
+    position: relative !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+    overflow: hidden !important;
+  }
+
+  .profile-stage .profile-art {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: fill !important;
+    object-position: center center !important;
+  }
+}
