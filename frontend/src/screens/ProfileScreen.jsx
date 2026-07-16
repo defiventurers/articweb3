@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount, useDisconnect, useSignMessage } from "wagmi";
 import { useLoginWithAbstract } from "@abstract-foundation/agw-react";
 import { useChainGuard } from "../hooks/useChainGuard.js";
@@ -170,6 +170,13 @@ export function ProfileScreen({ onComplete, onBack }) {
     setName(event.target.value);
   }
 
+  function handleProfileArtError(event) {
+    const img = event.currentTarget;
+    if (img.dataset.fallbackApplied === "1") return;
+    img.dataset.fallbackApplied = "1";
+    img.src = "/assets/screens/profile.png";
+  }
+
   const chainNotice = isConnected && isWrongChain ? `Wrong network: ${connectedChainId || "unknown"}. Switch to ${expectedNetworkName}.` : "";
   const statusMessage = error || chainNotice || (copied ? "Wallet copied." : busy ? "Creating profile..." : lookupBusy ? "Checking Abstract profile..." : notice);
   const statusClassName = [
@@ -182,7 +189,10 @@ export function ProfileScreen({ onComplete, onBack }) {
   return (
     <section className="profile-page" aria-label="Create profile">
       <div className="profile-stage">
-        <img className="profile-art" src="/assets/screens/profile.webp" alt="Create Profile" />
+        <picture>
+          <source media="(min-width: 900px) and (orientation: landscape)" srcSet="/assets/screens/profile-desktop.png" />
+          <img className="profile-art" src="/assets/screens/profile.webp" alt="Create Profile" onError={handleProfileArtError} />
+        </picture>
 
         <button
           className={`profile-hit profile-connect-hit profile-connect-hitbox ${isConnected ? "connected" : ""}`}
