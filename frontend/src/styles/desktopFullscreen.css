@@ -101,6 +101,7 @@
     display: block !important;
   }
 
+  .profile-stage picture,
   .profile-stage .profile-art {
     position: absolute !important;
     inset: 0 !important;
@@ -111,7 +112,6 @@
     object-fit: fill !important;
     object-position: center center !important;
     display: block !important;
-    content: url("/assets/screens/profile-desktop.png") !important;
   }
 
   .game-stage {
