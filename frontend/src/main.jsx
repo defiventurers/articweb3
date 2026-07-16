@@ -33,7 +33,6 @@ import "./styles/desktopFullscreen.css";
 import "./utils/gameGridCalibrationSeed.js";
 import "./utils/playerHubCalibrationSeed.js";
 import "./utils/highstakesCalibrationExport.js";
-import "./utils/profileClassAliases.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
