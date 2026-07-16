@@ -1,0 +1,31 @@
+.profile-cal-stage {
+  width: min(calc(100vw - 470px), calc((100dvh - 92px) * 16 / 9));
+  height: calc(min(calc(100vw - 470px), calc((100dvh - 92px) * 16 / 9)) * 9 / 16);
+}
+
+.cal-art-stage > picture {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cal-art-stage > picture > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  user-select: none;
+  pointer-events: none;
+}
+
+@media (max-width: 940px) {
+  .profile-cal-stage {
+    width: 100vw;
+    height: calc(100vw * 9 / 16);
+  }
+}
