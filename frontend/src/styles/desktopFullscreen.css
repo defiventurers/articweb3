@@ -2,13 +2,9 @@
    Mobile portrait remains untouched.
 
    Normal desktop Chrome is usually not 16:9 because tabs/address/task bars reduce
-   the usable height. The cover screen already fills the viewport. Match that
-   behavior for artwork-driven desktop screens by stretching the art stage to the
-   visible browser viewport. Hitboxes use the same percentage coordinate system,
-   so they stay attached to the stretched artwork.
-
-   Do not apply this stretch to the live game board: the board must remain a real
-   square and cannot be safely distorted. */
+   the usable height. Artwork-driven menu screens stretch to the visible browser
+   viewport, but profile calibration uses a real 16:9 desktop asset and must not
+   be distorted. */
 @media (min-width: 900px) and (orientation: landscape) {
   html,
   body,
@@ -39,12 +35,10 @@
     background: #061b3a !important;
   }
 
-  /* Full-viewport stretch for non-board artwork screens. */
   .art-screen:not([aria-label="Cover screen"]) > .art-stage,
   .art-screen:not([aria-label="Cover screen"]) .menu-screen-shell,
   .highstakes-shell,
-  .open-ice-image-stage,
-  .profile-stage {
+  .open-ice-image-stage {
     position: relative !important;
     z-index: 1 !important;
     width: 100vw !important;
@@ -55,6 +49,23 @@
     min-height: 0 !important;
     aspect-ratio: auto !important;
     margin: 0 !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .profile-stage {
+    position: relative !important;
+    z-index: 1 !important;
+    width: min(100vw, calc(100dvh * 16 / 9)) !important;
+    height: min(100dvh, calc(100vw * 9 / 16)) !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: 16 / 9 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     flex: 0 0 auto !important;
     overflow: hidden !important;
@@ -78,8 +89,7 @@
   }
 
   .art-screen:not([aria-label="Cover screen"]) .screen-art,
-  .open-ice-image-stage .open-ice-screen-art,
-  .profile-stage .profile-art {
+  .open-ice-image-stage .open-ice-screen-art {
     position: absolute !important;
     inset: 0 !important;
     width: 100% !important;
@@ -91,13 +101,19 @@
     display: block !important;
   }
 
-  /* Profile has a real desktop asset. Never use the mobile portrait art on desktop. */
   .profile-stage .profile-art {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    object-fit: fill !important;
+    object-position: center center !important;
+    display: block !important;
     content: url("/assets/screens/profile-desktop.png") !important;
   }
 
-  /* Keep the live game stage 16:9-contained so the board overlay remains square
-     and calibrated against the desktop board art. */
   .game-stage {
     position: relative !important;
     z-index: 1 !important;
