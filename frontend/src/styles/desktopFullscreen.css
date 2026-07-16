@@ -1,5 +1,10 @@
-/* Final desktop full-bleed pass.
-   Keeps mobile portrait untouched and leaves the cover screen unchanged. */
+/* Final desktop viewport pass.
+   Keeps mobile portrait untouched and leaves the cover screen unchanged.
+
+   Important: desktop game art is 16:9. A normal browser window is often wider
+   than 16:9 after tabs/address/task bars are counted. True cover would crop the
+   bottom controls. Use contain for the interactive stage and fill the remaining
+   space with a blurred backdrop instead of distorting or cropping hitboxes. */
 @media (min-width: 900px) and (orientation: landscape) {
   html,
   body,
@@ -27,13 +32,63 @@
     align-items: center !important;
     justify-content: center !important;
     overflow: hidden !important;
-    background: #061b3a !important;
+    background:
+      radial-gradient(circle at 50% 18%, rgba(126, 223, 255, .20), transparent 36%),
+      linear-gradient(180deg, #061b3a 0%, #08213f 58%, #020b18 100%) !important;
+  }
+
+  .art-screen:not([aria-label="Cover screen"])::before,
+  .open-ice-image-page::before,
+  .game-screen-page::before,
+  .profile-page::before {
+    content: "";
+    position: absolute;
+    inset: -28px;
+    z-index: 0;
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    filter: blur(18px) brightness(.72) saturate(1.12);
+    transform: scale(1.04);
+    pointer-events: none;
+  }
+
+  .art-screen[aria-label="Main menu"]::before {
+    background-image: url("/assets/screens/main-menu-desktop.png");
+  }
+
+  .playerhub-screen::before {
+    background-image: url("/assets/screens/playerhub-desktop.png");
+  }
+
+  .highstakes-screen::before {
+    background-image: url("/assets/screens/highstakes.png");
+  }
+
+  .openicehub-page::before {
+    background-image: url("/assets/screens/openicehub-desktop.png");
+  }
+
+  .open-ice-image-page:has(.create-room-stage)::before {
+    background-image: url("/assets/screens/openice-createroom-desktop.png");
+  }
+
+  .open-ice-image-page:has(.join-room-stage)::before {
+    background-image: url("/assets/screens/join-room-desktop.png");
+  }
+
+  .game-screen-page::before {
+    background-image: url("/assets/screens/arctic-dominion-game-base-desktop.png");
+  }
+
+  .profile-page::before {
+    background-image: url("/assets/screens/profile.png");
   }
 
   /*
-   * Desktop art screens are authored as landscape stages.
-   * Use cover math instead of contain math so there are no side gutters.
-   * The stage remains 16:9, so calibrated hitboxes stay attached to the art.
+   * Interactive desktop stages must stay fully visible.
+   * 16:9 contain preserves all calibrated hitboxes and prevents bottom buttons
+   * from being clipped by normal browser chrome.
    */
   .art-screen:not([aria-label="Cover screen"]) > .art-stage,
   .art-screen:not([aria-label="Cover screen"]) .menu-screen-shell,
@@ -41,14 +96,15 @@
   .open-ice-image-stage,
   .game-stage {
     position: relative !important;
-    width: max(100vw, calc(100dvh * 16 / 9)) !important;
-    height: max(100dvh, calc(100vw * 9 / 16)) !important;
-    max-width: none !important;
-    max-height: none !important;
+    z-index: 1 !important;
+    width: min(100vw, calc(100dvh * 16 / 9)) !important;
+    height: min(100dvh, calc(100vw * 9 / 16)) !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
     min-width: 0 !important;
     min-height: 0 !important;
     aspect-ratio: 16 / 9 !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     flex: 0 0 auto !important;
     overflow: hidden !important;
@@ -88,18 +144,19 @@
     background-repeat: no-repeat !important;
   }
 
-  /* Profile still uses portrait artwork. Stretch it only on desktop so the flow
-     is visually full-bleed until a proper profile-desktop asset is added. */
+  /* Profile still uses portrait artwork. It cannot be made true desktop without
+     a profile-desktop asset, so keep it fully visible instead of cropping. */
   .profile-stage {
     position: relative !important;
-    width: 100vw !important;
+    z-index: 1 !important;
     height: 100dvh !important;
-    max-width: none !important;
-    max-height: none !important;
+    width: min(100vw, calc(100dvh * 941 / 1672)) !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
     min-width: 0 !important;
     min-height: 0 !important;
-    aspect-ratio: auto !important;
-    margin: 0 !important;
+    aspect-ratio: 941 / 1672 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     flex: 0 0 auto !important;
     overflow: hidden !important;
