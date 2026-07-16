@@ -23,6 +23,7 @@ import "./styles/openIceFlow.css";
 import "./styles/dataScreens.css";
 import "./styles/dataScreensPolish.css";
 import "./styles/calibration.css";
+import "./styles/profileCalibration.css";
 import "./styles/calibrationBoardSquareFix.css";
 import "./styles/calibrationScreenFixes.css";
 import "./styles/calibratedOverrides.css";
