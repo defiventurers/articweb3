@@ -30,6 +30,7 @@ import "./styles/calibratedOverrides.css";
 import "./styles/desktopCalibrationFixes.css";
 import "./styles/highStakesDesktopCalibration.css";
 import "./styles/desktopFullscreen.css";
+import "./styles/profileDesktopOverrides.css";
 import "./utils/gameGridCalibrationSeed.js";
 import "./utils/playerHubCalibrationSeed.js";
 import "./utils/highstakesCalibrationExport.js";
