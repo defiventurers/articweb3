@@ -1,0 +1,400 @@
+/* Shared premium hover/focus layer for calibrated image hitboxes.
+   Does not move calibrated boxes. Desktop pointer devices only. */
+
+.ui-hotspot,
+.full-hitbox,
+.menu-hitbox,
+.screen-hitbox,
+.profile-hit,
+.profile-name-input,
+.highstakes-private-input,
+.highstakes-tier-btn,
+.highstakes-modal-primary,
+.highstakes-modal-cancel,
+.openicehub-private-input,
+.join-code-hit,
+.digit-0,
+.digit-1,
+.digit-2,
+.digit-3,
+.join-continue-hit,
+.join-back-hit,
+.create-public-hit,
+.create-private-hit,
+.create-back-hit,
+.roll-hitbox,
+.end-turn-hitbox,
+.new-game-hitbox {
+  --hover-color: #8eefff;
+  --hover-rgb: 142, 239, 255;
+  position: absolute;
+  isolation: isolate;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ui-hotspot,
+  .full-hitbox,
+  .menu-hitbox,
+  .screen-hitbox,
+  .profile-hit,
+  .profile-name-input,
+  .highstakes-private-input,
+  .highstakes-tier-btn,
+  .highstakes-modal-primary,
+  .highstakes-modal-cancel,
+  .openicehub-private-input,
+  .join-code-hit,
+  .digit-0,
+  .digit-1,
+  .digit-2,
+  .digit-3,
+  .join-continue-hit,
+  .join-back-hit,
+  .create-public-hit,
+  .create-private-hit,
+  .create-back-hit,
+  .roll-hitbox,
+  .end-turn-hitbox,
+  .new-game-hitbox {
+    transition: filter 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    outline: none;
+  }
+
+  .ui-hotspot::before,
+  .full-hitbox::before,
+  .menu-hitbox::before,
+  .screen-hitbox::before,
+  .profile-hit::before,
+  .profile-name-input::before,
+  .highstakes-private-input::before,
+  .highstakes-tier-btn::before,
+  .highstakes-modal-primary::before,
+  .highstakes-modal-cancel::before,
+  .openicehub-private-input::before,
+  .join-code-hit::before,
+  .digit-0::before,
+  .digit-1::before,
+  .digit-2::before,
+  .digit-3::before,
+  .join-continue-hit::before,
+  .join-back-hit::before,
+  .create-public-hit::before,
+  .create-private-hit::before,
+  .create-back-hit::before,
+  .roll-hitbox::before,
+  .end-turn-hitbox::before,
+  .new-game-hitbox::before {
+    content: "";
+    position: absolute;
+    inset: -5%;
+    pointer-events: none;
+    border: clamp(1px, 0.18cqw, 3px) solid transparent;
+    border-radius: 10px;
+    opacity: 0;
+    transform: scale(0.985);
+    box-shadow: none;
+    transition: opacity 160ms ease, transform 180ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    z-index: 3;
+  }
+
+  .ui-hotspot::after,
+  .full-hitbox::after,
+  .menu-hitbox::after,
+  .screen-hitbox::after,
+  .profile-hit::after,
+  .highstakes-tier-btn::after,
+  .highstakes-modal-primary::after,
+  .highstakes-modal-cancel::after,
+  .join-code-hit::after,
+  .digit-0::after,
+  .digit-1::after,
+  .digit-2::after,
+  .digit-3::after,
+  .join-continue-hit::after,
+  .join-back-hit::after,
+  .create-public-hit::after,
+  .create-private-hit::after,
+  .create-back-hit::after,
+  .roll-hitbox::after,
+  .end-turn-hitbox::after,
+  .new-game-hitbox::after {
+    content: "";
+    position: absolute;
+    inset: -7%;
+    pointer-events: none;
+    border-radius: 12px;
+    opacity: 0;
+    background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0) 32%, rgba(255,255,255,0.34) 48%, rgba(255,255,255,0) 64%, transparent 100%);
+    transform: translateX(-60%);
+    transition: opacity 160ms ease;
+    z-index: 2;
+  }
+
+  .ui-hotspot:not(:disabled):not(.ui-hotspot-disabled):not(.connected):hover,
+  .full-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover,
+  .menu-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover,
+  .screen-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover,
+  .profile-hit:not(:disabled):not(.ui-hotspot-disabled):not(.connected):hover,
+  .profile-name-input:not(:disabled):hover,
+  .highstakes-private-input:not(:disabled):hover,
+  .highstakes-tier-btn:not(:disabled):hover,
+  .highstakes-modal-primary:not(:disabled):hover,
+  .highstakes-modal-cancel:not(:disabled):hover,
+  .openicehub-private-input:not(:disabled):hover,
+  .join-code-hit:not(:disabled):hover,
+  .digit-0:not(:disabled):hover,
+  .digit-1:not(:disabled):hover,
+  .digit-2:not(:disabled):hover,
+  .digit-3:not(:disabled):hover,
+  .join-continue-hit:not(:disabled):hover,
+  .join-back-hit:not(:disabled):hover,
+  .create-public-hit:not(:disabled):hover,
+  .create-private-hit:not(:disabled):hover,
+  .create-back-hit:not(:disabled):hover,
+  .roll-hitbox:not(:disabled):hover,
+  .end-turn-hitbox:not(:disabled):hover,
+  .new-game-hitbox:not(:disabled):hover {
+    filter: brightness(1.16) saturate(1.2);
+  }
+
+  .ui-hotspot:not(:disabled):not(.ui-hotspot-disabled):not(.connected):hover::before,
+  .ui-hotspot:not(:disabled):not(.ui-hotspot-disabled):not(.connected):focus-visible::before,
+  .full-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover::before,
+  .full-hitbox:not(:disabled):not(.ui-hotspot-disabled):focus-visible::before,
+  .menu-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover::before,
+  .menu-hitbox:not(:disabled):not(.ui-hotspot-disabled):focus-visible::before,
+  .screen-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover::before,
+  .screen-hitbox:not(:disabled):not(.ui-hotspot-disabled):focus-visible::before,
+  .profile-hit:not(:disabled):not(.ui-hotspot-disabled):not(.connected):hover::before,
+  .profile-hit:not(:disabled):not(.ui-hotspot-disabled):not(.connected):focus-visible::before,
+  .profile-name-input:not(:disabled):hover::before,
+  .profile-name-input:not(:disabled):focus-visible::before,
+  .highstakes-private-input:not(:disabled):hover::before,
+  .highstakes-private-input:not(:disabled):focus-visible::before,
+  .highstakes-tier-btn:not(:disabled):hover::before,
+  .highstakes-tier-btn:not(:disabled):focus-visible::before,
+  .highstakes-modal-primary:not(:disabled):hover::before,
+  .highstakes-modal-primary:not(:disabled):focus-visible::before,
+  .highstakes-modal-cancel:not(:disabled):hover::before,
+  .highstakes-modal-cancel:not(:disabled):focus-visible::before,
+  .openicehub-private-input:not(:disabled):hover::before,
+  .openicehub-private-input:not(:disabled):focus-visible::before,
+  .join-code-hit:not(:disabled):hover::before,
+  .join-code-hit:not(:disabled):focus-visible::before,
+  .digit-0:not(:disabled):hover::before,
+  .digit-0:not(:disabled):focus-visible::before,
+  .digit-1:not(:disabled):hover::before,
+  .digit-1:not(:disabled):focus-visible::before,
+  .digit-2:not(:disabled):hover::before,
+  .digit-2:not(:disabled):focus-visible::before,
+  .digit-3:not(:disabled):hover::before,
+  .digit-3:not(:disabled):focus-visible::before,
+  .join-continue-hit:not(:disabled):hover::before,
+  .join-continue-hit:not(:disabled):focus-visible::before,
+  .join-back-hit:not(:disabled):hover::before,
+  .join-back-hit:not(:disabled):focus-visible::before,
+  .create-public-hit:not(:disabled):hover::before,
+  .create-public-hit:not(:disabled):focus-visible::before,
+  .create-private-hit:not(:disabled):hover::before,
+  .create-private-hit:not(:disabled):focus-visible::before,
+  .create-back-hit:not(:disabled):hover::before,
+  .create-back-hit:not(:disabled):focus-visible::before,
+  .roll-hitbox:not(:disabled):hover::before,
+  .roll-hitbox:not(:disabled):focus-visible::before,
+  .end-turn-hitbox:not(:disabled):hover::before,
+  .end-turn-hitbox:not(:disabled):focus-visible::before,
+  .new-game-hitbox:not(:disabled):hover::before,
+  .new-game-hitbox:not(:disabled):focus-visible::before {
+    opacity: 1;
+    transform: scale(1);
+    border-color: var(--hover-color);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.28) inset,
+      0 0 12px rgba(var(--hover-rgb), 0.9),
+      0 0 30px rgba(var(--hover-rgb), 0.42),
+      0 0 54px rgba(var(--hover-rgb), 0.18);
+    animation: uiHotspotGlowPulse 1.25s ease-in-out infinite alternate;
+  }
+
+  .ui-hotspot:not(:disabled):not(.ui-hotspot-disabled):not(.connected):hover::after,
+  .full-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover::after,
+  .menu-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover::after,
+  .screen-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover::after,
+  .profile-hit:not(:disabled):not(.ui-hotspot-disabled):not(.connected):hover::after,
+  .highstakes-tier-btn:not(:disabled):hover::after,
+  .highstakes-modal-primary:not(:disabled):hover::after,
+  .highstakes-modal-cancel:not(:disabled):hover::after,
+  .join-code-hit:not(:disabled):hover::after,
+  .digit-0:not(:disabled):hover::after,
+  .digit-1:not(:disabled):hover::after,
+  .digit-2:not(:disabled):hover::after,
+  .digit-3:not(:disabled):hover::after,
+  .join-continue-hit:not(:disabled):hover::after,
+  .join-back-hit:not(:disabled):hover::after,
+  .create-public-hit:not(:disabled):hover::after,
+  .create-private-hit:not(:disabled):hover::after,
+  .create-back-hit:not(:disabled):hover::after,
+  .roll-hitbox:not(:disabled):hover::after,
+  .end-turn-hitbox:not(:disabled):hover::after,
+  .new-game-hitbox:not(:disabled):hover::after {
+    opacity: 1;
+    animation: uiHotspotShimmer 900ms ease-out 1;
+  }
+
+  .ui-hotspot:focus-visible,
+  .full-hitbox:focus-visible,
+  .menu-hitbox:focus-visible,
+  .screen-hitbox:focus-visible,
+  .profile-hit:focus-visible,
+  .profile-name-input:focus-visible,
+  .highstakes-private-input:focus-visible,
+  .highstakes-tier-btn:focus-visible,
+  .highstakes-modal-primary:focus-visible,
+  .highstakes-modal-cancel:focus-visible,
+  .openicehub-private-input:focus-visible,
+  .join-code-hit:focus-visible,
+  .digit-0:focus-visible,
+  .digit-1:focus-visible,
+  .digit-2:focus-visible,
+  .digit-3:focus-visible,
+  .join-continue-hit:focus-visible,
+  .join-back-hit:focus-visible,
+  .create-public-hit:focus-visible,
+  .create-private-hit:focus-visible,
+  .create-back-hit:focus-visible,
+  .roll-hitbox:focus-visible,
+  .end-turn-hitbox:focus-visible,
+  .new-game-hitbox:focus-visible {
+    outline: 2px solid var(--hover-color);
+    outline-offset: 3px;
+  }
+}
+
+@keyframes uiHotspotGlowPulse {
+  from { box-shadow: 0 0 0 1px rgba(255,255,255,0.24) inset, 0 0 10px rgba(var(--hover-rgb), 0.75), 0 0 24px rgba(var(--hover-rgb), 0.32); }
+  to { box-shadow: 0 0 0 1px rgba(255,255,255,0.34) inset, 0 0 16px rgba(var(--hover-rgb), 0.95), 0 0 42px rgba(var(--hover-rgb), 0.45); }
+}
+
+@keyframes uiHotspotShimmer {
+  from { transform: translateX(-70%); }
+  to { transform: translateX(70%); }
+}
+
+.ui-hotspot-green,
+.profile-connect-hitbox,
+.profile-complete-hitbox,
+.hs-create-room-hitbox,
+.hs-deposit-hitbox,
+.deposit-hitbox,
+.openicehub-create-hit,
+.join-continue-hit,
+.highstakes-modal-primary,
+.entry-low,
+.entry-mid,
+.entry-high {
+  --hover-color: #39ff88;
+  --hover-rgb: 57, 255, 136;
+}
+
+.ui-hotspot-blue,
+.full-hitbox,
+.menu-play-hitbox,
+.menu-how-hitbox,
+.menu-spectate-hitbox,
+.open-ice-hitbox,
+.refresh-hitbox,
+.playerhub-back-hitbox,
+.hs-refresh-rooms-hitbox,
+.hs-room-join-hitbox,
+.hs-join-private-hitbox,
+.hs-back-hitbox,
+.hs-prev-page-hitbox,
+.hs-next-page-hitbox,
+.openicehub-refresh-hit,
+.openicehub-next-page-hit,
+.openicehub-join-private-hit,
+.openicehub-back-hit,
+.openicehub-room-join-hit,
+.create-public-hit,
+.create-back-hit,
+.join-code-hit,
+.digit-0,
+.digit-1,
+.digit-2,
+.digit-3,
+.join-back-hit,
+.roll-hitbox,
+.new-game-hitbox,
+.profile-back-hitbox,
+.profile-wallet-copy-hitbox,
+.highstakes-private-input,
+.openicehub-private-input {
+  --hover-color: #6eeaff;
+  --hover-rgb: 110, 234, 255;
+}
+
+.ui-hotspot-red,
+.profile-disconnect-hitbox,
+.end-turn-hitbox,
+.withdraw-hitbox,
+.highstakes-modal-cancel {
+  --hover-color: #ff4b6e;
+  --hover-rgb: 255, 75, 110;
+}
+
+.ui-hotspot-purple,
+.high-stakes-hitbox,
+.match-history-hitbox,
+.account-activity-hitbox,
+.my-rooms-hitbox,
+.create-private-hit {
+  --hover-color: #b26cff;
+  --hover-rgb: 178, 108, 255;
+}
+
+.ui-hotspot-gold,
+.leaderboard-hitbox {
+  --hover-color: #ffd76a;
+  --hover-rgb: 255, 215, 106;
+}
+
+.ui-hotspot-ice {
+  --hover-color: #e7fbff;
+  --hover-rgb: 231, 251, 255;
+}
+
+.ui-hotspot-disabled,
+.ui-hotspot:disabled,
+.full-hitbox:disabled,
+.menu-hitbox:disabled,
+.screen-hitbox:disabled,
+.profile-hit:disabled,
+.profile-hit.connected,
+.profile-connect-hitbox.connected,
+.highstakes-tier-btn:disabled,
+.highstakes-modal-primary:disabled,
+.highstakes-modal-cancel:disabled {
+  cursor: not-allowed !important;
+  filter: grayscale(0.55) brightness(0.78) !important;
+}
+
+.ui-hotspot-disabled::before,
+.ui-hotspot-disabled::after,
+.ui-hotspot:disabled::before,
+.ui-hotspot:disabled::after,
+.full-hitbox:disabled::before,
+.full-hitbox:disabled::after,
+.menu-hitbox:disabled::before,
+.menu-hitbox:disabled::after,
+.screen-hitbox:disabled::before,
+.screen-hitbox:disabled::after,
+.profile-hit:disabled::before,
+.profile-hit:disabled::after,
+.profile-hit.connected::before,
+.profile-hit.connected::after,
+.profile-connect-hitbox.connected::before,
+.profile-connect-hitbox.connected::after {
+  opacity: 0 !important;
+  animation: none !important;
+  box-shadow: none !important;
+}
