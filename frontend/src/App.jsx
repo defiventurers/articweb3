@@ -11,6 +11,7 @@ import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { MainMenu } from "./screens/MainMenu.jsx";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
+import { initUiHoverFeedback, unlockUiAudio } from "./utils/uiHoverSound.js";
 import "./styles/mobileProof.css";
 import "./utils/preferWebpAssets.js";
 
@@ -53,7 +54,8 @@ export default function App() {
   const [room, setRoom] = useState(null);
   const transitionTimerRef = useRef(null);
 
-  useEffect(() => { soundManager.load(); return () => window.clearTimeout(transitionTimerRef.current); }, []);
+  useEffect(() => { soundManager.load(); unlockUiAudio(); return () => window.clearTimeout(transitionTimerRef.current); }, []);
+  useEffect(() => initUiHoverFeedback(), []);
   useEffect(() => { if (assetsReady) soundManager.handleScreen(screen); }, [assetsReady, screen]);
 
   if (calibrationTarget) return renderLazy(<CalibrationScreen target={calibrationTarget} />, "Loading calibration deck...");
@@ -74,6 +76,7 @@ export default function App() {
   function playTrackThenGo(trackName, nextScreen, delayMs) {
     window.clearTimeout(transitionTimerRef.current);
     soundManager.unlock();
+    unlockUiAudio();
     soundManager.playTrack(trackName, { restart: true });
     transitionTimerRef.current = window.setTimeout(() => goTo(nextScreen, { tapSound: false }), delayMs);
   }
