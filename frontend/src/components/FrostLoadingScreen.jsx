@@ -19,6 +19,7 @@ const SCREEN_ASSETS = [
 const DESKTOP_SCREEN_ASSETS = [
   "/assets/screens/cover-desktop.png",
   "/assets/screens/main-menu-desktop.png",
+  "/assets/screens/profile-desktop.png",
   "/assets/screens/playerhub-desktop.png",
   "/assets/screens/openicehub-desktop.png",
   "/assets/screens/openice-createroom-desktop.png",
