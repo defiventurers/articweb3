@@ -1,0 +1,76 @@
+@media (min-width: 900px) and (orientation: landscape) {
+  .profile-connect-hitbox {
+    left: 18.14%;
+    top: 34.90%;
+    width: 64.28%;
+    height: 14.29%;
+  }
+
+  .profile-wallet-address {
+    left: 18.86%;
+    top: 56.54%;
+    width: 26.00%;
+    height: 4.75%;
+    font-size: 2.0cqh;
+  }
+
+  .profile-wallet-copy-hitbox {
+    left: 44.86%;
+    top: 56.66%;
+    width: 3.28%;
+    height: 4.63%;
+  }
+
+  .profile-name-input {
+    left: 52.28%;
+    top: 56.41%;
+    width: 25.03%;
+    height: 4.63%;
+    font-size: 2.2cqh;
+  }
+
+  .profile-complete-hitbox {
+    left: 29.97%;
+    top: 70.39%;
+    width: 39.93%;
+    height: 11.43%;
+  }
+
+  .profile-back-hitbox {
+    left: 39.55%;
+    top: 82.12%;
+    width: 21.03%;
+    height: 8.94%;
+  }
+
+  .profile-status-message {
+    left: 31.00%;
+    top: 92.90%;
+    width: 38.00%;
+    height: 4.00%;
+    font-size: 1.7cqh;
+  }
+
+  .profile-wallet-status {
+    left: 17.93%;
+    top: 34.90%;
+    width: 64.48%;
+    height: 13.68%;
+    font-size: 2.2cqh;
+  }
+
+  .profile-disconnect-hitbox {
+    left: 39.00%;
+    top: 42.83%;
+    width: 22.14%;
+    height: 5.23%;
+  }
+
+  .profile-loading-message {
+    left: 31.00%;
+    top: 93.03%;
+    width: 38.00%;
+    height: 4.00%;
+    font-size: 1.7cqh;
+  }
+}
