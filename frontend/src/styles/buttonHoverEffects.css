@@ -1,7 +1,45 @@
 /* Shared premium hover/focus layer for calibrated image hitboxes.
-   Desktop pointer devices only. Does not move calibrated boxes. */
+   Imported last. Desktop pointer devices only. Does not move calibrated boxes. */
 
-:where(
+.ui-hotspot,
+.full-hitbox,
+.menu-hitbox,
+.screen-hitbox,
+.profile-hit,
+.profile-name-input,
+.highstakes-private-input,
+.openicehub-private-input,
+.join-code-hit,
+.digit-0,
+.digit-1,
+.digit-2,
+.digit-3,
+.join-continue-hit,
+.join-back-hit,
+.create-public-hit,
+.create-private-hit,
+.create-back-hit,
+.roll-hitbox,
+.end-turn-hitbox,
+.new-game-hitbox,
+.highstakes-tier-btn,
+.highstakes-modal-primary,
+.highstakes-modal-cancel,
+.data-screen button,
+.ph-dev-rail button {
+  --hover-color: #8eefff;
+  --hover-rgb: 142, 239, 255;
+}
+
+.highstakes-tier-btn,
+.highstakes-modal-primary,
+.highstakes-modal-cancel,
+.data-screen button,
+.ph-dev-rail button {
+  position: relative;
+}
+
+@media (hover: hover) and (pointer: fine) {
   .ui-hotspot,
   .full-hitbox,
   .menu-hitbox,
@@ -27,287 +65,108 @@
   .highstakes-modal-primary,
   .highstakes-modal-cancel,
   .data-screen button,
-  .ph-dev-rail button
-) {
-  --hover-color: #8eefff;
-  --hover-rgb: 142, 239, 255;
-  isolation: isolate;
-}
-
-:where(.highstakes-tier-btn, .highstakes-modal-primary, .highstakes-modal-cancel, .data-screen button, .ph-dev-rail button) {
-  position: relative;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  :where(
-    .ui-hotspot,
-    .full-hitbox,
-    .menu-hitbox,
-    .screen-hitbox,
-    .profile-hit,
-    .profile-name-input,
-    .highstakes-private-input,
-    .openicehub-private-input,
-    .join-code-hit,
-    .digit-0,
-    .digit-1,
-    .digit-2,
-    .digit-3,
-    .join-continue-hit,
-    .join-back-hit,
-    .create-public-hit,
-    .create-private-hit,
-    .create-back-hit,
-    .roll-hitbox,
-    .end-turn-hitbox,
-    .new-game-hitbox,
-    .highstakes-tier-btn,
-    .highstakes-modal-primary,
-    .highstakes-modal-cancel,
-    .data-screen button,
-    .ph-dev-rail button
-  ) {
-    transition: filter 160ms ease, box-shadow 160ms ease;
-    outline: none;
+  .ph-dev-rail button {
+    transition:
+      filter 160ms ease,
+      box-shadow 160ms ease,
+      outline-color 160ms ease,
+      background-color 160ms ease,
+      transform 160ms ease;
+    outline: 0 solid transparent;
+    outline-offset: 0;
   }
 
-  :where(
-    .ui-hotspot,
-    .full-hitbox,
-    .menu-hitbox,
-    .screen-hitbox,
-    .profile-hit,
-    .highstakes-tier-btn,
-    .highstakes-modal-primary,
-    .highstakes-modal-cancel,
-    .data-screen button,
-    .ph-dev-rail button,
-    .join-code-hit,
-    .digit-0,
-    .digit-1,
-    .digit-2,
-    .digit-3,
-    .join-continue-hit,
-    .join-back-hit,
-    .create-public-hit,
-    .create-private-hit,
-    .create-back-hit,
-    .roll-hitbox,
-    .end-turn-hitbox,
-    .new-game-hitbox
-  )::before {
-    content: "";
-    position: absolute;
-    inset: -5%;
-    pointer-events: none;
-    border: clamp(1px, 0.18cqw, 3px) solid transparent;
-    border-radius: 10px;
-    opacity: 0;
-    transform: scale(0.985);
-    box-shadow: none;
-    transition: opacity 160ms ease, transform 180ms ease, border-color 160ms ease, box-shadow 160ms ease;
-    z-index: 3;
-  }
-
-  :where(
-    .ui-hotspot,
-    .full-hitbox,
-    .menu-hitbox,
-    .screen-hitbox,
-    .profile-hit,
-    .highstakes-tier-btn,
-    .highstakes-modal-primary,
-    .highstakes-modal-cancel,
-    .data-screen button,
-    .ph-dev-rail button,
-    .join-code-hit,
-    .digit-0,
-    .digit-1,
-    .digit-2,
-    .digit-3,
-    .join-continue-hit,
-    .join-back-hit,
-    .create-public-hit,
-    .create-private-hit,
-    .create-back-hit,
-    .roll-hitbox,
-    .end-turn-hitbox,
-    .new-game-hitbox
-  )::after {
-    content: "";
-    position: absolute;
-    inset: -7%;
-    pointer-events: none;
-    border-radius: 12px;
-    opacity: 0;
-    background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0) 32%, rgba(255,255,255,0.34) 48%, rgba(255,255,255,0) 64%, transparent 100%);
-    transform: translateX(-60%);
-    transition: opacity 160ms ease;
-    z-index: 2;
-  }
-
-  :where(
-    .ui-hotspot,
-    .full-hitbox,
-    .menu-hitbox,
-    .screen-hitbox,
-    .profile-hit,
-    .profile-name-input,
-    .highstakes-private-input,
-    .openicehub-private-input,
-    .join-code-hit,
-    .digit-0,
-    .digit-1,
-    .digit-2,
-    .digit-3,
-    .join-continue-hit,
-    .join-back-hit,
-    .create-public-hit,
-    .create-private-hit,
-    .create-back-hit,
-    .roll-hitbox,
-    .end-turn-hitbox,
-    .new-game-hitbox,
-    .highstakes-tier-btn,
-    .highstakes-modal-primary,
-    .highstakes-modal-cancel,
-    .data-screen button,
-    .ph-dev-rail button
-  ):not(:disabled):not(.ui-hotspot-disabled):not(.connected):hover {
-    filter: brightness(1.16) saturate(1.2);
-  }
-
-  :where(
-    .ui-hotspot,
-    .full-hitbox,
-    .menu-hitbox,
-    .screen-hitbox,
-    .profile-hit,
-    .highstakes-tier-btn,
-    .highstakes-modal-primary,
-    .highstakes-modal-cancel,
-    .data-screen button,
-    .ph-dev-rail button,
-    .join-code-hit,
-    .digit-0,
-    .digit-1,
-    .digit-2,
-    .digit-3,
-    .join-continue-hit,
-    .join-back-hit,
-    .create-public-hit,
-    .create-private-hit,
-    .create-back-hit,
-    .roll-hitbox,
-    .end-turn-hitbox,
-    .new-game-hitbox
-  ):not(:disabled):not(.ui-hotspot-disabled):not(.connected):hover::before,
-  :where(
-    .ui-hotspot,
-    .full-hitbox,
-    .menu-hitbox,
-    .screen-hitbox,
-    .profile-hit,
-    .highstakes-tier-btn,
-    .highstakes-modal-primary,
-    .highstakes-modal-cancel,
-    .data-screen button,
-    .ph-dev-rail button,
-    .join-code-hit,
-    .digit-0,
-    .digit-1,
-    .digit-2,
-    .digit-3,
-    .join-continue-hit,
-    .join-back-hit,
-    .create-public-hit,
-    .create-private-hit,
-    .create-back-hit,
-    .roll-hitbox,
-    .end-turn-hitbox,
-    .new-game-hitbox
-  ):not(:disabled):not(.ui-hotspot-disabled):not(.connected):focus-visible::before {
-    opacity: 1;
-    transform: scale(1);
-    border-color: var(--hover-color);
+  .ui-hotspot:not(:disabled):not(.ui-hotspot-disabled):not(.connected):hover,
+  .full-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover,
+  .menu-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover,
+  .screen-hitbox:not(:disabled):not(.ui-hotspot-disabled):hover,
+  .profile-hit:not(:disabled):not(.ui-hotspot-disabled):not(.connected):hover,
+  .profile-name-input:not(:disabled):hover,
+  .highstakes-private-input:not(:disabled):hover,
+  .openicehub-private-input:not(:disabled):hover,
+  .join-code-hit:not(:disabled):hover,
+  .digit-0:not(:disabled):hover,
+  .digit-1:not(:disabled):hover,
+  .digit-2:not(:disabled):hover,
+  .digit-3:not(:disabled):hover,
+  .join-continue-hit:not(:disabled):hover,
+  .join-back-hit:not(:disabled):hover,
+  .create-public-hit:not(:disabled):hover,
+  .create-private-hit:not(:disabled):hover,
+  .create-back-hit:not(:disabled):hover,
+  .roll-hitbox:not(:disabled):hover,
+  .end-turn-hitbox:not(:disabled):hover,
+  .new-game-hitbox:not(:disabled):hover,
+  .highstakes-tier-btn:not(:disabled):hover,
+  .highstakes-modal-primary:not(:disabled):hover,
+  .highstakes-modal-cancel:not(:disabled):hover,
+  .data-screen button:not(:disabled):hover,
+  .ph-dev-rail button:not(:disabled):hover,
+  .ui-hotspot:not(:disabled):not(.ui-hotspot-disabled):not(.connected):focus-visible,
+  .full-hitbox:not(:disabled):not(.ui-hotspot-disabled):focus-visible,
+  .menu-hitbox:not(:disabled):not(.ui-hotspot-disabled):focus-visible,
+  .screen-hitbox:not(:disabled):not(.ui-hotspot-disabled):focus-visible,
+  .profile-hit:not(:disabled):not(.ui-hotspot-disabled):not(.connected):focus-visible,
+  .profile-name-input:not(:disabled):focus-visible,
+  .highstakes-private-input:not(:disabled):focus-visible,
+  .openicehub-private-input:not(:disabled):focus-visible,
+  .join-code-hit:not(:disabled):focus-visible,
+  .digit-0:not(:disabled):focus-visible,
+  .digit-1:not(:disabled):focus-visible,
+  .digit-2:not(:disabled):focus-visible,
+  .digit-3:not(:disabled):focus-visible,
+  .join-continue-hit:not(:disabled):focus-visible,
+  .join-back-hit:not(:disabled):focus-visible,
+  .create-public-hit:not(:disabled):focus-visible,
+  .create-private-hit:not(:disabled):focus-visible,
+  .create-back-hit:not(:disabled):focus-visible,
+  .roll-hitbox:not(:disabled):focus-visible,
+  .end-turn-hitbox:not(:disabled):focus-visible,
+  .new-game-hitbox:not(:disabled):focus-visible,
+  .highstakes-tier-btn:not(:disabled):focus-visible,
+  .highstakes-modal-primary:not(:disabled):focus-visible,
+  .highstakes-modal-cancel:not(:disabled):focus-visible,
+  .data-screen button:not(:disabled):focus-visible,
+  .ph-dev-rail button:not(:disabled):focus-visible {
+    outline: clamp(2px, 0.25cqw, 5px) solid var(--hover-color) !important;
+    outline-offset: clamp(2px, 0.25cqw, 5px) !important;
     box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.28) inset,
-      0 0 12px rgba(var(--hover-rgb), 0.9),
-      0 0 30px rgba(var(--hover-rgb), 0.42),
-      0 0 54px rgba(var(--hover-rgb), 0.18);
-    animation: uiHotspotGlowPulse 1.25s ease-in-out infinite alternate;
+      0 0 0 clamp(1px, 0.12cqw, 2px) rgba(255, 255, 255, 0.42) inset,
+      0 0 14px rgba(var(--hover-rgb), 0.95),
+      0 0 34px rgba(var(--hover-rgb), 0.55),
+      0 0 70px rgba(var(--hover-rgb), 0.24) !important;
+    background-color: rgba(var(--hover-rgb), 0.12) !important;
+    filter: brightness(1.2) saturate(1.22) !important;
+    animation: uiHotspotDirectPulse 1.15s ease-in-out infinite alternate;
   }
 
-  :where(
-    .ui-hotspot,
-    .full-hitbox,
-    .menu-hitbox,
-    .screen-hitbox,
-    .profile-hit,
-    .highstakes-tier-btn,
-    .highstakes-modal-primary,
-    .highstakes-modal-cancel,
-    .data-screen button,
-    .ph-dev-rail button,
-    .join-code-hit,
-    .digit-0,
-    .digit-1,
-    .digit-2,
-    .digit-3,
-    .join-continue-hit,
-    .join-back-hit,
-    .create-public-hit,
-    .create-private-hit,
-    .create-back-hit,
-    .roll-hitbox,
-    .end-turn-hitbox,
-    .new-game-hitbox
-  ):not(:disabled):not(.ui-hotspot-disabled):not(.connected):hover::after {
-    opacity: 1;
-    animation: uiHotspotShimmer 900ms ease-out 1;
-  }
-
-  :where(
-    .ui-hotspot,
-    .full-hitbox,
-    .menu-hitbox,
-    .screen-hitbox,
-    .profile-hit,
-    .profile-name-input,
-    .highstakes-private-input,
-    .openicehub-private-input,
-    .join-code-hit,
-    .digit-0,
-    .digit-1,
-    .digit-2,
-    .digit-3,
-    .join-continue-hit,
-    .join-back-hit,
-    .create-public-hit,
-    .create-private-hit,
-    .create-back-hit,
-    .roll-hitbox,
-    .end-turn-hitbox,
-    .new-game-hitbox,
-    .highstakes-tier-btn,
-    .highstakes-modal-primary,
-    .highstakes-modal-cancel,
-    .data-screen button,
-    .ph-dev-rail button
-  ):focus-visible {
-    outline: 2px solid var(--hover-color);
-    outline-offset: 3px;
+  .ui-hotspot:not(:disabled):not(.ui-hotspot-disabled):not(.connected):active,
+  .full-hitbox:not(:disabled):not(.ui-hotspot-disabled):active,
+  .menu-hitbox:not(:disabled):not(.ui-hotspot-disabled):active,
+  .screen-hitbox:not(:disabled):not(.ui-hotspot-disabled):active,
+  .profile-hit:not(:disabled):not(.ui-hotspot-disabled):not(.connected):active,
+  .roll-hitbox:not(:disabled):active,
+  .end-turn-hitbox:not(:disabled):active,
+  .new-game-hitbox:not(:disabled):active {
+    transform: scale(0.985);
   }
 }
 
-@keyframes uiHotspotGlowPulse {
-  from { box-shadow: 0 0 0 1px rgba(255,255,255,0.24) inset, 0 0 10px rgba(var(--hover-rgb), 0.75), 0 0 24px rgba(var(--hover-rgb), 0.32); }
-  to { box-shadow: 0 0 0 1px rgba(255,255,255,0.34) inset, 0 0 16px rgba(var(--hover-rgb), 0.95), 0 0 42px rgba(var(--hover-rgb), 0.45); }
-}
-
-@keyframes uiHotspotShimmer {
-  from { transform: translateX(-70%); }
-  to { transform: translateX(70%); }
+@keyframes uiHotspotDirectPulse {
+  from {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.34) inset,
+      0 0 10px rgba(var(--hover-rgb), 0.8),
+      0 0 26px rgba(var(--hover-rgb), 0.42),
+      0 0 54px rgba(var(--hover-rgb), 0.16);
+  }
+  to {
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.5) inset,
+      0 0 18px rgba(var(--hover-rgb), 1),
+      0 0 44px rgba(var(--hover-rgb), 0.64),
+      0 0 86px rgba(var(--hover-rgb), 0.28);
+  }
 }
 
 .ui-hotspot-green,
@@ -394,37 +253,17 @@
 }
 
 .ui-hotspot-disabled,
-.ui-hotspot:disabled,
-.full-hitbox:disabled,
-.menu-hitbox:disabled,
-.screen-hitbox:disabled,
-.profile-hit:disabled,
-.profile-hit.connected,
-.profile-connect-hitbox.connected,
-.highstakes-tier-btn:disabled,
-.highstakes-modal-primary:disabled,
-.highstakes-modal-cancel:disabled {
-  cursor: not-allowed !important;
-  filter: grayscale(0.55) brightness(0.78) !important;
+button:disabled,
+.profile-connect-hitbox.connected {
+  cursor: not-allowed;
+  filter: grayscale(0.7) brightness(0.72);
 }
 
-.ui-hotspot-disabled::before,
-.ui-hotspot-disabled::after,
-.ui-hotspot:disabled::before,
-.ui-hotspot:disabled::after,
-.full-hitbox:disabled::before,
-.full-hitbox:disabled::after,
-.menu-hitbox:disabled::before,
-.menu-hitbox:disabled::after,
-.screen-hitbox:disabled::before,
-.screen-hitbox:disabled::after,
-.profile-hit:disabled::before,
-.profile-hit:disabled::after,
-.profile-hit.connected::before,
-.profile-hit.connected::after,
-.profile-connect-hitbox.connected::before,
-.profile-connect-hitbox.connected::after {
-  opacity: 0 !important;
-  animation: none !important;
+.ui-hotspot-disabled:hover,
+button:disabled:hover,
+.profile-connect-hitbox.connected:hover {
+  outline: none !important;
   box-shadow: none !important;
+  background-color: transparent !important;
+  animation: none !important;
 }
