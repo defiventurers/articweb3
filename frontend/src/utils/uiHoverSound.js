@@ -91,7 +91,7 @@ export function initUiHoverFeedback() {
 
   const unlock = () => unlockUiAudio();
   const onPointerActivity = (event) => {
-    if (!isFineHoverPointer(event)) return;
+    if (!isMouseLikePointer(event)) return;
     const target = findHoverTarget(event);
     if (!target) {
       lastHoverTarget = null;
@@ -129,6 +129,7 @@ export function initUiHoverFeedback() {
   window.addEventListener("scroll", onScrollOrResize, { passive: true, capture: true });
   window.addEventListener("pointermove", onPointerActivity, { passive: true, capture: true });
   window.addEventListener("pointerover", onPointerActivity, { passive: true, capture: true });
+  window.addEventListener("mousemove", onPointerActivity, { passive: true, capture: true });
   window.addEventListener("pointerleave", onPointerLeave, { passive: true });
   document.addEventListener("mouseleave", onPointerLeave, { passive: true });
 
@@ -140,6 +141,7 @@ export function initUiHoverFeedback() {
     window.removeEventListener("scroll", onScrollOrResize, true);
     window.removeEventListener("pointermove", onPointerActivity, true);
     window.removeEventListener("pointerover", onPointerActivity, true);
+    window.removeEventListener("mousemove", onPointerActivity, true);
     window.removeEventListener("pointerleave", onPointerLeave);
     document.removeEventListener("mouseleave", onPointerLeave);
     installed = false;
@@ -277,10 +279,12 @@ function getHoverAudio() {
   return audio;
 }
 
-function isFineHoverPointer(event) {
-  if (event.pointerType && event.pointerType !== "mouse") return false;
-  if (!window.matchMedia) return true;
-  return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+function isMouseLikePointer(event) {
+  if (!event) return false;
+  if (event.type === "mousemove") return true;
+  if (event.pointerType === "mouse") return true;
+  if (!event.pointerType && event.clientX != null && event.clientY != null) return true;
+  return false;
 }
 
 function isDisabledHotspot(element) {
