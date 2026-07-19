@@ -157,7 +157,7 @@
 .eth-tab-hitbox { left: 10.5%; top: 64.75%; width: 38.8%; height: 3.25%; }
 .usdc-tab-hitbox { left: 50.0%; top: 64.75%; width: 39.0%; height: 3.25%; }
 .refresh-hitbox { left: 9.4%; top: 84.25%; width: 25.2%; height: 5.0%; }
-deposit-hitbox { left: 36.4%; top: 84.25%; width: 26.4%; height: 5.0%; }
+.deposit-hitbox { left: 36.4%; top: 84.25%; width: 26.4%; height: 5.0%; }
 .withdraw-hitbox { left: 64.2%; top: 84.25%; width: 25.2%; height: 5.0%; }
 .playerhub-back-hitbox { left: 25.4%; top: 90.05%; width: 49.2%; height: 7.2%; }
 
