@@ -18,7 +18,6 @@ export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHisto
           <div className="playerhub-overlay" aria-hidden="true">
             <div id="playerHubWalletText" className="playerhub-wallet-text">{profile.name}</div>
             <div id="playerHubPointsText" className="playerhub-points-text">{profile.points} pts</div>
-            <div className="playerhub-mainnet-brief">Mainnet locked rooms with live ETH settlement.</div>
           </div>
 
           <WalletStatusPanel />
