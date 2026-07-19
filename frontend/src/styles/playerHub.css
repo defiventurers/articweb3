@@ -62,8 +62,7 @@
 .playerhub-wallet-text,
 .playerhub-points-text,
 .playerhub-balance-value,
-.playerhub-amount-input,
-.playerhub-mainnet-brief {
+.playerhub-amount-input {
   position: absolute;
   z-index: 14;
   color: #f7fdff;
@@ -95,28 +94,6 @@
   place-items: center;
   font-size: clamp(7px, 1.25vw, 11px);
   text-align: center;
-}
-
-.playerhub-mainnet-brief {
-  left: 51.2%;
-  top: 77.4%;
-  width: 33.2%;
-  height: 5.3%;
-  display: grid;
-  place-items: center;
-  padding: 0 1.1%;
-  box-sizing: border-box;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(3, 16, 35, .92), rgba(5, 45, 88, .88), rgba(3, 16, 35, .92));
-  border: 1px solid rgba(114, 237, 255, .62);
-  color: #f7fdff;
-  font-size: clamp(8px, 1.05vw, 18px);
-  line-height: 1.08;
-  letter-spacing: .015em;
-  text-align: center;
-  white-space: normal;
-  text-transform: none;
-  box-shadow: 0 0 18px rgba(70, 220, 255, .22), inset 0 0 16px rgba(57, 255, 136, .10);
 }
 
 .wallet-value { left: 39.1%; top: 69.15%; width: 46.8%; height: 2.7%; }
@@ -212,7 +189,7 @@
   border-radius: 22px;
   border: 1px solid rgba(190, 245, 255, .86);
   background: rgba(7, 37, 78, .96);
-  box-shadow: 0 14px 35px rgba(0,0,0,.45), inset 0 0 24px rgba(110,220,255,.2);
+  box-shadow: 0 14px 35px rgba(0,0,0,.45), 0 0 24px rgba(110,220,255,.2) inset;
   color: white;
   padding: 16px;
   display: grid;
@@ -359,16 +336,13 @@
 @media (max-width: 640px) {
   .playerhub-stage > .wallet-status-panel,
   .playerhub-stage > .entry-readiness-panel {
-    position: relative;
-    top: auto;
-    left: auto;
-    right: auto;
+    position: static;
     width: 100%;
+    margin-top: 12px;
     max-height: none;
-    margin-top: 0.75rem;
   }
 
   .playerhub-screen .menu-screen-shell {
-    padding-bottom: 0;
+    padding-bottom: 24px;
   }
 }
