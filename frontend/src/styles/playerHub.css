@@ -62,7 +62,8 @@
 .playerhub-wallet-text,
 .playerhub-points-text,
 .playerhub-balance-value,
-.playerhub-amount-input {
+.playerhub-amount-input,
+.playerhub-mainnet-brief {
   position: absolute;
   z-index: 14;
   color: #f7fdff;
@@ -94,6 +95,28 @@
   place-items: center;
   font-size: clamp(7px, 1.25vw, 11px);
   text-align: center;
+}
+
+.playerhub-mainnet-brief {
+  left: 51.2%;
+  top: 77.4%;
+  width: 33.2%;
+  height: 5.3%;
+  display: grid;
+  place-items: center;
+  padding: 0 1.1%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(3, 16, 35, .92), rgba(5, 45, 88, .88), rgba(3, 16, 35, .92));
+  border: 1px solid rgba(114, 237, 255, .62);
+  color: #f7fdff;
+  font-size: clamp(8px, 1.05vw, 18px);
+  line-height: 1.08;
+  letter-spacing: .015em;
+  text-align: center;
+  white-space: normal;
+  text-transform: none;
+  box-shadow: 0 0 18px rgba(70, 220, 255, .22), inset 0 0 16px rgba(57, 255, 136, .10);
 }
 
 .wallet-value { left: 39.1%; top: 69.15%; width: 46.8%; height: 2.7%; }
@@ -134,7 +157,7 @@
 .eth-tab-hitbox { left: 10.5%; top: 64.75%; width: 38.8%; height: 3.25%; }
 .usdc-tab-hitbox { left: 50.0%; top: 64.75%; width: 39.0%; height: 3.25%; }
 .refresh-hitbox { left: 9.4%; top: 84.25%; width: 25.2%; height: 5.0%; }
-.deposit-hitbox { left: 36.4%; top: 84.25%; width: 26.4%; height: 5.0%; }
+deposit-hitbox { left: 36.4%; top: 84.25%; width: 26.4%; height: 5.0%; }
 .withdraw-hitbox { left: 64.2%; top: 84.25%; width: 25.2%; height: 5.0%; }
 .playerhub-back-hitbox { left: 25.4%; top: 90.05%; width: 49.2%; height: 7.2%; }
 
@@ -189,7 +212,7 @@
   border-radius: 22px;
   border: 1px solid rgba(190, 245, 255, .86);
   background: rgba(7, 37, 78, .96);
-  box-shadow: 0 14px 35px rgba(0,0,0,.45), 0 0 24px rgba(110,220,255,.2) inset;
+  box-shadow: 0 14px 35px rgba(0,0,0,.45), inset 0 0 24px rgba(110,220,255,.2);
   color: white;
   padding: 16px;
   display: grid;
@@ -333,65 +356,19 @@
   .playerhub-stage > .entry-readiness-panel { left: auto; right: 0; }
 }
 
-@media (max-width: 768px) and (orientation: portrait) {
-  .menu-screen-shell,
-  .playerhub-stage {
-    width: 100vw;
-    height: 100dvh;
-    aspect-ratio: auto;
-  }
-
-  .playerhub-screen .menu-screen-shell { padding-bottom: 760px; }
-
+@media (max-width: 640px) {
   .playerhub-stage > .wallet-status-panel,
   .playerhub-stage > .entry-readiness-panel {
-    position: absolute;
-    top: calc(100% + 12px);
-    left: 4vw;
+    position: relative;
+    top: auto;
+    left: auto;
     right: auto;
-    width: 92vw;
+    width: 100%;
     max-height: none;
-    overflow: visible;
-    padding: 0.72rem;
-    font-size: 0.82rem;
+    margin-top: 0.75rem;
   }
 
-  .playerhub-stage > .entry-readiness-panel { top: calc(100% + 390px); right: auto; }
-
-  .ph-dev-rail {
-    position: fixed;
-    left: 0;
-    top: 118px;
-    transform: none;
-  }
-}
-
-@media (max-width: 430px) {
-  .playerhub-wallet-text { font-size: 9px; }
-  .playerhub-points-text { font-size: 7px; }
-  .playerhub-balance-value,
-  .playerhub-amount-input { font-size: 11px; }
-  .ph-toast { font-size: 7px; }
-  .ph-modal-card { width: 86%; padding: 14px; }
-  .ph-modal-actions { grid-template-columns: 1fr; }
-
-  .playerhub-screen .menu-screen-shell { padding-bottom: 820px; }
-
-  .playerhub-stage > .wallet-status-panel,
-  .playerhub-stage > .entry-readiness-panel {
-    width: 92vw;
-    padding: 0.65rem;
-    font-size: 0.76rem;
-    border-radius: 14px;
-  }
-
-  .playerhub-stage > .entry-readiness-panel { top: calc(100% + 410px); }
-
-  .playerhub-stage > .wallet-status-panel .secondary-btn,
-  .playerhub-stage > .entry-readiness-panel .secondary-btn,
-  .playerhub-stage > .wallet-status-panel button {
-    min-height: 32px;
-    padding: 0.3rem 0.45rem;
-    font-size: 0.66rem;
+  .playerhub-screen .menu-screen-shell {
+    padding-bottom: 0;
   }
 }
