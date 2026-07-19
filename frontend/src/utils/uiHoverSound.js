@@ -25,8 +25,28 @@ const HOVER_SELECTOR = [
   ".end-turn-hitbox",
   ".new-game-hitbox",
   ".data-screen button",
-  ".ph-dev-rail button"
+  ".ph-dev-rail button",
+  "button",
+  "a[href]",
+  "input",
+  "[role='button']"
 ].join(",");
+
+const HITBOX_CLASS_HINTS = [
+  "hitbox",
+  "hit-box",
+  "screen-hit",
+  "profile-hit",
+  "menu-hit",
+  "openicehub-",
+  "hs-",
+  "digit-",
+  "create-",
+  "join-",
+  "roll-hit",
+  "end-turn",
+  "new-game"
+];
 
 const COLOR_RULES = [
   { selector: ".profile-connect-hitbox,.profile-complete-hitbox,.hs-create-room-hitbox,.hs-deposit-hitbox,.deposit-hitbox,.openicehub-create-hit,.join-continue-hit,.highstakes-modal-primary,.entry-low,.entry-mid,.entry-high", color: "#39ff88", rgb: "57,255,136" },
@@ -70,11 +90,16 @@ export function initUiHoverFeedback() {
   ensureOverlay();
 
   const unlock = () => unlockUiAudio();
-  const onPointerOver = (event) => {
+  const onPointerActivity = (event) => {
     if (!isFineHoverPointer(event)) return;
-    const target = event.target?.closest?.(HOVER_SELECTOR);
-    if (!target || !document.documentElement.contains(target)) return;
+    const target = findHoverTarget(event);
+    if (!target) {
+      lastHoverTarget = null;
+      hideHoverOverlaySoon();
+      return;
+    }
     if (isDisabledHotspot(target)) {
+      lastHoverTarget = null;
       hideHoverOverlay();
       return;
     }
@@ -87,20 +112,9 @@ export function initUiHoverFeedback() {
     playUiHoverSound();
   };
 
-  const onPointerMove = (event) => {
-    if (!isFineHoverPointer(event)) return;
-    const target = event.target?.closest?.(HOVER_SELECTOR);
-    if (!target || isDisabledHotspot(target)) return;
-    showHoverOverlay(target);
-  };
-
-  const onPointerOut = (event) => {
-    const target = event.target?.closest?.(HOVER_SELECTOR);
-    if (!target) return;
-    const related = event.relatedTarget;
-    if (related && target.contains(related)) return;
-    window.clearTimeout(overlayHideTimer);
-    overlayHideTimer = window.setTimeout(hideHoverOverlay, 40);
+  const onPointerLeave = () => {
+    lastHoverTarget = null;
+    hideHoverOverlaySoon();
   };
 
   const onScrollOrResize = () => {
@@ -108,28 +122,78 @@ export function initUiHoverFeedback() {
     showHoverOverlay(lastHoverTarget);
   };
 
-  window.addEventListener("pointerdown", unlock, { passive: true });
-  window.addEventListener("click", unlock, { passive: true });
-  window.addEventListener("keydown", unlock, { passive: true });
+  window.addEventListener("pointerdown", unlock, { passive: true, capture: true });
+  window.addEventListener("click", unlock, { passive: true, capture: true });
+  window.addEventListener("keydown", unlock, { passive: true, capture: true });
   window.addEventListener("resize", onScrollOrResize, { passive: true });
   window.addEventListener("scroll", onScrollOrResize, { passive: true, capture: true });
-  document.addEventListener("pointerover", onPointerOver, { passive: true });
-  document.addEventListener("pointermove", onPointerMove, { passive: true });
-  document.addEventListener("pointerout", onPointerOut, { passive: true });
+  window.addEventListener("pointermove", onPointerActivity, { passive: true, capture: true });
+  window.addEventListener("pointerover", onPointerActivity, { passive: true, capture: true });
+  window.addEventListener("pointerleave", onPointerLeave, { passive: true });
+  document.addEventListener("mouseleave", onPointerLeave, { passive: true });
 
   return () => {
-    window.removeEventListener("pointerdown", unlock);
-    window.removeEventListener("click", unlock);
-    window.removeEventListener("keydown", unlock);
+    window.removeEventListener("pointerdown", unlock, true);
+    window.removeEventListener("click", unlock, true);
+    window.removeEventListener("keydown", unlock, true);
     window.removeEventListener("resize", onScrollOrResize);
     window.removeEventListener("scroll", onScrollOrResize, true);
-    document.removeEventListener("pointerover", onPointerOver);
-    document.removeEventListener("pointermove", onPointerMove);
-    document.removeEventListener("pointerout", onPointerOut);
+    window.removeEventListener("pointermove", onPointerActivity, true);
+    window.removeEventListener("pointerover", onPointerActivity, true);
+    window.removeEventListener("pointerleave", onPointerLeave);
+    document.removeEventListener("mouseleave", onPointerLeave);
     installed = false;
     lastHoverTarget = null;
     hideHoverOverlay();
   };
+}
+
+function findHoverTarget(event) {
+  const direct = event.target?.closest?.(HOVER_SELECTOR);
+  if (isUsableHoverTarget(direct)) return direct;
+
+  const stack = typeof document.elementsFromPoint === "function"
+    ? document.elementsFromPoint(event.clientX, event.clientY)
+    : [];
+
+  for (const element of stack) {
+    if (!element || element === overlay || element.classList?.contains("ui-hover-frame")) continue;
+    const candidate = element.closest?.(HOVER_SELECTOR) || element;
+    if (isUsableHoverTarget(candidate)) return candidate;
+  }
+
+  const hitbox = findHitboxByGeometry(event.clientX, event.clientY);
+  if (hitbox) return hitbox;
+
+  return null;
+}
+
+function isUsableHoverTarget(element) {
+  if (!element || element === document.body || element === document.documentElement) return false;
+  if (!document.documentElement.contains(element)) return false;
+  const tag = element.tagName?.toLowerCase();
+  if (["button", "a", "input", "select", "textarea"].includes(tag)) return true;
+  if (element.getAttribute?.("role") === "button") return true;
+  if (element.matches?.(".ui-hotspot,.full-hitbox,.menu-hitbox,.screen-hitbox,.profile-hit,.join-code-hit,.digit-0,.digit-1,.digit-2,.digit-3,.join-continue-hit,.join-back-hit,.create-public-hit,.create-private-hit,.create-back-hit,.roll-hitbox,.end-turn-hitbox,.new-game-hitbox")) return true;
+  return classNameHasHitboxHint(element.className);
+}
+
+function findHitboxByGeometry(clientX, clientY) {
+  const candidates = document.querySelectorAll("button, a[href], input, [role='button'], .ui-hotspot, .full-hitbox, .menu-hitbox, .screen-hitbox, .profile-hit, .join-code-hit, .digit-0, .digit-1, .digit-2, .digit-3, .join-continue-hit, .join-back-hit, .create-public-hit, .create-private-hit, .create-back-hit, .roll-hitbox, .end-turn-hitbox, .new-game-hitbox");
+  for (let index = candidates.length - 1; index >= 0; index -= 1) {
+    const element = candidates[index];
+    if (!isUsableHoverTarget(element) || isDisabledHotspot(element)) continue;
+    const rect = element.getBoundingClientRect();
+    if (rect.width < 4 || rect.height < 4) continue;
+    if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) return element;
+  }
+  return null;
+}
+
+function classNameHasHitboxHint(className) {
+  const text = typeof className === "string" ? className : String(className?.baseVal || "");
+  if (!text) return false;
+  return HITBOX_CLASS_HINTS.some((hint) => text.includes(hint));
 }
 
 function ensureOverlay() {
@@ -164,14 +228,20 @@ function showHoverOverlay(target) {
   });
 }
 
+function hideHoverOverlaySoon() {
+  window.clearTimeout(overlayHideTimer);
+  overlayHideTimer = window.setTimeout(hideHoverOverlay, 70);
+}
+
 function hideHoverOverlay() {
   if (!overlay) return;
   overlay.classList.remove("is-visible");
 }
 
 function hoverColorsFor(element) {
-  const inlineColor = getComputedStyle(element).getPropertyValue("--hover-color").trim();
-  const inlineRgb = getComputedStyle(element).getPropertyValue("--hover-rgb").trim();
+  const computed = getComputedStyle(element);
+  const inlineColor = computed.getPropertyValue("--hover-color").trim();
+  const inlineRgb = computed.getPropertyValue("--hover-rgb").trim();
   if (inlineColor && inlineRgb) return { color: inlineColor, rgb: inlineRgb };
 
   for (const rule of COLOR_RULES) {
@@ -215,10 +285,10 @@ function isFineHoverPointer(event) {
 
 function isDisabledHotspot(element) {
   return Boolean(
-    element.disabled ||
-    element.getAttribute("aria-disabled") === "true" ||
-    element.classList.contains("ui-hotspot-disabled") ||
-    element.classList.contains("connected") ||
-    element.closest("[disabled], .ui-hotspot-disabled")
+    element?.disabled ||
+    element?.getAttribute?.("aria-disabled") === "true" ||
+    element?.classList?.contains("ui-hotspot-disabled") ||
+    element?.classList?.contains("connected") ||
+    element?.closest?.("[disabled], .ui-hotspot-disabled")
   );
 }
