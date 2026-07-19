@@ -1,8 +1,8 @@
 const HOVER_SOUND_SRC = "/assets/audio/ui-hover.mp3";
+
 const HOVER_SELECTOR = [
   ".ui-hotspot",
-  ".full-hitbox",
-  ".menu-hitbox",
+  ".menu-hitbox:not(.full-hitbox)",
   ".screen-hitbox",
   ".profile-hit",
   ".profile-name-input",
@@ -25,11 +25,7 @@ const HOVER_SELECTOR = [
   ".end-turn-hitbox",
   ".new-game-hitbox",
   ".data-screen button",
-  ".ph-dev-rail button",
-  "button",
-  "a[href]",
-  "input",
-  "[role='button']"
+  ".ph-dev-rail button"
 ].join(",");
 
 const HITBOX_CLASS_HINTS = [
@@ -54,7 +50,7 @@ const COLOR_RULES = [
   { selector: ".high-stakes-hitbox,.match-history-hitbox,.account-activity-hitbox,.my-rooms-hitbox,.create-private-hit", color: "#b26cff", rgb: "178,108,255" },
   { selector: ".leaderboard-hitbox", color: "#ffd76a", rgb: "255,215,106" },
   { selector: ".profile-wallet-status,.connected,.ui-hotspot-disabled", color: "#8a95a8", rgb: "138,149,168" },
-  { selector: ".full-hitbox,.menu-play-hitbox,.menu-how-hitbox,.menu-spectate-hitbox,.open-ice-hitbox,.refresh-hitbox,.playerhub-back-hitbox,.hs-refresh-rooms-hitbox,.hs-room-join-hitbox,.hs-join-private-hitbox,.hs-back-hitbox,.hs-prev-page-hitbox,.hs-next-page-hitbox,.openicehub-refresh-hit,.openicehub-next-page-hit,.openicehub-join-private-hit,.openicehub-back-hit,.openicehub-room-join-hit,.create-public-hit,.create-back-hit,.join-code-hit,.digit-0,.digit-1,.digit-2,.digit-3,.join-back-hit,.roll-hitbox,.new-game-hitbox,.profile-back-hitbox,.profile-wallet-copy-hitbox,.highstakes-private-input,.openicehub-private-input", color: "#6eeaff", rgb: "110,234,255" }
+  { selector: ".menu-play-hitbox,.menu-how-hitbox,.menu-spectate-hitbox,.open-ice-hitbox,.refresh-hitbox,.playerhub-back-hitbox,.hs-refresh-rooms-hitbox,.hs-room-join-hitbox,.hs-join-private-hitbox,.hs-back-hitbox,.hs-prev-page-hitbox,.hs-next-page-hitbox,.openicehub-refresh-hit,.openicehub-next-page-hit,.openicehub-join-private-hit,.openicehub-back-hit,.openicehub-room-join-hit,.create-public-hit,.create-back-hit,.join-code-hit,.digit-0,.digit-1,.digit-2,.digit-3,.join-back-hit,.roll-hitbox,.new-game-hitbox,.profile-back-hitbox,.profile-wallet-copy-hitbox,.highstakes-private-input,.openicehub-private-input", color: "#6eeaff", rgb: "110,234,255" }
 ];
 
 let unlocked = false;
@@ -173,15 +169,39 @@ function findHoverTarget(event) {
 function isUsableHoverTarget(element) {
   if (!element || element === document.body || element === document.documentElement) return false;
   if (!document.documentElement.contains(element)) return false;
+  if (element.matches?.(".full-hitbox")) return false;
+  if (isViewportSizedTarget(element)) return false;
+
   const tag = element.tagName?.toLowerCase();
-  if (["button", "a", "input", "select", "textarea"].includes(tag)) return true;
-  if (element.getAttribute?.("role") === "button") return true;
-  if (element.matches?.(".ui-hotspot,.full-hitbox,.menu-hitbox,.screen-hitbox,.profile-hit,.join-code-hit,.digit-0,.digit-1,.digit-2,.digit-3,.join-continue-hit,.join-back-hit,.create-public-hit,.create-private-hit,.create-back-hit,.roll-hitbox,.end-turn-hitbox,.new-game-hitbox")) return true;
+  if (["select", "textarea"].includes(tag)) return false;
+  if (tag === "input") return isExplicitInputHotspot(element);
+  if (["button", "a"].includes(tag)) return hasExplicitHotspotIdentity(element);
+  if (element.getAttribute?.("role") === "button") return hasExplicitHotspotIdentity(element);
+  if (element.matches?.(".ui-hotspot,.menu-hitbox,.screen-hitbox,.profile-hit,.join-code-hit,.digit-0,.digit-1,.digit-2,.digit-3,.join-continue-hit,.join-back-hit,.create-public-hit,.create-private-hit,.create-back-hit,.roll-hitbox,.end-turn-hitbox,.new-game-hitbox")) return true;
   return classNameHasHitboxHint(element.className);
 }
 
+function hasExplicitHotspotIdentity(element) {
+  if (!element || element.matches?.(".full-hitbox")) return false;
+  if (element.matches?.(HOVER_SELECTOR)) return true;
+  return classNameHasHitboxHint(element.className);
+}
+
+function isExplicitInputHotspot(element) {
+  return Boolean(element?.matches?.(".profile-name-input,.highstakes-private-input,.openicehub-private-input"));
+}
+
+function isViewportSizedTarget(element) {
+  const rect = element.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return true;
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+  if (!viewportWidth || !viewportHeight) return false;
+  return rect.width >= viewportWidth * 0.72 && rect.height >= viewportHeight * 0.72;
+}
+
 function findHitboxByGeometry(clientX, clientY) {
-  const candidates = document.querySelectorAll("button, a[href], input, [role='button'], .ui-hotspot, .full-hitbox, .menu-hitbox, .screen-hitbox, .profile-hit, .join-code-hit, .digit-0, .digit-1, .digit-2, .digit-3, .join-continue-hit, .join-back-hit, .create-public-hit, .create-private-hit, .create-back-hit, .roll-hitbox, .end-turn-hitbox, .new-game-hitbox");
+  const candidates = document.querySelectorAll(".ui-hotspot, .menu-hitbox:not(.full-hitbox), .screen-hitbox, .profile-hit, .profile-name-input, .highstakes-private-input, .openicehub-private-input, .join-code-hit, .digit-0, .digit-1, .digit-2, .digit-3, .join-continue-hit, .join-back-hit, .create-public-hit, .create-private-hit, .create-back-hit, .roll-hitbox, .end-turn-hitbox, .new-game-hitbox, .highstakes-tier-btn, .highstakes-modal-primary, .highstakes-modal-cancel, .data-screen button, .ph-dev-rail button");
   for (let index = candidates.length - 1; index >= 0; index -= 1) {
     const element = candidates[index];
     if (!isUsableHoverTarget(element) || isDisabledHotspot(element)) continue;
@@ -195,6 +215,7 @@ function findHitboxByGeometry(clientX, clientY) {
 function classNameHasHitboxHint(className) {
   const text = typeof className === "string" ? className : String(className?.baseVal || "");
   if (!text) return false;
+  if (text.includes("full-hitbox")) return false;
   return HITBOX_CLASS_HINTS.some((hint) => text.includes(hint));
 }
 
@@ -215,7 +236,7 @@ function showHoverOverlay(target) {
   window.cancelAnimationFrame(rafId);
   rafId = window.requestAnimationFrame(() => {
     const rect = target.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) return hideHoverOverlay();
+    if (rect.width <= 0 || rect.height <= 0 || isViewportSizedTarget(target)) return hideHoverOverlay();
     const colors = hoverColorsFor(target);
     const pad = Math.max(4, Math.min(14, Math.round(Math.min(rect.width, rect.height) * 0.08)));
 
