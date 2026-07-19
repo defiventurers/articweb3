@@ -3,14 +3,45 @@ const HOVER_SOUND_SRC = "/assets/audio/ui-hover.mp3";
 const HOVER_SELECTOR = [
   ".ui-hotspot",
   ".menu-hitbox:not(.full-hitbox)",
-  ".screen-hitbox",
-  ".profile-hit",
+  ".menu-play-hitbox",
+  ".menu-how-hitbox",
+  ".menu-spectate-hitbox",
+  ".profile-connect-hitbox",
+  ".profile-wallet-copy-hitbox",
   ".profile-name-input",
+  ".profile-complete-hitbox",
+  ".profile-back-hitbox",
+  ".profile-disconnect-hitbox",
+  ".open-ice-hitbox",
+  ".high-stakes-hitbox",
+  ".match-history-hitbox",
+  ".leaderboard-hitbox",
+  ".account-activity-hitbox",
+  ".my-rooms-hitbox",
+  ".refresh-hitbox",
+  ".deposit-hitbox",
+  ".withdraw-hitbox",
+  ".playerhub-back-hitbox",
+  ".hs-create-room-hitbox",
+  ".hs-refresh-rooms-hitbox",
+  ".hs-prev-page-hitbox",
+  ".hs-next-page-hitbox",
+  ".hs-deposit-hitbox",
+  ".hs-back-hitbox",
+  ".hs-room-join-hitbox",
+  ".hs-join-private-hitbox",
   ".highstakes-private-input",
   ".highstakes-tier-btn",
   ".highstakes-modal-primary",
   ".highstakes-modal-cancel",
+  ".openicehub-create-hit",
+  ".openicehub-refresh-hit",
+  ".openicehub-next-page-hit",
+  ".openicehub-private-code-hit",
   ".openicehub-private-input",
+  ".openicehub-join-private-hit",
+  ".openicehub-back-hit",
+  ".openicehub-room-join-hit",
   ".join-code-hit",
   ".digit-0",
   ".digit-1",
@@ -29,19 +60,49 @@ const HOVER_SELECTOR = [
 ].join(",");
 
 const HITBOX_CLASS_HINTS = [
-  "hitbox",
-  "hit-box",
-  "screen-hit",
-  "profile-hit",
-  "menu-hit",
-  "openicehub-",
-  "hs-",
+  "menu-play-hitbox",
+  "menu-how-hitbox",
+  "menu-spectate-hitbox",
+  "profile-connect-hitbox",
+  "profile-wallet-copy-hitbox",
+  "profile-complete-hitbox",
+  "profile-back-hitbox",
+  "profile-disconnect-hitbox",
+  "open-ice-hitbox",
+  "high-stakes-hitbox",
+  "match-history-hitbox",
+  "leaderboard-hitbox",
+  "account-activity-hitbox",
+  "my-rooms-hitbox",
+  "refresh-hitbox",
+  "deposit-hitbox",
+  "withdraw-hitbox",
+  "playerhub-back-hitbox",
+  "hs-create-room-hitbox",
+  "hs-refresh-rooms-hitbox",
+  "hs-prev-page-hitbox",
+  "hs-next-page-hitbox",
+  "hs-deposit-hitbox",
+  "hs-back-hitbox",
+  "hs-room-join-hitbox",
+  "hs-join-private-hitbox",
+  "openicehub-create-hit",
+  "openicehub-refresh-hit",
+  "openicehub-next-page-hit",
+  "openicehub-private-code-hit",
+  "openicehub-join-private-hit",
+  "openicehub-back-hit",
+  "openicehub-room-join-hit",
+  "join-code-hit",
   "digit-",
-  "create-",
-  "join-",
-  "roll-hit",
-  "end-turn",
-  "new-game"
+  "join-continue-hit",
+  "join-back-hit",
+  "create-public-hit",
+  "create-private-hit",
+  "create-back-hit",
+  "roll-hitbox",
+  "end-turn-hitbox",
+  "new-game-hitbox"
 ];
 
 const COLOR_RULES = [
@@ -50,7 +111,7 @@ const COLOR_RULES = [
   { selector: ".high-stakes-hitbox,.match-history-hitbox,.account-activity-hitbox,.my-rooms-hitbox,.create-private-hit", color: "#b26cff", rgb: "178,108,255" },
   { selector: ".leaderboard-hitbox", color: "#ffd76a", rgb: "255,215,106" },
   { selector: ".profile-wallet-status,.connected,.ui-hotspot-disabled", color: "#8a95a8", rgb: "138,149,168" },
-  { selector: ".menu-play-hitbox,.menu-how-hitbox,.menu-spectate-hitbox,.open-ice-hitbox,.refresh-hitbox,.playerhub-back-hitbox,.hs-refresh-rooms-hitbox,.hs-room-join-hitbox,.hs-join-private-hitbox,.hs-back-hitbox,.hs-prev-page-hitbox,.hs-next-page-hitbox,.openicehub-refresh-hit,.openicehub-next-page-hit,.openicehub-join-private-hit,.openicehub-back-hit,.openicehub-room-join-hit,.create-public-hit,.create-back-hit,.join-code-hit,.digit-0,.digit-1,.digit-2,.digit-3,.join-back-hit,.roll-hitbox,.new-game-hitbox,.profile-back-hitbox,.profile-wallet-copy-hitbox,.highstakes-private-input,.openicehub-private-input", color: "#6eeaff", rgb: "110,234,255" }
+  { selector: ".menu-play-hitbox,.menu-how-hitbox,.menu-spectate-hitbox,.open-ice-hitbox,.refresh-hitbox,.playerhub-back-hitbox,.hs-refresh-rooms-hitbox,.hs-room-join-hitbox,.hs-join-private-hitbox,.hs-back-hitbox,.hs-prev-page-hitbox,.hs-next-page-hitbox,.openicehub-refresh-hit,.openicehub-next-page-hit,.openicehub-private-code-hit,.openicehub-join-private-hit,.openicehub-back-hit,.openicehub-room-join-hit,.create-public-hit,.create-back-hit,.join-code-hit,.digit-0,.digit-1,.digit-2,.digit-3,.join-back-hit,.roll-hitbox,.new-game-hitbox,.profile-back-hitbox,.profile-wallet-copy-hitbox,.highstakes-private-input,.openicehub-private-input", color: "#6eeaff", rgb: "110,234,255" }
 ];
 
 let unlocked = false;
@@ -169,7 +230,7 @@ function findHoverTarget(event) {
 function isUsableHoverTarget(element) {
   if (!element || element === document.body || element === document.documentElement) return false;
   if (!document.documentElement.contains(element)) return false;
-  if (element.matches?.(".full-hitbox")) return false;
+  if (element.matches?.(".full-hitbox,.screen-hitbox:not(" + HOVER_SELECTOR + ")")) return false;
   if (isViewportSizedTarget(element)) return false;
 
   const tag = element.tagName?.toLowerCase();
@@ -177,7 +238,7 @@ function isUsableHoverTarget(element) {
   if (tag === "input") return isExplicitInputHotspot(element);
   if (["button", "a"].includes(tag)) return hasExplicitHotspotIdentity(element);
   if (element.getAttribute?.("role") === "button") return hasExplicitHotspotIdentity(element);
-  if (element.matches?.(".ui-hotspot,.menu-hitbox,.screen-hitbox,.profile-hit,.join-code-hit,.digit-0,.digit-1,.digit-2,.digit-3,.join-continue-hit,.join-back-hit,.create-public-hit,.create-private-hit,.create-back-hit,.roll-hitbox,.end-turn-hitbox,.new-game-hitbox")) return true;
+  if (element.matches?.(HOVER_SELECTOR)) return true;
   return classNameHasHitboxHint(element.className);
 }
 
@@ -201,7 +262,7 @@ function isViewportSizedTarget(element) {
 }
 
 function findHitboxByGeometry(clientX, clientY) {
-  const candidates = document.querySelectorAll(".ui-hotspot, .menu-hitbox:not(.full-hitbox), .screen-hitbox, .profile-hit, .profile-name-input, .highstakes-private-input, .openicehub-private-input, .join-code-hit, .digit-0, .digit-1, .digit-2, .digit-3, .join-continue-hit, .join-back-hit, .create-public-hit, .create-private-hit, .create-back-hit, .roll-hitbox, .end-turn-hitbox, .new-game-hitbox, .highstakes-tier-btn, .highstakes-modal-primary, .highstakes-modal-cancel, .data-screen button, .ph-dev-rail button");
+  const candidates = document.querySelectorAll(HOVER_SELECTOR);
   for (let index = candidates.length - 1; index >= 0; index -= 1) {
     const element = candidates[index];
     if (!isUsableHoverTarget(element) || isDisabledHotspot(element)) continue;
@@ -215,7 +276,7 @@ function findHitboxByGeometry(clientX, clientY) {
 function classNameHasHitboxHint(className) {
   const text = typeof className === "string" ? className : String(className?.baseVal || "");
   if (!text) return false;
-  if (text.includes("full-hitbox")) return false;
+  if (text.includes("full-hitbox") || text.includes("screen-hitbox")) return false;
   return HITBOX_CLASS_HINTS.some((hint) => text.includes(hint));
 }
 
