@@ -6,7 +6,6 @@ import {
   warmHowToPlayAssets
 } from "./components/FrostLoadingScreen.jsx";
 import { AudioToggle } from "./components/AudioToggle.jsx";
-import { ClosedBetaBanner } from "./components/ClosedBetaBanner.jsx";
 import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { MainMenu } from "./screens/MainMenu.jsx";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
@@ -16,6 +15,7 @@ import "./styles/mobileProof.css";
 import "./utils/preferWebpAssets.js";
 
 const CalibrationScreen = lazyNamed(() => import("./screens/CalibrationScreen.jsx"), "CalibrationScreen");
+const DesktopMainMenuCalibration = lazyNamed(() => import("./screens/DesktopMainMenuCalibration.jsx"), "DesktopMainMenuCalibration");
 const HowToPlayScreen = lazyNamed(() => import("./screens/HowToPlayScreen.jsx"), "HowToPlayScreen");
 const ProfileScreen = lazyNamed(() => import("./screens/ProfileScreen.jsx"), "ProfileScreen");
 const PlayerHubScreen = lazyNamed(() => import("./screens/PlayerHubScreen.jsx"), "PlayerHubScreen");
@@ -58,6 +58,7 @@ export default function App() {
   useEffect(() => initUiHoverFeedback(), []);
   useEffect(() => { if (assetsReady) soundManager.handleScreen(screen); }, [assetsReady, screen]);
 
+  if (calibrationTarget === "main-menu-desktop") return renderLazy(<DesktopMainMenuCalibration />, "Loading desktop main menu calibration...");
   if (calibrationTarget) return renderLazy(<CalibrationScreen target={calibrationTarget} />, "Loading calibration deck...");
   if (!assetsReady) return <FrostLoadingScreen onReady={() => setAssetsReady(true)} />;
 
@@ -81,8 +82,8 @@ export default function App() {
     transitionTimerRef.current = window.setTimeout(() => goTo(nextScreen, { tapSound: false }), delayMs);
   }
 
-  function withClosedBetaBanner(node) {
-    return <><ClosedBetaBanner /><AudioToggle />{node}</>;
+  function withAppChrome(node) {
+    return <><AudioToggle />{node}</>;
   }
 
   function resumeRoom(nextRoom) {
@@ -93,28 +94,28 @@ export default function App() {
     return goTo("team-select");
   }
 
-  if (screen === "cover") return withClosedBetaBanner(<CoverScreen onContinue={() => playTrackThenGo("coverScreen", initialHighStakesRoomCode ? "profile" : "menu", COVER_TRACK_DELAY_MS)} />);
-  if (screen === "menu") return withClosedBetaBanner(<MainMenu onPlay={() => playTrackThenGo("playNow", "profile", PLAY_NOW_TRACK_DELAY_MS)} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} />);
-  if (screen === "how-to-play") return withClosedBetaBanner(renderLazy(<HowToPlayScreen onBack={() => goTo("menu")} onStart={() => goTo("profile")} />));
-  if (screen === "spectator") return withClosedBetaBanner(renderLazy(<SpectatorScreen initialRoomCode={initialSpectateCode} onBack={() => goTo(profile ? "hub" : "menu")} />));
-  if (screen === "profile") return withClosedBetaBanner(renderLazy(<ProfileScreen onComplete={(createdProfile) => { soundManager.play("uiConfirm"); setProfile(createdProfile); goTo(initialHighStakesRoomCode ? "high-stakes" : "hub"); }} onBack={() => goTo("menu")} />));
-  if (screen === "hub") return withClosedBetaBanner(renderLazy(<PlayerHubScreen profile={profile} onOpenIce={() => goTo("open-ice-menu")} onHighStakes={() => goTo("high-stakes")} onMatchHistory={() => goTo("match-history")} onLeaderboard={() => goTo("leaderboard")} onAccountActivity={() => goTo("activity")} onMyRooms={() => goTo("my-rooms")} onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onVaultDeployer={() => goTo("vault-deployer")} onSettlementAdmin={() => goTo("settlement-admin")} onBack={() => goTo("profile")} />));
-  if (screen === "dev-qa") return withClosedBetaBanner(renderLazy(<DevQAScreen onBack={() => goTo("hub")} />));
-  if (screen === "test-runbook") return withClosedBetaBanner(renderLazy(<TestRunbookScreen onBack={() => goTo("hub")} />));
-  if (screen === "match-history") return withClosedBetaBanner(renderLazy(<MatchHistoryScreen profile={profile} onBack={() => goTo("hub")} />));
-  if (screen === "leaderboard") return withClosedBetaBanner(renderLazy(<LeaderboardScreen onBack={() => goTo("hub")} />));
-  if (screen === "activity") return withClosedBetaBanner(renderLazy(<AccountActivityScreen profile={profile} onBack={() => goTo("hub")} />));
-  if (screen === "my-rooms") return withClosedBetaBanner(renderLazy(<MyRoomsScreen profile={profile} onResumeRoom={resumeRoom} onBack={() => goTo("hub")} />));
-  if (screen === "vault-deployer") return withClosedBetaBanner(renderLazy(<EthVaultDeployerScreen onBack={() => goTo("hub")} />));
-  if (screen === "settlement-admin") return withClosedBetaBanner(renderLazy(<SettlementAdminScreen onBack={() => goTo("hub")} />));
-  if (screen === "high-stakes") return withClosedBetaBanner(renderLazy(<HighStakesGate onBack={() => goTo("hub")}><HighStakesScreen profile={profile} initialRoomCode={initialHighStakesRoomCode} onRoomReady={(readyRoom) => { setRoom(readyRoom); goTo("team-select"); }} onBack={() => goTo("hub")} /></HighStakesGate>));
-  if (screen === "open-ice-menu") return withClosedBetaBanner(renderLazy(<OpenIceMenuScreen profile={profile} onCreateRoom={() => goTo("create-room")} onJoinRoom={() => goTo("join-room")} onRoomJoined={(joinedRoom) => { soundManager.play("roomJoin"); setRoom(joinedRoom); goTo("team-select"); }} onBack={() => goTo("hub")} />));
-  if (screen === "create-room") return withClosedBetaBanner(renderLazy(<CreateRoomScreen profile={profile} onRoomCreated={(createdRoom) => { soundManager.play("uiConfirm"); setRoom(createdRoom); goTo("team-select"); }} onBack={() => goTo("open-ice-menu")} />));
-  if (screen === "join-room") return withClosedBetaBanner(renderLazy(<JoinRoomScreen profile={profile} onRoomJoined={(joinedRoom) => { soundManager.play("roomJoin"); setRoom(joinedRoom); goTo("team-select"); }} onBack={() => goTo("open-ice-menu")} />));
-  if (screen === "team-select") return withClosedBetaBanner(renderLazy(<TeamSelectScreen room={room} profile={profile} onRoomUpdate={setRoom} onContinue={(updatedRoom) => { setRoom(updatedRoom); goTo("waiting"); }} onBack={() => goTo(roomLobbyScreen())} />));
-  if (screen === "waiting") return withClosedBetaBanner(renderLazy(<WaitingRoomScreen room={room} profile={profile} onRoomUpdate={setRoom} onGameStart={(startedRoom) => { soundManager.play("gameStart"); setRoom(startedRoom); goTo("game"); }} />));
-  if (screen === "game") return withClosedBetaBanner(renderLazy(<GameScreen room={room} profile={profile} onRoomUpdate={setRoom} onFinishDemo={() => goTo("results")} onMainMenu={() => goTo("hub")} onBackToLobby={() => goTo(roomLobbyScreen())} />, "Preparing battlefield..."));
-  if (screen === "results") return withClosedBetaBanner(renderLazy(<ResultsScreen room={room} profile={profile} onBackToLobby={() => goTo(roomLobbyScreen())} />));
+  if (screen === "cover") return withAppChrome(<CoverScreen onContinue={() => playTrackThenGo("coverScreen", initialHighStakesRoomCode ? "profile" : "menu", COVER_TRACK_DELAY_MS)} />);
+  if (screen === "menu") return withAppChrome(<MainMenu onPlay={() => playTrackThenGo("playNow", "profile", PLAY_NOW_TRACK_DELAY_MS)} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} />);
+  if (screen === "how-to-play") return withAppChrome(renderLazy(<HowToPlayScreen onBack={() => goTo("menu")} onStart={() => goTo("profile")} />));
+  if (screen === "spectator") return withAppChrome(renderLazy(<SpectatorScreen initialRoomCode={initialSpectateCode} onBack={() => goTo(profile ? "hub" : "menu")} />));
+  if (screen === "profile") return withAppChrome(renderLazy(<ProfileScreen onComplete={(createdProfile) => { soundManager.play("uiConfirm"); setProfile(createdProfile); goTo(initialHighStakesRoomCode ? "high-stakes" : "hub"); }} onBack={() => goTo("menu")} />));
+  if (screen === "hub") return withAppChrome(renderLazy(<PlayerHubScreen profile={profile} onOpenIce={() => goTo("open-ice-menu")} onHighStakes={() => goTo("high-stakes")} onMatchHistory={() => goTo("match-history")} onLeaderboard={() => goTo("leaderboard")} onAccountActivity={() => goTo("activity")} onMyRooms={() => goTo("my-rooms")} onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onVaultDeployer={() => goTo("vault-deployer")} onSettlementAdmin={() => goTo("settlement-admin")} onBack={() => goTo("profile")} />));
+  if (screen === "dev-qa") return withAppChrome(renderLazy(<DevQAScreen onBack={() => goTo("hub")} />));
+  if (screen === "test-runbook") return withAppChrome(renderLazy(<TestRunbookScreen onBack={() => goTo("hub")} />));
+  if (screen === "match-history") return withAppChrome(renderLazy(<MatchHistoryScreen profile={profile} onBack={() => goTo("hub")} />));
+  if (screen === "leaderboard") return withAppChrome(renderLazy(<LeaderboardScreen onBack={() => goTo("hub")} />));
+  if (screen === "activity") return withAppChrome(renderLazy(<AccountActivityScreen profile={profile} onBack={() => goTo("hub")} />));
+  if (screen === "my-rooms") return withAppChrome(renderLazy(<MyRoomsScreen profile={profile} onResumeRoom={resumeRoom} onBack={() => goTo("hub")} />));
+  if (screen === "vault-deployer") return withAppChrome(renderLazy(<EthVaultDeployerScreen onBack={() => goTo("hub")} />));
+  if (screen === "settlement-admin") return withAppChrome(renderLazy(<SettlementAdminScreen onBack={() => goTo("hub")} />));
+  if (screen === "high-stakes") return withAppChrome(renderLazy(<HighStakesGate onBack={() => goTo("hub")}><HighStakesScreen profile={profile} initialRoomCode={initialHighStakesRoomCode} onRoomReady={(readyRoom) => { setRoom(readyRoom); goTo("team-select"); }} onBack={() => goTo("hub")} /></HighStakesGate>));
+  if (screen === "open-ice-menu") return withAppChrome(renderLazy(<OpenIceMenuScreen profile={profile} onCreateRoom={() => goTo("create-room")} onJoinRoom={() => goTo("join-room")} onRoomJoined={(joinedRoom) => { soundManager.play("roomJoin"); setRoom(joinedRoom); goTo("team-select"); }} onBack={() => goTo("hub")} />));
+  if (screen === "create-room") return withAppChrome(renderLazy(<CreateRoomScreen profile={profile} onRoomCreated={(createdRoom) => { soundManager.play("uiConfirm"); setRoom(createdRoom); goTo("team-select"); }} onBack={() => goTo("open-ice-menu")} />));
+  if (screen === "join-room") return withAppChrome(renderLazy(<JoinRoomScreen profile={profile} onRoomJoined={(joinedRoom) => { soundManager.play("roomJoin"); setRoom(joinedRoom); goTo("team-select"); }} onBack={() => goTo("open-ice-menu")} />));
+  if (screen === "team-select") return withAppChrome(renderLazy(<TeamSelectScreen room={room} profile={profile} onRoomUpdate={setRoom} onContinue={(updatedRoom) => { setRoom(updatedRoom); goTo("waiting"); }} onBack={() => goTo(roomLobbyScreen())} />));
+  if (screen === "waiting") return withAppChrome(renderLazy(<WaitingRoomScreen room={room} profile={profile} onRoomUpdate={setRoom} onGameStart={(startedRoom) => { soundManager.play("gameStart"); setRoom(startedRoom); goTo("game"); }} />));
+  if (screen === "game") return withAppChrome(renderLazy(<GameScreen room={room} profile={profile} onRoomUpdate={setRoom} onFinishDemo={() => goTo("results")} onMainMenu={() => goTo("hub")} onBackToLobby={() => goTo(roomLobbyScreen())} />, "Preparing battlefield..."));
+  if (screen === "results") return withAppChrome(renderLazy(<ResultsScreen room={room} profile={profile} onBackToLobby={() => goTo(roomLobbyScreen())} />));
   return null;
 }
 
