@@ -93,7 +93,7 @@ export function DesktopMainMenuCalibration() {
 
       <div className="cal-layout">
         <div className="cal-stage-wrap">
-          <div className="cal-art-stage main-menu-cal-stage" style={{ aspectRatio: "16 / 9" }} ref={stageRef}>
+          <div className="cal-art-stage game-cal-stage desktop-main-menu-cal-stage" style={{ aspectRatio: "16 / 9" }} ref={stageRef}>
             <img src="/assets/screens/main-menu-desktop.png" alt="Desktop Main Menu Calibration" draggable="false" />
             {items.map((item) => (
               <button
