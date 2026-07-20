@@ -22,7 +22,7 @@ const SOUND_DEFS = {
   pieceMove: { file: "piece-move.mp3", volume: 0.62 },
   pieceSelect: { file: "piece-select.mp3", volume: 0.56 },
   playNow: { file: "play-now.mp3", volume: 0.68, track: true },
-  playerHub: { file: "player_hub_theme.mp3", volume: 0.46, track: true, loop: true },
+  playerHub: { file: "player_hub_theme.mp3?v=20260721a", volume: 0.46, track: true, loop: true },
   promotion: { file: "promotion.mp3", volume: 0.78 },
   readyToggle: { file: "ready-toggle.mp3", volume: 0.7 },
   roomJoin: { file: "room-join.mp3", volume: 0.72 },
@@ -43,7 +43,7 @@ const SOUND_DEFS = {
   teamSelect: { file: "team_select_theme.mp3", volume: 0.48, track: true, loop: true },
   waitingRoom: { file: "aurora_wait.mp3", volume: 0.4, track: true, loop: true },
   gameBoard: { file: "game_board_theme.mp3", volume: 0.38, track: true, loop: true },
-  spectator: { file: "spectator_theme.mp3", volume: 0.42, track: true, loop: true },
+  spectator: { file: "spectator_theme.mp3?v=20260721a", volume: 0.42, track: true, loop: true },
   dataScreens: { file: "data_screen_theme.mp3", volume: 0.4, track: true, loop: true },
   transactionPending: { file: "transaction_pending_loop.mp3", volume: 0.36, track: true, loop: true }
 };
