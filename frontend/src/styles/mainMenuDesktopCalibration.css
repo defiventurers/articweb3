@@ -1,0 +1,24 @@
+/* Final desktop Main Menu hitbox calibration.
+   Loaded after shared calibration overrides so click and hover regions use these exact bounds. */
+@media (min-width: 900px) and (orientation: landscape) {
+  .menu-play-hitbox {
+    left: 31.39% !important;
+    top: 81.75% !important;
+    width: 34.79% !important;
+    height: 14.38% !important;
+  }
+
+  .menu-how-hitbox {
+    left: 69.43% !important;
+    top: 84.42% !important;
+    width: 22.19% !important;
+    height: 10.65% !important;
+  }
+
+  .menu-spectate-hitbox {
+    left: 1.99% !important;
+    top: 86.54% !important;
+    width: 24.04% !important;
+    height: 8.12% !important;
+  }
+}
