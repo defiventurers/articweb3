@@ -32,6 +32,7 @@ import "./styles/highStakesDesktopCalibration.css";
 import "./styles/desktopFullscreen.css";
 import "./styles/profileDesktopOverrides.css";
 import "./styles/buttonHoverEffects.css";
+import "./styles/mainMenuDesktopCalibration.css";
 import "./utils/gameGridCalibrationSeed.js";
 import "./utils/playerHubCalibrationSeed.js";
 import "./utils/highstakesCalibrationExport.js";
