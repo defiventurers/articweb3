@@ -51,6 +51,7 @@
   top: -9999px;
   width: 0;
   height: 0;
+  box-sizing: border-box;
   z-index: 2147483646 !important;
   pointer-events: none !important;
   opacity: 0;
@@ -95,12 +96,34 @@
   filter: blur(1px);
 }
 
+/* Main-menu art already has precisely calibrated button rectangles.
+   Keep every visible layer inside those bounds instead of adding an outer halo. */
+.ui-hover-frame.is-exact-hitbox {
+  overflow: hidden;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.62) inset,
+    0 0 14px rgba(var(--hover-rgb), 0.78) inset;
+}
+
+.ui-hover-frame.is-exact-hitbox::before,
+.ui-hover-frame.is-exact-hitbox::after {
+  inset: 0;
+}
+
+.ui-hover-frame.is-exact-hitbox::after {
+  filter: none;
+}
+
 .ui-hover-frame.is-visible {
   opacity: 1 !important;
   transform: scale(1);
   animation:
     uiHoverFramePulse 1.05s ease-in-out infinite alternate,
     uiHoverFrameShimmer 900ms ease-out 1;
+}
+
+.ui-hover-frame.is-visible.is-exact-hitbox {
+  animation: uiHoverFrameShimmer 900ms ease-out 1;
 }
 
 .ui-hotspot,
