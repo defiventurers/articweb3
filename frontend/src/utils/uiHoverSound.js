@@ -299,8 +299,12 @@ function showHoverOverlay(target) {
     const rect = target.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0 || isViewportSizedTarget(target)) return hideHoverOverlay();
     const colors = hoverColorsFor(target);
-    const pad = Math.max(4, Math.min(14, Math.round(Math.min(rect.width, rect.height) * 0.08)));
+    const isMainMenuHitbox = target.matches?.(".menu-play-hitbox,.menu-how-hitbox,.menu-spectate-hitbox");
+    const pad = isMainMenuHitbox
+      ? 0
+      : Math.max(4, Math.min(14, Math.round(Math.min(rect.width, rect.height) * 0.08)));
 
+    frame.classList.toggle("is-exact-hitbox", Boolean(isMainMenuHitbox));
     frame.style.setProperty("--hover-color", colors.color);
     frame.style.setProperty("--hover-rgb", colors.rgb);
     frame.style.left = `${rect.left - pad}px`;
@@ -319,7 +323,7 @@ function hideHoverOverlaySoon() {
 
 function hideHoverOverlay() {
   if (!overlay) return;
-  overlay.classList.remove("is-visible");
+  overlay.classList.remove("is-visible", "is-exact-hitbox");
 }
 
 function hoverColorsFor(element) {
