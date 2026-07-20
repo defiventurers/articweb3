@@ -56,7 +56,7 @@ export default function App() {
 
   useEffect(() => { soundManager.load(); unlockUiAudio(); return () => window.clearTimeout(transitionTimerRef.current); }, []);
   useEffect(() => initUiHoverFeedback(), []);
-  useEffect(() => { if (assetsReady) soundManager.handleScreen(screen); }, [assetsReady, screen]);
+  useEffect(() => { if (assetsReady) soundManager.handleScreen(screen, { room, profile }); }, [assetsReady, screen, room, profile]);
 
   if (calibrationTarget === "main-menu-desktop") return renderLazy(<DesktopMainMenuCalibration />, "Loading desktop main menu calibration...");
   if (calibrationTarget) return renderLazy(<CalibrationScreen target={calibrationTarget} />, "Loading calibration deck...");
