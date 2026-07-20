@@ -9,7 +9,7 @@
   .playerhub-stage .high-stakes-hitbox {
     left: 38.47% !important;
     top: 57.36% !important;
-    width: 23.97% !important;
+    width: 24.47% !important;
     height: 26.15% !important;
   }
 
@@ -42,60 +42,60 @@
   }
 
   .playerhub-stage .wallet-value {
-    left: 77.24% !important;
-    top: 41.44% !important;
-    width: 13.28% !important;
-    height: 4.99% !important;
+    left: 77.17% !important;
+    top: 43.74% !important;
+    width: 13.35% !important;
+    height: 4.48% !important;
     font-size: 1.8cqh !important;
     display: grid !important;
   }
 
   .playerhub-stage .available-value {
     left: 77.06% !important;
-    top: 47.33% !important;
-    width: 13.65% !important;
-    height: 5.32% !important;
+    top: 49.89% !important;
+    width: 13.43% !important;
+    height: 4.30% !important;
     font-size: 1.8cqh !important;
     display: grid !important;
   }
 
   .playerhub-stage .locked-value {
     left: 77.13% !important;
-    top: 53.01% !important;
-    width: 13.67% !important;
-    height: 5.11% !important;
+    top: 55.95% !important;
+    width: 13.31% !important;
+    height: 4.60% !important;
     font-size: 1.8cqh !important;
     display: grid !important;
   }
 
   .playerhub-stage .playerhub-amount-input {
     left: 72.48% !important;
-    top: 60.28% !important;
-    width: 18.40% !important;
-    height: 4.80% !important;
+    top: 63.60% !important;
+    width: 18.83% !important;
+    height: 4.93% !important;
     font-size: 1.8cqh !important;
     display: block !important;
   }
 
   .playerhub-stage .refresh-hitbox {
-    left: 65.09% !important;
-    top: 67.02% !important;
-    width: 8.12% !important;
-    height: 7.59% !important;
+    left: 65.67% !important;
+    top: 69.70% !important;
+    width: 10.64% !important;
+    height: 6.70% !important;
   }
 
   .playerhub-stage .deposit-hitbox {
-    left: 73.64% !important;
-    top: 67.19% !important;
-    width: 8.40% !important;
-    height: 7.10% !important;
+    left: 73.78% !important;
+    top: 97.22% !important;
+    width: 1.72% !important;
+    height: 2.37% !important;
   }
 
   .playerhub-stage .withdraw-hitbox {
-    left: 82.93% !important;
-    top: 67.35% !important;
-    width: 8.40% !important;
-    height: 6.60% !important;
+    left: 75.38% !important;
+    top: 97.25% !important;
+    width: 1.28% !important;
+    height: 1.36% !important;
   }
 
   .playerhub-stage .playerhub-back-hitbox {
