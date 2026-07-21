@@ -1,14 +1,9 @@
 import { DepositPanel } from "../components/DepositPanel.jsx";
-import { EntryReadinessPanel } from "../components/EntryReadinessPanel.jsx";
 import { OptimizedImage } from "../components/OptimizedImage.jsx";
-import { WalletStatusPanel } from "../components/WalletStatusPanel.jsx";
 import "../styles/playerHub.css";
 import "../styles/playerHubDesktopCalibration.css";
 
-const SHOW_VAULT_DEPLOYER = import.meta.env.VITE_ENABLE_VAULT_DEPLOYER === "true";
-const SHOW_SETTLEMENT_ADMIN = import.meta.env.VITE_ENABLE_SETTLEMENT_ADMIN === "true";
-
-export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHistory, onLeaderboard, onAccountActivity, onMyRooms, onTestRunbook, onDevQA, onVaultDeployer, onSettlementAdmin, onBack }) {
+export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHistory, onLeaderboard, onAccountActivity, onMyRooms, onBack }) {
   return (
     <section id="screenPlayerHub" className="art-screen playerhub-screen" aria-label="Player Hub">
       <div className="menu-screen-shell">
@@ -20,9 +15,7 @@ export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHisto
             <div id="playerHubPointsText" className="playerhub-points-text">{profile.points} pts</div>
           </div>
 
-          <WalletStatusPanel />
           <DepositPanel variant="art" />
-          <EntryReadinessPanel />
 
           <div className="hitbox-layer playerhub-hitboxes">
             <button id="openIceBtn" className="screen-hitbox open-ice-hitbox" aria-label="Play Open Ice" onClick={onOpenIce} />
@@ -33,13 +26,6 @@ export function PlayerHubScreen({ profile, onOpenIce, onHighStakes, onMatchHisto
             <button id="myRoomsBtn" className="screen-hitbox my-rooms-hitbox" aria-label="My Rooms" onClick={onMyRooms} />
             <button id="playerHubBackBtn" className="screen-hitbox playerhub-back-hitbox" aria-label="Back" onClick={onBack} />
           </div>
-
-          <aside className="ph-dev-rail" aria-label="Developer tools">
-            <button type="button" onClick={onTestRunbook} title="Closed Beta Test Runbook">RUN</button>
-            <button type="button" onClick={onDevQA} title="Dev QA Checklist">QA</button>
-            {SHOW_SETTLEMENT_ADMIN && <button type="button" onClick={onSettlementAdmin} title="Settlement Admin">SET</button>}
-            {SHOW_VAULT_DEPLOYER && <button type="button" onClick={onVaultDeployer} title="Vault Tool">VAULT</button>}
-          </aside>
         </div>
       </div>
     </section>
