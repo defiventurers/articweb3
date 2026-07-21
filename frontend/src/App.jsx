@@ -36,6 +36,7 @@ const AccountActivityScreen = lazyNamed(() => import("./screens/AccountActivityS
 const SpectatorScreen = lazyNamed(() => import("./screens/SpectatorScreen.jsx"), "SpectatorScreen");
 const DevQAScreen = lazyNamed(() => import("./screens/DevQAScreen.jsx"), "DevQAScreen");
 const TestRunbookScreen = lazyNamed(() => import("./screens/TestRunbookScreen.jsx"), "TestRunbookScreen");
+const DevPortalScreen = lazyNamed(() => import("./screens/DevPortalScreen.jsx"), "DevPortalScreen");
 
 const SMOKE_PROFILE = { wallet: "0x0000000000000000000000000000000000000019", name: "Smoke Penguin", points: 0 };
 const COVER_TRACK_DELAY_MS = 650;
@@ -44,12 +45,13 @@ const PLAY_NOW_TRACK_DELAY_MS = 500;
 export default function App() {
   const params = new URLSearchParams(window.location.search);
   const calibrationTarget = params.get("calibrate");
+  const isDevPath = /^\/dev\/?$/.test(window.location.pathname);
   const smokeProfileEnabled = import.meta.env.DEV && params.get("smokeProfile") === "1";
-  const skipLoader = params.get("skipLoader") === "1" || Boolean(calibrationTarget) || smokeProfileEnabled;
+  const skipLoader = params.get("skipLoader") === "1" || Boolean(calibrationTarget) || smokeProfileEnabled || isDevPath;
   const initialSpectateCode = params.get("spectate") || "";
   const initialHighStakesRoomCode = cleanInviteCode(params.get("highStakesRoom") || params.get("hsRoom") || params.get("lockedRoom") || "");
   const [assetsReady, setAssetsReady] = useState(skipLoader);
-  const [screen, setScreen] = useState(initialSpectateCode ? "spectator" : smokeProfileEnabled && initialHighStakesRoomCode ? "high-stakes" : smokeProfileEnabled ? "hub" : "cover");
+  const [screen, setScreen] = useState(isDevPath ? "dev-home" : initialSpectateCode ? "spectator" : smokeProfileEnabled && initialHighStakesRoomCode ? "high-stakes" : smokeProfileEnabled ? "hub" : "cover");
   const [profile, setProfile] = useState(smokeProfileEnabled ? SMOKE_PROFILE : null);
   const [room, setRoom] = useState(null);
   const transitionTimerRef = useRef(null);
@@ -94,20 +96,22 @@ export default function App() {
     return goTo("team-select");
   }
 
+  if (screen === "dev-home") return withAppChrome(renderLazy(<DevPortalScreen onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onSettlementAdmin={() => goTo("settlement-admin")} onVaultDeployer={() => goTo("vault-deployer")} onExit={() => window.location.assign("/")} />, "Loading developer console..."));
+  if (screen === "dev-qa") return withAppChrome(renderLazy(<DevQAScreen onBack={() => goTo("dev-home")} />));
+  if (screen === "test-runbook") return withAppChrome(renderLazy(<TestRunbookScreen onBack={() => goTo("dev-home")} />));
+  if (screen === "vault-deployer") return withAppChrome(renderLazy(<EthVaultDeployerScreen onBack={() => goTo("dev-home")} />));
+  if (screen === "settlement-admin") return withAppChrome(renderLazy(<SettlementAdminScreen onBack={() => goTo("dev-home")} />));
+
   if (screen === "cover") return withAppChrome(<CoverScreen onContinue={() => playTrackThenGo("coverScreen", initialHighStakesRoomCode ? "profile" : "menu", COVER_TRACK_DELAY_MS)} />);
   if (screen === "menu") return withAppChrome(<MainMenu onPlay={() => playTrackThenGo("playNow", "profile", PLAY_NOW_TRACK_DELAY_MS)} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} />);
   if (screen === "how-to-play") return withAppChrome(renderLazy(<HowToPlayScreen onBack={() => goTo("menu")} onStart={() => goTo("profile")} />));
   if (screen === "spectator") return withAppChrome(renderLazy(<SpectatorScreen initialRoomCode={initialSpectateCode} onBack={() => goTo(profile ? "hub" : "menu")} />));
   if (screen === "profile") return withAppChrome(renderLazy(<ProfileScreen onComplete={(createdProfile) => { soundManager.play("uiConfirm"); setProfile(createdProfile); goTo(initialHighStakesRoomCode ? "high-stakes" : "hub"); }} onBack={() => goTo("menu")} />));
-  if (screen === "hub") return withAppChrome(renderLazy(<PlayerHubScreen profile={profile} onOpenIce={() => goTo("open-ice-menu")} onHighStakes={() => goTo("high-stakes")} onMatchHistory={() => goTo("match-history")} onLeaderboard={() => goTo("leaderboard")} onAccountActivity={() => goTo("activity")} onMyRooms={() => goTo("my-rooms")} onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onVaultDeployer={() => goTo("vault-deployer")} onSettlementAdmin={() => goTo("settlement-admin")} onBack={() => goTo("profile")} />));
-  if (screen === "dev-qa") return withAppChrome(renderLazy(<DevQAScreen onBack={() => goTo("hub")} />));
-  if (screen === "test-runbook") return withAppChrome(renderLazy(<TestRunbookScreen onBack={() => goTo("hub")} />));
+  if (screen === "hub") return withAppChrome(renderLazy(<PlayerHubScreen profile={profile} onOpenIce={() => goTo("open-ice-menu")} onHighStakes={() => goTo("high-stakes")} onMatchHistory={() => goTo("match-history")} onLeaderboard={() => goTo("leaderboard")} onAccountActivity={() => goTo("activity")} onMyRooms={() => goTo("my-rooms")} onBack={() => goTo("profile")} />));
   if (screen === "match-history") return withAppChrome(renderLazy(<MatchHistoryScreen profile={profile} onBack={() => goTo("hub")} />));
   if (screen === "leaderboard") return withAppChrome(renderLazy(<LeaderboardScreen onBack={() => goTo("hub")} />));
   if (screen === "activity") return withAppChrome(renderLazy(<AccountActivityScreen profile={profile} onBack={() => goTo("hub")} />));
   if (screen === "my-rooms") return withAppChrome(renderLazy(<MyRoomsScreen profile={profile} onResumeRoom={resumeRoom} onBack={() => goTo("hub")} />));
-  if (screen === "vault-deployer") return withAppChrome(renderLazy(<EthVaultDeployerScreen onBack={() => goTo("hub")} />));
-  if (screen === "settlement-admin") return withAppChrome(renderLazy(<SettlementAdminScreen onBack={() => goTo("hub")} />));
   if (screen === "high-stakes") return withAppChrome(renderLazy(<HighStakesGate onBack={() => goTo("hub")}><HighStakesScreen profile={profile} initialRoomCode={initialHighStakesRoomCode} onRoomReady={(readyRoom) => { setRoom(readyRoom); goTo("team-select"); }} onBack={() => goTo("hub")} /></HighStakesGate>));
   if (screen === "open-ice-menu") return withAppChrome(renderLazy(<OpenIceMenuScreen profile={profile} onCreateRoom={() => goTo("create-room")} onJoinRoom={() => goTo("join-room")} onRoomJoined={(joinedRoom) => { soundManager.play("roomJoin"); setRoom(joinedRoom); goTo("team-select"); }} onBack={() => goTo("hub")} />));
   if (screen === "create-room") return withAppChrome(renderLazy(<CreateRoomScreen profile={profile} onRoomCreated={(createdRoom) => { soundManager.play("uiConfirm"); setRoom(createdRoom); goTo("team-select"); }} onBack={() => goTo("open-ice-menu")} />));
