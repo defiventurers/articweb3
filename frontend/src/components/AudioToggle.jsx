@@ -48,6 +48,7 @@ export function AudioToggle() {
 
   return (
     <button
+      className="audio-toggle"
       type="button"
       aria-label={enabled ? "Mute sound" : "Unmute sound"}
       title={enabled ? "Mute sound" : "Unmute sound"}
