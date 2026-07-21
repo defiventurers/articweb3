@@ -33,6 +33,8 @@ import "./styles/desktopFullscreen.css";
 import "./styles/profileDesktopOverrides.css";
 import "./styles/buttonHoverEffects.css";
 import "./styles/mainMenuDesktopCalibration.css";
+import "./styles/mobileUiPolish.css";
+import "./utils/profileMobileLayout.js";
 import "./utils/gameGridCalibrationSeed.js";
 import "./utils/playerHubCalibrationSeed.js";
 import "./utils/highstakesCalibrationExport.js";
