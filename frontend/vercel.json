@@ -3,6 +3,14 @@
     {
       "source": "/api/health",
       "destination": "https://articweb3.onrender.com/health"
+    },
+    {
+      "source": "/dev",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dev/",
+      "destination": "/index.html"
     }
   ],
   "headers": [
