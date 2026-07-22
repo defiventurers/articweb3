@@ -1,0 +1,47 @@
+/* Desktop-only game viewport correction.
+   Mobile and portrait layouts remain untouched. */
+@media (min-width: 900px) and (orientation: landscape) {
+  .game-screen-page {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .game-stage {
+    position: relative !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 0 0 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .game-stage-picture,
+  .game-stage-art,
+  .game-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+
+  .game-stage-art {
+    object-fit: fill !important;
+    object-position: center center !important;
+  }
+}
