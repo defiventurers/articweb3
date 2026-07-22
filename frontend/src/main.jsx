@@ -11,6 +11,7 @@ import "./styles/highStakesCountdown.css";
 import "./styles/networkAndConfig.css";
 import "./styles/walletStatus.css";
 import "./styles/gameBoard.css";
+import "./styles/responsiveGameArt.css";
 import "./styles/diceFaces.css";
 import "./styles/teamSelect.css";
 import "./styles/howToPlay.css";
