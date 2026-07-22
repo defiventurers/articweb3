@@ -1,5 +1,5 @@
 /* Final phone-only UI pass. Desktop calibration and hover behavior remain unchanged. */
-@media (max-width: 899px) {
+@media (max-width: 899px) and (orientation: portrait) {
   .profile-page {
     align-items: flex-start !important;
     justify-content: center !important;
@@ -14,18 +14,28 @@
   }
 
   .profile-connect-hitbox {
-    left: var(--profile-mobile-connect-left, 15.02%) !important;
-    top: var(--profile-mobile-connect-top, 28.44%) !important;
-    width: var(--profile-mobile-connect-width, 69.60%) !important;
-    height: var(--profile-mobile-connect-height, 11.35%) !important;
+    left: var(--profile-mobile-connect-left, 21.02%) !important;
+    top: var(--profile-mobile-connect-top, 25.79%) !important;
+    width: var(--profile-mobile-connect-width, 57.82%) !important;
+    height: var(--profile-mobile-connect-height, 9.30%) !important;
+  }
+
+  .profile-connect-hitbox.connected,
+  .profile-connect-hitbox:disabled.connected {
+    background: rgba(10, 16, 24, 0.66) !important;
+    border: 1px solid rgba(170, 180, 190, 0.42) !important;
+    border-radius: 16px !important;
+    box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.46) !important;
+    filter: grayscale(1) brightness(0.72) !important;
+    opacity: 1 !important;
   }
 
   .profile-wallet-status {
     display: none !important;
-    left: var(--profile-mobile-connected-left, 15.38%) !important;
-    top: var(--profile-mobile-connected-top, 29.38%) !important;
-    width: var(--profile-mobile-connected-width, 69.60%) !important;
-    height: var(--profile-mobile-connected-height, 9.80%) !important;
+    left: var(--profile-mobile-connected-left, 21.59%) !important;
+    top: var(--profile-mobile-connected-top, 25.88%) !important;
+    width: var(--profile-mobile-connected-width, 57.39%) !important;
+    height: var(--profile-mobile-connected-height, 8.96%) !important;
   }
 
   .profile-disconnect-hitbox {
@@ -36,24 +46,24 @@
   }
 
   .profile-wallet-address {
-    left: var(--profile-mobile-wallet-left, 15.90%) !important;
-    top: var(--profile-mobile-wallet-top, 49.27%) !important;
-    width: var(--profile-mobile-wallet-width, 59.10%) !important;
-    height: var(--profile-mobile-wallet-height, 5.05%) !important;
+    left: var(--profile-mobile-wallet-left, 24.25%) !important;
+    top: var(--profile-mobile-wallet-top, 40.95%) !important;
+    width: var(--profile-mobile-wallet-width, 44.53%) !important;
+    height: var(--profile-mobile-wallet-height, 3.72%) !important;
   }
 
   .profile-wallet-copy-hitbox {
-    left: var(--profile-mobile-copy-left, 75.30%) !important;
-    top: var(--profile-mobile-copy-top, 49.78%) !important;
-    width: var(--profile-mobile-copy-width, 7.85%) !important;
-    height: var(--profile-mobile-copy-height, 4.35%) !important;
+    left: var(--profile-mobile-copy-left, 69.52%) !important;
+    top: var(--profile-mobile-copy-top, 40.98%) !important;
+    width: var(--profile-mobile-copy-width, 7.64%) !important;
+    height: var(--profile-mobile-copy-height, 3.51%) !important;
   }
 
   .profile-name-input {
-    left: var(--profile-mobile-name-left, 15.05%) !important;
-    top: var(--profile-mobile-name-top, 63.10%) !important;
-    width: var(--profile-mobile-name-width, 68.90%) !important;
-    height: var(--profile-mobile-name-height, 5.25%) !important;
+    left: var(--profile-mobile-name-left, 26.19%) !important;
+    top: var(--profile-mobile-name-top, 51.65%) !important;
+    width: var(--profile-mobile-name-width, 42.34%) !important;
+    height: var(--profile-mobile-name-height, 4.04%) !important;
   }
 
   .profile-complete-hitbox {
@@ -64,10 +74,10 @@
   }
 
   .profile-back-hitbox {
-    left: var(--profile-mobile-back-left, 34.60%) !important;
+    left: var(--profile-mobile-back-left, 30.74%) !important;
     top: var(--profile-mobile-back-top, 85.14%) !important;
-    width: var(--profile-mobile-back-width, 30.80%) !important;
-    height: var(--profile-mobile-back-height, 5.30%) !important;
+    width: var(--profile-mobile-back-width, 39.15%) !important;
+    height: var(--profile-mobile-back-height, 7.47%) !important;
   }
 
   .profile-status-message {
