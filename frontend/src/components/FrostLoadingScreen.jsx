@@ -1,55 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { toWebpPath } from "./OptimizedImage.jsx";
+import PUBLIC_ASSETS from "virtual:arctic-public-assets";
 
 const REMOTE_PIECE_ASSET_BASE =
   "https://raw.githubusercontent.com/defiventurers/chaturanga-game/36d8ee9ae33fa08a21ba3d644b6053b9e13273e4/public/assets/arctic/pieces";
 
 const DESKTOP_MEDIA = "(min-width: 900px) and (orientation: landscape)";
-
-const SCREEN_ASSETS = [
-  "/assets/screens/cover.webp",
-  "/assets/screens/main-menu.webp",
-  "/assets/screens/profile.webp",
-  "/assets/screens/playerhub.webp",
-  "/assets/screens/openicehub.webp",
-  "/assets/screens/team-select.webp",
-  "/assets/screens/arctic-dominion-game-base.webp"
-];
-
-const DESKTOP_SCREEN_ASSETS = [
-  "/assets/screens/cover-desktop.png",
-  "/assets/screens/main-menu-desktop.png",
-  "/assets/screens/profile-desktop.png",
-  "/assets/screens/playerhub-desktop.png",
-  "/assets/screens/openicehub-desktop.png",
-  "/assets/screens/openice-createroom-desktop.png",
-  "/assets/screens/join-room-desktop.png",
-  "/assets/screens/arctic-dominion-game-base-desktop.png"
-];
-
 const PIECE_COLORS = ["red", "blue", "green", "pink"];
 const PIECE_TYPES = ["snow-guard", "icebreaker", "war-mammoth", "aurora-unicorn", "frost-king"];
-const PIECE_ASSETS = PIECE_COLORS.flatMap((color) => PIECE_TYPES.map((piece) => `${REMOTE_PIECE_ASSET_BASE}/${color}-${piece}.png`));
-
-const SECONDARY_ASSETS = [
-  "/assets/how-to-play/retsba-kingdom.webp",
-  "/assets/how-to-play/pengu-kingdom.webp",
-  "/assets/how-to-play/abster-kingdom.webp",
-  "/assets/how-to-play/polly-kingdom.webp",
-  "/assets/how-to-play/dominion-pieces-roster.webp"
-];
+const REMOTE_PIECE_ASSETS = PIECE_COLORS.flatMap((color) =>
+  PIECE_TYPES.map((piece) => `${REMOTE_PIECE_ASSET_BASE}/${color}-${piece}.png`)
+);
 
 const STATUS_LINES = [
   "Opening the frozen gates...",
   "Summoning penguin kingdoms...",
   "Carving the ice battlefield...",
   "Preparing Dominion Dice...",
-  "Caching battle pieces...",
+  "Caching battle music and effects...",
   "Finalizing Arctic Dominion..."
 ];
 
+const IMAGE_EXTENSIONS = new Set(["avif", "bmp", "gif", "jpeg", "jpg", "png", "svg", "webp"]);
+const AUDIO_EXTENSIONS = new Set(["aac", "flac", "m4a", "mp3", "ogg", "wav", "webm"]);
 const MIN_VISIBLE_MS = 850;
-const ASSET_TIMEOUT_MS = 12000;
+const ASSET_TIMEOUT_MS = 15000;
+const PRELOAD_CONCURRENCY = 6;
 const PRELOAD_CACHE = new Map();
 
 export function FrostLoadingScreen({ onReady }) {
@@ -59,7 +34,7 @@ export function FrostLoadingScreen({ onReady }) {
   const readyCalled = useRef(false);
   const criticalAssets = useMemo(() => getCriticalAssets(), []);
 
-  const total = criticalAssets.length;
+  const total = criticalAssets.length || 1;
   const percent = Math.min(100, Math.round((loaded / total) * 100));
 
   useEffect(() => {
@@ -67,14 +42,22 @@ export function FrostLoadingScreen({ onReady }) {
     const startedAt = Date.now();
 
     async function runPreload() {
-      const results = await Promise.all(
-        criticalAssets.map((src, index) => preloadImage(src).then((result) => {
-          if (cancelled) return result;
-          setLoaded((current) => Math.min(total, current + 1));
+      const results = await preloadWithConcurrency(
+        criticalAssets,
+        PRELOAD_CONCURRENCY,
+        (result, completed) => {
+          if (cancelled) return;
+          setLoaded(completed);
           if (result.status !== "loaded") setFailed((current) => current + 1);
-          setPhase(STATUS_LINES[Math.min(STATUS_LINES.length - 1, Math.floor(((index + 1) / total) * STATUS_LINES.length))]);
-          return result;
-        }))
+          setPhase(
+            STATUS_LINES[
+              Math.min(
+                STATUS_LINES.length - 1,
+                Math.floor((completed / Math.max(1, criticalAssets.length)) * STATUS_LINES.length)
+              )
+            ]
+          );
+        }
       );
 
       if (cancelled) return;
@@ -84,7 +67,7 @@ export function FrostLoadingScreen({ onReady }) {
         if (cancelled || readyCalled.current) return;
         readyCalled.current = true;
         window.__ARCTIC_PRELOAD_REPORT__ = results;
-        warmSecondaryAssets();
+        window.__ARCTIC_PUBLIC_ASSET_COUNT__ = PUBLIC_ASSETS.length;
         onReady?.();
       }, remainingMs);
     }
@@ -94,13 +77,17 @@ export function FrostLoadingScreen({ onReady }) {
     return () => {
       cancelled = true;
     };
-  }, [onReady, total, criticalAssets]);
+  }, [onReady, criticalAssets]);
 
   const detailLine = useMemo(() => {
-    if (percent >= 100) return failed ? "Frost Gate ready. Some fallback assets will retry when needed." : "Frost Gate ready.";
+    if (percent >= 100) {
+      return failed
+        ? "Frost Gate ready. Failed assets will retry when requested."
+        : "Frost Gate ready. All local assets are cached.";
+    }
     if (percent >= 72) return "Final checks before entering the kingdom.";
-    if (percent >= 44) return "Loading board art and piece icons.";
-    return "First visit may take longer while assets are cached.";
+    if (percent >= 44) return "Loading artwork, battle pieces, music, and effects.";
+    return "First visit may take longer while the complete game is cached.";
   }, [failed, percent]);
 
   return (
@@ -121,13 +108,19 @@ export function FrostLoadingScreen({ onReady }) {
           <span>{detailLine}</span>
         </div>
 
-        <div className="frost-loader-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={percent}>
+        <div
+          className="frost-loader-progress"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow={percent}
+        >
           <span style={{ width: `${percent}%` }} />
         </div>
 
         <div className="frost-loader-foot">
           <strong>{percent}%</strong>
-          <span>{loaded}/{total} assets</span>
+          <span>{loaded}/{criticalAssets.length} assets</span>
         </div>
       </div>
     </section>
@@ -146,44 +139,76 @@ export function FrostRouteLoader({ label = "Loading frost chamber..." }) {
 }
 
 export function warmSecondaryAssets() {
-  runWhenIdle(() => {
-    SECONDARY_ASSETS.forEach((src) => preloadImage(src));
-  });
+  runWhenIdle(() => preloadWithConcurrency(PUBLIC_ASSETS, PRELOAD_CONCURRENCY));
 }
 
 export function warmGameAssets() {
   runWhenIdle(() => {
-    getGameWarmAssets().forEach((src) => preloadImage(src));
+    const assets = PUBLIC_ASSETS.filter((src) =>
+      /(?:game|board|dice|piece|arctic\/pieces|sounds)/i.test(src)
+    );
+    preloadWithConcurrency(assets, PRELOAD_CONCURRENCY);
   });
 }
 
 export function warmHowToPlayAssets() {
   runWhenIdle(() => {
-    SECONDARY_ASSETS.forEach((src) => preloadImage(src));
+    const assets = PUBLIC_ASSETS.filter((src) => /how-to-play/i.test(src));
+    preloadWithConcurrency(assets, PRELOAD_CONCURRENCY);
   });
 }
 
 function getCriticalAssets() {
-  const assets = [...SCREEN_ASSETS, ...PIECE_ASSETS];
-  if (isDesktopLandscape()) assets.push(...DESKTOP_SCREEN_ASSETS);
-  return assets;
+  const localAssets = [...new Set(PUBLIC_ASSETS)];
+  const remoteAssets = REMOTE_PIECE_ASSETS.filter((src) => !localAssets.includes(src));
+
+  // Every file under public/assets is included for both mobile and desktop.
+  // Desktop detection is retained only for diagnostics and future prioritization.
+  if (isDesktopLandscape()) {
+    window.__ARCTIC_PRELOAD_DEVICE__ = "desktop";
+  } else if (typeof window !== "undefined") {
+    window.__ARCTIC_PRELOAD_DEVICE__ = "mobile";
+  }
+
+  return [...localAssets, ...remoteAssets];
 }
 
-function getGameWarmAssets() {
-  const assets = ["/assets/screens/arctic-dominion-game-base.webp", ...PIECE_ASSETS];
-  if (isDesktopLandscape()) assets.unshift("/assets/screens/arctic-dominion-game-base-desktop.png");
-  return assets;
+async function preloadWithConcurrency(assets, concurrency, onProgress) {
+  const queue = [...new Set(assets)].filter(Boolean);
+  const results = new Array(queue.length);
+  let cursor = 0;
+  let completed = 0;
+
+  async function worker() {
+    while (cursor < queue.length) {
+      const index = cursor;
+      cursor += 1;
+      const result = await preloadAsset(queue[index]);
+      results[index] = result;
+      completed += 1;
+      onProgress?.(result, completed, queue.length);
+    }
+  }
+
+  const workerCount = Math.min(Math.max(1, concurrency), Math.max(1, queue.length));
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  return results.filter(Boolean);
 }
 
-function isDesktopLandscape() {
-  if (typeof window === "undefined" || !window.matchMedia) return false;
-  return window.matchMedia(DESKTOP_MEDIA).matches;
+function preloadAsset(src) {
+  if (PRELOAD_CACHE.has(src)) return PRELOAD_CACHE.get(src);
+
+  const extension = getExtension(src);
+  const task = IMAGE_EXTENSIONS.has(extension)
+    ? preloadImage(src)
+    : preloadFetchAsset(src, AUDIO_EXTENSIONS.has(extension) ? "audio" : "asset");
+
+  PRELOAD_CACHE.set(src, task);
+  return task;
 }
 
 function preloadImage(src) {
-  if (PRELOAD_CACHE.has(src)) return PRELOAD_CACHE.get(src);
-
-  const task = new Promise((resolve) => {
+  return new Promise((resolve) => {
     const image = new Image();
     let settled = false;
 
@@ -191,7 +216,7 @@ function preloadImage(src) {
       if (settled) return;
       settled = true;
       window.clearTimeout(timer);
-      resolve({ src, status });
+      resolve({ src, type: "image", status });
     };
 
     const timer = window.setTimeout(() => finish("timeout"), ASSET_TIMEOUT_MS);
@@ -203,20 +228,42 @@ function preloadImage(src) {
         finish("loaded");
       }
     };
-
-    image.onerror = () => {
-      const fallback = src.endsWith(".webp") ? src.replace(/\.webp$/i, ".png") : toWebpPath(src);
-      if (fallback && fallback !== src && !PRELOAD_CACHE.has(fallback)) {
-        preloadImage(fallback).then(resolve);
-      } else {
-        finish("failed");
-      }
-    };
+    image.onerror = () => finish("failed");
+    image.decoding = "async";
     image.src = src;
   });
+}
 
-  PRELOAD_CACHE.set(src, task);
-  return task;
+function preloadFetchAsset(src, type) {
+  return new Promise((resolve) => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), ASSET_TIMEOUT_MS);
+
+    fetch(src, {
+      method: "GET",
+      cache: "force-cache",
+      credentials: "same-origin",
+      signal: controller.signal
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.arrayBuffer();
+      })
+      .then(() => resolve({ src, type, status: "loaded" }))
+      .catch((error) => resolve({ src, type, status: error?.name === "AbortError" ? "timeout" : "failed" }))
+      .finally(() => window.clearTimeout(timer));
+  });
+}
+
+function getExtension(src) {
+  const cleanPath = String(src || "").split(/[?#]/, 1)[0];
+  const match = cleanPath.match(/\.([a-z0-9]+)$/i);
+  return match ? match[1].toLowerCase() : "";
+}
+
+function isDesktopLandscape() {
+  if (typeof window === "undefined" || !window.matchMedia) return false;
+  return window.matchMedia(DESKTOP_MEDIA).matches;
 }
 
 function runWhenIdle(callback) {
