@@ -86,21 +86,25 @@ export function GameScreen({ room, profile, onRoomUpdate, onFinishDemo, onMainMe
   return (
     <section className="game-screen-page" aria-label="Game screen">
       <div className="game-stage" style={{ "--active-player-color": TEAM_COLOR[team] }}>
-        <img
-          className="game-stage-art"
-          src="/assets/screens/arctic-dominion-game-base-desktop.png"
-          alt=""
-          aria-hidden="true"
-          draggable="false"
-          decoding="async"
-          data-webp-preferred="true"
-          onError={(event) => {
-            if (!event.currentTarget.dataset.remoteFallbackApplied) {
-              event.currentTarget.dataset.remoteFallbackApplied = "true";
-              event.currentTarget.src = REMOTE_DESKTOP_GAME_ART;
-            }
-          }}
-        />
+        <picture className="game-stage-picture" aria-hidden="true">
+          <source media="(min-width: 900px) and (orientation: landscape)" srcSet="/assets/screens/arctic-dominion-game-base-desktop.webp" type="image/webp" />
+          <source media="(min-width: 900px) and (orientation: landscape)" srcSet="/assets/screens/arctic-dominion-game-base-desktop.png" type="image/png" />
+          <source srcSet="/assets/screens/arctic-dominion-game-base.webp" type="image/webp" />
+          <img
+            className="game-stage-art"
+            src="/assets/screens/arctic-dominion-game-base.png"
+            alt=""
+            draggable="false"
+            decoding="async"
+            onError={(event) => {
+              const desktopLayout = window.matchMedia?.("(min-width: 900px) and (orientation: landscape)")?.matches;
+              if (desktopLayout && !event.currentTarget.dataset.remoteFallbackApplied) {
+                event.currentTarget.dataset.remoteFallbackApplied = "true";
+                event.currentTarget.src = REMOTE_DESKTOP_GAME_ART;
+              }
+            }}
+          />
+        </picture>
         <div className="game-overlay">
           <div className="game-status-overlay" aria-live="polite">
             <div>
