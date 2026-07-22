@@ -23,6 +23,7 @@ import "./styles/profileScreen.css";
 import "./styles/openIceFlow.css";
 import "./styles/dataScreens.css";
 import "./styles/dataScreensPolish.css";
+import "./styles/waitingRoomDesktopFit.css";
 import "./styles/calibration.css";
 import "./styles/profileCalibration.css";
 import "./styles/calibrationBoardSquareFix.css";
