@@ -16,6 +16,7 @@ import "./utils/preferWebpAssets.js";
 
 const CalibrationScreen = lazyNamed(() => import("./screens/CalibrationScreen.jsx"), "CalibrationScreen");
 const DesktopMainMenuCalibration = lazyNamed(() => import("./screens/DesktopMainMenuCalibration.jsx"), "DesktopMainMenuCalibration");
+const MobileProfileCalibration = lazyNamed(() => import("./screens/MobileProfileCalibration.jsx"), "MobileProfileCalibration");
 const HowToPlayScreen = lazyNamed(() => import("./screens/HowToPlayScreen.jsx"), "HowToPlayScreen");
 const ProfileScreen = lazyNamed(() => import("./screens/ProfileScreen.jsx"), "ProfileScreen");
 const PlayerHubScreen = lazyNamed(() => import("./screens/PlayerHubScreen.jsx"), "PlayerHubScreen");
@@ -61,6 +62,7 @@ export default function App() {
   useEffect(() => { if (assetsReady) soundManager.handleScreen(screen, { room, profile }); }, [assetsReady, screen, room, profile]);
 
   if (calibrationTarget === "main-menu-desktop") return renderLazy(<DesktopMainMenuCalibration />, "Loading desktop main menu calibration...");
+  if (calibrationTarget === "profile-mobile") return renderLazy(<MobileProfileCalibration />, "Loading mobile profile calibration...");
   if (calibrationTarget) return renderLazy(<CalibrationScreen target={calibrationTarget} />, "Loading calibration deck...");
   if (!assetsReady) return <FrostLoadingScreen onReady={() => setAssetsReady(true)} />;
 
