@@ -1,12 +1,12 @@
 export const PROFILE_MOBILE_CALIBRATION = Object.freeze({
-  connect: { left: 15.02, top: 28.44, width: 69.60, height: 11.35 },
-  connected: { left: 15.38, top: 29.38, width: 69.60, height: 9.80 },
+  connect: { left: 21.02, top: 25.79, width: 57.82, height: 9.30 },
+  connected: { left: 21.59, top: 25.88, width: 57.39, height: 8.96 },
   disconnect: { left: 34.93, top: 30.68, width: 30.80, height: 3.85 },
-  wallet: { left: 15.90, top: 49.27, width: 59.10, height: 5.05 },
-  copy: { left: 75.30, top: 49.78, width: 7.85, height: 4.35 },
-  name: { left: 15.05, top: 63.10, width: 68.90, height: 5.25 },
+  wallet: { left: 24.25, top: 40.95, width: 44.53, height: 3.72 },
+  copy: { left: 69.52, top: 40.98, width: 7.64, height: 3.51 },
+  name: { left: 26.19, top: 51.65, width: 42.34, height: 4.04 },
   complete: { left: 22.88, top: 75.68, width: 54.80, height: 8.10 },
-  back: { left: 34.60, top: 85.14, width: 30.80, height: 5.30 },
+  back: { left: 30.74, top: 85.14, width: 39.15, height: 7.47 },
   status: { left: 10, bottom: 1.2, width: 80 }
 });
 
