@@ -37,6 +37,7 @@ import "./styles/buttonHoverEffects.css";
 import "./styles/mainMenuDesktopCalibration.css";
 import "./styles/mobileUiPolish.css";
 import "./styles/mobileFullscreenScreens.css";
+import "./styles/gameDesktopFullscreen.css";
 import "./utils/profileMobileLayout.js";
 import "./utils/gameGridCalibrationSeed.js";
 import "./utils/playerHubCalibrationSeed.js";
