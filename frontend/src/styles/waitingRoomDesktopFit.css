@@ -1,0 +1,142 @@
+/* Desktop-only Battle Lobby fit. Mobile/tablet layout remains unchanged. */
+@media (min-width: 900px) and (orientation: landscape) {
+  .screen.data-screen.waiting-screen {
+    height: 100dvh;
+    min-height: 100dvh;
+    padding: 12px 24px;
+    overflow: hidden;
+    align-items: center;
+  }
+
+  .waiting-screen .waiting-card {
+    width: min(92vw, 920px);
+    max-height: calc(100dvh - 24px);
+    margin: 0;
+    padding: 14px 18px;
+    gap: 8px;
+    border-radius: 22px;
+    overflow: hidden;
+  }
+
+  .waiting-screen .lobby-header {
+    gap: 3px;
+  }
+
+  .waiting-screen .data-kicker {
+    font-size: 10px;
+  }
+
+  .waiting-screen .data-header h1 {
+    font-size: clamp(28px, 4vh, 38px);
+  }
+
+  .waiting-screen .data-subtitle,
+  .waiting-screen .data-empty,
+  .waiting-screen .data-error {
+    padding: 7px 10px;
+    font-size: 12px;
+    line-height: 1.2;
+    border-radius: 12px;
+  }
+
+  .waiting-screen .data-main-action {
+    min-height: 40px;
+    border-radius: 13px;
+    font-size: 13px;
+  }
+
+  .waiting-screen .lobby-score-grid {
+    gap: 8px;
+  }
+
+  .waiting-screen .lobby-score-grid div,
+  .waiting-screen .countdown-card {
+    padding: 8px 10px;
+    border-radius: 14px;
+    gap: 2px;
+  }
+
+  .waiting-screen .lobby-score-grid strong,
+  .waiting-screen .countdown-card strong {
+    font-size: 19px;
+  }
+
+  .waiting-screen .lobby-score-grid span,
+  .waiting-screen .countdown-card span {
+    font-size: 10px;
+  }
+
+  .waiting-screen .lobby-choosing-list,
+  .waiting-screen .lobby-team-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .waiting-screen .lobby-team-card {
+    min-height: 58px;
+    padding: 8px 10px;
+    gap: 4px;
+    border-radius: 14px;
+  }
+
+  .waiting-screen .lobby-team-topline {
+    grid-template-columns: 28px 1fr auto;
+    gap: 6px;
+  }
+
+  .waiting-screen .lobby-team-topline > span {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    font-size: 16px;
+  }
+
+  .waiting-screen .lobby-team-topline strong {
+    font-size: 14px;
+  }
+
+  .waiting-screen .lobby-team-topline em {
+    font-size: 10px;
+  }
+
+  .waiting-screen .lobby-player-name {
+    font-size: 12px;
+    line-height: 1.1;
+  }
+
+  .waiting-screen .lobby-lock-pill {
+    min-height: 22px;
+    padding: 4px 7px;
+    font-size: 10px;
+  }
+
+  .waiting-screen .lobby-note {
+    padding: 6px 9px;
+  }
+
+  .waiting-screen .countdown-card {
+    min-height: 42px;
+  }
+}
+
+/* Extra compression for shorter laptop viewports. */
+@media (min-width: 900px) and (orientation: landscape) and (max-height: 720px) {
+  .waiting-screen .waiting-card {
+    padding: 10px 15px;
+    gap: 6px;
+  }
+
+  .waiting-screen .data-header h1 {
+    font-size: 28px;
+  }
+
+  .waiting-screen .lobby-team-card {
+    min-height: 52px;
+    padding-block: 6px;
+  }
+
+  .waiting-screen .lobby-note {
+    display: none;
+  }
+}
