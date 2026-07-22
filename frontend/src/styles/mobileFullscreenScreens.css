@@ -1,0 +1,55 @@
+/* Phone-only fullscreen correction for the two art screens that retained legacy shell constraints. */
+@media (max-width: 899px) and (orientation: portrait) {
+  .playerhub-screen,
+  .highstakes-screen {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+  }
+
+  .playerhub-screen .menu-screen-shell,
+  .highstakes-screen .highstakes-shell {
+    width: 100vw !important;
+    height: 100dvh !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .playerhub-screen .playerhub-stage,
+  .highstakes-screen .highstakes-stage {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    overflow: hidden !important;
+  }
+
+  .playerhub-stage .screen-art,
+  .highstakes-stage .screen-art,
+  .playerhub-stage picture,
+  .highstakes-stage picture {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+  }
+
+  .playerhub-stage .screen-art,
+  .highstakes-stage .screen-art {
+    object-fit: fill !important;
+  }
+}
