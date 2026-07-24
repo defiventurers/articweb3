@@ -250,11 +250,94 @@ const fishflow = createFishflowService({
   return transformed;
 }
 
+function injectBreakTheIce(source) {
+  let transformed = source;
+
+  const serviceRequire = 'const { createFishflowService } = require("./fishflowService.js");';
+  if (!transformed.includes('require("./breakTheIceService.js")')) {
+    if (!transformed.includes(serviceRequire)) throw new Error("Unable to locate Fishflow service require for Break the Ice.");
+    transformed = transformed.replace(serviceRequire, `${serviceRequire}\nconst { createBreakTheIceService } = require("./breakTheIceService.js");`);
+  }
+
+  const fishServiceInit = `const fishflow = createFishflowService({
+  rooms,
+  profiles,
+  sockets,
+  send,
+  ok,
+  fail,
+  walletOf,
+  profileFor,
+  saveRoomSafe,
+  saveHistoryEntry,
+  getHistoryForWallet
+});`;
+  const breakServiceInit = `${fishServiceInit}
+const breakTheIce = createBreakTheIceService({
+  rooms,
+  profiles,
+  sockets,
+  send,
+  ok,
+  fail,
+  walletOf,
+  profileFor,
+  saveRoomSafe,
+  saveHistoryEntry,
+  getHistoryForWallet
+});`;
+  if (!transformed.includes("const breakTheIce = createBreakTheIceService")) {
+    if (!transformed.includes(fishServiceInit)) throw new Error("Unable to locate Fishflow service initializer for Break the Ice.");
+    transformed = transformed.replace(fishServiceInit, breakServiceInit);
+  }
+
+  const scheduleNeedle = 'function scheduleBotIfNeeded(room) { if (["nine-ice-forts", "four-wing-ice-hunt", "fishflow"].includes(room?.gameId)) return;';
+  const scheduleReplacement = 'function scheduleBotIfNeeded(room) { if (["nine-ice-forts", "four-wing-ice-hunt", "fishflow", "break-the-ice"].includes(room?.gameId)) return;';
+  if (!transformed.includes('"break-the-ice"].includes(room?.gameId)')) {
+    if (!transformed.includes(scheduleNeedle)) throw new Error("Unable to locate heritage-game bot scheduler guard for Break the Ice.");
+    transformed = transformed.replace(scheduleNeedle, scheduleReplacement);
+  }
+
+  const dispatchNeedle = `if (type === "fish_my_rooms") return fishflow.myRooms(ws, requestId, payload);
+    return fail(ws, requestId, \`Unknown message type: \${type}\`);`;
+  const dispatchReplacement = `if (type === "fish_my_rooms") return fishflow.myRooms(ws, requestId, payload);
+    if (type === "bti_room_list") return breakTheIce.listRooms(ws, requestId, payload);
+    if (type === "bti_room_create") return breakTheIce.createRoom(ws, requestId, payload);
+    if (type === "bti_room_join") return breakTheIce.joinRoom(ws, requestId, payload);
+    if (type === "bti_game_state") return breakTheIce.getState(ws, requestId, payload);
+    if (type === "bti_game_roll") return breakTheIce.roll(ws, requestId, payload);
+    if (type === "bti_game_action") return breakTheIce.action(ws, requestId, payload);
+    if (type === "bti_legal_actions") return breakTheIce.legalActions(ws, requestId, payload);
+    if (type === "bti_history") return breakTheIce.history(ws, requestId, payload);
+    if (type === "bti_my_rooms") return breakTheIce.myRooms(ws, requestId, payload);
+    return fail(ws, requestId, \`Unknown message type: \${type}\`);`;
+  if (!transformed.includes('type === "bti_room_create"')) {
+    if (!transformed.includes(dispatchNeedle)) throw new Error("Unable to locate multi-game WebSocket dispatch tail for Break the Ice.");
+    transformed = transformed.replace(dispatchNeedle, dispatchReplacement);
+  }
+
+  const restoreNeedle = 'rooms.set(room.roomCode, room); nineIceForts.restoreRoom(room); fourWingIceHunt.restoreRoom(room); fishflow.restoreRoom(room); if (room.status === "waiting"';
+  const restoreReplacement = 'rooms.set(room.roomCode, room); nineIceForts.restoreRoom(room); fourWingIceHunt.restoreRoom(room); fishflow.restoreRoom(room); breakTheIce.restoreRoom(room); if (room.status === "waiting"';
+  if (!transformed.includes("breakTheIce.restoreRoom(room)")) {
+    if (!transformed.includes(restoreNeedle)) throw new Error("Unable to locate multi-game room restoration loop for Break the Ice.");
+    transformed = transformed.replace(restoreNeedle, restoreReplacement);
+  }
+
+  const healthNeedle = "supportsFishflow: true, antiCheat:";
+  const healthReplacement = "supportsFishflow: true, supportsBreakTheIce: true, antiCheat:";
+  if (!transformed.includes("supportsBreakTheIce: true")) {
+    if (!transformed.includes(healthNeedle)) throw new Error("Unable to locate multi-game health capabilities for Break the Ice.");
+    transformed = transformed.replace(healthNeedle, healthReplacement);
+  }
+
+  return transformed;
+}
+
 function loadMultiGameBackend() {
   const indexPath = require.resolve("./index.js");
   if (require.cache[indexPath]) return require.cache[indexPath].exports;
   const source = fs.readFileSync(indexPath, "utf8");
-  const transformed = injectFishflow(injectFourWingIceHunt(injectNineIceForts(transformBackendSource(source))));
+  const transformed = injectBreakTheIce(injectFishflow(injectFourWingIceHunt(injectNineIceForts(transformBackendSource(source)))));
   const backendModule = new Module(indexPath, module.parent);
   backendModule.filename = indexPath;
   backendModule.paths = Module._nodeModulePaths(path.dirname(indexPath));
@@ -267,5 +350,6 @@ module.exports = {
   loadMultiGameBackend,
   injectNineIceForts,
   injectFourWingIceHunt,
-  injectFishflow
+  injectFishflow,
+  injectBreakTheIce
 };

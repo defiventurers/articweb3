@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { GAME_CATALOG } from "../data/gameCatalogRelease.js";
+import { GAME_CATALOG } from "../data/gameCatalog.js";
 
 const PLAYABLE_GAME_IDS = new Set(GAME_CATALOG.filter((game) => game.available).map((game) => game.id));
 const FILTERS = [

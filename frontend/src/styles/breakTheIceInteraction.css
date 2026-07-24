@@ -1,0 +1,29 @@
+.bti-runner.legal,
+.bti-home-runner.legal {
+  animation: none;
+  filter: brightness(1.12);
+  outline: 2px solid rgba(190, 247, 255, 0.82);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 4px rgba(73, 215, 255, 0.13),
+    0 0 20px rgba(93, 226, 255, 0.42),
+    0 7px 15px rgba(0, 8, 20, 0.42);
+  transition: filter 150ms ease, box-shadow 150ms ease, outline-color 150ms ease;
+}
+
+.bti-runner.piece-coral.legal,
+.bti-home-runner.piece-coral.legal {
+  outline-color: rgba(255, 190, 199, 0.88);
+  box-shadow:
+    0 0 0 4px rgba(255, 113, 145, 0.12),
+    0 0 20px rgba(255, 132, 157, 0.38),
+    0 7px 15px rgba(0, 8, 20, 0.42);
+}
+
+.bti-runner.legal:hover,
+.bti-runner.legal:focus-visible,
+.bti-home-runner.legal:hover,
+.bti-home-runner.legal:focus-visible {
+  filter: brightness(1.28);
+  outline-color: #ffffff;
+}

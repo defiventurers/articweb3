@@ -85,3 +85,13 @@ export async function submitFishflowAction({ roomCode, profile, action }) { retu
 export async function getFishflowLegalActions({ roomCode, profile }) { return (await request("fish_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
 export async function getFishflowHistory({ profile }) { return (await request("fish_history", { wallet: profile.wallet })).history || []; }
 export async function getMyFishflowRooms({ profile }) { return (await request("fish_my_rooms", { wallet: profile.wallet })).rooms || []; }
+
+export async function listBreakTheIceRooms() { return (await request("bti_room_list", {})).rooms || []; }
+export async function createBreakTheIceRoom({ visibility = "public", runner = "blue", profile }) { return (await request("bti_room_create", { visibility, runner, wallet: profile.wallet })).room; }
+export async function joinBreakTheIceRoom({ roomCode, profile }) { return (await request("bti_room_join", { roomCode, wallet: profile.wallet })).room; }
+export async function getBreakTheIceState({ roomCode, profile }) { return (await request("bti_game_state", { roomCode, wallet: profile.wallet })).room; }
+export async function rollBreakTheIceCowries({ roomCode, profile }) { return (await request("bti_game_roll", { roomCode, wallet: profile.wallet })).room; }
+export async function submitBreakTheIceAction({ roomCode, profile, action }) { return (await request("bti_game_action", { roomCode, wallet: profile.wallet, action })).room; }
+export async function getBreakTheIceLegalActions({ roomCode, profile }) { return (await request("bti_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
+export async function getBreakTheIceHistory({ profile }) { return (await request("bti_history", { wallet: profile.wallet })).history || []; }
+export async function getMyBreakTheIceRooms({ profile }) { return (await request("bti_my_rooms", { wallet: profile.wallet })).rooms || []; }
