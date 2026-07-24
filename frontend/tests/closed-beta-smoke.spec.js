@@ -62,6 +62,22 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByRole("gridcell", { name: "Coral pit 2 with 7 fish" })).toBeEnabled();
   });
 
+  test("Break the Ice opens and resolves an exact-finish cowrie drill", async ({ page }) => {
+    await page.goto("/?skipLoader=1");
+    await page.getByRole("button", { name: "Play Break the Ice" }).click();
+    await expect(page.getByLabel("Break the Ice cover")).toBeVisible();
+
+    await page.getByRole("button", { name: "Start the race" }).click();
+    await expect(page.getByLabel("Break the Ice menu")).toBeVisible();
+    await page.getByRole("button", { name: "Daily Cowrie Drill" }).click();
+    await expect(page.getByLabel("Break the Ice daily drill")).toBeVisible();
+    await expect(page.getByText("Blue rolled 5. Choose one runner.")).toBeVisible();
+
+    await page.getByRole("button", { name: "Blue runner 1 on Home climb 1, legal move" }).click();
+    await expect(page.getByText("Perfect route")).toBeVisible();
+    await expect(page.getByText(/Best runner: Runner 1/i)).toBeVisible();
+  });
+
   test("smoke profile opens Player Hub", async ({ page }) => {
     await page.goto(smokePath);
     await expect(page.getByLabel("Player Hub")).toBeVisible();
