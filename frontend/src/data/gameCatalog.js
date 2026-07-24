@@ -19,12 +19,13 @@ export const GAME_CATALOG = [
     heritage: "Navakankari / Nine Men’s Morris",
     engine: "Graph alignment",
     players: "2 players",
-    status: "BUILD NOW",
-    statusKey: "build-now",
+    status: "PLAYABLE",
+    statusKey: "playable",
     priority: 1,
     theme: "forts",
     mark: "IX",
-    summary: "Form mills, break formations and trap the rival tribe."
+    summary: "Form mills, break formations and trap the rival tribe.",
+    available: true
   },
   {
     id: "four-wing-ice-hunt",
@@ -32,12 +33,13 @@ export const GAME_CATALOG = [
     heritage: "Diviyan Keliya / Leopards and Cattle",
     engine: "Graph hunt",
     players: "2 players",
-    status: "BUILD NOW",
-    statusKey: "build-now",
+    status: "PLAYABLE",
+    statusKey: "playable",
     priority: 2,
     theme: "hunt",
     mark: "4W",
-    summary: "Two hunters face a surrounding colony on a striking four-wing board."
+    summary: "Two hunters face a surrounding colony on a striking four-wing board.",
+    available: true
   },
   {
     id: "fishflow",
