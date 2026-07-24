@@ -1,4 +1,4 @@
-name: Nine Ice Forts Server
+name: Heritage Games Server
 
 on:
   workflow_dispatch:
@@ -28,5 +28,5 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
-      - name: Run Nine Ice Forts server tests
-        run: npm run test:nif
+      - name: Run heritage game server tests
+        run: npm run test:games
