@@ -14,6 +14,7 @@ import { NineIceFortsApp } from "./games/nine-ice-forts/NineIceFortsApp.jsx";
 import { FourWingIceHuntApp } from "./games/four-wing-ice-hunt/FourWingIceHuntApp.jsx";
 import { FishflowApp } from "./games/fishflow/FishflowApp.jsx";
 import { BreakTheIceApp } from "./games/break-the-ice/BreakTheIceApp.jsx";
+import { IceHuntersApp } from "./games/ice-hunters/IceHuntersApp.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
@@ -78,11 +79,13 @@ export default function App() {
                   ? "fishflow"
                   : requestedGame?.id === "break-the-ice"
                     ? "break-the-ice"
-                    : requestedGame?.available
-                      ? "cover"
-                      : requestedGame
-                        ? "game-preview"
-                        : "library";
+                    : requestedGame?.id === "ice-hunters"
+                      ? "ice-hunters"
+                      : requestedGame?.available
+                        ? "cover"
+                        : requestedGame
+                          ? "game-preview"
+                          : "library";
   const [assetsReady, setAssetsReady] = useState(skipLoader);
   const [screen, setScreen] = useState(initialScreen);
   const [selectedGameId, setSelectedGameId] = useState(initialSelectedGameId);
@@ -133,6 +136,7 @@ export default function App() {
     if (game.id === "four-wing-ice-hunt") return goTo("four-wing-ice-hunt");
     if (game.id === "fishflow") return goTo("fishflow");
     if (game.id === "break-the-ice") return goTo("break-the-ice");
+    if (game.id === "ice-hunters") return goTo("ice-hunters");
     goTo(game.available ? "cover" : "game-preview");
   }
 
@@ -155,6 +159,7 @@ export default function App() {
   if (screen === "four-wing-ice-hunt") return withAppChrome(<FourWingIceHuntApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "fishflow") return withAppChrome(<FishflowApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "break-the-ice") return withAppChrome(<BreakTheIceApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
+  if (screen === "ice-hunters") return withAppChrome(<IceHuntersApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "game-preview" && selectedGame) return withAppChrome(<GamePreviewScreen game={selectedGame} onBack={exitToLibrary} />);
 
   if (screen === "dev-home") return withAppChrome(renderLazy(<DevPortalScreen onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onSettlementAdmin={() => goTo("settlement-admin")} onVaultDeployer={() => goTo("vault-deployer")} onExit={() => window.location.assign("/")} />, "Loading developer console..."));
