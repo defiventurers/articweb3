@@ -97,6 +97,25 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByText(/captured the scout on n11/i)).toBeVisible();
   });
 
+  test("Sixteen Ice Warriors opens and completes an optional two-jump chain", async ({ page }) => {
+    await page.goto("/?skipLoader=1");
+    await page.getByRole("button", { name: "Play Sixteen Ice Warriors" }).click();
+    await expect(page.getByLabel("Sixteen Ice Warriors cover")).toBeVisible();
+
+    await page.getByRole("button", { name: "Enter the war table" }).click();
+    await expect(page.getByLabel("Sixteen Ice Warriors menu")).toBeVisible();
+    await page.getByRole("button", { name: "Chain Capture Drill" }).click();
+    await expect(page.getByLabel("Sixteen Ice Warriors capture drill")).toBeVisible();
+
+    await page.getByRole("gridcell", { name: "c04 occupied by aurora" }).click();
+    await page.getByRole("gridcell", { name: "c22 empty" }).click();
+    await expect(page.getByText(/continue the capture chain or end the turn/i)).toBeVisible();
+
+    await page.getByRole("gridcell", { name: "c40 empty" }).click();
+    await expect(page.getByText("Aurora Legion wins")).toBeVisible();
+    await expect(page.getByText(/Every opposing soldier has been chopped/i)).toBeVisible();
+  });
+
   test("smoke profile opens Player Hub", async ({ page }) => {
     await page.goto(smokePath);
     await expect(page.getByLabel("Player Hub")).toBeVisible();
