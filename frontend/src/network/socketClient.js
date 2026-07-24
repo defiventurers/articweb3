@@ -133,3 +133,12 @@ export async function submitCrownRunAction({ roomCode, profile, action }) { retu
 export async function getCrownRunLegalActions({ roomCode, profile }) { return (await request("cr_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
 export async function getCrownRunHistory({ profile }) { return (await request("cr_history", { wallet: profile.wallet })).history || []; }
 export async function getMyCrownRunRooms({ profile }) { return (await request("cr_my_rooms", { wallet: profile.wallet })).rooms || []; }
+
+export async function listFortyGlacierGuardsRooms() { return (await request("fgg_room_list", {})).rooms || []; }
+export async function createFortyGlacierGuardsRoom({ visibility = "public", role = "aurora", profile }) { return (await request("fgg_room_create", { visibility, role, wallet: profile.wallet })).room; }
+export async function joinFortyGlacierGuardsRoom({ roomCode, profile }) { return (await request("fgg_room_join", { roomCode, wallet: profile.wallet })).room; }
+export async function getFortyGlacierGuardsState({ roomCode, profile }) { return (await request("fgg_game_state", { roomCode, wallet: profile.wallet })).room; }
+export async function submitFortyGlacierGuardsAction({ roomCode, profile, action }) { return (await request("fgg_game_action", { roomCode, wallet: profile.wallet, action })).room; }
+export async function getFortyGlacierGuardsLegalActions({ roomCode, profile }) { return (await request("fgg_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
+export async function getFortyGlacierGuardsHistory({ profile }) { return (await request("fgg_history", { wallet: profile.wallet })).history || []; }
+export async function getMyFortyGlacierGuardsRooms({ profile }) { return (await request("fgg_my_rooms", { wallet: profile.wallet })).rooms || []; }
