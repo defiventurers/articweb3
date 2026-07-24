@@ -114,6 +114,8 @@ function installSixteenIceWarriorsBackend() {
   return multiGameBackend;
 }
 
+installSixteenIceWarriorsBackend();
+
 module.exports = {
   injectSixteenIceWarriors,
   loadSixteenIceWarriorsBackend,
