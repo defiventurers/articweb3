@@ -129,7 +129,7 @@ async function boot() {
   await refreshHighStakesTierSnapshot();
 
   console.log("[vault-indexer] wrapper loaded");
-  require("../loadPrizeBackend.js").loadPrizeBackend();
+  require("../loadMultiGameBackend.js").loadMultiGameBackend();
   console.log("[vault-indexer] backend loaded");
 
   const AUTO_RUN = process.env.ETH_INDEXER_AUTO_RUN !== "false";
@@ -250,43 +250,34 @@ function debugRoom(room) {
 }
 
 function duplicateSettlementSummary(room) {
-  const status = room.settlementStatus || null;
-  const hasTx = Boolean(room.settlementTxHash);
-  const activeOrFinal = ["submitted", "settlement_pending", "submitting", "settled"].includes(status || "");
-  return { existingSettlementTxHash: room.settlementTxHash || null, existingStatus: status, duplicateRisk: Boolean(hasTx && activeOrFinal), reason: hasTx && activeOrFinal ? "Existing settlement transaction/status is active or final." : null };
+  const submitted = (room.auditLog || []).filter((event) => ["settlement_submitted", "settlement_already_onchain", "settlement_duplicate_skipped"].includes(event.type));
+  return { submittedCount: submitted.filter((event) => event.type === "settlement_submitted").length, hasSettlementTx: Boolean(room.settlementTxHash), settled: room.settlementStatus === "settled", safeToRetryAutomatically: room.settlementStatus === "failed" && !room.settlementTxHash, events: submitted.slice(-10) };
 }
 
-function recoveryAdvice(room, duplicate) {
-  if (!SETTLEMENT_OPERATOR_KEY) return { action: "configure_operator_key", canProceed: false, reason: "SETTLEMENT_OPERATOR_KEY or indexer admin key is not configured." };
-  if (!room?.contractMatchId || !Array.isArray(room.payoutPlan) || room.payoutPlan.length !== 4) return { action: "inspect_room_payload", canProceed: false, reason: "Room is missing contractMatchId or a four-item payoutPlan." };
-  if (room.settlementStatus === "settled") return { action: "none", canProceed: false, reason: "Room is already marked settled." };
-  if (duplicate.duplicateRisk && !settlementPendingTooLong(room)) return { action: "verify_existing_tx", canProceed: false, reason: duplicate.reason };
-  if (room.settlementStatus === "needs_settlement_signer") return { action: "configure_settlement_signer", canProceed: false, reason: "Backend settlement signer is missing." };
-  if (room.settlementStatus === "needs_game_server_update") return { action: "fix_signer_or_vault_game_server", canProceed: false, reason: "Configured signer does not match vault gameServer." };
-  return { action: "eligible_for_manual_recovery_review", canProceed: true, reason: "Room is eligible for operator recovery review. Use the debug packet before any manual chain action." };
+function recoveryAdvice(room, duplicatePrevention) {
+  if (room.settlementStatus === "settled") return { action: "none", message: "Match already settled." };
+  if (duplicatePrevention.hasSettlementTx) return { action: "verify_onchain", message: "A settlement transaction already exists. Verify it before any retry." };
+  if (room.settlementStatus === "needs_settlement_signer") return { action: "configure_signer", message: "Configure ETH_SETTLEMENT_SIGNER and restart the server." };
+  if (room.settlementStatus === "needs_game_server_update") return { action: "update_vault_game_server", message: "Set the vault gameServer to the configured settlement signer." };
+  if (room.settlementStatus === "needs_settlement_review") return { action: "manual_review", message: "Retry limit reached. Review the debug packet and on-chain state." };
+  if (room.settlementStatus === "failed") return { action: "restart_or_manual_retry", message: "No settlement transaction is recorded. Correct the error before retrying." };
+  return { action: "monitor", message: "Monitor current settlement state." };
 }
 
-function copyableDebugPacket(room, duplicate, recovery) {
-  return { roomCode: room.roomCode, matchId: room.matchId, contractMatchId: room.contractMatchId, entryWei: room.entryWei || "0", roomStatus: room.status, settlementStatus: room.settlementStatus || null, settlementTxHash: room.settlementTxHash || null, settlementError: room.settlementError || null, settlementAttempts: Number(room.settlementAttempts || 0), payoutTotalWei: payoutTotalWei(room), orderedWallets: (room.payoutPlan || []).map((item) => item.wallet), payouts: (room.payoutPlan || []).map((item) => String(item.payoutWei || "0")), placements: room.placements || [], players: Object.values(room.players || {}).map((player) => ({ wallet: player.wallet, team: player.team || null, entryLocked: Boolean(player.entryLocked), entryTxHash: player.entryTxHash || null })), duplicatePrevention: duplicate, recovery, proofHash: room.proofHash || null, auditTail: (room.auditLog || []).slice(-25) };
+function copyableDebugPacket(room, duplicatePrevention, recovery) {
+  return JSON.stringify({ roomCode: room.roomCode, matchId: room.matchId, contractMatchId: room.contractMatchId, settlementStatus: room.settlementStatus || null, settlementTxHash: room.settlementTxHash || null, settlementError: room.settlementError || null, settlementAttempts: room.settlementAttempts || 0, payoutPlan: room.payoutPlan || [], proofHash: room.proofHash || null, duplicatePrevention, recovery, auditTail: (room.auditLog || []).slice(-25) }, null, 2);
 }
 
-function settlementPendingTooLong(room) {
-  const status = room.settlementStatus || null;
-  if (!["submitted", "settlement_pending", "submitting"].includes(status || "")) return false;
-  const submittedAt = lastAuditAt(room, "settlement_submitted") || lastAuditAt(room, "manual_recovery_submitted");
-  return Boolean(submittedAt && Date.now() - submittedAt > SETTLEMENT_PENDING_STALE_MS);
+function lastAuditAt(room, type) {
+  const found = [...(room.auditLog || [])].reverse().find((event) => event.type === type);
+  return found?.at || null;
 }
 
 function payoutTotalWei(room) {
   return (room.payoutPlan || []).reduce((total, item) => total + BigInt(item.payoutWei || "0"), 0n).toString();
 }
 
-function lastAuditAt(room, type) {
-  const item = [...(room.auditLog || [])].reverse().find((event) => event?.type === type);
-  return item?.at || null;
-}
-
 boot().catch((err) => {
-  console.error("[vault-indexer] boot failed", err.message || err);
+  console.error("[vault-indexer] boot failed", err);
   process.exitCode = 1;
 });
