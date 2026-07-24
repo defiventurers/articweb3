@@ -1,0 +1,488 @@
+:root {
+  --fish-night: #041828;
+  --fish-deep: #06354a;
+  --fish-blue: #57d9ff;
+  --fish-coral: #ff927d;
+  --fish-aurora: #73ffd1;
+  --fish-gold: #ffd27a;
+  --fish-ice: #d7fbff;
+}
+
+.fishflow-cover,
+.fishflow-menu,
+.fishflow-rules,
+.fishflow-game,
+.fishflow-online-shell {
+  min-height: 100vh;
+  box-sizing: border-box;
+  color: #effdff;
+  background:
+    radial-gradient(circle at 16% 8%, rgba(82, 238, 255, 0.18), transparent 28%),
+    radial-gradient(circle at 83% 12%, rgba(255, 142, 119, 0.12), transparent 28%),
+    linear-gradient(180deg, #031523, #063149 58%, #031724);
+}
+
+.fishflow-cover button,
+.fishflow-menu button,
+.fishflow-rules button,
+.fishflow-game button,
+.fishflow-online-shell button,
+.fishflow-online-shell input { font: inherit; }
+
+.fishflow-back-pill {
+  position: fixed;
+  z-index: 30;
+  top: 18px;
+  left: 18px;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(190, 244, 255, 0.4);
+  border-radius: 999px;
+  color: #effcff;
+  background: rgba(3, 28, 43, 0.82);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+
+.fishflow-back-pill:hover,
+.fishflow-back-pill:focus-visible {
+  border-color: var(--fish-ice);
+  background: rgba(10, 67, 90, 0.96);
+  outline: none;
+}
+
+.fishflow-cover {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: 72px 24px 40px;
+}
+
+.fishflow-cover::before {
+  content: "";
+  position: absolute;
+  inset: auto -8vw -26vh;
+  height: 58vh;
+  border-radius: 50% 50% 0 0;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(255, 255, 255, 0.3), transparent 13%),
+    repeating-radial-gradient(ellipse at center, rgba(85, 214, 255, 0.13) 0 3px, transparent 4px 38px),
+    linear-gradient(180deg, rgba(10, 111, 143, 0.5), rgba(2, 34, 53, 0.94));
+  transform: perspective(500px) rotateX(58deg);
+}
+
+.fishflow-aurora span {
+  position: absolute;
+  top: -12%;
+  width: 24vw;
+  height: 72vh;
+  border-radius: 50%;
+  filter: blur(26px);
+  opacity: 0.22;
+  transform: rotate(22deg);
+}
+.fishflow-aurora span:nth-child(1) { left: 8%; background: var(--fish-blue); }
+.fishflow-aurora span:nth-child(2) { left: 39%; background: var(--fish-aurora); }
+.fishflow-aurora span:nth-child(3) { right: 6%; background: var(--fish-coral); }
+
+.fishflow-cover-copy {
+  position: relative;
+  z-index: 4;
+  width: min(760px, 100%);
+  text-align: center;
+}
+
+.fishflow-cover-copy p,
+.fishflow-eyebrow {
+  margin: 0 0 12px;
+  color: var(--fish-aurora);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.17em;
+}
+
+.fishflow-cover-copy h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(76px, 13vw, 154px);
+  line-height: 0.72;
+  letter-spacing: -0.075em;
+  text-shadow: 0 14px 44px rgba(0, 0, 0, 0.48), 0 0 32px rgba(99, 225, 255, 0.2);
+}
+
+.fishflow-cover-copy > span {
+  display: block;
+  max-width: 660px;
+  margin: 30px auto 0;
+  color: #c6e9ef;
+  font-size: clamp(16px, 2vw, 21px);
+  line-height: 1.55;
+}
+
+.fishflow-cover-copy > button,
+.fishflow-menu-actions button,
+.fishflow-rules-start,
+.fishflow-result-actions button {
+  min-height: 48px;
+  padding: 0 22px;
+  border: 1px solid rgba(187, 246, 255, 0.46);
+  border-radius: 14px;
+  color: #effeff;
+  background: linear-gradient(180deg, rgba(13, 100, 128, 0.98), rgba(4, 53, 76, 0.98));
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 14px 34px rgba(0, 8, 18, 0.3);
+}
+
+.fishflow-cover-copy > button { margin-top: 30px; min-width: 220px; }
+.fishflow-cover-copy > button:hover,
+.fishflow-menu-actions button:hover,
+.fishflow-rules-start:hover,
+.fishflow-result-actions button:hover {
+  border-color: #e6fdff;
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, rgba(22, 132, 160, 0.98), rgba(6, 70, 98, 0.98));
+}
+
+.fishflow-cover-board {
+  position: absolute;
+  z-index: 2;
+  width: min(1050px, 92vw);
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: clamp(8px, 1.4vw, 20px);
+  opacity: 0.22;
+  transform: rotate(-8deg) translateY(4vh);
+}
+.fishflow-cover-board i {
+  aspect-ratio: 1.45;
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--fish-ice);
+  border-radius: 50%;
+  background: rgba(14, 95, 119, 0.38);
+  box-shadow: inset 0 8px 18px rgba(0, 0, 0, 0.3), 0 0 20px rgba(105, 226, 255, 0.22);
+}
+.fishflow-cover-board b { color: var(--fish-gold); font-size: clamp(8px, 1.1vw, 15px); letter-spacing: -0.12em; }
+
+.fishflow-menu,
+.fishflow-rules {
+  display: grid;
+  place-items: center;
+  padding: 82px 20px 42px;
+}
+
+.fishflow-menu-card,
+.fishflow-rules > article {
+  width: min(920px, 100%);
+  padding: clamp(25px, 5vw, 54px);
+  border: 1px solid rgba(182, 243, 255, 0.23);
+  border-radius: 30px;
+  background: linear-gradient(145deg, rgba(5, 59, 80, 0.91), rgba(3, 28, 43, 0.88));
+  box-shadow: 0 34px 90px rgba(0, 7, 18, 0.46), inset 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.fishflow-menu-card h1,
+.fishflow-rules h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(48px, 8vw, 84px);
+  line-height: 0.95;
+}
+
+.fishflow-menu-card > p:not(.fishflow-eyebrow) {
+  color: #c4e4eb;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.fishflow-menu-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 26px;
+}
+.fishflow-menu-actions button.primary {
+  grid-column: 1 / -1;
+  color: #053446;
+  border-color: #c9ffef;
+  background: linear-gradient(180deg, #9fffe1, #5ce0bd);
+}
+
+.fishflow-source-note,
+.fishflow-modern-policy {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border-left: 3px solid var(--fish-gold);
+  border-radius: 4px 14px 14px 4px;
+  color: #cce7ed;
+  background: rgba(2, 25, 39, 0.68);
+  line-height: 1.55;
+}
+
+.fishflow-rule-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+  margin-top: 28px;
+}
+.fishflow-rule-grid section {
+  padding: 18px;
+  border: 1px solid rgba(181, 242, 255, 0.17);
+  border-radius: 17px;
+  background: rgba(4, 39, 57, 0.66);
+}
+.fishflow-rule-grid strong { color: var(--fish-aurora); font-size: 17px; }
+.fishflow-rule-grid p { margin: 8px 0 0; color: #c4e1e8; line-height: 1.5; }
+.fishflow-modern-policy { display: grid; gap: 5px; }
+.fishflow-modern-policy small { color: #87b6c4; }
+.fishflow-rules-start { margin-top: 20px; }
+
+.fishflow-game {
+  overflow: auto;
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 18px 24px 14px;
+}
+
+.fishflow-game-header,
+.fishflow-game-footer {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) auto minmax(120px, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+.fishflow-game-header > div { text-align: center; }
+.fishflow-game-header p { margin: 0; color: var(--fish-aurora); font-size: 10px; font-weight: 900; letter-spacing: 0.1em; }
+.fishflow-game-header h1 { margin: 3px 0 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(25px, 3vw, 40px); }
+.fishflow-game-header > button {
+  justify-self: start;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(181, 242, 255, 0.3);
+  border-radius: 12px;
+  color: #eaffff;
+  background: rgba(3, 39, 56, 0.78);
+  cursor: pointer;
+}
+.fishflow-game-header > button:last-child { justify-self: end; }
+
+.fishflow-game-main {
+  width: min(1320px, 100%);
+  margin: 12px auto;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 12px;
+}
+
+.fishflow-score-row {
+  width: min(1060px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.fishflow-current-card {
+  min-width: 0;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 16px;
+  border: 1px solid rgba(184, 243, 255, 0.17);
+  border-radius: 18px;
+  background: rgba(4, 39, 56, 0.72);
+}
+.fishflow-current-card.active { box-shadow: 0 0 0 2px rgba(119, 255, 211, 0.38), 0 0 26px rgba(119, 255, 211, 0.16); }
+.fishflow-current-card.coral { border-left: 4px solid var(--fish-coral); }
+.fishflow-current-card.blue { border-right: 4px solid var(--fish-blue); }
+.fishflow-current-card > span { font-size: 28px; color: var(--fish-gold); }
+.fishflow-current-card strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fishflow-current-card small { display: block; margin-top: 4px; color: #95c3cf; }
+.fishflow-current-card > b { font-size: 28px; }
+
+.fishflow-round-medallion {
+  width: 76px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border: 1px solid rgba(255, 211, 122, 0.42);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(24, 104, 120, 0.96), rgba(3, 38, 54, 0.98));
+  box-shadow: 0 0 22px rgba(255, 211, 122, 0.13);
+}
+.fishflow-round-medallion small { font-size: 8px; letter-spacing: 0.14em; color: #bfe9ef; }
+.fishflow-round-medallion strong { font-size: 25px; line-height: 1; }
+.fishflow-round-medallion span { font-size: 8px; color: #82b6c4; }
+
+.fishflow-turn-banner {
+  width: min(900px, 96%);
+  padding: 10px 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  border: 1px solid rgba(182, 243, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(2, 28, 42, 0.76);
+}
+.fishflow-turn-banner[data-player="blue"] { border-left: 4px solid var(--fish-blue); }
+.fishflow-turn-banner[data-player="coral"] { border-left: 4px solid var(--fish-coral); }
+.fishflow-turn-banner span { color: #9cc9d2; text-align: right; }
+
+.fishflow-board {
+  width: min(1180px, 100%);
+  min-height: 370px;
+  display: grid;
+  grid-template-columns: minmax(80px, 130px) minmax(0, 1fr) minmax(80px, 130px);
+  gap: 16px;
+  align-items: center;
+  padding: clamp(16px, 2.5vw, 30px);
+  box-sizing: border-box;
+  border: 1px solid rgba(193, 248, 255, 0.24);
+  border-radius: 38px;
+  background:
+    linear-gradient(90deg, rgba(255, 146, 125, 0.07), transparent 30% 70%, rgba(87, 217, 255, 0.08)),
+    linear-gradient(145deg, rgba(11, 84, 104, 0.94), rgba(3, 45, 66, 0.96));
+  box-shadow: inset 0 2px rgba(255, 255, 255, 0.08), inset 0 -18px 35px rgba(0, 10, 20, 0.36), 0 28px 65px rgba(0, 7, 18, 0.35);
+}
+
+.fishflow-pit-field { min-width: 0; display: grid; gap: 9px; }
+.fishflow-row { display: grid; grid-template-columns: repeat(7, minmax(54px, 1fr)); gap: clamp(7px, 1.2vw, 15px); }
+.fishflow-current-label { font-size: 10px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; }
+.fishflow-current-label.coral { color: var(--fish-coral); text-align: right; }
+.fishflow-current-label.blue { color: var(--fish-blue); }
+.fishflow-flow-line { display: grid; place-items: center; height: 24px; color: rgba(207, 251, 255, 0.46); font-size: 9px; letter-spacing: 0.14em; }
+
+.fishflow-pit {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1.2;
+  min-height: 64px;
+  border: 2px solid rgba(204, 250, 255, 0.28);
+  border-radius: 50%;
+  color: #effeff;
+  background: radial-gradient(ellipse at 50% 66%, rgba(13, 112, 133, 0.9), rgba(1, 32, 50, 0.98) 70%);
+  box-shadow: inset 0 13px 17px rgba(0, 3, 14, 0.44), inset 0 -3px rgba(255, 255, 255, 0.08), 0 8px 16px rgba(0, 9, 19, 0.24);
+}
+.fishflow-pit.coral { border-color: rgba(255, 146, 125, 0.35); }
+.fishflow-pit.blue { border-color: rgba(87, 217, 255, 0.35); }
+.fishflow-pit.legal { cursor: pointer; animation: fishflowPulse 2.1s ease-in-out infinite; }
+.fishflow-pit.legal:hover,
+.fishflow-pit.legal:focus-visible { border-color: var(--fish-aurora); transform: translateY(-2px); outline: none; box-shadow: inset 0 13px 17px rgba(0, 3, 14, 0.42), 0 0 0 3px rgba(115, 255, 209, 0.18), 0 12px 24px rgba(0, 10, 20, 0.32); }
+.fishflow-pit.inactive { opacity: 0.38; filter: grayscale(0.55); }
+.fishflow-pit-number { position: absolute; z-index: 3; top: 7px; right: 10px; min-width: 22px; height: 22px; display: grid; place-items: center; border-radius: 999px; color: #062d3d; background: var(--fish-gold); font-size: 12px; font-weight: 900; }
+.fishflow-fish-cluster { position: absolute; inset: 23% 14% 12%; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 1px 3px; color: #ffd689; font-size: clamp(7px, 0.85vw, 12px); text-shadow: 0 0 6px rgba(255, 211, 122, 0.35); }
+.fishflow-pit small { position: absolute; left: 8px; bottom: 6px; color: #bcecf3; font-size: 9px; }
+.fishflow-frozen-mark { position: absolute; inset: 0; display: grid; place-items: center; font-size: 28px; color: #d7fbff; }
+
+.fishflow-store {
+  min-height: 190px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border: 2px solid rgba(194, 248, 255, 0.26);
+  border-radius: 50% 50% 32% 32%;
+  background: radial-gradient(ellipse at 50% 70%, rgba(10, 103, 124, 0.94), rgba(1, 30, 46, 0.98));
+  box-shadow: inset 0 20px 28px rgba(0, 4, 14, 0.42), 0 14px 28px rgba(0, 6, 16, 0.25);
+}
+.fishflow-store.coral { border-color: rgba(255, 146, 125, 0.42); }
+.fishflow-store.blue { border-color: rgba(87, 217, 255, 0.42); }
+.fishflow-store > span { color: var(--fish-gold); font-size: 34px; transform: rotate(90deg); }
+.fishflow-store strong { font-size: 42px; line-height: 1; }
+.fishflow-store small { margin-top: 8px; color: #8dbbc7; font-size: 9px; letter-spacing: 0.12em; }
+
+.fishflow-game-message {
+  min-height: 22px;
+  margin: 0;
+  color: #cceaf0;
+  text-align: center;
+}
+.fishflow-result-panel { width: min(650px, 94%); padding: 18px 22px; border: 1px solid rgba(117, 255, 210, 0.32); border-radius: 20px; text-align: center; background: rgba(3, 36, 51, 0.93); }
+.fishflow-result-panel h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 34px; }
+.fishflow-result-panel p { color: #b9dce4; }
+.fishflow-result-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.fishflow-game-footer { color: #78a8b6; font-size: 10px; }
+.fishflow-game-footer span:last-child { text-align: right; }
+
+.fishflow-online-shell { padding: 76px clamp(16px, 4vw, 54px) 40px; }
+.fishflow-online-shell > header { width: min(1180px, 100%); margin: 0 auto 22px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
+.fishflow-online-shell h1 { margin: 0; text-align: center; font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 5vw, 54px); }
+.fishflow-online-shell button,
+.fishflow-online-shell input { min-height: 44px; border: 1px solid rgba(169, 235, 255, 0.38); border-radius: 13px; }
+.fishflow-online-shell button { padding: 0 16px; color: #f3fcff; background: rgba(6, 59, 80, 0.86); font-weight: 900; cursor: pointer; }
+.fishflow-online-shell button:hover,
+.fishflow-online-shell button:focus-visible { border-color: #b7f5ff; background: rgba(12, 93, 117, 0.96); outline: none; }
+.fishflow-online-shell button:disabled { opacity: 0.55; cursor: wait; }
+.fishflow-online-grid { width: min(1180px, 100%); margin: 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.fishflow-online-grid article,
+.fishflow-online-history article { padding: 20px; border: 1px solid rgba(163, 231, 255, 0.2); border-radius: 20px; background: rgba(3, 42, 59, 0.76); box-shadow: 0 18px 40px rgba(0, 8, 20, 0.24); }
+.fishflow-online-grid article.wide { grid-column: 1 / -1; }
+.fishflow-online-grid h2 { margin: 0 0 8px; font-family: Georgia, "Times New Roman", serif; font-size: 24px; }
+.fishflow-online-grid p { min-height: 42px; color: #b9dbe7; line-height: 1.5; }
+.fishflow-online-grid article > button { width: 100%; margin-top: 8px; }
+.fishflow-online-grid input { width: 100%; padding: 0 14px; box-sizing: border-box; color: #fff; background: rgba(2, 22, 34, 0.86); font-size: 20px; font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase; }
+.fishflow-online-message { width: min(1180px, 100%); margin: 18px auto 0; color: #ffd6b7; text-align: center; }
+.fishflow-online-refresh { display: block; width: min(360px, 100%); margin: 18px auto 0; }
+.fishflow-online-history { width: min(900px, 100%); margin: 0 auto; display: grid; gap: 12px; }
+.fishflow-online-history article { display: grid; gap: 5px; }
+.fishflow-online-history strong { font-size: 22px; }
+.fishflow-online-history span { color: #c5e6f2; }
+.fishflow-online-history small { color: #86b4c7; }
+
+@keyframes fishflowPulse {
+  0%, 100% { box-shadow: inset 0 13px 17px rgba(0, 3, 14, 0.44), 0 0 0 rgba(115, 255, 209, 0); }
+  50% { box-shadow: inset 0 13px 17px rgba(0, 3, 14, 0.44), 0 0 18px rgba(115, 255, 209, 0.23); }
+}
+
+@media (max-width: 900px) {
+  .fishflow-board { grid-template-columns: 1fr; min-height: 0; border-radius: 26px; }
+  .fishflow-store { min-height: 72px; grid-template-columns: auto auto auto; gap: 10px; border-radius: 18px; }
+  .fishflow-store.coral { grid-row: 1; }
+  .fishflow-store.blue { grid-row: 3; }
+  .fishflow-store > span { font-size: 22px; }
+  .fishflow-store strong { font-size: 28px; }
+  .fishflow-pit-field { grid-row: 2; }
+  .fishflow-row { gap: 6px; }
+  .fishflow-pit { min-height: 56px; }
+}
+
+@media (max-width: 680px) {
+  .fishflow-game { padding: 68px 10px 12px; }
+  .fishflow-game-header { grid-template-columns: 1fr 1fr; }
+  .fishflow-game-header > div { grid-column: 1 / -1; grid-row: 1; }
+  .fishflow-game-header > button { grid-row: 2; }
+  .fishflow-score-row { grid-template-columns: 1fr 1fr; }
+  .fishflow-round-medallion { grid-column: 1 / -1; grid-row: 1; justify-self: center; }
+  .fishflow-current-card.coral { grid-column: 1; grid-row: 2; }
+  .fishflow-current-card.blue { grid-column: 2; grid-row: 2; }
+  .fishflow-current-card { grid-template-columns: auto 1fr; padding: 8px 10px; }
+  .fishflow-current-card > b { grid-column: 1 / -1; justify-self: center; font-size: 22px; }
+  .fishflow-turn-banner { grid-template-columns: 1fr; }
+  .fishflow-turn-banner span { text-align: left; }
+  .fishflow-board { padding: 12px 8px; gap: 10px; }
+  .fishflow-row { grid-template-columns: repeat(7, minmax(38px, 1fr)); gap: 4px; }
+  .fishflow-pit { min-height: 44px; border-width: 1px; }
+  .fishflow-pit-number { top: 3px; right: 4px; min-width: 18px; height: 18px; font-size: 10px; }
+  .fishflow-fish-cluster { inset: 26% 9% 8%; font-size: 7px; }
+  .fishflow-menu-actions,
+  .fishflow-rule-grid,
+  .fishflow-online-grid { grid-template-columns: 1fr; }
+  .fishflow-menu-actions button.primary,
+  .fishflow-online-grid article.wide { grid-column: auto; }
+  .fishflow-online-shell { padding: 72px 12px 28px; }
+  .fishflow-online-shell > header { grid-template-columns: 1fr 1fr; }
+  .fishflow-online-shell > header h1 { grid-column: 1 / -1; grid-row: 1; }
+  .fishflow-online-shell > header button { grid-row: 2; }
+  .fishflow-game-footer { grid-template-columns: 1fr; text-align: center; gap: 4px; }
+  .fishflow-game-footer span:last-child { text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fishflow-pit.legal { animation: none; }
+}
