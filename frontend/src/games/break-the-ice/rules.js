@@ -143,7 +143,13 @@ export function getLegalActions(state, player = state.currentPlayer) {
     const targetSpace = route[targetProgress];
     if (targetSpace && canLand(state, player, targetSpace, piece.id)) {
       const occupant = getOccupantAtSpace(state, targetSpace, piece.id);
-      actions.push({ type: "move", pieceId: piece.id, targetProgress, targetSpace, captures: occupant?.player !== player ? occupant.id : null });
+      actions.push({
+        type: "move",
+        pieceId: piece.id,
+        targetProgress,
+        targetSpace,
+        captures: occupant && occupant.player !== player ? occupant.id : null
+      });
     }
   }
   return actions;
