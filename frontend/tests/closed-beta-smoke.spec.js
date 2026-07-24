@@ -131,6 +131,25 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByText(/already-exited piece survived/i)).toBeVisible();
   });
 
+  test("Forty Glacier Guards opens and completes an optional two-jump breakthrough", async ({ page }) => {
+    await page.goto("/?skipLoader=1");
+    await page.getByRole("button", { name: "Play Forty Glacier Guards" }).click();
+    await expect(page.getByLabel("Forty Glacier Guards cover")).toBeVisible();
+
+    await page.getByRole("button", { name: "Enter the glacier grid" }).click();
+    await expect(page.getByLabel("Forty Glacier Guards menu")).toBeVisible();
+    await page.getByRole("button", { name: "Breakthrough Chain Drill" }).click();
+    await expect(page.getByLabel("Forty Glacier Guards capture drill")).toBeVisible();
+
+    await page.getByRole("gridcell", { name: /g42 occupied by aurora.*legal move/i }).click();
+    await page.getByRole("gridcell", { name: /g44 empty capture target/i }).click();
+    await expect(page.getByText(/continue the jump chain or end the turn/i)).toBeVisible();
+
+    await page.getByRole("gridcell", { name: /g46 empty capture target/i }).click();
+    await expect(page.getByText("Aurora Guard wins")).toBeVisible();
+    await expect(page.getByText(/Every opposing guard has been removed/i)).toBeVisible();
+  });
+
   test("smoke profile opens Player Hub", async ({ page }) => {
     await page.goto(smokePath);
     await expect(page.getByLabel("Player Hub")).toBeVisible();
