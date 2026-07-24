@@ -4,9 +4,9 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node -r ./crownRunBackendBootstrap.js scripts/start-with-runtime-status.js",
-    "start:testnet": "node scripts/check-env.mjs testnet && node -r dotenv/config -r ./crownRunBackendBootstrap.js scripts/start-with-runtime-status.js dotenv_config_path=.env.testnet",
-    "start:mainnet": "node scripts/check-env.mjs mainnet && node -r dotenv/config -r ./crownRunBackendBootstrap.js scripts/start-with-runtime-status.js dotenv_config_path=.env.mainnet",
+    "start": "node -r ./fortyGlacierGuardsBackendBootstrap.js scripts/start-with-runtime-status.js",
+    "start:testnet": "node scripts/check-env.mjs testnet && node -r dotenv/config -r ./fortyGlacierGuardsBackendBootstrap.js scripts/start-with-runtime-status.js dotenv_config_path=.env.testnet",
+    "start:mainnet": "node scripts/check-env.mjs mainnet && node -r dotenv/config -r ./fortyGlacierGuardsBackendBootstrap.js scripts/start-with-runtime-status.js dotenv_config_path=.env.mainnet",
     "check:testnet": "node scripts/check-env.mjs testnet",
     "check:mainnet": "node scripts/check-env.mjs mainnet",
     "test:nif": "node --test tests/nine-ice-forts-online.test.js",
@@ -17,7 +17,8 @@
     "test:siw": "node --test tests/sixteen-ice-warriors-online.test.js",
     "test:gt": "node --test tests/glacier-trail-online.test.js",
     "test:cr": "node --test tests/crown-run-online.test.js",
-    "test:games": "node --test tests/nine-ice-forts-online.test.js tests/four-wing-ice-hunt-online.test.js tests/fishflow-online.test.js tests/break-the-ice-online.test.js tests/break-the-ice-empty-move.test.js tests/ice-hunters-online.test.js tests/sixteen-ice-warriors-online.test.js tests/glacier-trail-online.test.js tests/crown-run-online.test.js",
+    "test:fgg": "node --test tests/forty-glacier-guards-online.test.js",
+    "test:games": "node --test tests/nine-ice-forts-online.test.js tests/four-wing-ice-hunt-online.test.js tests/fishflow-online.test.js tests/break-the-ice-online.test.js tests/break-the-ice-empty-move.test.js tests/ice-hunters-online.test.js tests/sixteen-ice-warriors-online.test.js tests/glacier-trail-online.test.js tests/crown-run-online.test.js tests/forty-glacier-guards-online.test.js",
     "index:vault": "node scripts/index-vault-events.js",
     "smoke:mainnet": "node scripts/live-mainnet-smoke.js",
     "evidence:locked-match": "node scripts/locked-match-rehearsal-evidence.js"
