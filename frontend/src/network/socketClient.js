@@ -95,3 +95,12 @@ export async function submitBreakTheIceAction({ roomCode, profile, action }) { r
 export async function getBreakTheIceLegalActions({ roomCode, profile }) { return (await request("bti_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
 export async function getBreakTheIceHistory({ profile }) { return (await request("bti_history", { wallet: profile.wallet })).history || []; }
 export async function getMyBreakTheIceRooms({ profile }) { return (await request("bti_my_rooms", { wallet: profile.wallet })).rooms || []; }
+
+export async function listIceHuntersRooms() { return (await request("ih_room_list", {})).rooms || []; }
+export async function createIceHuntersRoom({ visibility = "public", role = "goats", profile }) { return (await request("ih_room_create", { visibility, role, wallet: profile.wallet })).room; }
+export async function joinIceHuntersRoom({ roomCode, profile }) { return (await request("ih_room_join", { roomCode, wallet: profile.wallet })).room; }
+export async function getIceHuntersState({ roomCode, profile }) { return (await request("ih_game_state", { roomCode, wallet: profile.wallet })).room; }
+export async function submitIceHuntersAction({ roomCode, profile, action }) { return (await request("ih_game_action", { roomCode, wallet: profile.wallet, action })).room; }
+export async function getIceHuntersLegalActions({ roomCode, profile }) { return (await request("ih_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
+export async function getIceHuntersHistory({ profile }) { return (await request("ih_history", { wallet: profile.wallet })).history || []; }
+export async function getMyIceHuntersRooms({ profile }) { return (await request("ih_my_rooms", { wallet: profile.wallet })).rooms || []; }
