@@ -18,6 +18,7 @@ import { IceHuntersApp } from "./games/ice-hunters/IceHuntersApp.jsx";
 import { SixteenIceWarriorsApp } from "./games/sixteen-ice-warriors/SixteenIceWarriorsApp.jsx";
 import { GlacierTrailApp } from "./games/glacier-trail/GlacierTrailApp.jsx";
 import { CrownRunApp } from "./games/crown-run/CrownRunApp.jsx";
+import { FortyGlacierGuardsApp } from "./games/forty-glacier-guards/FortyGlacierGuardsApp.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
@@ -90,11 +91,13 @@ export default function App() {
                           ? "glacier-trail"
                           : requestedGame?.id === "crown-run"
                             ? "crown-run"
-                            : requestedGame?.available
-                              ? "cover"
-                              : requestedGame
-                                ? "game-preview"
-                                : "library";
+                            : requestedGame?.id === "forty-glacier-guards"
+                              ? "forty-glacier-guards"
+                              : requestedGame?.available
+                                ? "cover"
+                                : requestedGame
+                                  ? "game-preview"
+                                  : "library";
   const [assetsReady, setAssetsReady] = useState(skipLoader);
   const [screen, setScreen] = useState(initialScreen);
   const [selectedGameId, setSelectedGameId] = useState(initialSelectedGameId);
@@ -149,6 +152,7 @@ export default function App() {
     if (game.id === "sixteen-ice-warriors") return goTo("sixteen-ice-warriors");
     if (game.id === "glacier-trail") return goTo("glacier-trail");
     if (game.id === "crown-run") return goTo("crown-run");
+    if (game.id === "forty-glacier-guards") return goTo("forty-glacier-guards");
     goTo(game.available ? "cover" : "game-preview");
   }
 
@@ -175,6 +179,7 @@ export default function App() {
   if (screen === "sixteen-ice-warriors") return withAppChrome(<SixteenIceWarriorsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "glacier-trail") return withAppChrome(<GlacierTrailApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "crown-run") return withAppChrome(<CrownRunApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
+  if (screen === "forty-glacier-guards") return withAppChrome(<FortyGlacierGuardsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "game-preview" && selectedGame) return withAppChrome(<GamePreviewScreen game={selectedGame} onBack={exitToLibrary} />);
 
   if (screen === "dev-home") return withAppChrome(renderLazy(<DevPortalScreen onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onSettlementAdmin={() => goTo("settlement-admin")} onVaultDeployer={() => goTo("vault-deployer")} onExit={() => window.location.assign("/")} />, "Loading developer console..."));
