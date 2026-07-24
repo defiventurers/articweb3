@@ -47,6 +47,21 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByText(/second snow leopard/i)).toBeVisible();
   });
 
+  test("Fishflow opens and resolves a complete relay-sowing turn", async ({ page }) => {
+    await page.goto("/?skipLoader=1");
+    await page.getByRole("button", { name: "Play Fishflow" }).click();
+    await expect(page.getByLabel("Fishflow cover")).toBeVisible();
+
+    await page.getByRole("button", { name: "Follow the current" }).click();
+    await expect(page.getByLabel("Fishflow menu")).toBeVisible();
+    await page.getByRole("button", { name: "Local Two Player" }).click();
+    await expect(page.getByLabel("Fishflow game")).toBeVisible();
+
+    await page.getByRole("gridcell", { name: "Blue pit 1 with 6 fish" }).click();
+    await expect(page.getByText(/Blue Current sowed 20 fish.*2 relays.*7 fish banked/i)).toBeVisible();
+    await expect(page.getByRole("gridcell", { name: "Coral pit 2 with 7 fish" })).toBeEnabled();
+  });
+
   test("smoke profile opens Player Hub", async ({ page }) => {
     await page.goto(smokePath);
     await expect(page.getByLabel("Player Hub")).toBeVisible();

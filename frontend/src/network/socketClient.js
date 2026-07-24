@@ -76,3 +76,12 @@ export async function submitFourWingIceHuntAction({ roomCode, profile, action })
 export async function getFourWingIceHuntLegalActions({ roomCode, profile }) { return (await request("fwh_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
 export async function getFourWingIceHuntHistory({ profile }) { return (await request("fwh_history", { wallet: profile.wallet })).history || []; }
 export async function getMyFourWingIceHuntRooms({ profile }) { return (await request("fwh_my_rooms", { wallet: profile.wallet })).rooms || []; }
+
+export async function listFishflowRooms() { return (await request("fish_room_list", {})).rooms || []; }
+export async function createFishflowRoom({ visibility = "public", current = "blue", profile }) { return (await request("fish_room_create", { visibility, current, wallet: profile.wallet })).room; }
+export async function joinFishflowRoom({ roomCode, profile }) { return (await request("fish_room_join", { roomCode, wallet: profile.wallet })).room; }
+export async function getFishflowState({ roomCode, profile }) { return (await request("fish_game_state", { roomCode, wallet: profile.wallet })).room; }
+export async function submitFishflowAction({ roomCode, profile, action }) { return (await request("fish_game_action", { roomCode, wallet: profile.wallet, action })).room; }
+export async function getFishflowLegalActions({ roomCode, profile }) { return (await request("fish_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
+export async function getFishflowHistory({ profile }) { return (await request("fish_history", { wallet: profile.wallet })).history || []; }
+export async function getMyFishflowRooms({ profile }) { return (await request("fish_my_rooms", { wallet: profile.wallet })).rooms || []; }
