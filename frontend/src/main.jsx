@@ -7,6 +7,7 @@ import "./styles/global.css";
 import "./styles/gameLibrary.css";
 import "./styles/nineIceForts.css";
 import "./styles/nineIceFortsOnline.css";
+import "./styles/fourWingIceHunt.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";

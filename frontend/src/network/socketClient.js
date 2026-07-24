@@ -67,3 +67,12 @@ export async function submitNineIceFortsAction({ roomCode, profile, action }) { 
 export async function getNineIceFortsLegalActions({ roomCode, profile }) { return (await request("nif_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
 export async function getNineIceFortsHistory({ profile }) { return (await request("nif_history", { wallet: profile.wallet })).history || []; }
 export async function getMyNineIceFortsRooms({ profile }) { return (await request("nif_my_rooms", { wallet: profile.wallet })).rooms || []; }
+
+export async function listFourWingIceHuntRooms() { return (await request("fwh_room_list", {})).rooms || []; }
+export async function createFourWingIceHuntRoom({ visibility = "public", role = "leopards", profile }) { return (await request("fwh_room_create", { visibility, role, wallet: profile.wallet })).room; }
+export async function joinFourWingIceHuntRoom({ roomCode, profile }) { return (await request("fwh_room_join", { roomCode, wallet: profile.wallet })).room; }
+export async function getFourWingIceHuntState({ roomCode, profile }) { return (await request("fwh_game_state", { roomCode, wallet: profile.wallet })).room; }
+export async function submitFourWingIceHuntAction({ roomCode, profile, action }) { return (await request("fwh_game_action", { roomCode, wallet: profile.wallet, action })).room; }
+export async function getFourWingIceHuntLegalActions({ roomCode, profile }) { return (await request("fwh_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
+export async function getFourWingIceHuntHistory({ profile }) { return (await request("fwh_history", { wallet: profile.wallet })).history || []; }
+export async function getMyFourWingIceHuntRooms({ profile }) { return (await request("fwh_my_rooms", { wallet: profile.wallet })).rooms || []; }

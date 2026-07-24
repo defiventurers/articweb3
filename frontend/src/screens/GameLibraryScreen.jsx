@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { GAME_CATALOG } from "../data/gameCatalog.js";
 
-const PLAYABLE_GAME_IDS = new Set(["arctic-dominion", "nine-ice-forts"]);
+const PLAYABLE_GAME_IDS = new Set(GAME_CATALOG.filter((game) => game.available).map((game) => game.id));
 const FILTERS = [
   { id: "all", label: "All games" },
   { id: "playable", label: "Playable" },
@@ -68,7 +68,6 @@ export function GameLibraryScreen({ onSelectGame }) {
 
 function GameLibraryCard({ game, onSelect }) {
   const playable = PLAYABLE_GAME_IDS.has(game.id);
-  const practice = game.id === "nine-ice-forts";
   return (
     <button
       type="button"
@@ -83,7 +82,7 @@ function GameLibraryCard({ game, onSelect }) {
       </span>
       <span className="game-card-copy">
         <span className="game-card-topline">
-          <span className={`game-status status-${playable ? "playable" : game.statusKey}`}>{practice ? "PLAYABLE PRACTICE" : game.status}</span>
+          <span className={`game-status status-${playable ? "playable" : game.statusKey}`}>{game.status}</span>
           <span className="game-priority">{game.priority === 0 ? "FLAGSHIP" : `#${game.priority}`}</span>
         </span>
         <strong className="game-card-title">{game.title}</strong>
