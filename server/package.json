@@ -10,6 +10,8 @@
     "check:testnet": "node scripts/check-env.mjs testnet",
     "check:mainnet": "node scripts/check-env.mjs mainnet",
     "test:nif": "node --test tests/nine-ice-forts-online.test.js",
+    "test:fwh": "node --test tests/four-wing-ice-hunt-online.test.js",
+    "test:games": "node --test tests/nine-ice-forts-online.test.js tests/four-wing-ice-hunt-online.test.js",
     "index:vault": "node scripts/index-vault-events.js",
     "smoke:mainnet": "node scripts/live-mainnet-smoke.js",
     "evidence:locked-match": "node scripts/locked-match-rehearsal-evidence.js"
