@@ -116,6 +116,21 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByText(/Every opposing soldier has been chopped/i)).toBeVisible();
   });
 
+  test("Crown Run opens and resolves a standard-on-king crown collapse", async ({ page }) => {
+    await page.goto("/?skipLoader=1");
+    await page.getByRole("button", { name: "Play Crown Run" }).click();
+    await expect(page.getByLabel("Crown Run cover")).toBeVisible();
+
+    await page.getByRole("button", { name: "Enter the royal track" }).click();
+    await expect(page.getByLabel("Crown Run menu")).toBeVisible();
+    await page.getByRole("button", { name: "Crown Collapse Drill" }).click();
+    await expect(page.getByLabel("Crown Run crown collapse drill")).toBeVisible();
+
+    await page.getByRole("button", { name: "Aurora Court kaangi 1 on Track 9, legal capture" }).click();
+    await expect(page.getByText("Crown collapse confirmed")).toBeVisible();
+    await expect(page.getByText(/already-exited piece survived/i)).toBeVisible();
+  });
+
   test("smoke profile opens Player Hub", async ({ page }) => {
     await page.goto(smokePath);
     await expect(page.getByLabel("Player Hub")).toBeVisible();
