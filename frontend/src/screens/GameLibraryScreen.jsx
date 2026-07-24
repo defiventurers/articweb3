@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { GAME_CATALOG } from "../data/gameCatalog.js";
 
+const PLAYABLE_GAME_IDS = new Set(["arctic-dominion", "nine-ice-forts"]);
 const FILTERS = [
   { id: "all", label: "All games" },
   { id: "playable", label: "Playable" },
@@ -10,10 +11,11 @@ const FILTERS = [
 
 export function GameLibraryScreen({ onSelectGame }) {
   const [filter, setFilter] = useState("all");
-  const visibleGames = useMemo(
-    () => filter === "all" ? GAME_CATALOG : GAME_CATALOG.filter((game) => game.statusKey === filter),
-    [filter]
-  );
+  const visibleGames = useMemo(() => {
+    if (filter === "all") return GAME_CATALOG;
+    if (filter === "playable") return GAME_CATALOG.filter((game) => PLAYABLE_GAME_IDS.has(game.id));
+    return GAME_CATALOG.filter((game) => game.statusKey === filter);
+  }, [filter]);
 
   return (
     <section className="game-library-screen" aria-label="Game library">
@@ -33,7 +35,7 @@ export function GameLibraryScreen({ onSelectGame }) {
         <div className="library-stat-row" aria-label="Catalog summary">
           <span><strong>{GAME_CATALOG.length}</strong> game worlds</span>
           <span><strong>4</strong> reusable engines</span>
-          <span><strong>1</strong> playable now</span>
+          <span><strong>{PLAYABLE_GAME_IDS.size}</strong> playable now</span>
         </div>
       </header>
 
@@ -65,7 +67,8 @@ export function GameLibraryScreen({ onSelectGame }) {
 }
 
 function GameLibraryCard({ game, onSelect }) {
-  const playable = Boolean(game.available);
+  const playable = PLAYABLE_GAME_IDS.has(game.id);
+  const practice = game.id === "nine-ice-forts";
   return (
     <button
       type="button"
@@ -80,7 +83,7 @@ function GameLibraryCard({ game, onSelect }) {
       </span>
       <span className="game-card-copy">
         <span className="game-card-topline">
-          <span className={`game-status status-${game.statusKey}`}>{game.status}</span>
+          <span className={`game-status status-${playable ? "playable" : game.statusKey}`}>{practice ? "PLAYABLE PRACTICE" : game.status}</span>
           <span className="game-priority">{game.priority === 0 ? "FLAGSHIP" : `#${game.priority}`}</span>
         </span>
         <strong className="game-card-title">{game.title}</strong>
