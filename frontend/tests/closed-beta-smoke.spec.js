@@ -13,14 +13,26 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByRole("button", { name: "All Games" })).toBeVisible();
   });
 
-  test("planned game card opens a safe preview cover", async ({ page }) => {
+  test("Nine Ice Forts opens and starts a legal local match", async ({ page }) => {
     await page.goto("/?skipLoader=1");
-    await page.getByRole("button", { name: "Open cover for Nine Ice Forts" }).click();
+    await page.getByRole("button", { name: "Play Nine Ice Forts" }).click();
     await expect(page.getByLabel("Nine Ice Forts cover")).toBeVisible();
-    await expect(page.getByText("This kingdom is not playable yet.")).toBeVisible();
 
-    await page.getByRole("button", { name: "Return to game library" }).click();
-    await expect(page.getByLabel("Game library")).toBeVisible();
+    await page.getByRole("button", { name: "Enter the forts" }).click();
+    await expect(page.getByLabel("Nine Ice Forts menu")).toBeVisible();
+    await page.getByRole("button", { name: "Local Two Player" }).click();
+    await expect(page.getByLabel("Nine Ice Forts game")).toBeVisible();
+
+    await page.getByRole("gridcell", { name: "a7 empty" }).click();
+    await expect(page.getByRole("gridcell", { name: "a7 occupied by blue" })).toBeVisible();
+    await expect(page.getByText(/Coral places a scout/i)).toBeVisible();
+  });
+
+  test("planned game card still opens a safe preview cover", async ({ page }) => {
+    await page.goto("/?skipLoader=1");
+    await page.getByRole("button", { name: "Open cover for Four-Wing Ice Hunt" }).click();
+    await expect(page.getByLabel("Four-Wing Ice Hunt cover")).toBeVisible();
+    await expect(page.getByText("This kingdom is not playable yet.")).toBeVisible();
   });
 
   test("smoke profile opens Player Hub", async ({ page }) => {
