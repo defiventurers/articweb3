@@ -17,6 +17,7 @@ import "./styles/sixteenIceWarriors.css";
 import "./styles/glacierTrail.css";
 import "./styles/crownRun.css";
 import "./styles/crownRunInteraction.css";
+import "./styles/fortyGlacierGuards.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";
