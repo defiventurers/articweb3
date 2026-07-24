@@ -78,6 +78,25 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByText(/Best runner: Runner 1/i)).toBeVisible();
   });
 
+  test("Ice Hunters opens and resolves a standard corner capture", async ({ page }) => {
+    await page.goto("/?skipLoader=1");
+    await page.getByRole("button", { name: "Play Ice Hunters" }).click();
+    await expect(page.getByLabel("Ice Hunters cover")).toBeVisible();
+
+    await page.getByRole("button", { name: "Enter the hunting ground" }).click();
+    await expect(page.getByLabel("Ice Hunters menu")).toBeVisible();
+    await page.getByRole("button", { name: "Local Two Player" }).click();
+    await expect(page.getByLabel("Ice Hunters game")).toBeVisible();
+
+    await page.getByRole("gridcell", { name: /n11 empty legal/i }).click();
+    await expect(page.getByRole("gridcell", { name: /n11 occupied by goats/i })).toBeVisible();
+
+    await page.getByRole("gridcell", { name: /n00 occupied by tigers legal/i }).click();
+    await page.getByRole("gridcell", { name: /n22 empty capture target/i }).click();
+    await expect(page.getByRole("gridcell", { name: /n22 occupied by tigers/i })).toBeVisible();
+    await expect(page.getByText(/captured the scout on n11/i)).toBeVisible();
+  });
+
   test("smoke profile opens Player Hub", async ({ page }) => {
     await page.goto(smokePath);
     await expect(page.getByLabel("Player Hub")).toBeVisible();
