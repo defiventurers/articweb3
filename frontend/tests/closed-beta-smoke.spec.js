@@ -59,7 +59,7 @@ test.describe("closed beta smoke", () => {
 
     await page.getByRole("gridcell", { name: "Blue pit 1 with 6 fish" }).click();
     await expect(page.getByText(/Blue Current sowed 20 fish.*2 relays.*7 fish banked/i)).toBeVisible();
-    await expect(page.getByRole("gridcell", { name: /Coral pit 1 with/ })).toBeEnabled();
+    await expect(page.getByRole("gridcell", { name: "Coral pit 2 with 7 fish" })).toBeEnabled();
   });
 
   test("smoke profile opens Player Hub", async ({ page }) => {
