@@ -26,7 +26,7 @@ test.describe("closed beta smoke", () => {
   test("smoke profile opens Player Hub", async ({ page }) => {
     await page.goto(smokePath);
     await expect(page.getByLabel("Player Hub")).toBeVisible();
-    await expect(page.getByRole("button", { name: "RUN" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Play Open Ice" })).toBeVisible();
     await expect(page.getByRole("button", { name: "High Stakes Lab" })).toBeVisible();
   });
 
