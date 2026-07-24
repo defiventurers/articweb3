@@ -30,16 +30,18 @@ export function SixteenIceWarriorsBoard({ state, selectedNode, onNode, interacti
         const selected = selectedNode === node.id || state.chainFrom === node.id;
         const legal = interactive && (legalOrigins.has(node.id) || legalTargets.has(node.id));
         const capture = captureTargets.has(node.id);
+        const actionHint = capture ? " capture target" : legal ? " legal move" : "";
         return (
           <button
             key={node.id}
             type="button"
             role="gridcell"
             disabled={!interactive}
+            aria-pressed={selected}
             className={`siw-node ${piece ? `piece-${piece}` : "empty"} ${selected ? "selected" : ""} ${legal ? "legal" : ""} ${capture ? "capture" : ""}`}
             style={{ left: `${node.x}%`, top: `${node.y}%` }}
             onClick={() => onNode(node.id)}
-            aria-label={`${node.id}${piece ? ` occupied by ${piece}` : " empty"}${selected ? " selected" : ""}`}
+            aria-label={`${node.id}${piece ? ` occupied by ${piece}` : " empty"}${selected ? " selected" : ""}${actionHint}`}
           >
             {piece && (
               <span className={`siw-piece siw-piece-${piece}`}>
