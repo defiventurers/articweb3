@@ -104,3 +104,12 @@ export async function submitIceHuntersAction({ roomCode, profile, action }) { re
 export async function getIceHuntersLegalActions({ roomCode, profile }) { return (await request("ih_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
 export async function getIceHuntersHistory({ profile }) { return (await request("ih_history", { wallet: profile.wallet })).history || []; }
 export async function getMyIceHuntersRooms({ profile }) { return (await request("ih_my_rooms", { wallet: profile.wallet })).rooms || []; }
+
+export async function listSixteenIceWarriorsRooms() { return (await request("siw_room_list", {})).rooms || []; }
+export async function createSixteenIceWarriorsRoom({ visibility = "public", role = "aurora", profile }) { return (await request("siw_room_create", { visibility, role, wallet: profile.wallet })).room; }
+export async function joinSixteenIceWarriorsRoom({ roomCode, profile }) { return (await request("siw_room_join", { roomCode, wallet: profile.wallet })).room; }
+export async function getSixteenIceWarriorsState({ roomCode, profile }) { return (await request("siw_game_state", { roomCode, wallet: profile.wallet })).room; }
+export async function submitSixteenIceWarriorsAction({ roomCode, profile, action }) { return (await request("siw_game_action", { roomCode, wallet: profile.wallet, action })).room; }
+export async function getSixteenIceWarriorsLegalActions({ roomCode, profile }) { return (await request("siw_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
+export async function getSixteenIceWarriorsHistory({ profile }) { return (await request("siw_history", { wallet: profile.wallet })).history || []; }
+export async function getMySixteenIceWarriorsRooms({ profile }) { return (await request("siw_my_rooms", { wallet: profile.wallet })).rooms || []; }
