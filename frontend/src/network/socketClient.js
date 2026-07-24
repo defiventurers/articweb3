@@ -113,3 +113,13 @@ export async function submitSixteenIceWarriorsAction({ roomCode, profile, action
 export async function getSixteenIceWarriorsLegalActions({ roomCode, profile }) { return (await request("siw_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
 export async function getSixteenIceWarriorsHistory({ profile }) { return (await request("siw_history", { wallet: profile.wallet })).history || []; }
 export async function getMySixteenIceWarriorsRooms({ profile }) { return (await request("siw_my_rooms", { wallet: profile.wallet })).rooms || []; }
+
+export async function listGlacierTrailRooms() { return (await request("gt_room_list", {})).rooms || []; }
+export async function createGlacierTrailRoom({ visibility = "public", side = "aurora", profile }) { return (await request("gt_room_create", { visibility, side, wallet: profile.wallet })).room; }
+export async function joinGlacierTrailRoom({ roomCode, profile }) { return (await request("gt_room_join", { roomCode, wallet: profile.wallet })).room; }
+export async function getGlacierTrailState({ roomCode, profile }) { return (await request("gt_game_state", { roomCode, wallet: profile.wallet })).room; }
+export async function rollGlacierTrailCowries({ roomCode, profile }) { return (await request("gt_game_roll", { roomCode, wallet: profile.wallet })).room; }
+export async function submitGlacierTrailAction({ roomCode, profile, action }) { return (await request("gt_game_action", { roomCode, wallet: profile.wallet, action })).room; }
+export async function getGlacierTrailLegalActions({ roomCode, profile }) { return (await request("gt_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
+export async function getGlacierTrailHistory({ profile }) { return (await request("gt_history", { wallet: profile.wallet })).history || []; }
+export async function getMyGlacierTrailRooms({ profile }) { return (await request("gt_my_rooms", { wallet: profile.wallet })).rooms || []; }
