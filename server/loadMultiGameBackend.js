@@ -168,11 +168,93 @@ const fourWingIceHunt = createFourWingIceHuntService({
   return transformed;
 }
 
+function injectFishflow(source) {
+  let transformed = source;
+
+  const serviceRequire = 'const { createFourWingIceHuntService } = require("./fourWingIceHuntService.js");';
+  if (!transformed.includes('require("./fishflowService.js")')) {
+    if (!transformed.includes(serviceRequire)) throw new Error("Unable to locate Four-Wing service require for Fishflow.");
+    transformed = transformed.replace(serviceRequire, `${serviceRequire}\nconst { createFishflowService } = require("./fishflowService.js");`);
+  }
+
+  const fourServiceInit = `const fourWingIceHunt = createFourWingIceHuntService({
+  rooms,
+  profiles,
+  sockets,
+  send,
+  ok,
+  fail,
+  walletOf,
+  profileFor,
+  saveRoomSafe,
+  saveHistoryEntry,
+  getHistoryForWallet
+});`;
+  const fishServiceInit = `${fourServiceInit}
+const fishflow = createFishflowService({
+  rooms,
+  profiles,
+  sockets,
+  send,
+  ok,
+  fail,
+  walletOf,
+  profileFor,
+  saveRoomSafe,
+  saveHistoryEntry,
+  getHistoryForWallet
+});`;
+  if (!transformed.includes("const fishflow = createFishflowService")) {
+    if (!transformed.includes(fourServiceInit)) throw new Error("Unable to locate Four-Wing service initializer for Fishflow.");
+    transformed = transformed.replace(fourServiceInit, fishServiceInit);
+  }
+
+  const scheduleNeedle = 'function scheduleBotIfNeeded(room) { if (["nine-ice-forts", "four-wing-ice-hunt"].includes(room?.gameId)) return;';
+  const scheduleReplacement = 'function scheduleBotIfNeeded(room) { if (["nine-ice-forts", "four-wing-ice-hunt", "fishflow"].includes(room?.gameId)) return;';
+  if (!transformed.includes('"fishflow"].includes(room?.gameId)')) {
+    if (!transformed.includes(scheduleNeedle)) throw new Error("Unable to locate heritage-game bot scheduler guard for Fishflow.");
+    transformed = transformed.replace(scheduleNeedle, scheduleReplacement);
+  }
+
+  const dispatchNeedle = `if (type === "fwh_my_rooms") return fourWingIceHunt.myRooms(ws, requestId, payload);
+    return fail(ws, requestId, \`Unknown message type: \${type}\`);`;
+  const dispatchReplacement = `if (type === "fwh_my_rooms") return fourWingIceHunt.myRooms(ws, requestId, payload);
+    if (type === "fish_room_list") return fishflow.listRooms(ws, requestId, payload);
+    if (type === "fish_room_create") return fishflow.createRoom(ws, requestId, payload);
+    if (type === "fish_room_join") return fishflow.joinRoom(ws, requestId, payload);
+    if (type === "fish_game_state") return fishflow.getState(ws, requestId, payload);
+    if (type === "fish_game_action") return fishflow.action(ws, requestId, payload);
+    if (type === "fish_legal_actions") return fishflow.legalActions(ws, requestId, payload);
+    if (type === "fish_history") return fishflow.history(ws, requestId, payload);
+    if (type === "fish_my_rooms") return fishflow.myRooms(ws, requestId, payload);
+    return fail(ws, requestId, \`Unknown message type: \${type}\`);`;
+  if (!transformed.includes('type === "fish_room_create"')) {
+    if (!transformed.includes(dispatchNeedle)) throw new Error("Unable to locate multi-game WebSocket dispatch tail for Fishflow.");
+    transformed = transformed.replace(dispatchNeedle, dispatchReplacement);
+  }
+
+  const restoreNeedle = 'rooms.set(room.roomCode, room); nineIceForts.restoreRoom(room); fourWingIceHunt.restoreRoom(room); if (room.status === "waiting"';
+  const restoreReplacement = 'rooms.set(room.roomCode, room); nineIceForts.restoreRoom(room); fourWingIceHunt.restoreRoom(room); fishflow.restoreRoom(room); if (room.status === "waiting"';
+  if (!transformed.includes("fishflow.restoreRoom(room)")) {
+    if (!transformed.includes(restoreNeedle)) throw new Error("Unable to locate multi-game room restoration loop for Fishflow.");
+    transformed = transformed.replace(restoreNeedle, restoreReplacement);
+  }
+
+  const healthNeedle = "supportsFourWingIceHunt: true, antiCheat:";
+  const healthReplacement = "supportsFourWingIceHunt: true, supportsFishflow: true, antiCheat:";
+  if (!transformed.includes("supportsFishflow: true")) {
+    if (!transformed.includes(healthNeedle)) throw new Error("Unable to locate multi-game health capabilities for Fishflow.");
+    transformed = transformed.replace(healthNeedle, healthReplacement);
+  }
+
+  return transformed;
+}
+
 function loadMultiGameBackend() {
   const indexPath = require.resolve("./index.js");
   if (require.cache[indexPath]) return require.cache[indexPath].exports;
   const source = fs.readFileSync(indexPath, "utf8");
-  const transformed = injectFourWingIceHunt(injectNineIceForts(transformBackendSource(source)));
+  const transformed = injectFishflow(injectFourWingIceHunt(injectNineIceForts(transformBackendSource(source))));
   const backendModule = new Module(indexPath, module.parent);
   backendModule.filename = indexPath;
   backendModule.paths = Module._nodeModulePaths(path.dirname(indexPath));
@@ -181,4 +263,9 @@ function loadMultiGameBackend() {
   return backendModule.exports;
 }
 
-module.exports = { loadMultiGameBackend, injectNineIceForts, injectFourWingIceHunt };
+module.exports = {
+  loadMultiGameBackend,
+  injectNineIceForts,
+  injectFourWingIceHunt,
+  injectFishflow
+};
