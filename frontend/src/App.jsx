@@ -11,6 +11,7 @@ import { GameLibraryScreen } from "./screens/GameLibraryScreen.jsx";
 import { GamePreviewScreen } from "./screens/GamePreviewScreen.jsx";
 import { MainMenu } from "./screens/MainMenu.jsx";
 import { NineIceFortsApp } from "./games/nine-ice-forts/NineIceFortsApp.jsx";
+import { FourWingIceHuntApp } from "./games/four-wing-ice-hunt/FourWingIceHuntApp.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
@@ -69,11 +70,13 @@ export default function App() {
             ? "cover"
             : requestedGame?.id === "nine-ice-forts"
               ? "nine-ice-forts"
-              : requestedGame?.available
-                ? "cover"
-                : requestedGame
-                  ? "game-preview"
-                  : "library";
+              : requestedGame?.id === "four-wing-ice-hunt"
+                ? "four-wing-ice-hunt"
+                : requestedGame?.available
+                  ? "cover"
+                  : requestedGame
+                    ? "game-preview"
+                    : "library";
   const [assetsReady, setAssetsReady] = useState(skipLoader);
   const [screen, setScreen] = useState(initialScreen);
   const [selectedGameId, setSelectedGameId] = useState(initialSelectedGameId);
@@ -121,6 +124,7 @@ export default function App() {
     setSelectedGameId(game.id);
     syncGameQuery(game.id);
     if (game.id === "nine-ice-forts") return goTo("nine-ice-forts");
+    if (game.id === "four-wing-ice-hunt") return goTo("four-wing-ice-hunt");
     goTo(game.available ? "cover" : "game-preview");
   }
 
@@ -140,6 +144,7 @@ export default function App() {
 
   if (screen === "library") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
   if (screen === "nine-ice-forts") return withAppChrome(<NineIceFortsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
+  if (screen === "four-wing-ice-hunt") return withAppChrome(<FourWingIceHuntApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "game-preview" && selectedGame) return withAppChrome(<GamePreviewScreen game={selectedGame} onBack={exitToLibrary} />);
 
   if (screen === "dev-home") return withAppChrome(renderLazy(<DevPortalScreen onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onSettlementAdmin={() => goTo("settlement-admin")} onVaultDeployer={() => goTo("vault-deployer")} onExit={() => window.location.assign("/")} />, "Loading developer console..."));
