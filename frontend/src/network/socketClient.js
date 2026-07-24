@@ -20,6 +20,13 @@ export function connectSocket() {
       }
       window.dispatchEvent(new CustomEvent("server-packet", { detail: packet }));
     });
+    socket.addEventListener("close", () => {
+      for (const [requestId, item] of pending.entries()) {
+        clearTimeout(item.timer);
+        item.reject(new Error("Lobby connection closed. Reconnecting…"));
+        pending.delete(requestId);
+      }
+    });
     socket.addEventListener("error", () => reject(new Error("Could not connect to lobby server.")));
   });
 }
@@ -36,7 +43,7 @@ export async function request(type, payload = {}) {
 
 export async function createProfile({ address, name }) { return (await request("profile_login", { address, name })).profile; }
 export async function listRooms({ roomMode = "open_ice" } = {}) { return (await request("room_list", { roomMode })).rooms || []; }
-export async function getGameHistory({ profile }) { return (await request("game_history", { wallet: profile.wallet })).history || []; }
+export async function getGameHistory({ profile, gameId = null }) { return (await request("game_history", { wallet: profile.wallet, gameId })).history || []; }
 export async function getLeaderboard() { return (await request("leaderboard", {})).leaderboard || []; }
 export async function getMyRooms({ profile }) { return (await request("my_rooms", { wallet: profile.wallet })).rooms || []; }
 export async function getVaultActivity({ profile }) { return (await request("vault_activity", { wallet: profile.wallet })).activity || []; }
@@ -51,3 +58,12 @@ export async function getGameState({ roomCode, profile }) { return (await reques
 export async function rollGameDice({ roomCode, profile }) { return (await request("game_roll_dice", { roomCode, wallet: profile.wallet })).room; }
 export async function selectGameSquare({ roomCode, profile, row, col }) { return (await request("game_select_square", { roomCode, wallet: profile.wallet, row, col })).room; }
 export async function endGameTurn({ roomCode, profile }) { return (await request("game_end_turn", { roomCode, wallet: profile.wallet })).room; }
+
+export async function listNineIceFortsRooms() { return (await request("nif_room_list", {})).rooms || []; }
+export async function createNineIceFortsRoom({ visibility = "public", profile }) { return (await request("nif_room_create", { visibility, wallet: profile.wallet })).room; }
+export async function joinNineIceFortsRoom({ roomCode, profile }) { return (await request("nif_room_join", { roomCode, wallet: profile.wallet })).room; }
+export async function getNineIceFortsState({ roomCode, profile }) { return (await request("nif_game_state", { roomCode, wallet: profile.wallet })).room; }
+export async function submitNineIceFortsAction({ roomCode, profile, action }) { return (await request("nif_game_action", { roomCode, wallet: profile.wallet, action })).room; }
+export async function getNineIceFortsLegalActions({ roomCode, profile }) { return (await request("nif_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
+export async function getNineIceFortsHistory({ profile }) { return (await request("nif_history", { wallet: profile.wallet })).history || []; }
+export async function getMyNineIceFortsRooms({ profile }) { return (await request("nif_my_rooms", { wallet: profile.wallet })).rooms || []; }
