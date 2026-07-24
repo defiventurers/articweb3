@@ -28,11 +28,23 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByText(/Coral places a scout/i)).toBeVisible();
   });
 
-  test("planned game card still opens a safe preview cover", async ({ page }) => {
+  test("Four-Wing Ice Hunt opens and follows Parker's opening order", async ({ page }) => {
     await page.goto("/?skipLoader=1");
-    await page.getByRole("button", { name: "Open cover for Four-Wing Ice Hunt" }).click();
+    await page.getByRole("button", { name: "Play Four-Wing Ice Hunt" }).click();
     await expect(page.getByLabel("Four-Wing Ice Hunt cover")).toBeVisible();
-    await expect(page.getByText("This kingdom is not playable yet.")).toBeVisible();
+
+    await page.getByRole("button", { name: "Enter the hunt" }).click();
+    await expect(page.getByLabel("Four-Wing Ice Hunt menu")).toBeVisible();
+    await page.getByRole("button", { name: "Local Two Player" }).click();
+    await expect(page.getByLabel("Four-Wing Ice Hunt game")).toBeVisible();
+
+    await page.getByRole("gridcell", { name: "c22 empty" }).click();
+    await expect(page.getByRole("gridcell", { name: "c22 occupied by leopards" })).toBeVisible();
+    await expect(page.getByText(/first cattle piece/i)).toBeVisible();
+
+    await page.getByRole("gridcell", { name: "c00 empty" }).click();
+    await expect(page.getByRole("gridcell", { name: "c00 occupied by cattle" })).toBeVisible();
+    await expect(page.getByText(/second snow leopard/i)).toBeVisible();
   });
 
   test("smoke profile opens Player Hub", async ({ page }) => {
