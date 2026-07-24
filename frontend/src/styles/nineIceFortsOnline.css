@@ -1,0 +1,162 @@
+.nif-online-shell {
+  min-height: 100vh;
+  padding: 76px clamp(16px, 4vw, 54px) 40px;
+  color: #eefcff;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(86, 232, 255, 0.18), transparent 28%),
+    linear-gradient(180deg, #061a35, #082748 58%, #05172d);
+}
+
+.nif-online-shell > header {
+  width: min(1180px, 100%);
+  margin: 0 auto 22px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.nif-online-shell h1 {
+  margin: 0;
+  text-align: center;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(30px, 5vw, 54px);
+}
+
+.nif-online-shell button,
+.nif-online-shell input {
+  min-height: 44px;
+  border: 1px solid rgba(169, 235, 255, 0.38);
+  border-radius: 13px;
+}
+
+.nif-online-shell button {
+  padding: 0 16px;
+  color: #f3fcff;
+  background: rgba(9, 49, 82, 0.82);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.nif-online-shell button:hover,
+.nif-online-shell button:focus-visible {
+  border-color: #a7efff;
+  background: rgba(18, 82, 122, 0.94);
+  outline: none;
+}
+
+.nif-online-shell button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.nif-online-grid {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.nif-online-grid article,
+.nif-online-history article {
+  padding: 20px;
+  border: 1px solid rgba(163, 231, 255, 0.2);
+  border-radius: 20px;
+  background: rgba(6, 31, 57, 0.74);
+  box-shadow: 0 18px 40px rgba(0, 8, 20, 0.24);
+}
+
+.nif-online-grid h2 {
+  margin: 0 0 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24px;
+}
+
+.nif-online-grid p {
+  min-height: 42px;
+  color: #b9dbe7;
+  line-height: 1.5;
+}
+
+.nif-online-grid article > button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.nif-online-grid input {
+  width: 100%;
+  padding: 0 14px;
+  color: #fff;
+  background: rgba(2, 17, 34, 0.82);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  box-sizing: border-box;
+}
+
+.nif-online-message {
+  width: min(1180px, 100%);
+  margin: 18px auto 0;
+  color: #ffd6b7;
+  text-align: center;
+}
+
+.nif-online-refresh {
+  display: block;
+  width: min(360px, 100%);
+  margin: 18px auto 0;
+}
+
+.nif-online-history {
+  width: min(900px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+}
+
+.nif-online-history article {
+  display: grid;
+  gap: 5px;
+}
+
+.nif-online-history strong {
+  font-size: 22px;
+}
+
+.nif-online-history span {
+  color: #c5e6f2;
+}
+
+.nif-online-history small {
+  color: #86b4c7;
+}
+
+.nif-online-game .nif-node:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+@media (max-width: 760px) {
+  .nif-online-shell {
+    padding: 72px 12px 28px;
+  }
+
+  .nif-online-shell > header {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .nif-online-shell > header h1 {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .nif-online-shell > header button {
+    grid-row: 2;
+  }
+
+  .nif-online-grid {
+    grid-template-columns: 1fr;
+  }
+}

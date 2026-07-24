@@ -31,7 +31,10 @@ async function initRoomStore() {
           room_json JSONB NOT NULL
         )
       `);
+      await getPool().query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS game_id TEXT NOT NULL DEFAULT 'arctic-dominion'`);
+      await getPool().query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS ruleset_version TEXT`);
       await getPool().query(`CREATE INDEX IF NOT EXISTS rooms_status_idx ON rooms (status, updated_at DESC)`);
+      await getPool().query(`CREATE INDEX IF NOT EXISTS rooms_game_status_idx ON rooms (game_id, status, updated_at DESC)`);
       await getPool().query(`
         CREATE TABLE IF NOT EXISTS room_players (
           room_code TEXT NOT NULL REFERENCES rooms(room_code) ON DELETE CASCADE,
@@ -61,17 +64,19 @@ async function saveRoom(room) {
   const serializableRoom = sanitizeRoom(room);
   const roomJson = JSON.stringify(serializableRoom);
   await getPool().query(
-    `INSERT INTO rooms (room_code, room_mode, status, match_id, contract_match_id, visibility, room_json, created_at, updated_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,to_timestamp($8 / 1000.0),NOW())
+    `INSERT INTO rooms (room_code, room_mode, status, match_id, contract_match_id, visibility, game_id, ruleset_version, room_json, created_at, updated_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,to_timestamp($10 / 1000.0),NOW())
      ON CONFLICT (room_code) DO UPDATE SET
        room_mode = EXCLUDED.room_mode,
        status = EXCLUDED.status,
        match_id = EXCLUDED.match_id,
        contract_match_id = EXCLUDED.contract_match_id,
        visibility = EXCLUDED.visibility,
+       game_id = EXCLUDED.game_id,
+       ruleset_version = EXCLUDED.ruleset_version,
        room_json = EXCLUDED.room_json,
        updated_at = NOW()`,
-    [room.roomCode, room.roomMode, room.status, room.matchId, room.contractMatchId, room.visibility, roomJson, Number(room.createdAt || Date.now())]
+    [room.roomCode, room.roomMode, room.status, room.matchId, room.contractMatchId, room.visibility, room.gameId || "arctic-dominion", room.rulesetVersion || null, roomJson, Number(room.createdAt || Date.now())]
   );
   const players = Object.values(room.players || {});
   for (const player of players) {
@@ -82,14 +87,14 @@ async function saveRoom(room) {
          team = EXCLUDED.team,
          entry_locked = EXCLUDED.entry_locked,
          entry_tx_hash = EXCLUDED.entry_tx_hash`,
-      [room.roomCode, player.wallet, player.team || null, Boolean(player.entryLocked), player.entryTxHash || null, Number(player.joinedAt || Date.now())]
+      [room.roomCode, player.wallet, player.team || player.seat || null, Boolean(player.entryLocked), player.entryTxHash || null, Number(player.joinedAt || Date.now())]
     );
   }
 }
 
 async function loadRooms() {
   if (!(await initRoomStore())) return [];
-  const result = await getPool().query(`SELECT room_json, created_at FROM rooms WHERE status IN ('waiting','playing','finished','cancelled') ORDER BY updated_at DESC LIMIT 200`);
+  const result = await getPool().query(`SELECT room_json, created_at FROM rooms WHERE status IN ('waiting','playing','finished','cancelled') ORDER BY updated_at DESC LIMIT 500`);
   return result.rows.map(rowToRoom).filter(Boolean).map(sanitizeRoom);
 }
 
