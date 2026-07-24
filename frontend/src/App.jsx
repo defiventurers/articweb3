@@ -7,7 +7,10 @@ import {
 } from "./components/FrostLoadingScreen.jsx";
 import { AudioToggle } from "./components/AudioToggle.jsx";
 import { CoverScreen } from "./screens/CoverScreen.jsx";
+import { GameLibraryScreen } from "./screens/GameLibraryScreen.jsx";
+import { GamePreviewScreen } from "./screens/GamePreviewScreen.jsx";
 import { MainMenu } from "./screens/MainMenu.jsx";
+import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
 import { initUiHoverFeedback, unlockUiAudio } from "./utils/uiHoverSound.js";
@@ -51,11 +54,30 @@ export default function App() {
   const skipLoader = params.get("skipLoader") === "1" || Boolean(calibrationTarget) || smokeProfileEnabled || isDevPath;
   const initialSpectateCode = params.get("spectate") || "";
   const initialHighStakesRoomCode = cleanInviteCode(params.get("highStakesRoom") || params.get("hsRoom") || params.get("lockedRoom") || "");
+  const requestedGame = getCatalogGame(params.get("game"));
+  const initialSelectedGameId = requestedGame?.id || (initialHighStakesRoomCode ? "arctic-dominion" : null);
+  const initialScreen = isDevPath
+    ? "dev-home"
+    : initialSpectateCode
+      ? "spectator"
+      : smokeProfileEnabled && initialHighStakesRoomCode
+        ? "high-stakes"
+        : smokeProfileEnabled
+          ? "hub"
+          : initialHighStakesRoomCode
+            ? "cover"
+            : requestedGame?.available
+              ? "cover"
+              : requestedGame
+                ? "game-preview"
+                : "library";
   const [assetsReady, setAssetsReady] = useState(skipLoader);
-  const [screen, setScreen] = useState(isDevPath ? "dev-home" : initialSpectateCode ? "spectator" : smokeProfileEnabled && initialHighStakesRoomCode ? "high-stakes" : smokeProfileEnabled ? "hub" : "cover");
+  const [screen, setScreen] = useState(initialScreen);
+  const [selectedGameId, setSelectedGameId] = useState(initialSelectedGameId);
   const [profile, setProfile] = useState(smokeProfileEnabled ? SMOKE_PROFILE : null);
   const [room, setRoom] = useState(null);
   const transitionTimerRef = useRef(null);
+  const selectedGame = getCatalogGame(selectedGameId);
 
   useEffect(() => { soundManager.load(); unlockUiAudio(); return () => window.clearTimeout(transitionTimerRef.current); }, []);
   useEffect(() => initUiHoverFeedback(), []);
@@ -90,6 +112,20 @@ export default function App() {
     return <><AudioToggle />{node}</>;
   }
 
+  function selectCatalogGame(gameId) {
+    const game = getCatalogGame(gameId);
+    if (!game) return;
+    setSelectedGameId(game.id);
+    syncGameQuery(game.id);
+    goTo(game.available ? "cover" : "game-preview");
+  }
+
+  function exitToLibrary() {
+    setSelectedGameId(null);
+    syncGameQuery(null);
+    goTo("library");
+  }
+
   function resumeRoom(nextRoom) {
     setRoom(nextRoom);
     if (nextRoom.status === "finished") return goTo("results");
@@ -98,14 +134,17 @@ export default function App() {
     return goTo("team-select");
   }
 
+  if (screen === "library") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
+  if (screen === "game-preview" && selectedGame) return withAppChrome(<GamePreviewScreen game={selectedGame} onBack={exitToLibrary} />);
+
   if (screen === "dev-home") return withAppChrome(renderLazy(<DevPortalScreen onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onSettlementAdmin={() => goTo("settlement-admin")} onVaultDeployer={() => goTo("vault-deployer")} onExit={() => window.location.assign("/")} />, "Loading developer console..."));
   if (screen === "dev-qa") return withAppChrome(renderLazy(<DevQAScreen onBack={() => goTo("dev-home")} />));
   if (screen === "test-runbook") return withAppChrome(renderLazy(<TestRunbookScreen onBack={() => goTo("dev-home")} />));
   if (screen === "vault-deployer") return withAppChrome(renderLazy(<EthVaultDeployerScreen onBack={() => goTo("dev-home")} />));
   if (screen === "settlement-admin") return withAppChrome(renderLazy(<SettlementAdminScreen onBack={() => goTo("dev-home")} />));
 
-  if (screen === "cover") return withAppChrome(<CoverScreen onContinue={() => playTrackThenGo("coverScreen", initialHighStakesRoomCode ? "profile" : "menu", COVER_TRACK_DELAY_MS)} />);
-  if (screen === "menu") return withAppChrome(<MainMenu onPlay={() => playTrackThenGo("playNow", "profile", PLAY_NOW_TRACK_DELAY_MS)} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} />);
+  if (screen === "cover") return withAppChrome(<CoverScreen onContinue={() => playTrackThenGo("coverScreen", initialHighStakesRoomCode ? "profile" : "menu", COVER_TRACK_DELAY_MS)} onBackToLibrary={initialHighStakesRoomCode ? undefined : exitToLibrary} />);
+  if (screen === "menu") return withAppChrome(<MainMenu onPlay={() => playTrackThenGo("playNow", "profile", PLAY_NOW_TRACK_DELAY_MS)} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} onAllGames={exitToLibrary} />);
   if (screen === "how-to-play") return withAppChrome(renderLazy(<HowToPlayScreen onBack={() => goTo("menu")} onStart={() => goTo("profile")} />));
   if (screen === "spectator") return withAppChrome(renderLazy(<SpectatorScreen initialRoomCode={initialSpectateCode} onBack={() => goTo(profile ? "hub" : "menu")} />));
   if (screen === "profile") return withAppChrome(renderLazy(<ProfileScreen onComplete={(createdProfile) => { soundManager.play("uiConfirm"); setProfile(createdProfile); goTo(initialHighStakesRoomCode ? "high-stakes" : "hub"); }} onBack={() => goTo("menu")} />));
@@ -135,4 +174,11 @@ function renderLazy(node, label) {
 
 function cleanInviteCode(value) {
   return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
+}
+
+function syncGameQuery(gameId) {
+  const nextUrl = new URL(window.location.href);
+  if (gameId) nextUrl.searchParams.set("game", gameId);
+  else nextUrl.searchParams.delete("game");
+  window.history.replaceState({}, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
 }

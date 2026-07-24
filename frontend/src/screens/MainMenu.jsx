@@ -8,7 +8,7 @@ export function MainMenu(props) {
           className="screen-art"
           src="/assets/screens/main-menu.png"
           desktopSrc="/assets/screens/main-menu-desktop.png"
-          alt="Artic Web3 main menu"
+          alt="Arctic Dominion main menu"
           fetchPriority="high"
         />
         <button className="menu-hitbox menu-play-hitbox" aria-label="Start Game" onClick={props.onPlay} />
@@ -16,6 +16,11 @@ export function MainMenu(props) {
         <button className="menu-hitbox menu-spectate-hitbox" aria-label="Spectate Room" onClick={props.onSpectate}>
           Spectate Room
         </button>
+        {props.onAllGames && (
+          <button type="button" className="main-menu-library-button" onClick={props.onAllGames}>
+            ← All Games
+          </button>
+        )}
       </div>
     </section>
   );
