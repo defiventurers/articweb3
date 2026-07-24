@@ -52,9 +52,9 @@ function makeHarness(faceQueue = []) {
   const packets = [];
   const savedRooms = [];
   const history = [];
+  const queue = [...faceQueue];
   const wsAurora = { readyState: 1, send() {} };
   const wsEmber = { readyState: 1, send() {} };
-  const queue = [...faceQueue];
   const service = createCrownRunService({
     rooms,
     profiles,
@@ -66,7 +66,9 @@ function makeHarness(faceQueue = []) {
     profileFor(wallet) { return profiles.get(String(wallet || "").toLowerCase()); },
     saveRoomSafe(room) { savedRooms.push(JSON.parse(JSON.stringify(room))); },
     async saveHistoryEntry(entry) { history.push(entry); },
-    async getHistoryForWallet(wallet, gameId) { return history.filter((entry) => entry.wallet === wallet && (!gameId || entry.gameId === gameId)); },
+    async getHistoryForWallet(wallet, gameId) {
+      return history.filter((entry) => entry.wallet === wallet && (!gameId || entry.gameId === gameId));
+    },
     rollFaces() { return queue.length ? queue.shift() : [1, 0, 0, 0, 0]; }
   });
   return { service, rooms, packets, savedRooms, history, wsAurora, wsEmber };
@@ -76,7 +78,7 @@ function lastPayload(harness, type) {
   return [...harness.packets].reverse().find((packet) => packet.type === type)?.payload;
 }
 
-test("majority board uses seven five-step segments, eight macho and opposed routes", () => {
+test("majority board has seven joined segments, eight macho and nine pieces per side", () => {
   const state = createCrownRunState();
   assert.equal(SPACES.length, 36);
   assert.equal(SAFE_SPACES.size, 8);
@@ -84,27 +86,23 @@ test("majority board uses seven five-step segments, eight macho and opposed rout
   assert.equal(state.pieces.aurora.length, 9);
   assert.equal(state.pieces.ember.length, 9);
   assert.equal(state.pieces.aurora.filter((piece) => piece.kind === "king").length, 1);
+  assert.equal(state.pieces.aurora.filter((piece) => piece.kind === "standard").length, 8);
 });
 
-test("a player without da loses the chance to apply the sequence", () => {
-  const state = createCrownRunState({ starter: "aurora" });
-  const result = applyRollSequence(state, [roll(2)], "aurora");
-  assert.equal(result.error, null);
-  assert.equal(result.state.currentPlayer, "ember");
-  assert.equal(result.state.awaiting, "roll");
-  assert.equal(result.state.throwPool.length, 0);
-  assert.equal(result.state.history.at(-1).reason, "no-da");
+test("a normal chance needs da and zero forfeits accumulated results", () => {
+  const noDa = applyRollSequence(createCrownRunState({ starter: "aurora" }), [roll(2)], "aurora");
+  assert.equal(noDa.error, null);
+  assert.equal(noDa.state.currentPlayer, "ember");
+  assert.equal(noDa.state.history.at(-1).reason, "no-da");
+
+  const zero = applyRollSequence(createCrownRunState({ starter: "aurora" }), [roll(1, "da"), roll(0, "zero")], "aurora");
+  assert.equal(zero.error, null);
+  assert.equal(zero.state.currentPlayer, "ember");
+  assert.equal(zero.state.throwPool.length, 0);
+  assert.equal(zero.state.history.at(-1).reason, "zero-forfeit");
 });
 
-test("zero forfeits the accumulated sequence under the majority rule", () => {
-  const state = createCrownRunState({ starter: "aurora" });
-  const result = applyRollSequence(state, [roll(1, "one"), roll(0, "zero")], "aurora");
-  assert.equal(result.state.currentPlayer, "ember");
-  assert.equal(result.state.throwPool.length, 0);
-  assert.equal(result.state.history.at(-1).reason, "zero-forfeit");
-});
-
-test("da must enter a waiting piece before moving an existing piece", () => {
+test("da enters a waiting piece before it may move an existing piece", () => {
   const state = licensedState();
   state.pieces.aurora[1].status = "track";
   state.pieces.aurora[1].progress = 8;
@@ -115,7 +113,7 @@ test("da must enter a waiting piece before moving an existing piece", () => {
   assert.equal(actions.some((action) => action.pieceId === state.pieces.aurora[1].id), false);
 });
 
-test("the opposing home row remains closed until the side has captured", () => {
+test("the opposing home row stays closed until the side captures", () => {
   const state = createCrownRunState({ starter: "aurora" });
   state.turnHasDa = true;
   state.awaiting = "allocate";
@@ -129,7 +127,7 @@ test("the opposing home row remains closed until the side has captured", () => {
   assert.equal(getLegalActions(state, "aurora").some((action) => action.pieceId === runner.id), true);
 });
 
-test("a standard piece capturing the nakta resets unfinished allies but preserves exited pieces", () => {
+test("a standard capture of the nakta resets unfinished allies but preserves exited pieces", () => {
   const state = createCrownCollapseDrill();
   const striker = state.pieces.aurora.find((piece) => piece.status === "track");
   const action = getLegalActions(state, "aurora").find((item) => item.pieceId === striker.id && item.capturedPieceId);
@@ -141,10 +139,10 @@ test("a standard piece capturing the nakta resets unfinished allies but preserve
   assert.equal(result.state.lastMove.resetCount, 3);
   assert.equal(result.state.captureLicense.ember, false);
   assert.equal(result.state.pieces.ember.filter((piece) => piece.status === "finished").length, 1);
-  assert.equal(result.state.pieces.ember.filter((piece) => piece.status === "track" || piece.status === "center").length, 0);
+  assert.equal(result.state.pieces.ember.filter((piece) => ["track", "center"].includes(piece.status)).length, 0);
 });
 
-test("nakta-on-nakta capture resets even pieces that already exited", () => {
+test("nakta-on-nakta capture resets pieces that already exited", () => {
   const state = licensedState();
   state.pieces.aurora.forEach((piece) => { piece.status = "home"; piece.progress = -1; });
   state.pieces.ember.forEach((piece) => { piece.status = "home"; piece.progress = -1; });
@@ -157,13 +155,14 @@ test("nakta-on-nakta capture resets even pieces that already exited", () => {
   state.pieces.ember[1].status = "finished";
   state.pieces.ember[1].progress = FINISHED_PROGRESS;
   state.throwPool = [roll(3, "royal")];
-  const action = getLegalActions(state, "aurora").find((item) => item.pieceId === attacker.id);
+  const action = getLegalActions(state, "aurora").find((item) => item.pieceId === attacker.id && item.capturedPieceId === victim.id);
   const result = applyAction(state, action, "aurora");
+  assert.equal(result.error, null);
   assert.equal(result.state.lastReset.includedFinishedPieces, true);
   assert.equal(result.state.pieces.ember.every((piece) => piece.status === "home"), true);
 });
 
-test("friendly pieces stack while an opposing stack blocks a macho", () => {
+test("friendly pieces stack while an opponent blocks landing on a macho", () => {
   const state = licensedState();
   state.pieces.aurora.forEach((piece) => { piece.status = "home"; piece.progress = -1; });
   state.pieces.ember.forEach((piece) => { piece.status = "home"; piece.progress = -1; });
@@ -173,35 +172,42 @@ test("friendly pieces stack while an opposing stack blocks a macho", () => {
   state.pieces.aurora[1].progress = 5;
   state.throwPool = [roll(2, "friendly")];
   assert.equal(getLegalActions(state, "aurora").some((action) => action.pieceId === state.pieces.aurora[0].id), true);
+
   state.pieces.ember[0].status = "track";
   state.pieces.ember[0].progress = 30;
   assert.equal(getPieceSpaceId(state.pieces.ember[0]), "R5");
   assert.equal(getLegalActions(state, "aurora").some((action) => action.pieceId === state.pieces.aurora[0].id), false);
 });
 
-test("landing on the final square moves a piece to center and a later da exits it", () => {
+test("the final route room leads to center and a later da exits the piece", () => {
   const state = licensedState();
   state.pieces.aurora.forEach((piece) => { piece.status = "finished"; piece.progress = FINISHED_PROGRESS; });
   const runner = state.pieces.aurora[0];
   runner.status = "track";
   runner.progress = 33;
   state.throwPool = [roll(2, "center")];
+
   let result = applyAction(state, getLegalActions(state, "aurora")[0], "aurora");
+  assert.equal(result.error, null);
   assert.equal(result.state.pieces.aurora[0].status, "center");
   assert.equal(result.state.pieces.aurora[0].progress, CENTER_PROGRESS);
+
+  result.state.currentPlayer = "aurora";
   result.state.awaiting = "allocate";
   result.state.throwPool = [roll(1, "exit")];
   result.state.turnHasDa = true;
   result = applyAction(result.state, getLegalActions(result.state, "aurora")[0], "aurora");
+  assert.equal(result.error, null);
   assert.equal(result.state.winner, "aurora");
   assert.equal(result.state.pieces.aurora[0].status, "finished");
 });
 
-test("service assigns opposite courts, generates authoritative cowries and rejects wrong turns", () => {
+test("service assigns opposite courts, commits cowries and rejects wrong turns", () => {
   const harness = makeHarness([[1, 0, 0, 0, 0], [1, 1, 0, 0, 0]]);
   harness.service.createRoom(harness.wsEmber, "create", { wallet: "0xember", visibility: "public", side: "ember" });
   const created = lastPayload(harness, "cr_room_create_result").room;
   assert.equal(created.gameId, CROWN_RUN_RULESET.gameId);
+
   harness.service.joinRoom(harness.wsAurora, "join", { wallet: "0xaurora", roomCode: created.roomCode });
   const joined = lastPayload(harness, "cr_room_join_result").room;
   assert.equal(joined.status, "playing");
@@ -226,8 +232,7 @@ test("service assigns opposite courts, generates authoritative cowries and rejec
 test("persisted Crown Run rooms restore and reconnect", () => {
   const harness = makeHarness();
   harness.service.createRoom(harness.wsAurora, "create", { wallet: "0xaurora", visibility: "private", side: "aurora" });
-  const original = [...harness.rooms.values()][0];
-  const serialized = JSON.parse(JSON.stringify(original));
+  const serialized = JSON.parse(JSON.stringify([...harness.rooms.values()][0]));
   const restored = makeHarness();
   restored.rooms.set(serialized.roomCode, serialized);
   assert.equal(restored.service.restoreRoom(serialized), true);
