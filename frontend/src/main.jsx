@@ -15,6 +15,7 @@ import "./styles/iceHunters.css";
 import "./styles/iceHuntersCoverFix.css";
 import "./styles/sixteenIceWarriors.css";
 import "./styles/glacierTrail.css";
+import "./styles/crownRun.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";
