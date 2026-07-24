@@ -23,7 +23,7 @@ const SPACES = Object.freeze([
   ...Array.from({ length: 11 }, (_, index) => space(`B${index}`, 6 + index * 8.8, 92, `Bottom ${index + 1}`, "bottom")),
   ...Array.from({ length: 5 }, (_, index) => space(`V${index + 1}`, 50, 86 - index * 6.5, `Stem ${index + 1}`, "stem")),
   space("QBL", 15, 60, "Lower-left corner", "square"),
-  ...Array.from({ length: 4 }, (_, index) => space(`QB${index + 1}`, 22 + index * 7, ``, `Lower track ${index + 2}`, "square")).map((item) => ({ ...item, y: 60 })),
+  ...Array.from({ length: 4 }, (_, index) => space(`QB${index + 1}`, 22 + index * 7, 60, `Lower track ${index + 2}`, "square")),
   ...Array.from({ length: 4 }, (_, index) => space(`QB${index + 6}`, 57 + index * 7, 60, `Lower track ${index + 7}`, "square")),
   space("QBR", 85, 60, "Lower-right corner", "square"),
   ...Array.from({ length: 9 }, (_, index) => space(`QL${index + 1}`, 15, 55 - index * 5, `Left track ${index + 2}`, "square")),
@@ -53,35 +53,12 @@ const CORAL_SQUARE_LOOP = Object.freeze([
 ]);
 
 const ROUTES = Object.freeze({
-  blue: Object.freeze([
-    "B0", "B1", "B2", "B3", "B4", "B5",
-    "V1", "V2", "V3", "V4", "V5",
-    ...BLUE_SQUARE_LOOP,
-    "V6", "V7", "V8", "V9", "V10"
-  ]),
-  coral: Object.freeze([
-    "B10", "B9", "B8", "B7", "B6", "B5",
-    "V1", "V2", "V3", "V4", "V5",
-    ...CORAL_SQUARE_LOOP,
-    "V6", "V7", "V8", "V9", "V10"
-  ])
+  blue: Object.freeze(["B0", "B1", "B2", "B3", "B4", "B5", "V1", "V2", "V3", "V4", "V5", ...BLUE_SQUARE_LOOP, "V6", "V7", "V8", "V9", "V10"]),
+  coral: Object.freeze(["B10", "B9", "B8", "B7", "B6", "B5", "V1", "V2", "V3", "V4", "V5", ...CORAL_SQUARE_LOOP, "V6", "V7", "V8", "V9", "V10"])
 });
 
-const SAFE_SPACES = Object.freeze(new Set([
-  "B0", "B5", "B10",
-  "V5", "V10",
-  "QBL", "QBR", "QTL", "QTR",
-  "QL5", "QT5", "QR5"
-]));
-
-const TRACK_LINES = Object.freeze([
-  ["B0", "B10"],
-  ["B5", "V10"],
-  ["QBL", "QBR"],
-  ["QBR", "QTR"],
-  ["QTR", "QTL"],
-  ["QTL", "QBL"]
-]);
+const SAFE_SPACES = Object.freeze(new Set(["B0", "B5", "B10", "V5", "V10", "QBL", "QBR", "QTL", "QTR", "QL5", "QT5", "QR5"]));
+const TRACK_LINES = Object.freeze([["B0", "B10"], ["B5", "V10"], ["QBL", "QBR"], ["QBR", "QTR"], ["QTR", "QTL"], ["QTL", "QBL"]]);
 
 function createPieces(player) {
   return Array.from({ length: BREAK_THE_ICE_RULESET.piecesPerPlayer }, (_, index) => ({
@@ -102,10 +79,7 @@ function createBreakTheIceState({ mode = "hotseat", starter = "blue", seed = Dat
     roll: null,
     lastRoll: null,
     lastMove: null,
-    pieces: {
-      blue: createPieces("blue"),
-      coral: createPieces("coral")
-    },
+    pieces: { blue: createPieces("blue"), coral: createPieces("coral") },
     captures: { blue: 0, coral: 0 },
     turn: 1,
     throwCount: 0,
@@ -182,11 +156,10 @@ function getLegalActions(state, player = state.currentPlayer) {
         pieceId: piece.id,
         targetProgress,
         targetSpace,
-        captures: occupant?.player !== player ? occupant.id : null
+        captures: occupant && occupant.player !== player ? occupant.id : null
       });
     }
   }
-
   return actions;
 }
 
@@ -224,12 +197,7 @@ function applyRoll(state, faces, player = state.currentPlayer, meta = {}) {
 
   const legalActions = getLegalActions(next, player);
   if (value === 0 || legalActions.length === 0) {
-    next.lastMove = {
-      type: "pass",
-      player,
-      reason: value === 0 ? "no-mouths-up" : "no-legal-runner",
-      value
-    };
+    next.lastMove = { type: "pass", player, reason: value === 0 ? "no-mouths-up" : "no-legal-runner", value };
     next.history.push({ type: "pass", turn: next.turn, player, reason: next.lastMove.reason, value });
     finishThrow(next);
   }
