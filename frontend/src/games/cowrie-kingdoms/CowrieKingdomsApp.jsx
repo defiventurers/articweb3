@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { chooseCowrieKingdomsBotAction } from "./bot.js";
 import { CowrieKingdomsBoard, CowrieTray, KingdomDock, ThrowPool } from "./CowrieKingdomsBoard.jsx";
 import { CowrieKingdomsOnline } from "./CowrieKingdomsOnline.jsx";
@@ -105,7 +105,7 @@ export function CowrieKingdomsApp({ onExitToLibrary, profile, onProfileChange })
         <div className="ck-cover-copy">
           <p>ASHTA-KASHTE · FALKENER 1892</p>
           <h1>COWRIE<br />KINGDOMS</h1>
-          <span>Four runners spiral through a seven-by-seven ice court. Grace enters the board, exact landings capture, and every path ends at the frozen centre.</span>
+          <span>Four runners spiral through a seven-by-seven ice court. Grace enters the board, pairs control key cells, and every path ends at the frozen centre.</span>
           <button onClick={() => setScreen("menu")}>Enter the kingdoms</button>
         </div>
       </section>
@@ -183,7 +183,7 @@ export function CowrieKingdomsApp({ onExitToLibrary, profile, onProfileChange })
         </div>
         <KingdomDock side="ember" state={state} legalActions={playableActions} onAction={submitAction} interactive={humanMayAct && !isBotThinking} />
       </main>
-      <footer className="ck-game-footer"><span>Mode: {modeLabel(mode)}</span><span>Four cowries · grace on 4 and 8 · protected crosses · exact centre</span></footer>
+      <footer className="ck-game-footer"><span>Mode: {modeLabel(mode)}</span><span>Four cowries · grace on 4 and 8 · optional pairs · protected crosses · exact centre</span></footer>
     </section>
   );
 }
@@ -198,12 +198,12 @@ function RulesScreen({ onBack, onStart }) {
         <div className="ck-rule-grid">
           <section><strong>1 · Cast four cowries</strong><p>One to three mouths up score their number. Four mouths up score 4 and grace. No mouths up score Ashta: 8 plus a separate grace. Grace and captures grant another cast.</p></section>
           <section><strong>2 · Enter by grace</strong><p>A waiting runner enters on your marked edge square only through grace. The separate grace from an Ashta throw may be played independently from the stored 8.</p></section>
-          <section><strong>3 · Follow the spiral</strong><p>Travel anticlockwise around the outer ring, turn into the next ring, then follow the clockwise inner spiral toward the centre.</p></section>
+          <section><strong>3 · Follow the spiral</strong><p>Travel anticlockwise around the outer ring, turn into the left corner of the next ring, then follow the clockwise inner spiral toward the centre.</p></section>
           <section><strong>4 · Capture</strong><p>Land exactly on a rival on an unprotected cell to return it home and earn another cast. The five crossed cells are safe.</p></section>
-          <section><strong>5 · Passing is legal</strong><p>Falkener states that a player is not obliged to play a throw. Pass any stored unit when holding it would be strategically better.</p></section>
-          <section><strong>6 · Finish exactly</strong><p>A runner reaches the centre only with an exact value. The first kingdom to finish all four runners wins.</p></section>
+          <section><strong>5 · Form a pair</strong><p>Land on one of your own runners to pair them. Move either runner separately or use the ×2 control to move both. A single cannot capture an opposing pair; a pair can capture one or two rivals.</p></section>
+          <section><strong>6 · Pass or finish</strong><p>You may pass any stored throw. The centre requires an exact value, and the first kingdom to finish all four runners wins.</p></section>
         </div>
-        <div className="ck-modern-policy"><strong>Version boundary</strong><span>Protected cells allow mixed stacks because Falkener explicitly permits entry while a rival rests on the starting cross. Unprotected friendly occupancy blocks landing. No capture-gated home path is imported from Chowka Bara variants.</span></div>
+        <div className="ck-modern-policy"><strong>Version boundary</strong><span>The source-specific entry exception allows coexistence only on your starting cross. Friendly stacks are limited to two. No capture-gated home path, alternate cowrie table, or Thaayam-specific piece class is imported from another regional variant.</span></div>
         <button className="ck-rules-start" onClick={onStart}>Guide Aurora Kingdom</button>
       </article>
     </section>
