@@ -9,7 +9,7 @@ import {
   joinIceRingsRoom,
   listIceRingsRooms,
   submitIceRingsAction
-} from "../../network/socketClient.js";
+} from "../../network/iceRingsSocketClient.js";
 import { IceRingsBoard, IceRingsScore } from "./IceRingsBoard.jsx";
 import { describeTurn, getLegalActions, resultDetail, resultTitle } from "./rules.js";
 
