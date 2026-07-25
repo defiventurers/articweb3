@@ -10,7 +10,7 @@ test("Cowrie Kingdoms opens and splits Ashta into grace plus an eight capture", 
   await expect(page.getByLabel("Cowrie Kingdoms Ashta grace drill")).toBeVisible();
   await expect(page.getByText(/Play the separate Grace entry first/i)).toBeVisible();
   await page.getByRole("button", { name: /Aurora runner 1 at home, legal grace entry/i }).click();
-  await page.getByRole("button", { name: "Move 8" }).click();
+  await page.getByRole("button", { name: "Move 8", exact: true }).click();
   await page.getByRole("button", { name: /Aurora runner 2.*legal move 8/i }).click();
   await expect(page.getByText(/captured ember-1 and earned another cast/i)).toBeVisible();
 });
