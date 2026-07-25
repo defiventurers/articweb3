@@ -8,10 +8,12 @@ import {
 } from "./rules.js";
 
 export function CowrieKingdomsBoard({ state, legalActions = [], onAction, interactive = true }) {
-  const actionsByPiece = new Map();
+  const singleActionsByPiece = new Map();
+  const pairActionsByCell = new Map();
   legalActions.forEach((action) => {
     if (!action.pieceId) return;
-    actionsByPiece.set(action.pieceId, action);
+    if (action.groupSize === 2) pairActionsByCell.set(action.fromSpace, action);
+    else if (!singleActionsByPiece.has(action.pieceId)) singleActionsByPiece.set(action.pieceId, action);
   });
   const piecesByCell = new Map();
   Object.values(state.pieces).flat().forEach((piece) => {
@@ -30,6 +32,7 @@ export function CowrieKingdomsBoard({ state, legalActions = [], onAction, intera
           const pieces = piecesByCell.get(id) || [];
           const safe = SAFE_SPACES.has(id);
           const goal = id === cellId(3, 3);
+          const pairAction = pairActionsByCell.get(id) || null;
           const aria = `${id} ${safe ? "safe square" : "route cell"} ${pieces.length ? `occupied by ${pieces.map((piece) => piece.side).join(" and ")}` : "empty"}`;
           return (
             <div
@@ -45,7 +48,7 @@ export function CowrieKingdomsBoard({ state, legalActions = [], onAction, intera
               {!goal && <span className="ck-route-number ember" aria-hidden="true">{emberSteps.get(id) ?? ""}</span>}
               <div className="ck-cell-stack">
                 {pieces.map((piece) => {
-                  const action = actionsByPiece.get(piece.id);
+                  const action = singleActionsByPiece.get(piece.id);
                   const number = Number(piece.id.split("-").at(-1));
                   const label = `${piece.side === "aurora" ? "Aurora" : "Ember"} runner ${number} on ${id}${action ? `, legal ${action.type === "enter" ? "entry" : `move ${action.value}`}` : ""}`;
                   return (
@@ -62,6 +65,17 @@ export function CowrieKingdomsBoard({ state, legalActions = [], onAction, intera
                     </button>
                   );
                 })}
+                {pairAction && (
+                  <button
+                    type="button"
+                    className={`ck-pair-action ${state.currentPlayer}`}
+                    disabled={!interactive}
+                    onClick={() => onAction?.(pairAction)}
+                    aria-label={`${state.currentPlayer === "aurora" ? "Aurora" : "Ember"} paired runners ${pairAction.pieceIds.join(" and ")} on ${id}, legal move ${pairAction.value}`}
+                  >
+                    ×2
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -74,7 +88,7 @@ export function CowrieKingdomsBoard({ state, legalActions = [], onAction, intera
 }
 
 export function KingdomDock({ side, state, legalActions = [], onAction, interactive = true }) {
-  const actionsByPiece = new Map(legalActions.filter((action) => action.pieceId).map((action) => [action.pieceId, action]));
+  const actionsByPiece = new Map(legalActions.filter((action) => action.pieceId && action.groupSize !== 2).map((action) => [action.pieceId, action]));
   const homePieces = state.pieces[side].filter((piece) => piece.status === "home");
   const finished = state.pieces[side].filter((piece) => piece.status === "finished").length;
   return (
@@ -110,7 +124,7 @@ export function KingdomDock({ side, state, legalActions = [], onAction, interact
       <footer>
         <span>{homePieces.length} home</span>
         <span>{finished}/{COWRIE_KINGDOMS_RULESET.piecesPerPlayer} centre</span>
-        <span>{state.captures[side]} captures</span>
+        <span>{state.captures[side]} captured</span>
       </footer>
     </aside>
   );
