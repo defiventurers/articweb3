@@ -142,3 +142,13 @@ export async function submitFortyGlacierGuardsAction({ roomCode, profile, action
 export async function getFortyGlacierGuardsLegalActions({ roomCode, profile }) { return (await request("fgg_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
 export async function getFortyGlacierGuardsHistory({ profile }) { return (await request("fgg_history", { wallet: profile.wallet })).history || []; }
 export async function getMyFortyGlacierGuardsRooms({ profile }) { return (await request("fgg_my_rooms", { wallet: profile.wallet })).rooms || []; }
+
+export async function listSkyTempleRunRooms() { return (await request("str_room_list", {})).rooms || []; }
+export async function createSkyTempleRunRoom({ visibility = "public", side = "aurora", profile }) { return (await request("str_room_create", { visibility, side, wallet: profile.wallet })).room; }
+export async function joinSkyTempleRunRoom({ roomCode, profile }) { return (await request("str_room_join", { roomCode, wallet: profile.wallet })).room; }
+export async function getSkyTempleRunState({ roomCode, profile }) { return (await request("str_game_state", { roomCode, wallet: profile.wallet })).room; }
+export async function rollSkyTempleRunCowries({ roomCode, profile }) { return (await request("str_game_roll", { roomCode, wallet: profile.wallet })).room; }
+export async function submitSkyTempleRunAction({ roomCode, profile, action }) { return (await request("str_game_action", { roomCode, wallet: profile.wallet, action })).room; }
+export async function getSkyTempleRunLegalActions({ roomCode, profile }) { return (await request("str_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
+export async function getSkyTempleRunHistory({ profile }) { return (await request("str_history", { wallet: profile.wallet })).history || []; }
+export async function getMySkyTempleRunRooms({ profile }) { return (await request("str_my_rooms", { wallet: profile.wallet })).rooms || []; }
