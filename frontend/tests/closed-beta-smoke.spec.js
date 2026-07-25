@@ -17,12 +17,10 @@ test.describe("closed beta smoke", () => {
     await page.goto("/?skipLoader=1");
     await page.getByRole("button", { name: "Play Nine Ice Forts" }).click();
     await expect(page.getByLabel("Nine Ice Forts cover")).toBeVisible();
-
     await page.getByRole("button", { name: "Enter the forts" }).click();
     await expect(page.getByLabel("Nine Ice Forts menu")).toBeVisible();
     await page.getByRole("button", { name: "Local Two Player" }).click();
     await expect(page.getByLabel("Nine Ice Forts game")).toBeVisible();
-
     await page.getByRole("gridcell", { name: "a7 empty" }).click();
     await expect(page.getByRole("gridcell", { name: "a7 occupied by blue" })).toBeVisible();
     await expect(page.getByText(/Coral places a scout/i)).toBeVisible();
@@ -32,16 +30,13 @@ test.describe("closed beta smoke", () => {
     await page.goto("/?skipLoader=1");
     await page.getByRole("button", { name: "Play Four-Wing Ice Hunt" }).click();
     await expect(page.getByLabel("Four-Wing Ice Hunt cover")).toBeVisible();
-
     await page.getByRole("button", { name: "Enter the hunt" }).click();
     await expect(page.getByLabel("Four-Wing Ice Hunt menu")).toBeVisible();
     await page.getByRole("button", { name: "Local Two Player" }).click();
     await expect(page.getByLabel("Four-Wing Ice Hunt game")).toBeVisible();
-
     await page.getByRole("gridcell", { name: "c22 empty" }).click();
     await expect(page.getByRole("gridcell", { name: "c22 occupied by leopards" })).toBeVisible();
     await expect(page.getByText(/first cattle piece/i)).toBeVisible();
-
     await page.getByRole("gridcell", { name: "c00 empty" }).click();
     await expect(page.getByRole("gridcell", { name: "c00 occupied by cattle" })).toBeVisible();
     await expect(page.getByText(/second snow leopard/i)).toBeVisible();
@@ -51,12 +46,10 @@ test.describe("closed beta smoke", () => {
     await page.goto("/?skipLoader=1");
     await page.getByRole("button", { name: "Play Fishflow" }).click();
     await expect(page.getByLabel("Fishflow cover")).toBeVisible();
-
     await page.getByRole("button", { name: "Follow the current" }).click();
     await expect(page.getByLabel("Fishflow menu")).toBeVisible();
     await page.getByRole("button", { name: "Local Two Player" }).click();
     await expect(page.getByLabel("Fishflow game")).toBeVisible();
-
     await page.getByRole("gridcell", { name: "Blue pit 1 with 6 fish" }).click();
     await expect(page.getByText(/Blue Current sowed 20 fish.*2 relays.*7 fish banked/i)).toBeVisible();
     await expect(page.getByRole("gridcell", { name: "Coral pit 2 with 7 fish" })).toBeEnabled();
@@ -66,13 +59,11 @@ test.describe("closed beta smoke", () => {
     await page.goto("/?skipLoader=1");
     await page.getByRole("button", { name: "Play Break the Ice" }).click();
     await expect(page.getByLabel("Break the Ice cover")).toBeVisible();
-
     await page.getByRole("button", { name: "Start the race" }).click();
     await expect(page.getByLabel("Break the Ice menu")).toBeVisible();
     await page.getByRole("button", { name: "Daily Cowrie Drill" }).click();
     await expect(page.getByLabel("Break the Ice daily drill")).toBeVisible();
     await expect(page.getByText("Blue rolled 5. Choose one runner.")).toBeVisible();
-
     await page.getByRole("button", { name: "Blue runner 1 on Home climb 1, legal move" }).click();
     await expect(page.getByText("Perfect route")).toBeVisible();
     await expect(page.getByText(/Best runner: Runner 1/i)).toBeVisible();
@@ -82,15 +73,12 @@ test.describe("closed beta smoke", () => {
     await page.goto("/?skipLoader=1");
     await page.getByRole("button", { name: "Play Ice Hunters" }).click();
     await expect(page.getByLabel("Ice Hunters cover")).toBeVisible();
-
     await page.getByRole("button", { name: "Enter the hunting ground" }).click();
     await expect(page.getByLabel("Ice Hunters menu")).toBeVisible();
     await page.getByRole("button", { name: "Local Two Player" }).click();
     await expect(page.getByLabel("Ice Hunters game")).toBeVisible();
-
     await page.getByRole("gridcell", { name: /n11 empty legal/i }).click();
     await expect(page.getByRole("gridcell", { name: /n11 occupied by goats/i })).toBeVisible();
-
     await page.getByRole("gridcell", { name: /n00 occupied by tigers legal/i }).click();
     await page.getByRole("gridcell", { name: /n22 empty capture target/i }).click();
     await expect(page.getByRole("gridcell", { name: /n22 occupied by tigers/i })).toBeVisible();
@@ -101,19 +89,58 @@ test.describe("closed beta smoke", () => {
     await page.goto("/?skipLoader=1");
     await page.getByRole("button", { name: "Play Sixteen Ice Warriors" }).click();
     await expect(page.getByLabel("Sixteen Ice Warriors cover")).toBeVisible();
-
     await page.getByRole("button", { name: "Enter the war table" }).click();
     await expect(page.getByLabel("Sixteen Ice Warriors menu")).toBeVisible();
     await page.getByRole("button", { name: "Chain Capture Drill" }).click();
     await expect(page.getByLabel("Sixteen Ice Warriors capture drill")).toBeVisible();
-
     await page.getByRole("gridcell", { name: "c04 occupied by aurora" }).click();
     await page.getByRole("gridcell", { name: "c22 empty" }).click();
     await expect(page.getByText(/continue the capture chain or end the turn/i)).toBeVisible();
-
     await page.getByRole("gridcell", { name: "c40 empty" }).click();
     await expect(page.getByText("Aurora Legion wins")).toBeVisible();
     await expect(page.getByText(/Every opposing soldier has been chopped/i)).toBeVisible();
+  });
+
+  test("Crown Run opens and resolves a standard-on-king crown collapse", async ({ page }) => {
+    await page.goto("/?skipLoader=1");
+    await page.getByRole("button", { name: "Play Crown Run" }).click();
+    await expect(page.getByLabel("Crown Run cover")).toBeVisible();
+    await page.getByRole("button", { name: "Enter the royal track" }).click();
+    await expect(page.getByLabel("Crown Run menu")).toBeVisible();
+    await page.getByRole("button", { name: "Crown Collapse Drill" }).click();
+    await expect(page.getByLabel("Crown Run crown collapse drill")).toBeVisible();
+    await page.getByRole("button", { name: "Aurora Court kaangi 1 on Track 9, legal capture" }).click();
+    await expect(page.getByText("Crown collapse confirmed")).toBeVisible();
+    await expect(page.getByText(/already-exited piece survived/i)).toBeVisible();
+  });
+
+  test("Forty Glacier Guards opens and completes an optional two-jump breakthrough", async ({ page }) => {
+    await page.goto("/?skipLoader=1");
+    await page.getByRole("button", { name: "Play Forty Glacier Guards" }).click();
+    await expect(page.getByLabel("Forty Glacier Guards cover")).toBeVisible();
+    await page.getByRole("button", { name: "Enter the glacier grid" }).click();
+    await expect(page.getByLabel("Forty Glacier Guards menu")).toBeVisible();
+    await page.getByRole("button", { name: "Breakthrough Chain Drill" }).click();
+    await expect(page.getByLabel("Forty Glacier Guards capture drill")).toBeVisible();
+    await page.getByRole("gridcell", { name: /g42 occupied by aurora.*legal move/i }).click();
+    await page.getByRole("gridcell", { name: /g44 empty capture target/i }).click();
+    await expect(page.getByText(/continue the jump chain or end the turn/i)).toBeVisible();
+    await page.getByRole("gridcell", { name: /g46 empty capture target/i }).click();
+    await expect(page.getByText("Aurora Guard wins")).toBeVisible();
+    await expect(page.getByText(/Every opposing guard has been removed/i)).toBeVisible();
+  });
+
+  test("Sky Temple Run opens and unlocks the inner route through capture", async ({ page }) => {
+    await page.goto("/?skipLoader=1");
+    await page.getByRole("button", { name: "Play Sky Temple Run" }).click();
+    await expect(page.getByLabel("Sky Temple Run cover")).toBeVisible();
+    await page.getByRole("button", { name: "Enter the sky route" }).click();
+    await expect(page.getByLabel("Sky Temple Run menu")).toBeVisible();
+    await page.getByRole("button", { name: "Temple Gate Drill" }).click();
+    await expect(page.getByLabel("Sky Temple Run gate drill")).toBeVisible();
+    await page.getByRole("button", { name: /Aurora pilgrim 1.*legal move/i }).click();
+    await expect(page.getByText(/captured a rival and unlocked the temple gate/i)).toBeVisible();
+    await expect(page.getByText(/temple gate unlocked/i).first()).toBeVisible();
   });
 
   test("smoke profile opens Player Hub", async ({ page }) => {

@@ -1,0 +1,11 @@
+.cr-space {
+  pointer-events: none;
+}
+
+.cr-space .cr-piece {
+  pointer-events: auto;
+}
+
+.cr-space:has(.cr-piece.legal) {
+  z-index: 8;
+}
