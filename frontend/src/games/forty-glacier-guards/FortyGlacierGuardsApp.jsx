@@ -96,8 +96,8 @@ export function FortyGlacierGuardsApp({ onExitToLibrary, profile, onProfileChang
         <button className="fgg-back-pill" onClick={onExitToLibrary}>← All Games</button>
         <div className="fgg-cover-grid" aria-hidden="true">
           <div className="fgg-cover-lines" />
-          {Array.from({ length: 40 }, (_, index) => <i className="ember" key={`e-${index}`} style={{ "--i": index }} />)}
-          {Array.from({ length: 40 }, (_, index) => <i className="aurora" key={`a-${index}`} style={{ "--i": index }} />)}
+          {Array.from({ length: 40 }, (_, index) => <i className="ember" key={`e-${index}`} style={{ "--i": index, "--row": Math.floor(index / 9), "--col": index % 9 }} />)}
+          {Array.from({ length: 40 }, (_, index) => <i className="aurora" key={`a-${index}`} style={{ "--i": index, "--row": Math.floor(index / 9), "--col": index % 9 }} />)}
           <b>40 × 40</b>
         </div>
         <div className="fgg-cover-copy">
