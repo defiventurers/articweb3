@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { ProfileScreen } from "../../screens/ProfileScreen.jsx";
+import { createProfile } from "../../network/socketClient.js";
 import {
   createCowrieKingdomsRoom,
-  createProfile,
   getCowrieKingdomsHistory,
   getCowrieKingdomsState,
   getMyCowrieKingdomsRooms,
@@ -10,7 +10,7 @@ import {
   listCowrieKingdomsRooms,
   rollCowrieKingdomsCowries,
   submitCowrieKingdomsAction
-} from "../../network/socketClient.js";
+} from "../../network/cowrieKingdomsSocketClient.js";
 import { CowrieKingdomsBoard, CowrieTray, KingdomDock, ThrowPool } from "./CowrieKingdomsBoard.jsx";
 import { describeTurn, getLegalActions, resultDetail, resultTitle } from "./rules.js";
 
