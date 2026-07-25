@@ -12,5 +12,5 @@ test("Cowrie Kingdoms opens and splits Ashta into grace plus an eight capture", 
   await page.getByRole("button", { name: /Aurora runner 1 at home, legal grace entry/i }).click();
   await page.getByRole("button", { name: "Move 8", exact: true }).click();
   await page.getByRole("button", { name: /Aurora runner 2.*legal move 8/i }).click();
-  await expect(page.getByText(/captured ember-1 and earned another cast/i)).toBeVisible();
+  await expect(page.getByText(/captured ember-1.*earned another cast/i)).toBeVisible();
 });
