@@ -49,8 +49,8 @@ test("a runner may land on a friendly runner and form a pair", () => {
 test("a single cannot capture a pair, while a moving pair removes both defenders", () => {
   const state = prepareAllocation(createCowrieKingdomsState());
   state.pieces.aurora[0].status = "track";
-  state.pieces.aurora[0].progress = 5;
-  const targetCell = ROUTES.aurora[6];
+  state.pieces.aurora[0].progress = 6;
+  const targetCell = ROUTES.aurora[7];
   const emberProgress = ROUTES.ember.indexOf(targetCell);
   assert.ok(emberProgress >= 0);
   state.pieces.ember[0].status = "track";
@@ -64,7 +64,7 @@ test("a single cannot capture a pair, while a moving pair removes both defenders
   );
 
   state.pieces.aurora[1].status = "track";
-  state.pieces.aurora[1].progress = 5;
+  state.pieces.aurora[1].progress = 6;
   const pairCapture = getLegalActions(state, "aurora", "move-1")
     .find((action) => action.groupSize === 2 && action.targetSpace === targetCell);
   assert.ok(pairCapture);
@@ -75,9 +75,11 @@ test("a single cannot capture a pair, while a moving pair removes both defenders
   assert.equal(result.state.pieces.ember[0].status, "home");
   assert.equal(result.state.pieces.ember[1].status, "home");
   assert.equal(result.state.captures.aurora, 2);
-  assert.equal(result.state.bonusRolls, 1);
-  assert.equal(result.state.pieces.aurora[0].progress, 6);
-  assert.equal(result.state.pieces.aurora[1].progress, 6);
+  assert.equal(result.state.bonusRolls, 0);
+  assert.equal(result.state.currentPlayer, "aurora");
+  assert.equal(result.state.awaiting, "roll");
+  assert.equal(result.state.pieces.aurora[0].progress, 7);
+  assert.equal(result.state.pieces.aurora[1].progress, 7);
 });
 
 test("a formed pair may move together or split into individual moves", () => {
