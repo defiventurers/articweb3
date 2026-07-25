@@ -11,8 +11,9 @@ export const COWRIE_KINGDOMS_RULESET = Object.freeze({
   graceValues: [4, 8],
   extraThrowOnCapture: true,
   optionalPlay: true,
-  safeStacking: true,
-  unprotectedFriendlyBlocking: true
+  doublesEnabled: true,
+  maxFriendlyStack: 2,
+  safeEntryCoexistence: true
 });
 
 export const SIDES = Object.freeze(["aurora", "ember"]);
@@ -41,25 +42,26 @@ export const ROUTES = Object.freeze({
 });
 export const FINISH_PROGRESS = NORTH_ROUTE.length - 1;
 
-function perimeter(min, max) {
-  const cells = [];
-  for (let col = min; col <= max; col += 1) cells.push(cellId(min, col));
+function ringClockwiseFromNorthEast(min, max) {
+  const cells = [cellId(min, max)];
   for (let row = min + 1; row <= max; row += 1) cells.push(cellId(row, max));
   for (let col = max - 1; col >= min; col -= 1) cells.push(cellId(max, col));
-  for (let row = max - 1; row > min; row -= 1) cells.push(cellId(row, min));
+  for (let row = max - 1; row >= min; row -= 1) cells.push(cellId(row, min));
+  for (let col = min + 1; col < max; col += 1) cells.push(cellId(min, col));
   return cells;
 }
 
 function buildNorthRoute() {
-  const outerClockwise = perimeter(0, 6);
-  const startIndex = outerClockwise.indexOf(cellId(0, 3));
-  const outerAntiClockwise = Array.from({ length: outerClockwise.length }, (_, offset) =>
-    outerClockwise[(startIndex - offset + outerClockwise.length) % outerClockwise.length]
-  );
+  const outer = [cellId(0, 3)];
+  for (let col = 2; col >= 0; col -= 1) outer.push(cellId(0, col));
+  for (let row = 1; row <= 6; row += 1) outer.push(cellId(row, 0));
+  for (let col = 1; col <= 6; col += 1) outer.push(cellId(6, col));
+  for (let row = 5; row >= 0; row -= 1) outer.push(cellId(row, 6));
+  for (let col = 5; col >= 4; col -= 1) outer.push(cellId(0, col));
   return [
-    ...outerAntiClockwise,
-    ...perimeter(1, 5),
-    ...perimeter(2, 4),
+    ...outer,
+    ...ringClockwiseFromNorthEast(1, 5),
+    ...ringClockwiseFromNorthEast(2, 4),
     cellId(3, 3)
   ];
 }
@@ -86,7 +88,7 @@ function createPieces(side) {
 }
 
 export function createCowrieKingdomsState({ mode = "hotseat", starter = "aurora", seed = Date.now() } = {}) {
-  return {
+  const state = {
     gameId: COWRIE_KINGDOMS_RULESET.gameId,
     rulesetVersion: COWRIE_KINGDOMS_RULESET.rulesetVersion,
     mode,
@@ -105,11 +107,12 @@ export function createCowrieKingdomsState({ mode = "hotseat", starter = "aurora"
     winReason: null,
     history: []
   };
+  assertStateInvariant(state);
+  return state;
 }
 
 export function createAshtaGraceDrill() {
   const state = createCowrieKingdomsState({ mode: "drill", starter: "aurora", seed: 8 });
-  state.pieces.aurora[0].status = "home";
   state.pieces.aurora[1].status = "track";
   state.pieces.aurora[1].progress = 5;
   state.pieces.aurora[2].status = "finished";
@@ -119,14 +122,7 @@ export function createAshtaGraceDrill() {
   const captureCell = ROUTES.aurora[13];
   state.pieces.ember[0].status = "track";
   state.pieces.ember[0].progress = ROUTES.ember.indexOf(captureCell);
-  state.lastRoll = {
-    faces: [0, 0, 0, 0],
-    mouthsUp: 0,
-    value: 8,
-    grace: true,
-    splitGrace: true,
-    throwNumber: 1
-  };
+  state.lastRoll = { faces: [0, 0, 0, 0], mouthsUp: 0, value: 8, grace: true, splitGrace: true, throwNumber: 1 };
   state.throwPool = [
     { id: "drill-grace", kind: "grace", value: 0, label: "Grace entry", enterAllowed: true, moveAllowed: false },
     { id: "drill-eight", kind: "move", value: 8, label: "Move 8", enterAllowed: false, moveAllowed: true }
@@ -134,6 +130,7 @@ export function createAshtaGraceDrill() {
   state.bonusRolls = 1;
   state.awaiting = "allocate";
   state.castCount = 1;
+  assertStateInvariant(state);
   return state;
 }
 
@@ -154,20 +151,48 @@ export function getPieceSpaceId(piece) {
   return routeFor(piece.side)[piece.progress] || null;
 }
 
-export function getOccupantsAtSpace(state, spaceId, ignorePieceId = null) {
+export function getOccupantsAtSpace(state, spaceId, ignorePieceIds = []) {
+  const ignored = new Set(Array.isArray(ignorePieceIds) ? ignorePieceIds : [ignorePieceIds].filter(Boolean));
   const occupants = [];
   for (const side of SIDES) {
     for (const piece of state.pieces[side] || []) {
-      if (piece.id === ignorePieceId || piece.status !== "track") continue;
+      if (ignored.has(piece.id) || piece.status !== "track") continue;
       if (getPieceSpaceId(piece) === spaceId) occupants.push(piece);
     }
   }
   return occupants;
 }
 
-function canLand(state, side, spaceId, movingPieceId = null) {
-  if (SAFE_SPACES.has(spaceId)) return true;
-  return !getOccupantsAtSpace(state, spaceId, movingPieceId).some((piece) => piece.side === side);
+function movingGroupsAtSpace(state, side, spaceId) {
+  const friendly = getOccupantsAtSpace(state, spaceId).filter((piece) => piece.side === side);
+  const groups = friendly.map((piece) => [piece.id]);
+  if (friendly.length === 2) groups.push(friendly.map((piece) => piece.id).sort());
+  return groups;
+}
+
+function landingResult(state, side, targetSpace, movingPieceIds, actionType) {
+  const occupants = getOccupantsAtSpace(state, targetSpace, movingPieceIds);
+  const friendly = occupants.filter((piece) => piece.side === side);
+  const enemies = occupants.filter((piece) => piece.side !== side);
+  const movingCount = movingPieceIds.length;
+
+  if (SAFE_SPACES.has(targetSpace)) {
+    if (enemies.length && actionType !== "enter") return { legal: false, reason: "safe-enemy" };
+    if (friendly.length + movingCount > COWRIE_KINGDOMS_RULESET.maxFriendlyStack) return { legal: false, reason: "stack-limit" };
+    return { legal: true, capturedPieceIds: [] };
+  }
+
+  if (friendly.length) {
+    if (friendly.length + movingCount > COWRIE_KINGDOMS_RULESET.maxFriendlyStack) return { legal: false, reason: "stack-limit" };
+    return { legal: true, capturedPieceIds: [] };
+  }
+
+  if (enemies.length) {
+    if (enemies.length > movingCount) return { legal: false, reason: "double-block" };
+    return { legal: true, capturedPieceIds: enemies.map((piece) => piece.id).sort() };
+  }
+
+  return { legal: true, capturedPieceIds: [] };
 }
 
 export function scoreCowries(faces) {
@@ -206,32 +231,56 @@ export function getLegalActions(state, side = state.currentPlayer, unitId = null
     if (unit.enterAllowed) {
       const startSpace = routeFor(side)[0];
       for (const piece of state.pieces[side]) {
-        if (piece.status === "home") {
-          actions.push({ type: "enter", unitId: unit.id, pieceId: piece.id, value: unit.value, targetProgress: 0, targetSpace: startSpace });
-        }
+        if (piece.status !== "home") continue;
+        const landing = landingResult(state, side, startSpace, [piece.id], "enter");
+        if (landing.legal) actions.push({
+          type: "enter",
+          unitId: unit.id,
+          pieceId: piece.id,
+          pieceIds: [piece.id],
+          groupSize: 1,
+          value: unit.value,
+          targetProgress: 0,
+          targetSpace: startSpace,
+          captures: null,
+          capturedPieceIds: []
+        });
       }
     }
 
     if (unit.moveAllowed) {
+      const seenGroups = new Set();
       for (const piece of state.pieces[side]) {
         if (piece.status !== "track") continue;
-        const targetProgress = piece.progress + unit.value;
-        if (targetProgress > FINISH_PROGRESS) continue;
-        const targetSpace = routeFor(side)[targetProgress];
-        if (!targetSpace || !canLand(state, side, targetSpace, piece.id)) continue;
-        const enemy = SAFE_SPACES.has(targetSpace)
-          ? null
-          : getOccupantsAtSpace(state, targetSpace, piece.id).find((candidate) => candidate.side !== side) || null;
-        actions.push({
-          type: "move",
-          unitId: unit.id,
-          pieceId: piece.id,
-          value: unit.value,
-          targetProgress,
-          targetSpace,
-          finishes: targetProgress === FINISH_PROGRESS,
-          captures: enemy?.id || null
-        });
+        const fromSpace = getPieceSpaceId(piece);
+        for (const pieceIds of movingGroupsAtSpace(state, side, fromSpace)) {
+          const key = pieceIds.join("|");
+          if (seenGroups.has(key)) continue;
+          seenGroups.add(key);
+          const movingPieces = pieceIds.map((id) => getPiece(state, side, id));
+          const progress = movingPieces[0].progress;
+          if (!movingPieces.every((candidate) => candidate.progress === progress)) continue;
+          const targetProgress = progress + unit.value;
+          if (targetProgress > FINISH_PROGRESS) continue;
+          const targetSpace = routeFor(side)[targetProgress];
+          if (!targetSpace) continue;
+          const landing = landingResult(state, side, targetSpace, pieceIds, "move");
+          if (!landing.legal) continue;
+          actions.push({
+            type: "move",
+            unitId: unit.id,
+            pieceId: pieceIds[0],
+            pieceIds,
+            groupSize: pieceIds.length,
+            value: unit.value,
+            fromSpace,
+            targetProgress,
+            targetSpace,
+            finishes: targetProgress === FINISH_PROGRESS,
+            captures: landing.capturedPieceIds[0] || null,
+            capturedPieceIds: landing.capturedPieceIds
+          });
+        }
       }
     }
 
@@ -299,41 +348,49 @@ export function applyAction(state, action, side = state.currentPlayer) {
     return { state: next, error: null };
   }
 
-  const piece = getPiece(next, side, legal.pieceId);
-  const fromSpace = getPieceSpaceId(piece);
-  let capturedPiece = null;
-  if (legal.targetSpace && !SAFE_SPACES.has(legal.targetSpace)) {
-    capturedPiece = getOccupantsAtSpace(next, legal.targetSpace, piece.id).find((candidate) => candidate.side !== side) || null;
-    if (capturedPiece) {
-      capturedPiece.status = "home";
-      capturedPiece.progress = -1;
-      next.captures[side] += 1;
-      next.bonusRolls += 1;
-    }
+  const pieceIds = legal.pieceIds?.length ? legal.pieceIds : [legal.pieceId];
+  const movingPieces = pieceIds.map((id) => getPiece(next, side, id));
+  const fromSpace = legal.type === "enter" ? null : getPieceSpaceId(movingPieces[0]);
+  const capturedPieceIds = [...(legal.capturedPieceIds || [])];
+
+  for (const capturedId of capturedPieceIds) {
+    const capturedPiece = getPiece(next, otherSide(side), capturedId);
+    if (!capturedPiece) continue;
+    capturedPiece.status = "home";
+    capturedPiece.progress = -1;
+  }
+  if (capturedPieceIds.length) {
+    next.captures[side] += capturedPieceIds.length;
+    next.bonusRolls += 1;
   }
 
-  if (legal.type === "enter") {
-    piece.status = "track";
-    piece.progress = 0;
-  } else if (legal.finishes) {
-    piece.status = "finished";
-    piece.progress = FINISH_PROGRESS;
-  } else {
-    piece.status = "track";
-    piece.progress = legal.targetProgress;
+  for (const piece of movingPieces) {
+    if (legal.type === "enter") {
+      piece.status = "track";
+      piece.progress = 0;
+    } else if (legal.finishes) {
+      piece.status = "finished";
+      piece.progress = FINISH_PROGRESS;
+    } else {
+      piece.status = "track";
+      piece.progress = legal.targetProgress;
+    }
   }
 
   next.lastAction = {
     type: legal.type,
     side,
     unitId: legal.unitId,
-    pieceId: piece.id,
+    pieceId: pieceIds[0],
+    pieceIds,
+    groupSize: pieceIds.length,
     value: legal.value,
     fromSpace,
     targetSpace: legal.targetSpace,
     targetProgress: legal.targetProgress,
-    capturedPieceId: capturedPiece?.id || null,
-    finished: piece.status === "finished"
+    capturedPieceId: capturedPieceIds[0] || null,
+    capturedPieceIds,
+    finished: movingPieces.every((piece) => piece.status === "finished")
   };
   next.history.push({ type: "action", turn: next.turn, side, action: cloneState(next.lastAction) });
   consumeUnit(next, legal.unitId);
@@ -357,11 +414,8 @@ function consumeUnit(state, unitId) {
   }
   state.awaiting = "roll";
   state.turn += 1;
-  if (state.bonusRolls > 0) {
-    state.bonusRolls -= 1;
-  } else {
-    state.currentPlayer = otherSide(state.currentPlayer);
-  }
+  if (state.bonusRolls > 0) state.bonusRolls -= 1;
+  else state.currentPlayer = otherSide(state.currentPlayer);
 }
 
 export function rollLocalCowries(state, side = state.currentPlayer) {
@@ -383,8 +437,18 @@ export function getPlayerSummary(state, side) {
     track: pieces.filter((piece) => piece.status === "track").length,
     finished: pieces.filter((piece) => piece.status === "finished").length,
     captures: Number(state.captures[side] || 0),
+    doubles: countDoubles(state, side),
     totalProgress: pieces.reduce((sum, piece) => sum + Math.max(0, Number(piece.progress || 0)), 0)
   };
+}
+
+function countDoubles(state, side) {
+  const counts = new Map();
+  for (const piece of state.pieces[side] || []) {
+    const spaceId = getPieceSpaceId(piece);
+    if (spaceId) counts.set(spaceId, (counts.get(spaceId) || 0) + 1);
+  }
+  return [...counts.values()].filter((count) => count === 2).length;
 }
 
 export function describeTurn(state) {
@@ -408,35 +472,39 @@ export function resultDetail(state) {
 export function actionSummary(action) {
   if (!action) return "";
   if (action.type === "pass-unit") return `${sideName(action.side)} passed ${action.value || "the grace"}.`;
-  if (action.capturedPieceId) return `${sideName(action.side)} captured ${action.capturedPieceId} and earned another cast.`;
-  if (action.finished) return `${sideName(action.side)} finished one runner in the centre.`;
+  const group = action.groupSize === 2 ? "paired runners" : action.pieceId;
+  if (action.capturedPieceIds?.length) return `${sideName(action.side)} moved ${group}, captured ${action.capturedPieceIds.join(" and ")}, and earned another cast.`;
+  if (action.finished) return `${sideName(action.side)} finished ${action.groupSize === 2 ? "two runners" : "one runner"} in the centre.`;
   if (action.type === "enter") return `${sideName(action.side)} used grace to enter ${action.pieceId}.`;
-  return `${sideName(action.side)} moved ${action.value} cells.`;
+  return `${sideName(action.side)} moved ${group} ${action.value} cells.`;
 }
 
 function actionKey(action) {
   if (!action) return "";
   if (action.type === "pass-unit") return `pass-unit:${action.unitId}`;
-  return `${action.type}:${action.unitId}:${action.pieceId}:${action.targetProgress}`;
+  const pieceIds = action.pieceIds?.length ? [...action.pieceIds].sort() : [action.pieceId];
+  return `${action.type}:${action.unitId}:${pieceIds.join("+")}:${action.targetProgress}`;
 }
 
 function explainIllegalAction(state, action, side) {
   const unit = state.throwPool.find((candidate) => candidate.id === action?.unitId);
   if (!unit) return "That stored throw is no longer available.";
   if (action.type === "pass-unit") return "That throw cannot be passed now.";
-  const piece = getPiece(state, side, action?.pieceId);
-  if (!piece) return "That runner does not belong to the active kingdom.";
-  if (piece.status === "finished") return "That runner already reached the centre.";
-  if (piece.status === "home" && !unit.enterAllowed) return "Only a grace may enter a waiting runner.";
-  if (piece.status === "track" && !unit.moveAllowed) return "The separate grace from an Ashta throw enters a runner; use the stored 8 to move.";
-  if (piece.status === "track" && piece.progress + Number(unit.value || 0) > FINISH_PROGRESS) return "The centre requires an exact throw.";
-  return "That destination is blocked by a friendly runner on an unprotected cell.";
+  const requestedIds = action?.pieceIds?.length ? action.pieceIds : [action?.pieceId];
+  const pieces = requestedIds.map((id) => getPiece(state, side, id)).filter(Boolean);
+  if (pieces.length !== requestedIds.length) return "Every selected runner must belong to the active kingdom.";
+  if (pieces.some((piece) => piece.status === "finished")) return "A selected runner already reached the centre.";
+  if (pieces.some((piece) => piece.status === "home") && !unit.enterAllowed) return "Only a grace may enter a waiting runner.";
+  if (pieces.some((piece) => piece.status === "track") && !unit.moveAllowed) return "The separate grace from an Ashta throw enters a runner; use the stored 8 to move.";
+  if (pieces.length === 2 && getPieceSpaceId(pieces[0]) !== getPieceSpaceId(pieces[1])) return "Paired runners must begin on the same cell.";
+  if (pieces.some((piece) => piece.status === "track" && piece.progress + Number(unit.value || 0) > FINISH_PROGRESS)) return "The centre requires an exact throw.";
+  return "That destination is blocked, protected, overfilled, or defended by a stronger pair.";
 }
 
 export function assertStateInvariant(state) {
   const pieces = SIDES.flatMap((side) => state.pieces[side] || []);
   if (pieces.length !== COWRIE_KINGDOMS_RULESET.piecesPerPlayer * SIDES.length) throw new Error("Cowrie Kingdoms piece-count invariant failed.");
-  const unprotectedOccupancy = new Set();
+  const occupancy = new Map();
   for (const piece of pieces) {
     if (piece.status === "home" && piece.progress !== -1) throw new Error("Home runner has invalid progress.");
     if (piece.status === "finished" && piece.progress !== FINISH_PROGRESS) throw new Error("Finished runner has invalid progress.");
@@ -444,11 +512,14 @@ export function assertStateInvariant(state) {
       if (!Number.isInteger(piece.progress) || piece.progress < 0 || piece.progress >= FINISH_PROGRESS) throw new Error("Track runner has invalid progress.");
       const spaceId = getPieceSpaceId(piece);
       if (!spaceId) throw new Error("Track runner occupies an unknown cell.");
-      if (!SAFE_SPACES.has(spaceId)) {
-        if (unprotectedOccupancy.has(spaceId)) throw new Error(`Unprotected occupancy invariant failed at ${spaceId}.`);
-        unprotectedOccupancy.add(spaceId);
-      }
+      const bySide = occupancy.get(spaceId) || { aurora: 0, ember: 0 };
+      bySide[piece.side] += 1;
+      if (bySide[piece.side] > COWRIE_KINGDOMS_RULESET.maxFriendlyStack) throw new Error(`Friendly stack limit failed at ${spaceId}.`);
+      occupancy.set(spaceId, bySide);
     }
+  }
+  for (const [spaceId, bySide] of occupancy) {
+    if (!SAFE_SPACES.has(spaceId) && bySide.aurora && bySide.ember) throw new Error(`Mixed unprotected occupancy failed at ${spaceId}.`);
   }
   for (const unit of state.throwPool || []) {
     if (!unit.id || (!unit.enterAllowed && !unit.moveAllowed)) throw new Error("Stored throw unit invariant failed.");
