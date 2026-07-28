@@ -23,6 +23,7 @@ import "./styles/skyTempleRunInteraction.css";
 import "./styles/iceRings.css";
 import "./styles/cowrieKingdoms.css";
 import "./styles/cowrieKingdomsPairs.css";
+import "./styles/twoStones.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";
