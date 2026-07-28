@@ -21,6 +21,8 @@ import "./styles/fortyGlacierGuards.css";
 import "./styles/skyTempleRun.css";
 import "./styles/skyTempleRunInteraction.css";
 import "./styles/iceRings.css";
+import "./styles/cowrieKingdoms.css";
+import "./styles/cowrieKingdomsPairs.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";
