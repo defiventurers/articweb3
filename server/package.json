@@ -4,9 +4,9 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node -r ./cowrieKingdomsBackendBootstrap.js scripts/start-with-runtime-status.js",
-    "start:testnet": "node scripts/check-env.mjs testnet && node -r dotenv/config -r ./cowrieKingdomsBackendBootstrap.js scripts/start-with-runtime-status.js dotenv_config_path=.env.testnet",
-    "start:mainnet": "node scripts/check-env.mjs mainnet && node -r dotenv/config -r ./cowrieKingdomsBackendBootstrap.js scripts/start-with-runtime-status.js dotenv_config_path=.env.mainnet",
+    "start": "node -r ./twoStonesBackendBootstrap.js scripts/start-with-runtime-status.js",
+    "start:testnet": "node scripts/check-env.mjs testnet && node -r dotenv/config -r ./twoStonesBackendBootstrap.js scripts/start-with-runtime-status.js dotenv_config_path=.env.testnet",
+    "start:mainnet": "node scripts/check-env.mjs mainnet && node -r dotenv/config -r ./twoStonesBackendBootstrap.js scripts/start-with-runtime-status.js dotenv_config_path=.env.mainnet",
     "check:testnet": "node scripts/check-env.mjs testnet",
     "check:mainnet": "node scripts/check-env.mjs mainnet",
     "test:nif": "node --test tests/nine-ice-forts-online.test.js",
@@ -21,7 +21,8 @@
     "test:str": "node --test tests/sky-temple-run-online.test.js",
     "test:ir": "node --test tests/ice-rings-online.test.js",
     "test:ck": "node --test tests/cowrie-kingdoms-online.test.js tests/cowrie-kingdoms-pairs.test.js",
-    "test:games": "node --test tests/nine-ice-forts-online.test.js tests/four-wing-ice-hunt-online.test.js tests/fishflow-online.test.js tests/break-the-ice-online.test.js tests/break-the-ice-empty-move.test.js tests/ice-hunters-online.test.js tests/sixteen-ice-warriors-online.test.js tests/glacier-trail-online.test.js tests/crown-run-online.test.js tests/forty-glacier-guards-online.test.js tests/sky-temple-run-online.test.js tests/ice-rings-online.test.js tests/cowrie-kingdoms-online.test.js tests/cowrie-kingdoms-pairs.test.js",
+    "test:ts": "node --test tests/two-stones-online.test.js",
+    "test:games": "node --test tests/nine-ice-forts-online.test.js tests/four-wing-ice-hunt-online.test.js tests/fishflow-online.test.js tests/break-the-ice-online.test.js tests/break-the-ice-empty-move.test.js tests/ice-hunters-online.test.js tests/sixteen-ice-warriors-online.test.js tests/glacier-trail-online.test.js tests/crown-run-online.test.js tests/forty-glacier-guards-online.test.js tests/sky-temple-run-online.test.js tests/ice-rings-online.test.js tests/cowrie-kingdoms-online.test.js tests/cowrie-kingdoms-pairs.test.js tests/two-stones-online.test.js",
     "index:vault": "node scripts/index-vault-events.js",
     "smoke:mainnet": "node scripts/live-mainnet-smoke.js",
     "evidence:locked-match": "node scripts/locked-match-rehearsal-evidence.js"
