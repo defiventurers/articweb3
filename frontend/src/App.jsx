@@ -23,6 +23,7 @@ import { SkyTempleRunApp } from "./games/sky-temple-run/SkyTempleRunApp.jsx";
 import { IceRingsApp } from "./games/ice-rings/IceRingsApp.jsx";
 import { CowrieKingdomsApp } from "./games/cowrie-kingdoms/CowrieKingdomsApp.jsx";
 import { TwoStonesApp } from "./games/two-stones/TwoStonesApp.jsx";
+import { AuroraVultureApp } from "./games/aurora-vulture/AuroraVultureApp.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
@@ -69,6 +70,22 @@ export default function App() {
   const initialHighStakesRoomCode = cleanInviteCode(params.get("highStakesRoom") || params.get("hsRoom") || params.get("lockedRoom") || "");
   const requestedGame = getCatalogGame(params.get("game"));
   const initialSelectedGameId = requestedGame?.id || (initialHighStakesRoomCode ? "arctic-dominion" : null);
+  const playableGameIds = [
+    "nine-ice-forts",
+    "four-wing-ice-hunt",
+    "fishflow",
+    "break-the-ice",
+    "ice-hunters",
+    "sixteen-ice-warriors",
+    "glacier-trail",
+    "crown-run",
+    "forty-glacier-guards",
+    "sky-temple-run",
+    "ice-rings",
+    "cowrie-kingdoms",
+    "two-stones",
+    "aurora-vulture"
+  ];
   const initialScreen = isDevPath
     ? "dev-home"
     : initialSpectateCode
@@ -79,37 +96,13 @@ export default function App() {
           ? "hub"
           : initialHighStakesRoomCode
             ? "cover"
-            : requestedGame?.id === "nine-ice-forts"
-              ? "nine-ice-forts"
-              : requestedGame?.id === "four-wing-ice-hunt"
-                ? "four-wing-ice-hunt"
-                : requestedGame?.id === "fishflow"
-                  ? "fishflow"
-                  : requestedGame?.id === "break-the-ice"
-                    ? "break-the-ice"
-                    : requestedGame?.id === "ice-hunters"
-                      ? "ice-hunters"
-                      : requestedGame?.id === "sixteen-ice-warriors"
-                        ? "sixteen-ice-warriors"
-                        : requestedGame?.id === "glacier-trail"
-                          ? "glacier-trail"
-                          : requestedGame?.id === "crown-run"
-                            ? "crown-run"
-                            : requestedGame?.id === "forty-glacier-guards"
-                              ? "forty-glacier-guards"
-                              : requestedGame?.id === "sky-temple-run"
-                                ? "sky-temple-run"
-                                : requestedGame?.id === "ice-rings"
-                                  ? "ice-rings"
-                                  : requestedGame?.id === "cowrie-kingdoms"
-                                    ? "cowrie-kingdoms"
-                                    : requestedGame?.id === "two-stones"
-                                      ? "two-stones"
-                                      : requestedGame?.available
-                                        ? "cover"
-                                        : requestedGame
-                                          ? "game-preview"
-                                          : "library";
+            : playableGameIds.includes(requestedGame?.id)
+              ? requestedGame.id
+              : requestedGame?.available
+                ? "cover"
+                : requestedGame
+                  ? "game-preview"
+                  : "library";
   const [assetsReady, setAssetsReady] = useState(skipLoader);
   const [screen, setScreen] = useState(initialScreen);
   const [selectedGameId, setSelectedGameId] = useState(initialSelectedGameId);
@@ -133,7 +126,7 @@ export default function App() {
   function withAppChrome(node) { return <><AudioToggle />{node}</>; }
   function selectCatalogGame(gameId) {
     const game = getCatalogGame(gameId); if (!game) return; setSelectedGameId(game.id); syncGameQuery(game.id);
-    if (["nine-ice-forts","four-wing-ice-hunt","fishflow","break-the-ice","ice-hunters","sixteen-ice-warriors","glacier-trail","crown-run","forty-glacier-guards","sky-temple-run","ice-rings","cowrie-kingdoms","two-stones"].includes(game.id)) return goTo(game.id);
+    if (playableGameIds.includes(game.id)) return goTo(game.id);
     goTo(game.available ? "cover" : "game-preview");
   }
   function exitToLibrary() { setSelectedGameId(null); syncGameQuery(null); goTo("library"); }
@@ -153,6 +146,7 @@ export default function App() {
   if (screen === "ice-rings") return withAppChrome(<IceRingsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "cowrie-kingdoms") return withAppChrome(<CowrieKingdomsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "two-stones") return withAppChrome(<TwoStonesApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
+  if (screen === "aurora-vulture") return withAppChrome(<AuroraVultureApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "game-preview" && selectedGame) return withAppChrome(<GamePreviewScreen game={selectedGame} onBack={exitToLibrary} />);
 
   if (screen === "dev-home") return withAppChrome(renderLazy(<DevPortalScreen onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onSettlementAdmin={() => goTo("settlement-admin")} onVaultDeployer={() => goTo("vault-deployer")} onExit={() => window.location.assign("/")} />, "Loading developer console..."));
