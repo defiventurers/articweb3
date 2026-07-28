@@ -10,6 +10,6 @@ test("Two Stones opens and solves the one-move lock drill", async ({ page }) => 
   await expect(page.getByLabel("Two Stones one-move lock drill")).toBeVisible();
   await page.getByRole("gridcell", { name: /North-west point, occupied by Aurora stone 1, selectable/i }).click();
   await page.getByRole("gridcell", { name: /Centre point, empty, legal destination from nw/i }).click();
-  await expect(page.getByText("Aurora Stones locks the board")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Aurora Stones locks the board" })).toBeVisible();
   await expect(page.getByText(/Coral Stones has no legal move/i)).toBeVisible();
 });
