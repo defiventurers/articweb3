@@ -56,7 +56,7 @@ function harness() {
 }
 function lastPayload(h, type) { return [...h.packets].reverse().find((packet) => packet.type === type)?.payload; }
 
- test("Mawkar Katiya opens with two rows of seven and five stones per pit", () => {
+test("Mawkar Katiya opens with two rows of seven and five stones per pit", () => {
   const state = createKhasiFishflowState();
   assert.equal(state.rows.aurora.length, 7);
   assert.equal(state.rows.ember.length, 7);
@@ -67,7 +67,7 @@ function lastPayload(h, type) { return [...h.packets].reverse().find((packet) =>
   assert.equal(assertCounterInvariant(state), true);
 });
 
-test("relay from an occupied landing ends on an empty pit and captures the opposite pit", () => {
+test("relay captures the opposite pit before the resulting round refill", () => {
   const state = createKhasiCaptureDrill();
   const action = getLegalActions(state, "aurora").find((candidate) => candidate.pitIndex === 0);
   assert.ok(action);
@@ -76,8 +76,12 @@ test("relay from an occupied landing ends on an empty pit and captures the oppos
   assert.equal(result.state.lastTurn.relays, 1);
   assert.equal(result.state.lastTurn.captured, 5);
   assert.deepEqual(result.state.lastTurn.capturePit, { player: "ember", pitIndex: 3 });
-  assert.equal(result.state.rows.ember[3], 0);
-  assert.equal(result.state.stores.aurora, 35);
+  assert.equal(result.state.lastTurn.roundEnded, true);
+  assert.equal(result.state.round, 2);
+  assert.equal(result.state.activePits.aurora, 7);
+  assert.equal(result.state.activePits.ember, 6);
+  assert.equal(result.state.stores.aurora, 2);
+  assert.equal(result.state.stores.ember, 3);
   assert.equal(assertCounterInvariant(result.state), true);
 });
 
