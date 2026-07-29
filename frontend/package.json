@@ -1,38 +1,6 @@
 {
-  "name": "artic-web3-frontend",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite --mode testnet",
-    "dev:testnet": "vite --mode testnet",
-    "dev:mainnet": "vite --mode mainnet",
-    "check:testnet": "node scripts/check-env.mjs testnet",
-    "check:mainnet": "node scripts/check-env.mjs mainnet",
-    "build": "npm run build:testnet",
-    "build:testnet": "npm run check:testnet && vite build --mode testnet",
-    "build:mainnet": "npm run check:mainnet && vite build --mode mainnet",
-    "preview": "vite preview",
-    "preview:mainnet": "vite preview --mode mainnet",
-    "test:e2e": "playwright test",
-    "test:e2e:smoke": "playwright test tests/closed-beta-smoke.spec.js tests/cowrie-kingdoms-smoke.spec.js tests/two-stones-smoke.spec.js tests/aurora-vulture-smoke.spec.js tests/polar-tablan-smoke.spec.js tests/aurora-ganjifa-smoke.spec.js tests/sige-smoke.spec.js tests/seven-ice-rings-smoke.spec.js",
-    "test:e2e:ui": "playwright test --ui",
-    "assets:audit": "node scripts/audit-assets.mjs",
-    "assets:webp": "node scripts/convert-assets-to-webp.mjs"
-  },
-  "dependencies": {
-    "@abstract-foundation/agw-client": "latest",
-    "@abstract-foundation/agw-react": "latest",
-    "@tanstack/react-query": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "viem": "latest",
-    "vite": "latest",
-    "wagmi": "latest"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.49.0",
-    "@vitejs/plugin-react": "latest",
-    "sharp": "latest"
-  }
+  "name":"artic-web3-frontend","version":"0.1.0","private":true,"type":"module",
+  "scripts":{"dev":"vite --mode testnet","dev:testnet":"vite --mode testnet","dev:mainnet":"vite --mode mainnet","check:testnet":"node scripts/check-env.mjs testnet","check:mainnet":"node scripts/check-env.mjs mainnet","build":"npm run build:testnet","build:testnet":"npm run check:testnet && vite build --mode testnet","build:mainnet":"npm run check:mainnet && vite build --mode mainnet","preview":"vite preview","preview:mainnet":"vite preview --mode mainnet","test:e2e":"playwright test","test:e2e:smoke":"playwright test tests/closed-beta-smoke.spec.js tests/cowrie-kingdoms-smoke.spec.js tests/two-stones-smoke.spec.js tests/aurora-vulture-smoke.spec.js tests/polar-tablan-smoke.spec.js tests/aurora-ganjifa-smoke.spec.js tests/sige-smoke.spec.js tests/seven-ice-rings-smoke.spec.js tests/khasi-ruma-smoke.spec.js","test:e2e:ui":"playwright test --ui","assets:audit":"node scripts/audit-assets.mjs","assets:webp":"node scripts/convert-assets-to-webp.mjs"},
+  "dependencies":{"@abstract-foundation/agw-client":"latest","@abstract-foundation/agw-react":"latest","@tanstack/react-query":"latest","react":"latest","react-dom":"latest","viem":"latest","vite":"latest","wagmi":"latest"},
+  "devDependencies":{"@playwright/test":"^1.49.0","@vitejs/plugin-react":"latest","sharp":"latest"}
 }
