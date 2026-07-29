@@ -29,6 +29,7 @@ import "./styles/polarTablan.css";
 import "./styles/auroraGanjifaAcademy.css";
 import "./styles/sige.css";
 import "./styles/sevenIceRings.css";
+import "./styles/khasiFishflow.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";
@@ -69,10 +70,5 @@ import "./utils/playerHubCalibrationSeed.js";
 import "./utils/highstakesCalibrationExport.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <Web3Provider>
-      <NetworkBadge />
-      <App />
-    </Web3Provider>
-  </React.StrictMode>
+  <React.StrictMode><Web3Provider><NetworkBadge /><App /></Web3Provider></React.StrictMode>
 );
