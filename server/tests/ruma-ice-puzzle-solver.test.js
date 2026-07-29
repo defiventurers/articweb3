@@ -35,11 +35,11 @@ test("classic setup is solvable in six pit choices", () => {
 });
 
 test("last counter in a previously occupied pit triggers an automatic relay", () => {
-  const outcome = resolveChoice([2, 2, 2, 2], 0, 2);
+  const outcome = resolveChoice([1, 2, 2, 3], 0, 0);
   assert.equal(outcome.status, "playing");
   assert.equal(outcome.ruma, 1);
   assert.equal(outcome.relays, 1);
-  assert.deepEqual(outcome.pits, [2, 2, 0, 3]);
+  assert.deepEqual(outcome.pits, [0, 0, 3, 4]);
 });
 
 test("last counter in an empty ordinary pit fails the attempt", () => {
@@ -50,7 +50,7 @@ test("last counter in an empty ordinary pit fails the attempt", () => {
 });
 
 test("landing in Ruma pauses for another ordinary-pit choice", () => {
-  const outcome = resolveChoice([0, 0, 0, 2], 6, 3);
+  const outcome = resolveChoice([1, 0, 0, 1], 6, 3);
   assert.equal(outcome.status, "playing");
   assert.equal(outcome.ruma, 7);
   assert.deepEqual(outcome.pits, [1, 0, 0, 0]);
