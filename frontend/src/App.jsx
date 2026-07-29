@@ -1,10 +1,5 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
-import {
-  FrostLoadingScreen,
-  FrostRouteLoader,
-  warmGameAssets,
-  warmHowToPlayAssets
-} from "./components/FrostLoadingScreen.jsx";
+import { FrostLoadingScreen, FrostRouteLoader, warmGameAssets, warmHowToPlayAssets } from "./components/FrostLoadingScreen.jsx";
 import { AudioToggle } from "./components/AudioToggle.jsx";
 import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { GameLibraryScreen } from "./screens/GameLibraryScreen.jsx";
@@ -25,6 +20,7 @@ import { CowrieKingdomsApp } from "./games/cowrie-kingdoms/CowrieKingdomsApp.jsx
 import { TwoStonesApp } from "./games/two-stones/TwoStonesApp.jsx";
 import { AuroraVultureApp } from "./games/aurora-vulture/AuroraVultureApp.jsx";
 import { PolarTablanApp } from "./games/polar-tablan/PolarTablanApp.jsx";
+import { AuroraGanjifaAcademyApp } from "./games/aurora-ganjifa-academy/AuroraGanjifaAcademyApp.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
@@ -71,40 +67,8 @@ export default function App() {
   const initialHighStakesRoomCode = cleanInviteCode(params.get("highStakesRoom") || params.get("hsRoom") || params.get("lockedRoom") || "");
   const requestedGame = getCatalogGame(params.get("game"));
   const initialSelectedGameId = requestedGame?.id || (initialHighStakesRoomCode ? "arctic-dominion" : null);
-  const playableGameIds = [
-    "nine-ice-forts",
-    "four-wing-ice-hunt",
-    "fishflow",
-    "break-the-ice",
-    "ice-hunters",
-    "sixteen-ice-warriors",
-    "glacier-trail",
-    "crown-run",
-    "forty-glacier-guards",
-    "sky-temple-run",
-    "ice-rings",
-    "cowrie-kingdoms",
-    "two-stones",
-    "aurora-vulture",
-    "polar-tablan"
-  ];
-  const initialScreen = isDevPath
-    ? "dev-home"
-    : initialSpectateCode
-      ? "spectator"
-      : smokeProfileEnabled && initialHighStakesRoomCode
-        ? "high-stakes"
-        : smokeProfileEnabled
-          ? "hub"
-          : initialHighStakesRoomCode
-            ? "cover"
-            : playableGameIds.includes(requestedGame?.id)
-              ? requestedGame.id
-              : requestedGame?.available
-                ? "cover"
-                : requestedGame
-                  ? "game-preview"
-                  : "library";
+  const playableGameIds = ["nine-ice-forts","four-wing-ice-hunt","fishflow","break-the-ice","ice-hunters","sixteen-ice-warriors","glacier-trail","crown-run","forty-glacier-guards","sky-temple-run","ice-rings","cowrie-kingdoms","two-stones","aurora-vulture","polar-tablan","aurora-ganjifa-academy"];
+  const initialScreen = isDevPath ? "dev-home" : initialSpectateCode ? "spectator" : smokeProfileEnabled && initialHighStakesRoomCode ? "high-stakes" : smokeProfileEnabled ? "hub" : initialHighStakesRoomCode ? "cover" : playableGameIds.includes(requestedGame?.id) ? requestedGame.id : requestedGame?.available ? "cover" : requestedGame ? "game-preview" : "library";
   const [assetsReady, setAssetsReady] = useState(skipLoader);
   const [screen, setScreen] = useState(initialScreen);
   const [selectedGameId, setSelectedGameId] = useState(initialSelectedGameId);
@@ -123,7 +87,7 @@ export default function App() {
   if (!assetsReady) return <FrostLoadingScreen onReady={() => setAssetsReady(true)} />;
 
   function roomLobbyScreen(targetRoom = room) { return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu"; }
-  function goTo(nextScreen, options = {}) { window.clearTimeout(transitionTimerRef.current); if (options.tapSound !== false) soundManager.play("uiTap", { cooldownMs: 80 }); if (nextScreen === "how-to-play") warmHowToPlayAssets(); if (nextScreen === "game" || nextScreen === "team-select" || nextScreen === "waiting") warmGameAssets(); setScreen(nextScreen); }
+  function goTo(nextScreen, options = {}) { window.clearTimeout(transitionTimerRef.current); if (options.tapSound !== false) soundManager.play("uiTap", { cooldownMs: 80 }); if (nextScreen === "how-to-play") warmHowToPlayAssets(); if (["game","team-select","waiting"].includes(nextScreen)) warmGameAssets(); setScreen(nextScreen); }
   function playTrackThenGo(trackName, nextScreen, delayMs) { window.clearTimeout(transitionTimerRef.current); soundManager.unlock(); unlockUiAudio(); soundManager.playTrack(trackName, { restart: true }); transitionTimerRef.current = window.setTimeout(() => goTo(nextScreen, { tapSound: false }), delayMs); }
   function withAppChrome(node) { return <><AudioToggle />{node}</>; }
   function selectCatalogGame(gameId) { const game = getCatalogGame(gameId); if (!game) return; setSelectedGameId(game.id); syncGameQuery(game.id); if (playableGameIds.includes(game.id)) return goTo(game.id); goTo(game.available ? "cover" : "game-preview"); }
@@ -146,6 +110,7 @@ export default function App() {
   if (screen === "two-stones") return withAppChrome(<TwoStonesApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "aurora-vulture") return withAppChrome(<AuroraVultureApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "polar-tablan") return withAppChrome(<PolarTablanApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
+  if (screen === "aurora-ganjifa-academy") return withAppChrome(<AuroraGanjifaAcademyApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "game-preview" && selectedGame) return withAppChrome(<GamePreviewScreen game={selectedGame} onBack={exitToLibrary} />);
 
   if (screen === "dev-home") return withAppChrome(renderLazy(<DevPortalScreen onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onSettlementAdmin={() => goTo("settlement-admin")} onVaultDeployer={() => goTo("vault-deployer")} onExit={() => window.location.assign("/")} />, "Loading developer console..."));
@@ -153,7 +118,6 @@ export default function App() {
   if (screen === "test-runbook") return withAppChrome(renderLazy(<TestRunbookScreen onBack={() => goTo("dev-home")} />));
   if (screen === "vault-deployer") return withAppChrome(renderLazy(<EthVaultDeployerScreen onBack={() => goTo("dev-home")} />));
   if (screen === "settlement-admin") return withAppChrome(renderLazy(<SettlementAdminScreen onBack={() => goTo("dev-home")} />));
-
   if (screen === "cover") return withAppChrome(<CoverScreen onContinue={() => playTrackThenGo("coverScreen", initialHighStakesRoomCode ? "profile" : "menu", COVER_TRACK_DELAY_MS)} onBackToLibrary={initialHighStakesRoomCode ? undefined : exitToLibrary} />);
   if (screen === "menu") return withAppChrome(<MainMenu onPlay={() => playTrackThenGo("playNow", "profile", PLAY_NOW_TRACK_DELAY_MS)} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} onAllGames={exitToLibrary} />);
   if (screen === "how-to-play") return withAppChrome(renderLazy(<HowToPlayScreen onBack={() => goTo("menu")} onStart={() => goTo("profile")} />));
