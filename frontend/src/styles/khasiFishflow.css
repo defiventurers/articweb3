@@ -1,0 +1,5 @@
+.khasi-fishflow { --khasi-green: #79e0b4; --khasi-deep: #073a3d; }
+.khasi-fishflow .fishflow-cover-copy p, .khasi-fishflow .fishflow-eyebrow { color: var(--khasi-green); }
+.khasi-fishflow .fishflow-cover-copy button, .khasi-fishflow .fishflow-rules-start { background: linear-gradient(135deg, #7ce5b6, #42b8b0); color: #032b31; }
+.khasi-handicap-control { display: grid; gap: .5rem; margin: 1rem 0; font-weight: 800; }
+.khasi-handicap-control select { padding: .8rem; border-radius: .8rem; }
