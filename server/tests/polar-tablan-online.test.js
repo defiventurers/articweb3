@@ -63,6 +63,7 @@ test("split 8 moves two distinct activated runners four squares each", () => {
   const state = createPolarTablanState();
   state.awaiting = "allocate";
   state.pendingRoll = { value: 8, plainUp: 4, faces: [1,1,1,1], splitValue: 4, throwNumber: 1 };
+  state.bonusRolls = 1;
   state.pieces.aurora.slice(2).forEach((piece) => {
     piece.status = "captured";
     piece.progress = null;
