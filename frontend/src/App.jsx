@@ -24,6 +24,7 @@ import { IceRingsApp } from "./games/ice-rings/IceRingsApp.jsx";
 import { CowrieKingdomsApp } from "./games/cowrie-kingdoms/CowrieKingdomsApp.jsx";
 import { TwoStonesApp } from "./games/two-stones/TwoStonesApp.jsx";
 import { AuroraVultureApp } from "./games/aurora-vulture/AuroraVultureApp.jsx";
+import { PolarTablanApp } from "./games/polar-tablan/PolarTablanApp.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
@@ -84,7 +85,8 @@ export default function App() {
     "ice-rings",
     "cowrie-kingdoms",
     "two-stones",
-    "aurora-vulture"
+    "aurora-vulture",
+    "polar-tablan"
   ];
   const initialScreen = isDevPath
     ? "dev-home"
@@ -124,11 +126,7 @@ export default function App() {
   function goTo(nextScreen, options = {}) { window.clearTimeout(transitionTimerRef.current); if (options.tapSound !== false) soundManager.play("uiTap", { cooldownMs: 80 }); if (nextScreen === "how-to-play") warmHowToPlayAssets(); if (nextScreen === "game" || nextScreen === "team-select" || nextScreen === "waiting") warmGameAssets(); setScreen(nextScreen); }
   function playTrackThenGo(trackName, nextScreen, delayMs) { window.clearTimeout(transitionTimerRef.current); soundManager.unlock(); unlockUiAudio(); soundManager.playTrack(trackName, { restart: true }); transitionTimerRef.current = window.setTimeout(() => goTo(nextScreen, { tapSound: false }), delayMs); }
   function withAppChrome(node) { return <><AudioToggle />{node}</>; }
-  function selectCatalogGame(gameId) {
-    const game = getCatalogGame(gameId); if (!game) return; setSelectedGameId(game.id); syncGameQuery(game.id);
-    if (playableGameIds.includes(game.id)) return goTo(game.id);
-    goTo(game.available ? "cover" : "game-preview");
-  }
+  function selectCatalogGame(gameId) { const game = getCatalogGame(gameId); if (!game) return; setSelectedGameId(game.id); syncGameQuery(game.id); if (playableGameIds.includes(game.id)) return goTo(game.id); goTo(game.available ? "cover" : "game-preview"); }
   function exitToLibrary() { setSelectedGameId(null); syncGameQuery(null); goTo("library"); }
   function resumeRoom(nextRoom) { setRoom(nextRoom); if (nextRoom.status === "finished") return goTo("results"); if (nextRoom.status === "playing") return goTo("game"); if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return goTo("waiting"); return goTo("team-select"); }
 
@@ -147,6 +145,7 @@ export default function App() {
   if (screen === "cowrie-kingdoms") return withAppChrome(<CowrieKingdomsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "two-stones") return withAppChrome(<TwoStonesApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "aurora-vulture") return withAppChrome(<AuroraVultureApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
+  if (screen === "polar-tablan") return withAppChrome(<PolarTablanApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "game-preview" && selectedGame) return withAppChrome(<GamePreviewScreen game={selectedGame} onBack={exitToLibrary} />);
 
   if (screen === "dev-home") return withAppChrome(renderLazy(<DevPortalScreen onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onSettlementAdmin={() => goTo("settlement-admin")} onVaultDeployer={() => goTo("vault-deployer")} onExit={() => window.location.assign("/")} />, "Loading developer console..."));
