@@ -1,1 +1,0 @@
-Seven Ice Rings uses the isolated `sir_*` message namespace and layers on `sigeBackendBootstrap.js`. The production server must preload `sevenIceRingsBackendBootstrap.js` before authoritative Sat-gol rooms are available.
