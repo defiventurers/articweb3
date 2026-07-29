@@ -23,6 +23,8 @@ import { PolarTablanApp } from "./games/polar-tablan/PolarTablanApp.jsx";
 import { AuroraGanjifaAcademyApp } from "./games/aurora-ganjifa-academy/AuroraGanjifaAcademyApp.jsx";
 import { SigeApp } from "./games/sige/SigeApp.jsx";
 import { SevenIceRingsApp } from "./games/seven-ice-rings/SevenIceRingsApp.jsx";
+import { KhasiFishflowApp } from "./games/khasi-fishflow/KhasiFishflowApp.jsx";
+import { RumaIcePuzzleApp } from "./games/ruma-ice-puzzle/RumaIcePuzzleApp.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
@@ -69,7 +71,7 @@ export default function App() {
   const initialHighStakesRoomCode = cleanInviteCode(params.get("highStakesRoom") || params.get("hsRoom") || params.get("lockedRoom") || "");
   const requestedGame = getCatalogGame(params.get("game"));
   const initialSelectedGameId = requestedGame?.id || (initialHighStakesRoomCode ? "arctic-dominion" : null);
-  const playableGameIds = ["nine-ice-forts","four-wing-ice-hunt","fishflow","break-the-ice","ice-hunters","sixteen-ice-warriors","glacier-trail","crown-run","forty-glacier-guards","sky-temple-run","ice-rings","cowrie-kingdoms","two-stones","aurora-vulture","polar-tablan","aurora-ganjifa-academy","sige","seven-ice-rings"];
+  const playableGameIds = ["nine-ice-forts","four-wing-ice-hunt","fishflow","break-the-ice","ice-hunters","sixteen-ice-warriors","glacier-trail","crown-run","forty-glacier-guards","sky-temple-run","ice-rings","cowrie-kingdoms","two-stones","aurora-vulture","polar-tablan","aurora-ganjifa-academy","sige","seven-ice-rings","khasi-fishflow","ruma-ice-puzzle"];
   const initialScreen = isDevPath ? "dev-home" : initialSpectateCode ? "spectator" : smokeProfileEnabled && initialHighStakesRoomCode ? "high-stakes" : smokeProfileEnabled ? "hub" : initialHighStakesRoomCode ? "cover" : playableGameIds.includes(requestedGame?.id) ? requestedGame.id : requestedGame?.available ? "cover" : requestedGame ? "game-preview" : "library";
   const [assetsReady, setAssetsReady] = useState(skipLoader);
   const [screen, setScreen] = useState(initialScreen);
@@ -115,6 +117,8 @@ export default function App() {
   if (screen === "aurora-ganjifa-academy") return withAppChrome(<AuroraGanjifaAcademyApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "sige") return withAppChrome(<SigeApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "seven-ice-rings") return withAppChrome(<SevenIceRingsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
+  if (screen === "khasi-fishflow") return withAppChrome(<KhasiFishflowApp onExitToLibrary={exitToLibrary} />);
+  if (screen === "ruma-ice-puzzle") return withAppChrome(<RumaIcePuzzleApp onExitToLibrary={exitToLibrary} />);
   if (screen === "game-preview" && selectedGame) return withAppChrome(<GamePreviewScreen game={selectedGame} onBack={exitToLibrary} />);
 
   if (screen === "dev-home") return withAppChrome(renderLazy(<DevPortalScreen onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onSettlementAdmin={() => goTo("settlement-admin")} onVaultDeployer={() => goTo("vault-deployer")} onExit={() => window.location.assign("/")} />, "Loading developer console..."));
