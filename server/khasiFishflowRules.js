@@ -11,7 +11,7 @@ function createKhasiFishflowState({ mode = "online", starter = "aurora" } = {}) 
   const state = { gameId: KHASI_FISHFLOW_RULESET.gameId, rulesetVersion: KHASI_FISHFLOW_RULESET.rulesetVersion, mode, currentPlayer: starter === "ember" ? "ember" : "aurora", round: 1, turn: 1, pits: Object.fromEntries(PIT_IDS.map((id) => [id,5])), active: Object.fromEntries(PIT_IDS.map((id) => [id,true])), stores: { aurora:0, ember:0 }, reserves: { aurora:0, ember:0 }, handicapValue: { aurora:0, ember:0 }, partialPit: { aurora:null, ember:null }, fullSide:null, phase:"play", winner:null, winReason:null, lastMove:null, history:[] };
   assertStateInvariant(state); return state;
 }
-function createKhasiCaptureDrill() { const state = createKhasiFishflowState({ mode:"drill" }); for (const id of PIT_IDS) state.pits[id]=0; state.pits.a0=1; state.pits.e2=4; assertStateInvariant(state); return state; }
+function createKhasiCaptureDrill() { const state = createKhasiFishflowState({ mode:"drill" }); for (const id of PIT_IDS) state.pits[id]=0; state.pits.a0=1; state.pits.e2=4; state.reserves.ember=65; assertStateInvariant(state); return state; }
 function getLegalActions(state, side = state.currentPlayer) {
   if (!state || state.phase !== "play" || state.winner || side !== state.currentPlayer) return [];
   const blocked = state.partialPit[side];
