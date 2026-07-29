@@ -1,0 +1,32 @@
+import { useEffect, useMemo, useState } from "react";
+import { ProfileScreen } from "../../screens/ProfileScreen.jsx";
+import { createProfile } from "../../network/socketClient.js";
+import { createKhasiFishflowRoom, getKhasiFishflowHistory, getKhasiFishflowState, getMyKhasiFishflowRooms, joinKhasiFishflowRoom, listKhasiFishflowRooms, submitKhasiFishflowAction } from "../../network/khasiFishflowSocketClient.js";
+import { getCounts, getLegalActions, resultDetail, resultTitle } from "./rules.js";
+
+export function KhasiFishflowOnline({ profile, onProfileChange, onBack }) {
+  const [screen,setScreen]=useState("lobby");
+  const [room,setRoom]=useState(null);
+  const [rooms,setRooms]=useState([]);
+  const [myRooms,setMyRooms]=useState([]);
+  const [history,setHistory]=useState([]);
+  const [code,setCode]=useState("");
+  const [message,setMessage]=useState("");
+  const [busy,setBusy]=useState(false);
+  useEffect(()=>{ if(profile) refresh(); },[profile]);
+  useEffect(()=>{
+    function packet(event){ const next=event.detail?.payload?.room; if(event.detail?.type==="kf_room_state"&&next&&(!room||next.roomCode===room.roomCode)){ setRoom(next); setScreen("game"); } }
+    window.addEventListener("server-packet",packet); return()=>window.removeEventListener("server-packet",packet);
+  },[room]);
+  useEffect(()=>{ if(!profile||!room?.roomCode||screen!=="game") return; const timer=setInterval(async()=>{ try{ setRoom(await getKhasiFishflowState({roomCode:room.roomCode,profile})); }catch{} },4000); return()=>clearInterval(timer); },[profile,room?.roomCode,screen]);
+  async function run(task){ try{setBusy(true);setMessage("");return await task();}catch(err){setMessage(err.message||"Request failed.");return null;}finally{setBusy(false);} }
+  async function login(){ await createProfile({address:profile.wallet,name:profile.name}); }
+  async function refresh(){ await run(async()=>{ await login(); const [a,b,c]=await Promise.all([listKhasiFishflowRooms(),getMyKhasiFishflowRooms({profile}),getKhasiFishflowHistory({profile})]); setRooms(a);setMyRooms(b);setHistory(c); }); }
+  async function create(visibility,side){ const next=await run(async()=>{await login();return createKhasiFishflowRoom({visibility,side,profile});}); if(next){setRoom(next);setScreen("game");} }
+  async function join(roomCode=code){ const clean=String(roomCode).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4); if(clean.length!==4)return setMessage("Enter a four-character code."); const next=await run(async()=>{await login();return joinKhasiFishflowRoom({roomCode:clean,profile});}); if(next){setRoom(next);setScreen("game");} }
+  async function resume(roomCode){ const next=await run(async()=>{await login();return getKhasiFishflowState({roomCode,profile});}); if(next){setRoom(next);setScreen("game");} }
+  if(!profile) return <ProfileScreen onComplete={onProfileChange} onBack={onBack}/>;
+  if(screen==="history") return <section className="kf-online" aria-label="Khasi Fishflow history"><header><button onClick={()=>setScreen("lobby")}>← Lobby</button><h1>Khasi History</h1><button onClick={refresh}>Refresh</button></header>{!history.length&&<p>No completed matches yet.</p>}{history.map((item)=><article key={item.id}><strong>{item.won?"Current won":"Current lost"}</strong><span>Room {item.roomCode}</span></article>)}</section>;
+  if(screen==="game"&&room){ const me=room.players.find((p)=>p.wallet.toLowerCase()===profile.wallet.toLowerCase()); const myTurn=room.status==="playing"&&me?.side===room.gameState.currentPlayer; const legal=myTurn?getLegalActions(room.gameState,me.side):[]; const keys=new Set(legal.map((a)=>`${me.side}:${a.pitIndex}`)); const counts=getCounts(room.gameState); return <section className="kf-game" aria-label="Khasi Fishflow online match"><header><button onClick={()=>{setScreen("lobby");refresh();}}>← Lobby</button><div><p>ONLINE · ROOM {room.roomCode}</p><h1>Khasi Fishflow</h1></div><button onClick={()=>navigator.clipboard?.writeText(room.roomCode)}>Copy Code</button></header><main><aside><strong>Aurora</strong><span>{counts.aurora.store} captured</span></aside><div className="kf-board"><div className="kf-row ember">{room.gameState.rows.ember.map((count,index)=><button key={index} disabled={!keys.has(`ember:${index}`)||busy} onClick={async()=>{const next=await run(()=>submitKhasiFishflowAction({roomCode:room.roomCode,profile,action:{type:"sow",pitIndex:index}}));if(next)setRoom(next);}}>{count}</button>)}</div><div className="kf-flow">{room.status==="waiting"?`WAITING · ${room.roomCode}`:`ROUND ${room.gameState.round}`}</div><div className="kf-row aurora">{room.gameState.rows.aurora.map((count,index)=><button key={index} disabled={!keys.has(`aurora:${index}`)||busy} onClick={async()=>{const next=await run(()=>submitKhasiFishflowAction({roomCode:room.roomCode,profile,action:{type:"sow",pitIndex:index}}));if(next)setRoom(next);}}>{count}</button>)}</div><div className="kf-status"><strong>{room.status==="finished"?resultTitle(room.gameState):myTurn?"Your turn":room.status==="waiting"?"Waiting for rival":"Rival is sowing"}</strong><span>{room.status==="finished"?resultDetail(room.gameState):message||"Server validates the complete relay."}</span></div></div><aside><strong>Ember</strong><span>{counts.ember.store} captured</span></aside></main></section>; }
+  return <section className="kf-online" aria-label="Khasi Fishflow online lobby"><header><button onClick={onBack}>← Khasi Fishflow</button><h1>Online Khasi Pools</h1><button onClick={()=>setScreen("history")}>History</button></header><div className="kf-online-grid"><article><h2>Create Aurora</h2><button onClick={()=>create("public","aurora")}>Public Room</button><button onClick={()=>create("private","aurora")}>Private Room</button></article><article><h2>Create Ember</h2><button onClick={()=>create("public","ember")}>Public Room</button><button onClick={()=>create("private","ember")}>Private Room</button></article><article><h2>Join by Code</h2><input value={code} onChange={(e)=>setCode(e.target.value.toUpperCase())} maxLength={4}/><button onClick={()=>join()}>Join</button></article><article><h2>Open Rooms</h2>{rooms.map((item)=><button key={item.roomCode} onClick={()=>join(item.roomCode)}>{item.roomCode}</button>)}</article><article><h2>Your Rooms</h2>{myRooms.map((item)=><button key={item.roomCode} onClick={()=>resume(item.roomCode)}>{item.roomCode} · {item.status}</button>)}</article></div>{message&&<p>{message}</p>}</section>;
+}
