@@ -63,6 +63,11 @@ test("split 8 moves two distinct activated runners four squares each", () => {
   const state = createPolarTablanState();
   state.awaiting = "allocate";
   state.pendingRoll = { value: 8, plainUp: 4, faces: [1,1,1,1], splitValue: 4, throwNumber: 1 };
+  state.pieces.aurora.slice(2).forEach((piece) => {
+    piece.status = "captured";
+    piece.progress = null;
+    piece.started = true;
+  });
   state.pieces.aurora[0].started = true;
   state.pieces.aurora[1].started = true;
   const split = getLegalActions(state, "aurora").find((action) => action.split && action.legs[0].pieceId === "aurora-1" && action.legs[1].pieceId === "aurora-2");
