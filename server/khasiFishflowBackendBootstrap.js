@@ -1,8 +1,21 @@
 const fs = require("fs");
 const path = require("path");
 const Module = require("module");
-const sevenBackend = require("./sevenIceRingsBackendBootstrap.js");
+const { transformBackendSource } = require("./loadPrizeBackend.js");
 const multiGameBackend = require("./loadMultiGameBackend.js");
+const sixteenBackend = require("./sixteenIceWarriorsBackendBootstrap.js");
+const glacierBackend = require("./glacierTrailBackendBootstrap.js");
+const crownBackend = require("./crownRunBackendBootstrap.js");
+const guardBackend = require("./fortyGlacierGuardsBackendBootstrap.js");
+const skyBackend = require("./skyTempleRunBackendBootstrap.js");
+const ringsBackend = require("./iceRingsBackendBootstrap.js");
+const cowrieBackend = require("./cowrieKingdomsBackendBootstrap.js");
+const twoStonesBackend = require("./twoStonesBackendBootstrap.js");
+const auroraVultureBackend = require("./auroraVultureBackendBootstrap.js");
+const polarBackend = require("./polarTablanBackendBootstrap.js");
+const ganjifaBackend = require("./auroraGanjifaBackendBootstrap.js");
+const sigeBackend = require("./sigeBackendBootstrap.js");
+const sevenBackend = require("./sevenIceRingsBackendBootstrap.js");
 
 function injectKhasiFishflow(source) {
   let transformed = source;
@@ -63,7 +76,7 @@ const khasiFishflow = createKhasiFishflowService({
     if (!transformed.includes(dispatchNeedle)) throw new Error("Unable to locate Seven Ice Rings dispatch tail for Khasi Fishflow.");
     transformed = transformed.replace(dispatchNeedle, dispatchReplacement);
   }
-  const restoreNeedle = "sevenIceRings.restoreRoom(room); if (room.status === \"waiting\"";
+  const restoreNeedle = 'sevenIceRings.restoreRoom(room); if (room.status === "waiting"';
   if (!transformed.includes("khasiFishflow.restoreRoom(room)")) {
     if (!transformed.includes(restoreNeedle)) throw new Error("Unable to locate Seven Ice Rings restore loop for Khasi Fishflow.");
     transformed = transformed.replace(restoreNeedle, 'sevenIceRings.restoreRoom(room); khasiFishflow.restoreRoom(room); if (room.status === "waiting"');
@@ -76,11 +89,49 @@ const khasiFishflow = createKhasiFishflowService({
   return transformed;
 }
 
+function transformFullStack(source) {
+  return sevenBackend.injectSevenIceRings(
+    sigeBackend.injectSige(
+      ganjifaBackend.injectAuroraGanjifa(
+        polarBackend.injectPolarTablan(
+          auroraVultureBackend.injectAuroraVulture(
+            twoStonesBackend.injectTwoStones(
+              cowrieBackend.injectCowrieKingdoms(
+                ringsBackend.injectIceRings(
+                  skyBackend.injectSkyTempleRun(
+                    guardBackend.injectFortyGlacierGuards(
+                      crownBackend.injectCrownRun(
+                        glacierBackend.injectGlacierTrail(
+                          sixteenBackend.injectSixteenIceWarriors(
+                            multiGameBackend.injectIceHunters(
+                              multiGameBackend.injectBreakTheIce(
+                                multiGameBackend.injectFishflow(
+                                  multiGameBackend.injectFourWingIceHunt(
+                                    multiGameBackend.injectNineIceForts(transformBackendSource(source))
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
 function loadKhasiFishflowBackend() {
   const indexPath = require.resolve("./index.js");
   if (require.cache[indexPath]) return require.cache[indexPath].exports;
   const source = fs.readFileSync(indexPath, "utf8");
-  const transformed = injectKhasiFishflow(sevenBackend.injectSevenIceRings(source));
+  const transformed = injectKhasiFishflow(transformFullStack(source));
   const backendModule = new Module(indexPath, module.parent);
   backendModule.filename = indexPath;
   backendModule.paths = Module._nodeModulePaths(path.dirname(indexPath));
@@ -90,4 +141,4 @@ function loadKhasiFishflowBackend() {
 }
 function installKhasiFishflowBackend() { multiGameBackend.loadMultiGameBackend = loadKhasiFishflowBackend; return multiGameBackend; }
 installKhasiFishflowBackend();
-module.exports = { injectKhasiFishflow, loadKhasiFishflowBackend, installKhasiFishflowBackend };
+module.exports = { injectKhasiFishflow, transformFullStack, loadKhasiFishflowBackend, installKhasiFishflowBackend };
