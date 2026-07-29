@@ -9,6 +9,8 @@ import "./styles/nineIceForts.css";
 import "./styles/nineIceFortsOnline.css";
 import "./styles/fourWingIceHunt.css";
 import "./styles/fishflow.css";
+import "./styles/khasiFishflow.css";
+import "./styles/rumaIcePuzzle.css";
 import "./styles/breakTheIce.css";
 import "./styles/breakTheIceInteraction.css";
 import "./styles/iceHunters.css";

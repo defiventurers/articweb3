@@ -17,6 +17,8 @@ import { BreakTheIceApp } from "./games/break-the-ice/BreakTheIceApp.jsx";
 import { IceHuntersApp } from "./games/ice-hunters/IceHuntersApp.jsx";
 import { SixteenIceWarriorsApp } from "./games/sixteen-ice-warriors/SixteenIceWarriorsApp.jsx";
 import { GlacierTrailApp } from "./games/glacier-trail/GlacierTrailApp.jsx";
+import { KhasiFishflowApp } from "./games/khasi-fishflow/KhasiFishflowApp.jsx";
+import { RumaIcePuzzleApp } from "./games/ruma-ice-puzzle/RumaIcePuzzleApp.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
@@ -87,11 +89,15 @@ export default function App() {
                         ? "sixteen-ice-warriors"
                         : requestedGame?.id === "glacier-trail"
                           ? "glacier-trail"
-                          : requestedGame?.available
-                            ? "cover"
-                            : requestedGame
-                              ? "game-preview"
-                              : "library";
+                          : requestedGame?.id === "khasi-fishflow"
+                            ? "khasi-fishflow"
+                            : requestedGame?.id === "ruma-ice-puzzle"
+                              ? "ruma-ice-puzzle"
+                              : requestedGame?.available
+                                ? "cover"
+                                : requestedGame
+                                  ? "game-preview"
+                                  : "library";
   const [assetsReady, setAssetsReady] = useState(skipLoader);
   const [screen, setScreen] = useState(initialScreen);
   const [selectedGameId, setSelectedGameId] = useState(initialSelectedGameId);
@@ -109,58 +115,13 @@ export default function App() {
   if (calibrationTarget) return renderLazy(<CalibrationScreen target={calibrationTarget} />, "Loading calibration deck...");
   if (!assetsReady) return <FrostLoadingScreen onReady={() => setAssetsReady(true)} />;
 
-  function roomLobbyScreen(targetRoom = room) {
-    return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu";
-  }
-
-  function goTo(nextScreen, options = {}) {
-    window.clearTimeout(transitionTimerRef.current);
-    if (options.tapSound !== false) soundManager.play("uiTap", { cooldownMs: 80 });
-    if (nextScreen === "how-to-play") warmHowToPlayAssets();
-    if (nextScreen === "game" || nextScreen === "team-select" || nextScreen === "waiting") warmGameAssets();
-    setScreen(nextScreen);
-  }
-
-  function playTrackThenGo(trackName, nextScreen, delayMs) {
-    window.clearTimeout(transitionTimerRef.current);
-    soundManager.unlock();
-    unlockUiAudio();
-    soundManager.playTrack(trackName, { restart: true });
-    transitionTimerRef.current = window.setTimeout(() => goTo(nextScreen, { tapSound: false }), delayMs);
-  }
-
-  function withAppChrome(node) {
-    return <><AudioToggle />{node}</>;
-  }
-
-  function selectCatalogGame(gameId) {
-    const game = getCatalogGame(gameId);
-    if (!game) return;
-    setSelectedGameId(game.id);
-    syncGameQuery(game.id);
-    if (game.id === "nine-ice-forts") return goTo("nine-ice-forts");
-    if (game.id === "four-wing-ice-hunt") return goTo("four-wing-ice-hunt");
-    if (game.id === "fishflow") return goTo("fishflow");
-    if (game.id === "break-the-ice") return goTo("break-the-ice");
-    if (game.id === "ice-hunters") return goTo("ice-hunters");
-    if (game.id === "sixteen-ice-warriors") return goTo("sixteen-ice-warriors");
-    if (game.id === "glacier-trail") return goTo("glacier-trail");
-    goTo(game.available ? "cover" : "game-preview");
-  }
-
-  function exitToLibrary() {
-    setSelectedGameId(null);
-    syncGameQuery(null);
-    goTo("library");
-  }
-
-  function resumeRoom(nextRoom) {
-    setRoom(nextRoom);
-    if (nextRoom.status === "finished") return goTo("results");
-    if (nextRoom.status === "playing") return goTo("game");
-    if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return goTo("waiting");
-    return goTo("team-select");
-  }
+  function roomLobbyScreen(targetRoom = room) { return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu"; }
+  function goTo(nextScreen, options = {}) { window.clearTimeout(transitionTimerRef.current); if (options.tapSound !== false) soundManager.play("uiTap", { cooldownMs: 80 }); if (nextScreen === "how-to-play") warmHowToPlayAssets(); if (nextScreen === "game" || nextScreen === "team-select" || nextScreen === "waiting") warmGameAssets(); setScreen(nextScreen); }
+  function playTrackThenGo(trackName, nextScreen, delayMs) { window.clearTimeout(transitionTimerRef.current); soundManager.unlock(); unlockUiAudio(); soundManager.playTrack(trackName, { restart: true }); transitionTimerRef.current = window.setTimeout(() => goTo(nextScreen, { tapSound: false }), delayMs); }
+  function withAppChrome(node) { return <><AudioToggle />{node}</>; }
+  function selectCatalogGame(gameId) { const game = getCatalogGame(gameId); if (!game) return; setSelectedGameId(game.id); syncGameQuery(game.id); if (["nine-ice-forts", "four-wing-ice-hunt", "fishflow", "break-the-ice", "ice-hunters", "sixteen-ice-warriors", "glacier-trail", "khasi-fishflow", "ruma-ice-puzzle"].includes(game.id)) return goTo(game.id); goTo(game.available ? "cover" : "game-preview"); }
+  function exitToLibrary() { setSelectedGameId(null); syncGameQuery(null); goTo("library"); }
+  function resumeRoom(nextRoom) { setRoom(nextRoom); if (nextRoom.status === "finished") return goTo("results"); if (nextRoom.status === "playing") return goTo("game"); if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return goTo("waiting"); return goTo("team-select"); }
 
   if (screen === "library") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
   if (screen === "nine-ice-forts") return withAppChrome(<NineIceFortsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
@@ -170,6 +131,8 @@ export default function App() {
   if (screen === "ice-hunters") return withAppChrome(<IceHuntersApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "sixteen-ice-warriors") return withAppChrome(<SixteenIceWarriorsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "glacier-trail") return withAppChrome(<GlacierTrailApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
+  if (screen === "khasi-fishflow") return withAppChrome(<KhasiFishflowApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
+  if (screen === "ruma-ice-puzzle") return withAppChrome(<RumaIcePuzzleApp onExitToLibrary={exitToLibrary} />);
   if (screen === "game-preview" && selectedGame) return withAppChrome(<GamePreviewScreen game={selectedGame} onBack={exitToLibrary} />);
 
   if (screen === "dev-home") return withAppChrome(renderLazy(<DevPortalScreen onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onSettlementAdmin={() => goTo("settlement-admin")} onVaultDeployer={() => goTo("vault-deployer")} onExit={() => window.location.assign("/")} />, "Loading developer console..."));
@@ -199,21 +162,7 @@ export default function App() {
   return null;
 }
 
-function lazyNamed(loader, exportName) {
-  return lazy(async () => ({ default: (await loader())[exportName] }));
-}
-
-function renderLazy(node, label) {
-  return <Suspense fallback={<FrostRouteLoader label={label} />}>{node}</Suspense>;
-}
-
-function cleanInviteCode(value) {
-  return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
-}
-
-function syncGameQuery(gameId) {
-  const nextUrl = new URL(window.location.href);
-  if (gameId) nextUrl.searchParams.set("game", gameId);
-  else nextUrl.searchParams.delete("game");
-  window.history.replaceState({}, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
-}
+function lazyNamed(loader, exportName) { return lazy(async () => ({ default: (await loader())[exportName] })); }
+function renderLazy(node, label) { return <Suspense fallback={<FrostRouteLoader label={label} />}>{node}</Suspense>; }
+function cleanInviteCode(value) { return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4); }
+function syncGameQuery(gameId) { const nextUrl = new URL(window.location.href); if (gameId) nextUrl.searchParams.set("game", gameId); else nextUrl.searchParams.delete("game"); window.history.replaceState({}, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`); }

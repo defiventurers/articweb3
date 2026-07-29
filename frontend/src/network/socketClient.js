@@ -86,6 +86,15 @@ export async function getFishflowLegalActions({ roomCode, profile }) { return (a
 export async function getFishflowHistory({ profile }) { return (await request("fish_history", { wallet: profile.wallet })).history || []; }
 export async function getMyFishflowRooms({ profile }) { return (await request("fish_my_rooms", { wallet: profile.wallet })).rooms || []; }
 
+export async function listKhasiFishflowRooms() { return (await request("kf_room_list", {})).rooms || []; }
+export async function createKhasiFishflowRoom({ visibility = "public", current = "blue", profile }) { return (await request("kf_room_create", { visibility, current, wallet: profile.wallet })).room; }
+export async function joinKhasiFishflowRoom({ roomCode, profile }) { return (await request("kf_room_join", { roomCode, wallet: profile.wallet })).room; }
+export async function getKhasiFishflowState({ roomCode, profile }) { return (await request("kf_game_state", { roomCode, wallet: profile.wallet })).room; }
+export async function submitKhasiFishflowAction({ roomCode, profile, action }) { return (await request("kf_game_action", { roomCode, wallet: profile.wallet, action })).room; }
+export async function getKhasiFishflowLegalActions({ roomCode, profile }) { return (await request("kf_legal_actions", { roomCode, wallet: profile.wallet })).actions || []; }
+export async function getKhasiFishflowHistory({ profile }) { return (await request("kf_history", { wallet: profile.wallet })).history || []; }
+export async function getMyKhasiFishflowRooms({ profile }) { return (await request("kf_my_rooms", { wallet: profile.wallet })).rooms || []; }
+
 export async function listBreakTheIceRooms() { return (await request("bti_room_list", {})).rooms || []; }
 export async function createBreakTheIceRoom({ visibility = "public", runner = "blue", profile }) { return (await request("bti_room_create", { visibility, runner, wallet: profile.wallet })).room; }
 export async function joinBreakTheIceRoom({ roomCode, profile }) { return (await request("bti_room_join", { roomCode, wallet: profile.wallet })).room; }
