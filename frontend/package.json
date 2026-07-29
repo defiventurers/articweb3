@@ -15,7 +15,7 @@
     "preview": "vite preview",
     "preview:mainnet": "vite preview --mode mainnet",
     "test:e2e": "playwright test",
-    "test:e2e:smoke": "playwright test tests/closed-beta-smoke.spec.js tests/cowrie-kingdoms-smoke.spec.js tests/two-stones-smoke.spec.js tests/aurora-vulture-smoke.spec.js tests/polar-tablan-smoke.spec.js tests/aurora-ganjifa-smoke.spec.js tests/sige-smoke.spec.js tests/seven-ice-rings-smoke.spec.js tests/khasi-fishflow-smoke.spec.js",
+    "test:e2e:smoke": "playwright test tests/closed-beta-smoke.spec.js tests/cowrie-kingdoms-smoke.spec.js tests/two-stones-smoke.spec.js tests/aurora-vulture-smoke.spec.js tests/polar-tablan-smoke.spec.js tests/aurora-ganjifa-smoke.spec.js tests/sige-smoke.spec.js tests/seven-ice-rings-smoke.spec.js tests/khasi-fishflow-smoke.spec.js tests/ruma-ice-puzzle-smoke.spec.js",
     "test:e2e:ui": "playwright test --ui",
     "assets:audit": "node scripts/audit-assets.mjs",
     "assets:webp": "node scripts/convert-assets-to-webp.mjs"
