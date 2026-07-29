@@ -57,6 +57,7 @@ export function createKhasiCaptureDrill() {
   for (const id of PIT_IDS) state.pits[id] = 0;
   state.pits.a0 = 1;
   state.pits.e2 = 4;
+  state.reserves.ember = 65;
   state.lastMove = { type: "setup", summary: "Sow Aurora pit 1. The relay stops beside an empty pit and captures the opposite four stones." };
   assertStateInvariant(state);
   return state;
