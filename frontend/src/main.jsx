@@ -25,6 +25,7 @@ import "./styles/cowrieKingdoms.css";
 import "./styles/cowrieKingdomsPairs.css";
 import "./styles/twoStones.css";
 import "./styles/auroraVulture.css";
+import "./styles/polarTablan.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";
