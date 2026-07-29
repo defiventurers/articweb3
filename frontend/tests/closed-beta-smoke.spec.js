@@ -116,6 +116,25 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByText(/Every opposing soldier has been chopped/i)).toBeVisible();
   });
 
+  test("Ruma Ice Puzzle completes the verified teaching current", async ({ page }) => {
+    await page.goto("/?skipLoader=1");
+    await page.getByRole("button", { name: "Play Ruma Ice Puzzle" }).click();
+    await expect(page.getByLabel("Ruma Ice Puzzle cover")).toBeVisible();
+
+    await page.getByRole("button", { name: "Enter the Ruma" }).click();
+    await expect(page.getByLabel("Ruma Ice Puzzle menu")).toBeVisible();
+    await page.getByRole("button", { name: "Play Teaching Current" }).click();
+    await expect(page.getByLabel("Ruma Ice Puzzle game")).toBeVisible();
+
+    for (const pit of [3, 4, 3, 4, 2, 4]) {
+      await page.getByRole("gridcell", { name: new RegExp(`Pit ${pit} with \\d+ fish, legal`, "i") }).click();
+    }
+
+    await expect(page.getByText("Ruma restored")).toBeVisible();
+    await expect(page.getByText("All eight fish reached the Ruma in par 6.")).toBeVisible();
+    await expect(page.getByRole("gridcell", { name: "Ruma store with 8 fish" })).toBeVisible();
+  });
+
   test("smoke profile opens Player Hub", async ({ page }) => {
     await page.goto(smokePath);
     await expect(page.getByLabel("Player Hub")).toBeVisible();
