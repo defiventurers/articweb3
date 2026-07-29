@@ -40,6 +40,7 @@ test("three and four player deals divide the full pack equally and Taj Raja open
 
 test("follow-suit is compulsory and highest led-suit denomination wins",()=>{
   const state=createAcademyState({playerCount:3,seed:2});
+  state.mode="lesson";
   state.hands={north:[makeDeck().find(c=>c.id==="taj-7"),makeDeck().find(c=>c.id==="surkh-10")],west:[makeDeck().find(c=>c.id==="taj-1"),makeDeck().find(c=>c.id==="surkh-1")],south:[makeDeck().find(c=>c.id==="taj-10"),makeDeck().find(c=>c.id==="barat-raja")]};
   state.currentPlayer="north";state.leader="north";state.currentTrick=[];state.completedTricks=[];state.tricksWon={north:0,west:0,south:0};state.capturedCards={north:0,west:0,south:0};
   let next=applyAction(state,{cardId:"taj-7"},"north").state;
