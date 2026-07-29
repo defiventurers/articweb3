@@ -27,6 +27,7 @@ import "./styles/twoStones.css";
 import "./styles/auroraVulture.css";
 import "./styles/polarTablan.css";
 import "./styles/auroraGanjifaAcademy.css";
+import "./styles/sige.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";
