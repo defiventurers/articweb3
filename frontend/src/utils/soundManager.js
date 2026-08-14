@@ -50,6 +50,7 @@ const SOUND_DEFS = {
 
 const SCREEN_TRACKS = {
   cover: "coverScreen",
+  kingdoms: "mainMenu",
   menu: "mainMenu",
   "how-to-play": "tutorial",
   profile: "createProfile",

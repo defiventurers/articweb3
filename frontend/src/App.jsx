@@ -6,6 +6,7 @@ import {
   warmHowToPlayAssets
 } from "./components/FrostLoadingScreen.jsx";
 import { AudioToggle } from "./components/AudioToggle.jsx";
+import { ArcticKingdomsLanding } from "./arctic/ArcticKingdomsLanding.jsx";
 import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { GameLibraryScreen } from "./screens/GameLibraryScreen.jsx";
 import { GamePreviewScreen } from "./screens/GamePreviewScreen.jsx";
@@ -97,7 +98,7 @@ export default function App() {
                                 ? "cover"
                                 : requestedGame
                                   ? "game-preview"
-                                  : "library";
+                                  : "kingdoms";
   const [assetsReady, setAssetsReady] = useState(skipLoader);
   const [screen, setScreen] = useState(initialScreen);
   const [selectedGameId, setSelectedGameId] = useState(initialSelectedGameId);
@@ -123,6 +124,7 @@ export default function App() {
   function exitToLibrary() { setSelectedGameId(null); syncGameQuery(null); goTo("library"); }
   function resumeRoom(nextRoom) { setRoom(nextRoom); if (nextRoom.status === "finished") return goTo("results"); if (nextRoom.status === "playing") return goTo("game"); if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return goTo("waiting"); return goTo("team-select"); }
 
+  if (screen === "kingdoms") return withAppChrome(<ArcticKingdomsLanding onSelectGame={selectCatalogGame} />);
   if (screen === "library") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
   if (screen === "nine-ice-forts") return withAppChrome(<NineIceFortsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "four-wing-ice-hunt") return withAppChrome(<FourWingIceHuntApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
@@ -142,7 +144,7 @@ export default function App() {
   if (screen === "settlement-admin") return withAppChrome(renderLazy(<SettlementAdminScreen onBack={() => goTo("dev-home")} />));
 
   if (screen === "cover") return withAppChrome(<CoverScreen onContinue={() => playTrackThenGo("coverScreen", initialHighStakesRoomCode ? "profile" : "menu", COVER_TRACK_DELAY_MS)} onBackToLibrary={initialHighStakesRoomCode ? undefined : exitToLibrary} />);
-  if (screen === "menu") return withAppChrome(<MainMenu onPlay={() => playTrackThenGo("playNow", "profile", PLAY_NOW_TRACK_DELAY_MS)} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} onAllGames={exitToLibrary} />);
+  if (screen === "menu") return withAppChrome(<MainMenu onPlay={() => playTrackThenGo("playNow", "profile", PLAY_NOW_TRACK_DELAY_MS)} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} onAllGames={() => goTo("kingdoms")} />);
   if (screen === "how-to-play") return withAppChrome(renderLazy(<HowToPlayScreen onBack={() => goTo("menu")} onStart={() => goTo("profile")} />));
   if (screen === "spectator") return withAppChrome(renderLazy(<SpectatorScreen initialRoomCode={initialSpectateCode} onBack={() => goTo(profile ? "hub" : "menu")} />));
   if (screen === "profile") return withAppChrome(renderLazy(<ProfileScreen onComplete={(createdProfile) => { soundManager.play("uiConfirm"); setProfile(createdProfile); goTo(initialHighStakesRoomCode ? "high-stakes" : "hub"); }} onBack={() => goTo("menu")} />));
