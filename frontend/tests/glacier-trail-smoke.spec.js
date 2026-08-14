@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("Glacier Trail opens and lands the last counter exactly", async ({ page }) => {
-  await page.goto("/?skipLoader=1");
-  await page.getByRole("button", { name: "Play Glacier Trail" }).click();
+  await page.goto("/?skipLoader=1&game=glacier-trail");
   await expect(page.getByLabel("Glacier Trail cover")).toBeVisible();
 
   await page.getByRole("button", { name: "Begin the ascent" }).click();

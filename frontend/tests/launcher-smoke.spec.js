@@ -1,50 +1,40 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Arctic game launcher", () => {
-  test("desktop navigation exposes catalog state and preserves playable entry", async ({ page }) => {
+const gameBox = (page, gameId) => page.locator(`[data-game-id="${gameId}"]`);
+
+test.describe("Arctic Game Kingdoms launcher", () => {
+  test("world exposes all 21 playable game boxes and opens Crown Run through the cinematic handoff", async ({ page }) => {
     await page.goto("/?skipLoader=1");
+
     await expect(page.getByRole("heading", { name: "Arctic Dominion" })).toBeVisible();
-    await expect(page.getByText("01 / 21")).toBeVisible();
+    await expect(page.locator(".arctic-game-box")).toHaveCount(21);
+    await expect(gameBox(page, "arctic-dominion")).toHaveAttribute("aria-pressed", "true");
+    await expect(gameBox(page, "crown-run")).toHaveAttribute("aria-label", /Crown Run\. PLAY\./);
+    await expect(page.getByRole("button", { name: /Collection 21/i })).toBeVisible();
 
-    await page.locator(".game-carousel__box-control--next").click();
-    await expect(page.getByRole("heading", { name: "Nine Ice Forts" })).toBeVisible();
-    await expect(page.getByText("02 / 21")).toBeVisible();
-
-    await page.getByRole("tab", { name: "Select 09: Crown Run" }).click();
-    await expect(page.getByRole("heading", { name: "Crown Run" })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Coming soon/i })).toBeDisabled();
-
-    await page.getByRole("tab", { name: "Select 02: Nine Ice Forts" }).click();
-    await page.getByRole("button", { name: /Enter kingdom/i }).click();
-    await expect(page).toHaveURL(/game=nine-ice-forts/);
-    await expect(page.getByRole("heading", { name: "Nine Ice Forts" })).toBeVisible();
+    await gameBox(page, "crown-run").click();
+    await expect(page.locator(".arctic-opening-sequence")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Return to Arctic Game Kingdoms" })).toBeVisible();
+    await expect(page).toHaveURL(/game=crown-run/, { timeout: 10000 });
+    await expect(page.getByRole("heading", { name: /Crown\s+Run/i })).toBeVisible();
   });
 
-  test("all 21 catalog spines select a corresponding game", async ({ page }) => {
+  test("collection mode keeps all 21 catalog entries accessible alongside the world", async ({ page }) => {
     await page.goto("/?skipLoader=1");
-    const tabs = page.getByRole("tab");
-    await expect(tabs).toHaveCount(21);
+    await page.getByRole("button", { name: /Collection 21/i }).click();
 
-    for (let index = 0; index < 21; index += 1) {
-      await tabs.nth(index).click();
-      await expect(page.getByText(new RegExp(`Selected .* game ${index + 1} of 21\.`))).toBeVisible();
-    }
+    const collection = page.locator('aside[aria-label="Game collection"]');
+    await expect(collection).toBeVisible();
+    await expect(collection.locator(".collection-game")).toHaveCount(21);
+    await expect(collection.getByRole("button", { name: /Crown Run/i })).toBeVisible();
   });
 
-  test("mobile swipe advances the selected box without horizontal overflow", async ({ page }) => {
+  test("compact-screen world keeps game boxes available without horizontal overflow", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/?skipLoader=1");
-    await expect(page.getByText("01 / 21")).toBeVisible();
 
-    const stage = page.locator(".game-carousel__selected-stage");
-    const box = await stage.boundingBox();
-    if (!box) throw new Error("Carousel stage was not visible");
-    await page.mouse.move(box.x + box.width * .72, box.y + box.height * .54);
-    await page.mouse.down();
-    await page.mouse.move(box.x + box.width * .22, box.y + box.height * .54, { steps: 8 });
-    await page.mouse.up();
-
-    await expect(page.getByText("02 / 21")).toBeVisible();
+    await expect(page.locator(".arctic-game-box")).toHaveCount(21);
+    await expect(gameBox(page, "seven-ice-rings")).toBeVisible();
     const dimensions = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
   });

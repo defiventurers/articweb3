@@ -3,19 +3,14 @@ import { expect, test } from "@playwright/test";
 const smokePath = "/?skipLoader=1&smokeProfile=1";
 
 test.describe("closed beta smoke", () => {
-  test("game library opens Arctic Dominion cover", async ({ page }) => {
-    await page.goto("/?skipLoader=1");
-    await expect(page.getByLabel("Game library")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Play Arctic Dominion" })).toBeVisible();
-
-    await page.getByRole("button", { name: "Play Arctic Dominion" }).click();
-    await expect(page.getByLabel("Cover screen")).toBeVisible();
+  test("Arctic Dominion direct route opens the board shell", async ({ page }) => {
+    await page.goto("/?skipLoader=1&game=arctic-dominion");
     await expect(page.getByRole("button", { name: "All Games" })).toBeVisible();
+    await expect(page.locator(".game-preview-screen")).toHaveCount(0);
   });
 
   test("Nine Ice Forts opens and starts a legal local match", async ({ page }) => {
-    await page.goto("/?skipLoader=1");
-    await page.getByRole("button", { name: "Play Nine Ice Forts" }).click();
+    await page.goto("/?skipLoader=1&game=nine-ice-forts");
     await expect(page.getByLabel("Nine Ice Forts cover")).toBeVisible();
 
     await page.getByRole("button", { name: "Enter the forts" }).click();
@@ -29,8 +24,7 @@ test.describe("closed beta smoke", () => {
   });
 
   test("Four-Wing Ice Hunt opens and follows Parker's opening order", async ({ page }) => {
-    await page.goto("/?skipLoader=1");
-    await page.getByRole("button", { name: "Play Four-Wing Ice Hunt" }).click();
+    await page.goto("/?skipLoader=1&game=four-wing-ice-hunt");
     await expect(page.getByLabel("Four-Wing Ice Hunt cover")).toBeVisible();
 
     await page.getByRole("button", { name: "Enter the hunt" }).click();
@@ -48,8 +42,7 @@ test.describe("closed beta smoke", () => {
   });
 
   test("Fishflow opens and resolves a complete relay-sowing turn", async ({ page }) => {
-    await page.goto("/?skipLoader=1");
-    await page.getByRole("button", { name: "Play Fishflow" }).click();
+    await page.goto("/?skipLoader=1&game=fishflow");
     await expect(page.getByLabel("Fishflow cover")).toBeVisible();
 
     await page.getByRole("button", { name: "Follow the current" }).click();
@@ -63,8 +56,7 @@ test.describe("closed beta smoke", () => {
   });
 
   test("Break the Ice opens and resolves an exact-finish cowrie drill", async ({ page }) => {
-    await page.goto("/?skipLoader=1");
-    await page.getByRole("button", { name: "Play Break the Ice" }).click();
+    await page.goto("/?skipLoader=1&game=break-the-ice");
     await expect(page.getByLabel("Break the Ice cover")).toBeVisible();
 
     await page.getByRole("button", { name: "Start the race" }).click();
@@ -79,8 +71,7 @@ test.describe("closed beta smoke", () => {
   });
 
   test("Ice Hunters opens and resolves a standard corner capture", async ({ page }) => {
-    await page.goto("/?skipLoader=1");
-    await page.getByRole("button", { name: "Play Ice Hunters" }).click();
+    await page.goto("/?skipLoader=1&game=ice-hunters");
     await expect(page.getByLabel("Ice Hunters cover")).toBeVisible();
 
     await page.getByRole("button", { name: "Enter the hunting ground" }).click();
@@ -98,8 +89,7 @@ test.describe("closed beta smoke", () => {
   });
 
   test("Sixteen Ice Warriors opens and completes an optional two-jump chain", async ({ page }) => {
-    await page.goto("/?skipLoader=1");
-    await page.getByRole("button", { name: "Play Sixteen Ice Warriors" }).click();
+    await page.goto("/?skipLoader=1&game=sixteen-ice-warriors");
     await expect(page.getByLabel("Sixteen Ice Warriors cover")).toBeVisible();
 
     await page.getByRole("button", { name: "Enter the war table" }).click();
@@ -117,8 +107,7 @@ test.describe("closed beta smoke", () => {
   });
 
   test("Ruma Ice Puzzle completes the verified teaching current", async ({ page }) => {
-    await page.goto("/?skipLoader=1");
-    await page.getByRole("button", { name: "Play Ruma Ice Puzzle" }).click();
+    await page.goto("/?skipLoader=1&game=ruma-ice-puzzle");
     await expect(page.getByLabel("Ruma Ice Puzzle cover")).toBeVisible();
 
     await page.getByRole("button", { name: "Enter the Ruma" }).click();
