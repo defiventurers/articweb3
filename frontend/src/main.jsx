@@ -5,6 +5,7 @@ import { NetworkBadge } from "./components/NetworkBadge.jsx";
 import { Web3Provider } from "./providers/Web3Provider.jsx";
 import "./styles/global.css";
 import "./styles/gameLibrary.css";
+import "./styles/arcticGameLauncher.css";
 import "./styles/nineIceForts.css";
 import "./styles/nineIceFortsOnline.css";
 import "./styles/fourWingIceHunt.css";

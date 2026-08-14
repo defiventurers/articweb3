@@ -1,102 +1,97 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { GameCarousel, wrapIndex } from "../components/GameCarousel.jsx";
+import { GameCollectionStrip } from "../components/GameCollectionStrip.jsx";
+import { GameEnvironment } from "../components/GameEnvironment.jsx";
+import { GameInfo } from "../components/GameInfo.jsx";
+import { GameNavigation } from "../components/GameNavigation.jsx";
 import { GAME_CATALOG } from "../data/gameCatalog.js";
 
-const PLAYABLE_GAME_IDS = new Set(GAME_CATALOG.filter((game) => game.available).map((game) => game.id));
-const FILTERS = [
-  { id: "all", label: "All games" },
-  { id: "playable", label: "Playable" },
-  { id: "build-now", label: "Build now" },
-  { id: "build-next", label: "Build next" }
-];
-
 export function GameLibraryScreen({ onSelectGame }) {
-  const [filter, setFilter] = useState("all");
-  const visibleGames = useMemo(() => {
-    if (filter === "all") return GAME_CATALOG;
-    if (filter === "playable") return GAME_CATALOG.filter((game) => PLAYABLE_GAME_IDS.has(game.id));
-    return GAME_CATALOG.filter((game) => game.statusKey === filter);
-  }, [filter]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const wheelLockRef = useRef(false);
+  const selectedGame = GAME_CATALOG[selectedIndex];
+  const previousGame = GAME_CATALOG[wrapIndex(selectedIndex - 1, GAME_CATALOG.length)];
+  const nextGame = GAME_CATALOG[wrapIndex(selectedIndex + 1, GAME_CATALOG.length)];
+
+  const selectIndex = useCallback((index) => {
+    setSelectedIndex(wrapIndex(index, GAME_CATALOG.length));
+  }, []);
+
+  const selectPrevious = useCallback(() => {
+    setSelectedIndex((index) => wrapIndex(index - 1, GAME_CATALOG.length));
+  }, []);
+
+  const selectNext = useCallback(() => {
+    setSelectedIndex((index) => wrapIndex(index + 1, GAME_CATALOG.length));
+  }, []);
+
+  useEffect(() => {
+    function onKeyDown(event) {
+      const tagName = event.target?.tagName;
+      if (tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT") return;
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        selectPrevious();
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        selectNext();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectNext, selectPrevious]);
+
+  function onWheel(event) {
+    if (wheelLockRef.current || Math.abs(event.deltaY) < 12) return;
+    wheelLockRef.current = true;
+    window.setTimeout(() => { wheelLockRef.current = false; }, 260);
+    if (event.deltaY > 0) selectNext();
+    if (event.deltaY < 0) selectPrevious();
+  }
 
   return (
-    <section className="game-library-screen" aria-label="Game library">
-      <div className="library-sky" aria-hidden="true">
-        <span className="library-aurora aurora-one" />
-        <span className="library-aurora aurora-two" />
-        <span className="library-snow snow-one" />
-        <span className="library-snow snow-two" />
-      </div>
+    <main className={`arctic-game-world theme-${selectedGame.theme}`} onWheel={onWheel}>
+      <GameEnvironment theme={selectedGame.theme} />
 
-      <header className="library-header">
-        <p className="library-kicker">PROJECT ABSTRACT INDIAN GAMES</p>
-        <h1>ARCTIC GAME KINGDOMS</h1>
-        <p className="library-intro">
-          Enter a frozen world of revived Indian heritage games. Select a kingdom to open its cover.
-        </p>
-        <div className="library-stat-row" aria-label="Catalog summary">
-          <span><strong>{GAME_CATALOG.length}</strong> game worlds</span>
-          <span><strong>4</strong> reusable engines</span>
-          <span><strong>{PLAYABLE_GAME_IDS.size}</strong> playable now</span>
-        </div>
+      <header className="arctic-game-world__masthead">
+        <a className="arctic-game-world__wordmark" href="/" aria-label="Arctic Game Kingdoms home">
+          <span>PROJECT</span>
+          <strong>ARCTIC GAME KINGDOMS</strong>
+        </a>
+        <p className="arctic-game-world__instruction">DRAG · SCROLL · ARROW KEYS</p>
       </header>
 
-      <nav className="library-filters" aria-label="Filter games">
-        {FILTERS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={filter === item.id ? "active" : ""}
-            aria-pressed={filter === item.id}
-            onClick={() => setFilter(item.id)}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
+      <div className="arctic-game-world__content">
+        <GameInfo
+          game={selectedGame}
+          index={selectedIndex}
+          total={GAME_CATALOG.length}
+          onEnter={() => onSelectGame(selectedGame.id)}
+        />
 
-      <main className="game-library-grid" aria-live="polite">
-        {visibleGames.map((game) => (
-          <GameLibraryCard key={game.id} game={game} onSelect={() => onSelectGame(game.id)} />
-        ))}
-      </main>
+        <GameCarousel
+          games={GAME_CATALOG}
+          selectedIndex={selectedIndex}
+          onSelectIndex={selectIndex}
+          onPrevious={selectPrevious}
+          onNext={selectNext}
+        />
 
-      <footer className="library-footer">
-        Heritage rules and modern tournament policies remain separately versioned for every release.
-      </footer>
-    </section>
-  );
-}
+        <GameNavigation
+          previousGame={previousGame}
+          nextGame={nextGame}
+          onPrevious={selectPrevious}
+          onNext={selectNext}
+        />
+      </div>
 
-function GameLibraryCard({ game, onSelect }) {
-  const playable = PLAYABLE_GAME_IDS.has(game.id);
-  return (
-    <button
-      type="button"
-      className={`game-library-card theme-${game.theme} ${playable ? "is-playable" : "is-planned"}`}
-      onClick={onSelect}
-      aria-label={`${playable ? "Play" : "Open cover for"} ${game.title}`}
-    >
-      <span className="game-card-art" aria-hidden="true">
-        <span className="game-card-orbit orbit-one" />
-        <span className="game-card-orbit orbit-two" />
-        <span className="game-card-mark">{game.mark}</span>
-      </span>
-      <span className="game-card-copy">
-        <span className="game-card-topline">
-          <span className={`game-status status-${playable ? "playable" : game.statusKey}`}>{game.status}</span>
-          <span className="game-priority">{game.priority === 0 ? "FLAGSHIP" : `#${game.priority}`}</span>
-        </span>
-        <strong className="game-card-title">{game.title}</strong>
-        <span className="game-card-heritage">{game.heritage}</span>
-        <span className="game-card-summary">{game.summary}</span>
-        <span className="game-card-meta">
-          <span>{game.players}</span>
-          <span>{game.engine}</span>
-        </span>
-        <span className={`game-card-action ${playable ? "play" : "preview"}`}>
-          {playable ? "Enter kingdom" : "View cover"}
-          <span aria-hidden="true">→</span>
-        </span>
-      </span>
-    </button>
+      <GameCollectionStrip
+        games={GAME_CATALOG}
+        selectedIndex={selectedIndex}
+        onSelectIndex={selectIndex}
+      />
+    </main>
   );
 }
