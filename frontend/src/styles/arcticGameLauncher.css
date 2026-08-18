@@ -362,3 +362,57 @@
 @media (prefers-reduced-motion: reduce) {
   .game-box, .game-box__object, .game-box__glint, .game-collection-strip__thumb, .game-collection-strip__thumb-shine { animation: none !important; transition: none !important; }
 }
+
+/* Hybrid WebGL archive stage */
+.arctic-game-world--webgl .arctic-webgl-archive {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.arctic-game-world--webgl .arctic-webgl-archive canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.arctic-game-world--webgl .arctic-game-world__masthead,
+.arctic-game-world--webgl .arctic-game-world__content,
+.arctic-game-world--webgl .game-collection-strip {
+  position: relative;
+  z-index: 3;
+}
+
+.arctic-game-world--webgl .arctic-game-world__content {
+  min-height: calc(100svh - 8rem);
+  pointer-events: none;
+}
+
+.arctic-game-world--webgl .game-info,
+.arctic-game-world--webgl .game-navigation {
+  pointer-events: auto;
+}
+
+.arctic-game-world--webgl .game-info {
+  align-self: center;
+}
+
+@media (max-width: 760px) {
+  .arctic-game-world--webgl .arctic-game-world__content {
+    min-height: calc(100dvh - 4rem);
+    grid-template-rows: minmax(22rem, 1fr) auto;
+    padding-bottom: 6.8rem;
+  }
+
+  .arctic-game-world--webgl .game-info {
+    align-self: end;
+    padding-bottom: .4rem;
+  }
+
+  .arctic-game-world--webgl .game-navigation {
+    align-self: end;
+  }
+}

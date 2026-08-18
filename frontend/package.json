@@ -27,6 +27,7 @@
     "@tanstack/react-query": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "three": "^0.185.1",
     "viem": "latest",
     "vite": "latest",
     "wagmi": "latest"
