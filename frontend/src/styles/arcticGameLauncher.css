@@ -465,3 +465,26 @@
     padding-top: .35rem;
   }
 }
+
+/* Desktop separation: the WebGL canvas occupies a dedicated right rail.
+   The information rail remains readable without any text or surface painting
+   over the vivid product artwork. Mobile keeps the existing Fix 3 stack. */
+@media (min-width: 761px) {
+  .arctic-game-world--webgl .arctic-webgl-archive {
+    inset: 0 0 0 clamp(26rem, 38vw, 38rem);
+  }
+
+  .arctic-game-world--webgl .arctic-game-world__content {
+    grid-template-columns: minmax(18rem, 1fr) minmax(0, 1.6fr);
+  }
+
+  .arctic-game-world--webgl .game-info {
+    width: min(28rem, 100%);
+    padding-right: clamp(1rem, 2vw, 2rem);
+  }
+
+  .arctic-game-world--webgl .game-navigation {
+    grid-column: 1;
+    justify-content: flex-start;
+  }
+}
