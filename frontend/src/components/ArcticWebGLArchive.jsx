@@ -1,10 +1,13 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { boxAssetPath } from "./GameBox.jsx";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+
 
 const TAU = Math.PI * 2;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const wrapIndex = (index, length) => (index + length) % length;
+const FRONT_ART_VERSION = "front-1";
+const frontAssetPath = (gameId) => `/assets/games/${gameId}/front.webp?v=${FRONT_ART_VERSION}`;
 
 function createMaterial(color, roughness = 0.72, metalness = 0.08) {
   return new THREE.MeshStandardMaterial({ color, roughness, metalness });
@@ -105,13 +108,15 @@ function createIceStage(scene) {
 }
 
 function createBox(game, textureLoader, onTextureLoaded) {
-  // The source artwork is already a finished 3/4 product render. Keep only
-  // enough depth for a physical slab and avoid a second visible box angle.
-  const geometry = new THREE.BoxGeometry(1.76, 2.38, 0.1);
-  const spine = createMaterial(0x081827, 0.64, 0.08);
-  const top = createMaterial(0x102b40, 0.58, 0.12);
-  const bottom = createMaterial(0x06121f, 0.72, 0.05);
-  const front = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  // The source artwork is now a rectified front cover. One shared physical
+  // box rig creates the only perspective: fixed proportions, bevel, depth,
+  // camera and light. This prevents a baked isometric render being placed on
+  // top of a second, conflicting box angle.
+  const geometry = new RoundedBoxGeometry(1.9, 2.2, 0.34, 4, 0.055);
+  const spine = createMaterial(0x081827, 0.66, 0.08);
+  const top = createMaterial(0x15374c, 0.58, 0.12);
+  const bottom = createMaterial(0x06121f, 0.74, 0.05);
+  const front = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.72, metalness: 0.02 });
   const materials = [spine, spine, top, bottom, front, spine];
   const mesh = new THREE.Mesh(geometry, materials);
   mesh.castShadow = true;
@@ -121,7 +126,7 @@ function createBox(game, textureLoader, onTextureLoaded) {
   mesh.userData.isArchiveBox = true;
 
   textureLoader.load(
-    boxAssetPath(game.id),
+    frontAssetPath(game.id),
     (texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.anisotropy = 4;
@@ -136,9 +141,9 @@ function createBox(game, textureLoader, onTextureLoaded) {
     () => onTextureLoaded?.()
   );
 
-    const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x75cfd9, transparent: true, opacity: 0.2 });
-    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgeMaterial);
-    mesh.add(edges);
+  const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x75cfd9, transparent: true, opacity: 0.18 });
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry, 28), edgeMaterial);
+  mesh.add(edges);
 
   return mesh;
 }
