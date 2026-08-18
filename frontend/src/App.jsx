@@ -6,7 +6,6 @@ import {
   warmHowToPlayAssets
 } from "./components/FrostLoadingScreen.jsx";
 import { AudioToggle } from "./components/AudioToggle.jsx";
-import { ArcticKingdomsLanding } from "./arctic/ArcticKingdomsLanding.jsx";
 import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { GameLibraryScreen } from "./screens/GameLibraryScreen.jsx";
 import { GamePreviewScreen } from "./screens/GamePreviewScreen.jsx";
@@ -124,7 +123,7 @@ export default function App() {
   function exitToLibrary() { setSelectedGameId(null); syncGameQuery(null); goTo("library"); }
   function resumeRoom(nextRoom) { setRoom(nextRoom); if (nextRoom.status === "finished") return goTo("results"); if (nextRoom.status === "playing") return goTo("game"); if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return goTo("waiting"); return goTo("team-select"); }
 
-  if (screen === "kingdoms") return withAppChrome(<ArcticKingdomsLanding onSelectGame={selectCatalogGame} />);
+  if (screen === "kingdoms") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
   if (screen === "library") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
   if (screen === "nine-ice-forts") return withAppChrome(<NineIceFortsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
   if (screen === "four-wing-ice-hunt") return withAppChrome(<FourWingIceHuntApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);

@@ -56,11 +56,14 @@ export function GameLibraryScreen({ onSelectGame }) {
       <GameEnvironment theme={selectedGame.theme} />
 
       <header className="arctic-game-world__masthead">
-        <a className="arctic-game-world__wordmark" href="/" aria-label="Arctic Game Kingdoms home">
-          <span>PROJECT</span>
-          <strong>ARCTIC GAME KINGDOMS</strong>
+        <a className="arctic-game-world__wordmark" href="/" aria-label="Arctic Dominion home">
+          <span>THE FROZEN ARCHIVE</span>
+          <strong>ARCTIC DOMINION</strong>
         </a>
-        <p className="arctic-game-world__instruction">DRAG · SCROLL · ARROW KEYS</p>
+        <div className="arctic-game-world__masthead-meta">
+          <span>21 PRESERVED KINGDOMS</span>
+          <p className="arctic-game-world__instruction">DRAG · SCROLL · ARROW KEYS</p>
+        </div>
       </header>
 
       <div className="arctic-game-world__content">
