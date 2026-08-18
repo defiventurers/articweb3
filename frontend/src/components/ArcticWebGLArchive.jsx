@@ -212,12 +212,17 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
     boxes.forEach((box) => scene.add(box));
 
     function resize() {
-      const width = mount.clientWidth || 1;
-      const height = mount.clientHeight || 1;
+      const bounds = mount.getBoundingClientRect();
+      const width = Math.max(1, Math.round(bounds.width));
+      const height = Math.max(1, Math.round(bounds.height));
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
       renderer.setSize(width, height, false);
     }
+
+    const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(resize) : null;
+    resizeObserver?.observe(mount);
 
     function applyBoxTargets(elapsed) {
       boxes.forEach((box, index) => {
@@ -288,6 +293,7 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
     renderer.domElement.addEventListener("pointercancel", onPointerUp);
     window.addEventListener("resize", resize);
     resize();
+    window.requestAnimationFrame(resize);
 
     function animate() {
       if (disposed) return;
@@ -307,6 +313,7 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
     return () => {
       disposed = true;
       window.cancelAnimationFrame(frameId);
+      resizeObserver?.disconnect();
       window.removeEventListener("resize", resize);
       renderer.domElement.removeEventListener("pointerdown", onPointerDown);
       renderer.domElement.removeEventListener("pointermove", onPointerMove);
