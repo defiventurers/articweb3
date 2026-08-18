@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-const boxAssetPath = (gameId) => `/assets/games/${gameId}/box.webp`;
+const BOX_ART_VERSION = "3b712af";
+const boxAssetPath = (gameId) => `/assets/games/${gameId}/box.webp?v=${BOX_ART_VERSION}`;
 
 export function GameBox({ game, position = "selected", priority = false }) {
   const [imageFailed, setImageFailed] = useState(false);

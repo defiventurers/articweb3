@@ -1,3 +1,5 @@
+import { boxAssetPath } from "./GameBox.jsx";
+
 export function GameCollectionStrip({ games, selectedIndex, onSelectIndex }) {
   return (
     <nav className="game-collection-strip" aria-label="Arctic Dominion game collection">
@@ -20,7 +22,17 @@ export function GameCollectionStrip({ games, selectedIndex, onSelectIndex }) {
                 onClick={() => onSelectIndex(index)}
               >
                 <span className="game-collection-strip__thumb" aria-hidden="true">
-                  <img src={`/assets/games/${game.id}/box.webp`} alt="" loading={index < 7 ? "eager" : "lazy"} decoding="async" />
+                  <img
+                    src={boxAssetPath(game.id)}
+                    alt=""
+                    loading={index < 7 ? "eager" : "lazy"}
+                    decoding="async"
+                    onError={(event) => {
+                      event.currentTarget.hidden = true;
+                      event.currentTarget.parentElement.classList.add("is-failed");
+                    }}
+                  />
+                  <span className="game-collection-strip__thumb-fallback">{game.mark}</span>
                   <span className="game-collection-strip__thumb-shine" />
                 </span>
                 <span className="game-collection-strip__number">{String(index + 1).padStart(2, "0")}</span>
