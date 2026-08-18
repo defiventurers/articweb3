@@ -416,3 +416,49 @@
     align-self: end;
   }
 }
+
+/* Fix 3: isolate the mobile product viewport from the information panel. */
+@media (max-width: 760px) {
+  .arctic-game-world--webgl .arctic-webgl-archive {
+    inset: 4.2rem 0 auto;
+    height: min(40dvh, 28rem);
+  }
+
+  .arctic-game-world--webgl .arctic-game-world__content {
+    min-height: calc(100dvh - 4rem);
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    align-content: start;
+    gap: .25rem;
+    padding: 39dvh 1rem 6.8rem;
+  }
+
+  .arctic-game-world--webgl .game-info {
+    align-self: start;
+    width: 100%;
+    padding: .95rem .85rem 1rem;
+    border: 1px solid rgba(var(--accent-rgb), .28);
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba(3, 17, 28, .84), rgba(3, 17, 28, .96));
+    box-shadow: 0 16px 34px rgba(0, 0, 0, .3), inset 0 1px rgba(255, 255, 255, .05);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .arctic-game-world--webgl .game-info::before {
+    margin: 0 auto .72rem;
+  }
+
+  .arctic-game-world--webgl .game-info__counter {
+    position: static;
+    margin: 0 0 .65rem;
+    transform: none;
+  }
+
+  .arctic-game-world--webgl .game-navigation {
+    align-self: center;
+    justify-self: center;
+    width: 100%;
+    padding-top: .35rem;
+  }
+}
