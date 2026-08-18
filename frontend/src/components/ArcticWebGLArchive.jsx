@@ -105,11 +105,13 @@ function createIceStage(scene) {
 }
 
 function createBox(game, textureLoader, onTextureLoaded) {
-  const geometry = new THREE.BoxGeometry(1.76, 2.38, 0.38);
-  const spine = createMaterial(0x0b1d2f, 0.58, 0.12);
-  const top = createMaterial(0x19374c, 0.5, 0.18);
-  const bottom = createMaterial(0x071524, 0.7, 0.08);
-  const front = new THREE.MeshStandardMaterial({ color: 0x173451, roughness: 0.48, metalness: 0.08 });
+  // The source artwork is already a finished 3/4 product render. Keep only
+  // enough depth for a physical slab and avoid a second visible box angle.
+  const geometry = new THREE.BoxGeometry(1.76, 2.38, 0.1);
+  const spine = createMaterial(0x081827, 0.64, 0.08);
+  const top = createMaterial(0x102b40, 0.58, 0.12);
+  const bottom = createMaterial(0x06121f, 0.72, 0.05);
+  const front = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const materials = [spine, spine, top, bottom, front, spine];
   const mesh = new THREE.Mesh(geometry, materials);
   mesh.castShadow = true;
@@ -123,6 +125,8 @@ function createBox(game, textureLoader, onTextureLoaded) {
     (texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.anisotropy = 4;
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
       front.map = texture;
       front.color.setHex(0xffffff);
       front.needsUpdate = true;
@@ -132,17 +136,9 @@ function createBox(game, textureLoader, onTextureLoaded) {
     () => onTextureLoaded?.()
   );
 
-  const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x9de9ee, transparent: true, opacity: 0.42 });
-  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgeMaterial);
-  mesh.add(edges);
-
-  const frost = new THREE.Mesh(
-    new THREE.BoxGeometry(1.84, 0.055, 0.44),
-    new THREE.MeshStandardMaterial({ color: 0xd6f6f6, transparent: true, opacity: 0.72, roughness: 0.45 })
-  );
-  frost.position.y = 1.19;
-  frost.position.z = 0.01;
-  mesh.add(frost);
+    const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x75cfd9, transparent: true, opacity: 0.2 });
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgeMaterial);
+    mesh.add(edges);
 
   return mesh;
 }
