@@ -184,6 +184,8 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.setClearColor(0x03111f, 1);
     mount.appendChild(renderer.domElement);
+    renderer.domElement.style.touchAction = "none";
+    renderer.domElement.style.cursor = "grab";
     renderer.domElement.setAttribute("aria-label", "Interactive 3D Arctic Dominion board-game archive");
     renderer.domElement.setAttribute("role", "img");
     onReady?.(true);
