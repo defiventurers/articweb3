@@ -122,8 +122,10 @@ function createBox(game, textureLoader, onTextureLoaded) {
     color: 0xffffff,
     roughness: 0.72,
     metalness: 0.02,
-    emissive: 0x12304d,
-    emissiveIntensity: 0.42,
+    // Neutral emissive contribution keeps the printed RGB values vivid instead
+    // of tinting the artwork toward the scene's blue-gray palette.
+    emissive: 0xffffff,
+    emissiveIntensity: 0.72,
   });
   const materials = [spine, spine, top, bottom, front, spine];
   const mesh = new THREE.Mesh(geometry, materials);
@@ -143,7 +145,7 @@ function createBox(game, textureLoader, onTextureLoaded) {
       front.map = texture;
       front.emissiveMap = texture;
       front.color.setHex(0xffffff);
-      front.emissiveIntensity = 0.42;
+      front.emissiveIntensity = 0.72;
       front.needsUpdate = true;
       onTextureLoaded?.();
     },
@@ -179,7 +181,7 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x03111f);
     // Keep the distant archive atmospheric without washing the cover art into blue-gray.
-    scene.fog = new THREE.FogExp2(0x062033, 0.032);
+    scene.fog = new THREE.FogExp2(0x062033, 0.018);
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
     camera.position.set(0, 0.55, 8.6);
 
@@ -202,23 +204,23 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
     renderer.domElement.setAttribute("role", "img");
     onReady?.(true);
 
-    const ambient = new THREE.HemisphereLight(0x9bd9f2, 0x081a2c, 1.75);
+    const ambient = new THREE.HemisphereLight(0xb7e8ff, 0x0b2238, 2.05);
     scene.add(ambient);
-    const moon = new THREE.DirectionalLight(0xd5f2ff, 2.8);
+    const moon = new THREE.DirectionalLight(0xe5f7ff, 3.2);
     moon.position.set(-4, 8, 5);
     moon.castShadow = true;
     moon.shadow.mapSize.set(1024, 1024);
     scene.add(moon);
-    const cyan = new THREE.PointLight(0x4cf5e4, 6.8, 11, 2);
+    const cyan = new THREE.PointLight(0x4cf5e4, 8.2, 11, 2);
     cyan.position.set(0, 2.6, 0.8);
     scene.add(cyan);
-    const gold = new THREE.PointLight(0xf2b76b, 2.8, 8, 2);
+    const gold = new THREE.PointLight(0xf2b76b, 3.3, 8, 2);
     gold.position.set(-3.4, 0.1, 1.6);
     scene.add(gold);
 
     // Camera-side fill restores readable front-cover color while leaving the
     // moonlight, bevel highlights, and box-to-box shadows visibly dimensional.
-    const frontFill = new THREE.DirectionalLight(0x9edcff, 1.35);
+    const frontFill = new THREE.DirectionalLight(0xb9ebff, 2.35);
     frontFill.position.set(0.8, 1.8, 6.5);
     frontFill.target.position.set(0, 0.6, 0);
     scene.add(frontFill, frontFill.target);
