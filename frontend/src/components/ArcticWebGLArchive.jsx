@@ -62,51 +62,6 @@ function createSnow(scene) {
   return snow;
 }
 
-function createIceStage(scene) {
-  const stage = new THREE.Group();
-  const floor = new THREE.Mesh(
-    new THREE.CircleGeometry(10.5, 64),
-    new THREE.MeshStandardMaterial({ color: 0x0b263d, roughness: 0.56, metalness: 0.2 })
-  );
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = -0.75;
-  floor.scale.set(1.42, 0.78, 1);
-  floor.receiveShadow = true;
-  stage.add(floor);
-
-  const iceRing = new THREE.Mesh(
-    new THREE.RingGeometry(4.1, 4.17, 72),
-    new THREE.MeshBasicMaterial({ color: 0x72eff4, transparent: true, opacity: 0.28, side: THREE.DoubleSide })
-  );
-  iceRing.rotation.x = -Math.PI / 2;
-  iceRing.position.y = -0.72;
-  stage.add(iceRing);
-
-  const pedestal = new THREE.Mesh(
-    new THREE.CylinderGeometry(1.55, 1.9, 0.34, 48),
-    new THREE.MeshStandardMaterial({ color: 0x173e56, roughness: 0.34, metalness: 0.18 })
-  );
-  pedestal.position.y = -0.56;
-  pedestal.castShadow = true;
-  pedestal.receiveShadow = true;
-  stage.add(pedestal);
-
-  for (let index = 0; index < 9; index += 1) {
-    const angle = (index / 9) * TAU;
-    const shard = new THREE.Mesh(
-      new THREE.ConeGeometry(0.12 + (index % 3) * 0.035, 0.85 + (index % 2) * 0.28, 5),
-      new THREE.MeshStandardMaterial({ color: index % 2 ? 0x72dbe4 : 0x7d8cff, roughness: 0.28, metalness: 0.12, transparent: true, opacity: 0.7 })
-    );
-    shard.position.set(Math.cos(angle) * 4.5, -0.18, Math.sin(angle) * 2.45 - 0.85);
-    shard.rotation.z = Math.sin(angle) * 0.22;
-    shard.castShadow = true;
-    stage.add(shard);
-  }
-
-  scene.add(stage);
-  return stage;
-}
-
 function createBox(game, textureLoader, onTextureLoaded) {
   // The source artwork is now a rectified front cover. One shared physical
   // box rig creates the only perspective: fixed proportions, bevel, depth,
@@ -214,7 +169,6 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
 
     const aurora = createAurora(scene);
     const snow = createSnow(scene);
-    const stage = createIceStage(scene);
     const textureLoader = new THREE.TextureLoader();
     const boxes = games.map((game) => createBox(game, textureLoader));
     boxes.forEach((box) => scene.add(box));
@@ -307,7 +261,6 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
       if (disposed) return;
       const elapsed = (performance.now() - startedAt) / 1000;
       applyBoxTargets(elapsed);
-      stage.rotation.y = reducedMotion ? 0 : Math.sin(elapsed * 0.08) * 0.012;
       aurora.position.x = reducedMotion ? 0 : Math.sin(elapsed * 0.06) * 0.12;
       aurora.position.y = reducedMotion ? 0 : Math.cos(elapsed * 0.11) * 0.035;
       snow.rotation.y = reducedMotion ? 0 : elapsed * 0.012;
