@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GameCarousel, wrapIndex } from "../components/GameCarousel.jsx";
 import { ArcticWebGLArchive } from "../components/ArcticWebGLArchive.jsx";
+import { ArcticFocalStickerLayer } from "../components/ArcticFocalStickerLayer.jsx";
 import { GameCollectionStrip } from "../components/GameCollectionStrip.jsx";
 import { GameEnvironment } from "../components/GameEnvironment.jsx";
 import { GameInfo } from "../components/GameInfo.jsx";
@@ -76,6 +77,15 @@ export function GameLibraryScreen({ onSelectGame }) {
           selectedIndex={selectedIndex}
           onSelectIndex={selectIndex}
           onReady={handleWebglReady}
+          reducedMotion={reducedMotion}
+        />
+      )}
+
+      {webglReady === true && (
+        <ArcticFocalStickerLayer
+          gameId={selectedGame.id}
+          selectedIndex={selectedIndex}
+          totalGames={GAME_CATALOG.length}
           reducedMotion={reducedMotion}
         />
       )}

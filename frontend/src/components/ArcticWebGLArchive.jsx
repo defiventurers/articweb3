@@ -190,15 +190,15 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
       boxes.forEach((box, index) => {
         const offset = index - selectedIndexRef.current;
         const wrappedOffset = ((offset + games.length + Math.floor(games.length / 2)) % games.length) - Math.floor(games.length / 2);
-        const distance = clamp(wrappedOffset, -3, 3);
+        const distance = clamp(wrappedOffset, -2, 2);
         const absolute = Math.abs(distance);
         const selected = distance === 0;
-        const targetX = distance * (selected ? 0 : 2.15) + Math.sin(yawRef.current) * (selected ? 0.14 : 0.05);
+        const targetX = distance * (selected ? 0 : 2.42) + Math.sin(yawRef.current) * (selected ? 0.14 : 0.05);
         const targetY = selected ? 0.42 : 0.16 + Math.max(0, 0.12 - absolute * 0.03);
-        const targetZ = selected ? 0.2 : -0.65 - absolute * 0.34;
-        const targetScale = selected ? 1.02 : Math.max(0.43, 0.78 - absolute * 0.1);
-        const targetRotationY = selected ? yawRef.current : (distance > 0 ? -0.28 : 0.28) + yawRef.current * 0.35;
-        const ease = reducedMotion ? 1 : 0.11;
+        const targetZ = selected ? 0.32 : -0.86 - absolute * 0.42;
+        const targetScale = selected ? 1.08 : Math.max(0.48, 0.82 - absolute * 0.14);
+        const targetRotationY = selected ? yawRef.current * 0.82 : (distance > 0 ? -0.31 : 0.31) + yawRef.current * 0.35;
+        const ease = reducedMotion ? 1 : selected ? 0.14 : 0.12;
         box.position.x += (targetX - box.position.x) * ease;
         box.position.y += (targetY - box.position.y) * ease;
         box.position.z += (targetZ - box.position.z) * ease;
@@ -208,7 +208,7 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
         box.rotation.y += (targetRotationY - box.rotation.y) * ease;
         const targetRotationX = selected ? Math.sin(elapsed * 0.45) * 0.008 : 0.04;
         box.rotation.x += (targetRotationX - box.rotation.x) * ease;
-        box.visible = absolute <= 3;
+        box.visible = absolute <= 2;
       });
     }
 

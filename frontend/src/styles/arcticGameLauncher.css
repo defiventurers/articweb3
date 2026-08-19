@@ -638,6 +638,83 @@
   display: none;
 }
 
+/* Figma-style focal artwork: a transparent subject layer floats above the WebGL
+   rail, but remains below the centered information veil so the bright covers stay
+   untouched. */
+.arctic-focal-sticker-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.arctic-game-world.arctic-game-world--webgl .arctic-focal-sticker-layer {
+  inset: 0 0 clamp(10rem, 22vh, 14rem);
+  isolation: isolate;
+}
+
+.arctic-focal-sticker-set {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --sticker-direction: 1;
+}
+
+.arctic-focal-sticker-set[data-direction="backward"] { --sticker-direction: -1; }
+
+.arctic-focal-sticker__art {
+  position: absolute;
+  top: var(--sticker-y);
+  left: var(--sticker-x);
+  width: var(--sticker-size);
+  transform: translate(-50%, -50%) rotate(var(--sticker-rotate)) scale(.84) translateX(calc(var(--sticker-direction) * 2.5rem));
+  transform-origin: center;
+  opacity: 0;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 1.2rem 1.25rem rgba(0, 6, 16, .42)) drop-shadow(0 0 .55rem rgba(132, 227, 227, .18));
+  transition: transform 560ms cubic-bezier(.16, 1.12, .3, 1), opacity 250ms ease;
+}
+
+.arctic-focal-sticker__art img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.arctic-focal-sticker-set--settled .arctic-focal-sticker__art {
+  transform: translate(-50%, -50%) rotate(var(--sticker-rotate)) scale(1);
+  opacity: 1;
+  animation: arctic-focal-sticker-float 5.8s ease-in-out infinite;
+  animation-delay: var(--sticker-delay);
+}
+
+.arctic-focal-sticker-set--exiting .arctic-focal-sticker__art {
+  transform: translate(-50%, -50%) rotate(var(--sticker-rotate)) scale(.86) translateX(calc(var(--sticker-direction) * -2.5rem));
+  opacity: 0;
+  transition-duration: 360ms;
+}
+
+.arctic-focal-sticker__art[data-reduced-motion="true"] {
+  animation: none !important;
+  transition: none !important;
+}
+
+@keyframes arctic-focal-sticker-float {
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: -.45rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arctic-focal-sticker__art,
+  .arctic-focal-sticker-set--settled .arctic-focal-sticker__art {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 @media (max-width: 760px) {
   .arctic-game-world.arctic-game-world--webgl {
     min-height: 100dvh;
@@ -652,6 +729,17 @@
   .arctic-game-world.arctic-game-world--webgl .arctic-webgl-archive {
     inset: 4.2rem 0 auto;
     height: min(38dvh, 26rem);
+  }
+
+  .arctic-game-world.arctic-game-world--webgl .arctic-focal-sticker-layer {
+    inset: 4.2rem 0 auto;
+    height: min(38dvh, 26rem);
+  }
+
+  .arctic-focal-sticker__art {
+    top: var(--sticker-mobile-y, var(--sticker-y));
+    left: var(--sticker-mobile-x, var(--sticker-x));
+    width: var(--sticker-mobile-size, var(--sticker-size));
   }
 
   .arctic-game-world.arctic-game-world--webgl .arctic-game-world__content {
