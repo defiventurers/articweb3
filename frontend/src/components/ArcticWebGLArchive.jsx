@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
-
+import { getPreloadedImage } from "./FrostLoadingScreen.jsx";
 
 const TAU = Math.PI * 2;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -74,7 +74,9 @@ function createBox(game, textureLoader, onTextureLoaded) {
   // The rectified front master is printed artwork, not a light source. Keep
   // it unlit so the generated cover colors remain exact; the bevel, spine,
   // top, bottom, shadows, and ice stage still receive real scene lighting.
-  const front = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  // Use a dark Arctic placeholder during the short interval before artwork
+  // binds. A white material makes any texture race look like a broken card.
+  const front = new THREE.MeshBasicMaterial({ color: 0x0b2a42 });
   const materials = [spine, spine, top, bottom, front, spine];
   const mesh = new THREE.Mesh(geometry, materials);
   mesh.castShadow = true;
@@ -83,21 +85,32 @@ function createBox(game, textureLoader, onTextureLoaded) {
   mesh.userData.baseMaterials = materials;
   mesh.userData.isArchiveBox = true;
 
-  textureLoader.load(
-    frontAssetPath(game.id),
-    (texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.anisotropy = 4;
-      texture.minFilter = THREE.LinearMipmapLinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-      front.map = texture;
-      front.color.setHex(0xffffff);
-      front.needsUpdate = true;
-      onTextureLoaded?.();
-    },
-    undefined,
-    () => onTextureLoaded?.()
-  );
+  const applyCoverTexture = (texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = 4;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.needsUpdate = true;
+    front.map = texture;
+    front.color.setHex(0xffffff);
+    front.needsUpdate = true;
+    onTextureLoaded?.();
+  };
+
+  const source = frontAssetPath(game.id);
+  const preloadedImage = getPreloadedImage(source);
+  if (preloadedImage) {
+    // FrostLoadingScreen has already decoded this exact image. Binding the
+    // existing element avoids a second TextureLoader/network/decode race.
+    applyCoverTexture(new THREE.Texture(preloadedImage));
+  } else {
+    textureLoader.load(
+      source,
+      applyCoverTexture,
+      undefined,
+      () => onTextureLoaded?.()
+    );
+  }
 
   const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x75cfd9, transparent: true, opacity: 0.18 });
   const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry, 28), edgeMaterial);
@@ -151,7 +164,6 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
     renderer.domElement.style.cursor = "grab";
     renderer.domElement.setAttribute("aria-label", "Interactive 3D Arctic Dominion board-game archive");
     renderer.domElement.setAttribute("role", "img");
-    onReady?.(true);
 
     const ambient = new THREE.HemisphereLight(0x8dc7e6, 0x061321, 1.4);
     scene.add(ambient);
@@ -170,8 +182,20 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
     const aurora = createAurora(scene);
     const snow = createSnow(scene);
     const textureLoader = new THREE.TextureLoader();
-    const boxes = games.map((game) => createBox(game, textureLoader));
+    let settledTextures = 0;
+    let readinessQueued = false;
+    const reportTextureSettled = () => {
+      settledTextures += 1;
+      if (settledTextures >= games.length && !readinessQueued) {
+        readinessQueued = true;
+        Promise.resolve().then(() => {
+          if (!disposed) onReady?.(true);
+        });
+      }
+    };
+    const boxes = games.map((game) => createBox(game, textureLoader, reportTextureSettled));
     boxes.forEach((box) => scene.add(box));
+    if (games.length === 0) onReady?.(true);
 
     function resize() {
       const bounds = mount.getBoundingClientRect();

@@ -45,6 +45,11 @@ const MIN_VISIBLE_MS = 850;
 const ASSET_TIMEOUT_MS = 15000;
 const PRELOAD_CONCURRENCY = 6;
 const PRELOAD_CACHE = new Map();
+const PRELOADED_IMAGE_CACHE = new Map();
+
+export function getPreloadedImage(src) {
+  return PRELOADED_IMAGE_CACHE.get(src) || null;
+}
 
 export function FrostLoadingScreen({ onReady }) {
   const [loaded, setLoaded] = useState(0);
@@ -239,6 +244,7 @@ function preloadImage(src) {
       if (settled) return;
       settled = true;
       window.clearTimeout(timer);
+      if (status === "loaded") PRELOADED_IMAGE_CACHE.set(src, image);
       resolve({ src, type: "image", status });
     };
 
