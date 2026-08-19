@@ -1,22 +1,41 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import PUBLIC_ASSETS from "virtual:arctic-public-assets";
-
-const REMOTE_PIECE_ASSET_BASE =
-  "https://raw.githubusercontent.com/defiventurers/chaturanga-game/36d8ee9ae33fa08a21ba3d644b6053b9e13273e4/public/assets/arctic/pieces";
+import { GAME_CATALOG } from "../data/gameCatalog.js";
 
 const DESKTOP_MEDIA = "(min-width: 900px) and (orientation: landscape)";
-const PIECE_COLORS = ["red", "blue", "green", "pink"];
-const PIECE_TYPES = ["snow-guard", "icebreaker", "war-mammoth", "aurora-unicorn", "frost-king"];
-const REMOTE_PIECE_ASSETS = PIECE_COLORS.flatMap((color) =>
-  PIECE_TYPES.map((piece) => `${REMOTE_PIECE_ASSET_BASE}/${color}-${piece}.png`)
+const LANDING_BACKGROUND_ASSET = "/assets/arctic-dominion-citadel-final-1658x949.png";
+const LANDING_COVER_ASSETS = GAME_CATALOG.map(
+  (game) => `/assets/games/${game.id}/front.webp?v=front-1`
+);
+const LANDING_STICKER_ASSETS = [
+  "/assets/stickers/arctic-dominion/ruler-penguin.png",
+  "/assets/stickers/aurora-vulture/aurora-vulture.png",
+  "/assets/stickers/fishflow/fisher-penguin-fish.png",
+  "/assets/stickers/ruma-ice-puzzle/explorer-tiles.png",
+  "/assets/stickers/aurora-ganjifa-academy/scholar-cards.png"
+];
+const LANDING_AMBIENT_ASSETS = [
+  "/assets/artic/pieces/blue-icebreaker.webp",
+  "/assets/artic/pieces/red-snow-guard.webp",
+  "/assets/artic/pieces/green-frost-king.webp",
+  "/assets/artic/pieces/pink-aurora-unicorn.webp"
+];
+const LANDING_CRITICAL_ASSETS = [
+  LANDING_BACKGROUND_ASSET,
+  ...LANDING_COVER_ASSETS,
+  ...LANDING_STICKER_ASSETS,
+  ...LANDING_AMBIENT_ASSETS
+];
+const LANDING_CRITICAL_ASSET_PATHS = new Set(
+  LANDING_CRITICAL_ASSETS.map((src) => src.split("?", 1)[0])
 );
 
 const STATUS_LINES = [
   "Opening the frozen gates...",
   "Summoning penguin kingdoms...",
-  "Carving the ice battlefield...",
-  "Preparing Dominion Dice...",
-  "Caching battle music and effects...",
+  "Loading the Dominion archive...",
+  "Preparing game covers and focal art...",
+  "Warming the Arctic stage...",
   "Finalizing Arctic Dominion..."
 ];
 
@@ -68,6 +87,8 @@ export function FrostLoadingScreen({ onReady }) {
         readyCalled.current = true;
         window.__ARCTIC_PRELOAD_REPORT__ = results;
         window.__ARCTIC_PUBLIC_ASSET_COUNT__ = PUBLIC_ASSETS.length;
+        window.__ARCTIC_CRITICAL_ASSET_COUNT__ = criticalAssets.length;
+        window.__ARCTIC_PRELOAD_MANIFEST__ = "landing-critical-v1";
         onReady?.();
       }, remainingMs);
     }
@@ -139,7 +160,12 @@ export function FrostRouteLoader({ label = "Loading frost chamber..." }) {
 }
 
 export function warmSecondaryAssets() {
-  runWhenIdle(() => preloadWithConcurrency(PUBLIC_ASSETS, PRELOAD_CONCURRENCY));
+  runWhenIdle(() => {
+    const assets = PUBLIC_ASSETS.filter(
+      (src) => !LANDING_CRITICAL_ASSET_PATHS.has(src.split("?", 1)[0])
+    );
+    preloadWithConcurrency(assets, PRELOAD_CONCURRENCY);
+  });
 }
 
 export function warmGameAssets() {
@@ -159,18 +185,15 @@ export function warmHowToPlayAssets() {
 }
 
 function getCriticalAssets() {
-  const localAssets = [...new Set(PUBLIC_ASSETS)];
-  const remoteAssets = REMOTE_PIECE_ASSETS.filter((src) => !localAssets.includes(src));
-
-  // Every file under public/assets is included for both mobile and desktop.
-  // Desktop detection is retained only for diagnostics and future prioritization.
+  // The first screen needs only the background, current front-facing game covers,
+  // focal artwork, and the small ambient piece set. Everything else is warmed later.
   if (isDesktopLandscape()) {
     window.__ARCTIC_PRELOAD_DEVICE__ = "desktop";
   } else if (typeof window !== "undefined") {
     window.__ARCTIC_PRELOAD_DEVICE__ = "mobile";
   }
 
-  return [...localAssets, ...remoteAssets];
+  return [...new Set(LANDING_CRITICAL_ASSETS)];
 }
 
 async function preloadWithConcurrency(assets, concurrency, onProgress) {

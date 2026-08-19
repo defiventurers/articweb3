@@ -42,10 +42,10 @@ const REVEAL_EFFECTS = {
 
 function defaultArtwork(gameId) {
   return {
-    frontArtwork: null,
+    frontArtwork: `/assets/games/${gameId}/front.webp?v=front-1`,
     sideArtwork: null,
     topArtwork: null,
-    replacementPath: `/assets/boxes/${gameId}/`
+    replacementPath: null
   };
 }
 
