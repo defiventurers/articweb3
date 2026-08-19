@@ -116,7 +116,10 @@ function createBox(game, textureLoader, onTextureLoaded) {
   const spine = createMaterial(0x081827, 0.66, 0.08);
   const top = createMaterial(0x15374c, 0.58, 0.12);
   const bottom = createMaterial(0x06121f, 0.74, 0.05);
-  const front = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.72, metalness: 0.02 });
+  // The rectified front master is printed artwork, not a light source. Keep
+  // it unlit so the generated cover colors remain exact; the bevel, spine,
+  // top, bottom, shadows, and ice stage still receive real scene lighting.
+  const front = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const materials = [spine, spine, top, bottom, front, spine];
   const mesh = new THREE.Mesh(geometry, materials);
   mesh.castShadow = true;
@@ -167,8 +170,12 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
     let disposed = false;
     const startedAt = performance.now();
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x03111f);
-    scene.fog = new THREE.FogExp2(0x062033, 0.055);
+    // Keep the WebGL stage transparent so the landing-page environment can show
+    // through without becoming a color wash over the printed box artwork.
+    scene.background = null;
+    // No fog over the product rail: the supplied cover masters should retain
+    // their original contrast and brightness at every carousel position.
+    scene.fog = null;
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
     camera.position.set(0, 0.55, 8.6);
 
@@ -183,7 +190,7 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.setClearColor(0x03111f, 1);
+    renderer.setClearColor(0x03111f, 0);
     mount.appendChild(renderer.domElement);
     renderer.domElement.style.touchAction = "none";
     renderer.domElement.style.cursor = "grab";
