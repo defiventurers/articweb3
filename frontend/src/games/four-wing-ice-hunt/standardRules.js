@@ -25,8 +25,8 @@ export const NODES = Object.freeze([
   { id: "leopard-nw", x: 8, y: 8, zone: "entry", outside: true }, { id: "leopard-se", x: 92, y: 92, zone: "entry", outside: true }
 ]);
 
-const centralRows = [0, 1, 3, 4].map((row) => [0, 1, 2, 3, 4].map((col) => `c${col}${row}`));
-const centralCols = [0, 1, 3, 4].map((col) => [0, 1, 2, 3, 4].map((row) => `c${col}${row}`));
+const centralRows = [0, 1, 2, 3, 4].map((row) => [0, 1, 2, 3, 4].map((col) => `c${col}${row}`));
+const centralCols = [0, 1, 2, 3, 4].map((col) => [0, 1, 2, 3, 4].map((row) => `c${col}${row}`));
 const REFERENCE_LINES = [
   ...centralRows,
   ...centralCols,
@@ -34,10 +34,10 @@ const REFERENCE_LINES = [
   ["lOC", "lIC", "c02", "c12", "c22", "c32", "c42", "rIC", "rOC"],
   ["c00", "c11", "c22", "c33", "c44"], ["c40", "c31", "c22", "c13", "c04"],
   ["c02", "c11", "c20"], ["c20", "c31", "c42"], ["c02", "c13", "c24"], ["c42", "c33", "c24"],
-  ["c31", "c20", "tIL", "tOL"], ["c11", "c20", "tIR", "tOR"], ["tIL", "tIC", "tIR"], ["tOL", "tOC", "tOR"],
-  ["c33", "c24", "bIL", "bOL"], ["c13", "c24", "bIR", "bOR"], ["bIL", "bIC", "bIR"], ["bOL", "bOC", "bOR"],
-  ["c13", "c02", "lIU", "lOU"], ["c11", "c02", "lID", "lOD"], ["lIU", "lIC", "lID"], ["lOU", "lOC", "lOD"],
-  ["c31", "c42", "rID", "rOD"], ["c33", "c42", "rIU", "rOU"], ["rIU", "rIC", "rID"], ["rOU", "rOC", "rOD"],
+  ["c31", "c20", "tIL", "tOL"], ["c11", "c20", "tIR", "tOR"], ["tIL", "tIC", "tIR"], ["tOL", "tOC", "tOR"], ["tOL", "tIL", "c20"], ["tOC", "tIC", "c20"], ["tOR", "tIR", "c20"],
+  ["c33", "c24", "bIL", "bOL"], ["c13", "c24", "bIR", "bOR"], ["bIL", "bIC", "bIR"], ["bOL", "bOC", "bOR"], ["bOL", "bIL", "c24"], ["bOC", "bIC", "c24"], ["bOR", "bIR", "c24"],
+  ["c13", "c02", "lIU", "lOU"], ["c11", "c02", "lID", "lOD"], ["lIU", "lIC", "lID"], ["lOU", "lOC", "lOD"], ["lOU", "lIU", "c02"], ["lOC", "lIC", "c02"], ["lOD", "lID", "c02"],
+  ["c31", "c42", "rID", "rOD"], ["c33", "c42", "rIU", "rOU"], ["rIU", "rIC", "rID"], ["rOU", "rOC", "rOD"], ["rOU", "rIU", "c42"], ["rOC", "rIC", "c42"], ["rOD", "rID", "c42"],
   ["leopard-nw", "c00"], ["c44", "leopard-se"]
 ];
 

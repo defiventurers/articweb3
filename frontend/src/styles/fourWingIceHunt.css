@@ -733,3 +733,29 @@
 
 .fwh-board.fwh-standard-board .fwh-node.outside-start .fwh-piece { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.56), 0 0 0 3px rgba(255, 214, 140, 0.22); }
 .fwh-board.fwh-standard-board .fwh-node.outside-start.selected { filter: drop-shadow(0 0 12px #ffffff); }
+
+/* Restored visual language: an icy physical board with realistic piece artwork, while retaining the corrected line graph above it. */
+.fwh-board.fwh-standard-board {
+  overflow: visible;
+  border: 1px solid rgba(185, 246, 255, 0.28);
+  border-radius: 28px;
+  background:
+    linear-gradient(rgba(2, 15, 28, 0.22), rgba(2, 15, 28, 0.28)),
+    url("/assets/four-wing/board-surface.png") center / cover;
+  box-shadow: 0 28px 80px rgba(0, 5, 15, 0.5), inset 0 0 45px rgba(118, 226, 255, 0.12);
+}
+
+.fwh-board.fwh-standard-board::before {
+  display: block;
+  inset: 17%;
+  border-color: rgba(201, 246, 255, 0.18);
+}
+
+.fwh-board.fwh-standard-board .fwh-board-lines { inset: 2.6%; width: 94.8%; height: 94.8%; }
+.fwh-board.fwh-standard-board .fwh-board-lines line { stroke: #dcfbff; stroke-width: 0.68; }
+.fwh-board.fwh-standard-board .fwh-node { background: rgba(42, 113, 140, 0.7); }
+.fwh-board.fwh-standard-board .fwh-piece { overflow: visible; border: 0; background: transparent; box-shadow: none; }
+.fwh-board.fwh-standard-board .fwh-piece img { width: 164%; height: 164%; object-fit: contain; transform: translate(-20%, -20%); filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.54)); pointer-events: none; }
+.fwh-board.fwh-standard-board .fwh-leopard img { width: 182%; height: 182%; transform: translate(-24%, -24%); }
+.fwh-board.fwh-standard-board .fwh-node.piece-leopards,
+.fwh-board.fwh-standard-board .fwh-node.piece-cattle { width: clamp(29px, 6.8%, 54px); }
