@@ -1,6 +1,5 @@
 import { useMemo } from "react";
-import { EDGES, NODES } from "./rules.js";
-import { getLegalActions } from "./standardRules.js";
+import { EDGES, NODES, getLegalActions } from "./standardRules.js";
 
 const NODE_BY_ID = Object.fromEntries(NODES.map((node) => [node.id, node]));
 
@@ -18,10 +17,11 @@ export function FourWingStandardBoard({ state, selectedNode, onNode, interactive
       <div className="fwh-aurora-core" aria-hidden="true" />
       {NODES.map((node) => {
         const piece = state.board[node.id];
+        if (node.outside && !piece) return null;
         const selected = selectedNode === node.id;
         const legal = legalTargets.has(node.id) || legalOrigins.has(node.id);
         const capture = captureTargets.has(node.id);
-        return <button key={node.id} type="button" role="gridcell" disabled={!interactive} className={`fwh-node ${piece ? `piece-${piece}` : "empty"} ${selected ? "selected" : ""} ${legal ? "legal" : ""} ${capture ? "capture" : ""}`} style={{ left: `${node.x}%`, top: `${node.y}%` }} onClick={() => onNode(node.id)} aria-label={`${node.id}${piece ? ` occupied by ${piece}` : " open"}${selected ? " selected" : ""}`}>
+        return <button key={node.id} type="button" role="gridcell" disabled={!interactive} className={`fwh-node ${node.outside ? "outside-start" : ""} ${piece ? `piece-${piece}` : "empty"} ${selected ? "selected" : ""} ${legal ? "legal" : ""} ${capture ? "capture" : ""}`} style={{ left: `${node.x}%`, top: `${node.y}%` }} onClick={() => onNode(node.id)} aria-label={`${node.outside ? "outside leopard entry" : node.id}${piece ? ` occupied by ${piece}` : " open"}${selected ? " selected" : ""}`}>
           {piece === "leopards" && <span className="fwh-piece fwh-leopard"><i className="ear left" /><i className="ear right" /><b>✦</b></span>}
           {piece === "cattle" && <span className="fwh-piece fwh-cattle"><i /><b>●</b></span>}
         </button>;

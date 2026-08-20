@@ -176,6 +176,66 @@
   font-style: normal;
 }
 
+/* Supplied game-box cover replaces the former generated cover artwork. */
+.fwh-art-cover {
+  isolation: isolate;
+  min-height: 100svh;
+  padding: 0;
+  background: #020a18;
+}
+
+.fwh-art-cover::before,
+.fwh-art-cover::after { display: none; }
+
+.fwh-art-cover-image {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  background: radial-gradient(circle at 50% 35%, #183c70, #020917 70%);
+}
+
+.fwh-art-cover-copy {
+  align-self: end;
+  margin-bottom: clamp(22px, 5vh, 54px);
+  padding: 12px 14px 14px;
+  border: 1px solid rgba(193, 229, 255, 0.26);
+  border-radius: 16px;
+  background: rgba(2, 12, 28, 0.78);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+.fwh-art-cover-copy p { margin-bottom: 8px; font-size: 10px; }
+
+/* A pure line-board: no decorative background dots, only reference intersections and reference connections. */
+.fwh-standard-board {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(23, 76, 103, 0.55), rgba(2, 16, 34, 0.92) 71%);
+  box-shadow: none;
+}
+
+.fwh-standard-board::before { display: none; }
+.fwh-standard-board .fwh-board-lines { inset: 1.5%; width: 97%; height: 97%; }
+.fwh-standard-board .fwh-board-lines line { stroke: #b9f7ff; stroke-width: 0.72; }
+.fwh-standard-board .fwh-aurora-core { width: 11%; background: radial-gradient(circle, rgba(126, 245, 225, 0.3), transparent 68%); }
+
+.fwh-standard-board .fwh-node.outside-start {
+  z-index: 6;
+  width: clamp(30px, 6.2%, 50px);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.fwh-standard-board .fwh-node.outside-start .fwh-piece { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.56), 0 0 0 3px rgba(255, 214, 140, 0.22); }
+.fwh-standard-board .fwh-node.outside-start.selected { filter: drop-shadow(0 0 12px #ffffff); }
+
 .fwh-menu,
 .fwh-rules {
   display: grid;
@@ -648,3 +708,28 @@
   .fwh-node.piece-cattle { width: 6.7%; }
   .fwh-node { width: 4.2%; }
 }
+
+/* Keep this at the end: it intentionally overrides the earlier legacy circular board frame. */
+.fwh-board.fwh-standard-board {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(23, 76, 103, 0.55), rgba(2, 16, 34, 0.92) 71%);
+  box-shadow: none;
+}
+
+.fwh-board.fwh-standard-board::before { display: none; }
+.fwh-board.fwh-standard-board .fwh-board-lines { inset: 1.5%; width: 97%; height: 97%; }
+.fwh-board.fwh-standard-board .fwh-board-lines line { stroke: #b9f7ff; stroke-width: 0.72; }
+.fwh-board.fwh-standard-board .fwh-aurora-core { width: 11%; background: radial-gradient(circle, rgba(126, 245, 225, 0.3), transparent 68%); }
+
+.fwh-board.fwh-standard-board .fwh-node.outside-start {
+  z-index: 6;
+  width: clamp(30px, 6.2%, 50px);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.fwh-board.fwh-standard-board .fwh-node.outside-start .fwh-piece { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.56), 0 0 0 3px rgba(255, 214, 140, 0.22); }
+.fwh-board.fwh-standard-board .fwh-node.outside-start.selected { filter: drop-shadow(0 0 12px #ffffff); }
