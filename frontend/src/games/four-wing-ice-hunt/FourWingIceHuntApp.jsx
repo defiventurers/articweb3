@@ -173,16 +173,17 @@ function RulesScreen({ onBack, onStart }) {
     <section className="fwh-rules" aria-label="Four-Wing Ice Hunt rules">
       <button className="fwh-back-pill" onClick={onBack}>← Menu</button>
       <article>
-        <p className="fwh-eyebrow">HOW TO PLAY</p><h1>Four-Wing Ice Hunt</h1>
+        <p className="fwh-eyebrow">HOW TO PLAY · FOUR-WING HUNT</p><h1>Seal every escape.</h1>
+        <p className="fwh-rules-intro">Four-Wing Hunt is an asymmetric line-board strategy game: two snow leopards hunt through the ice while a colony of twenty-four penguin colonisers builds a moving trap.</p>
         <div className="fwh-rule-grid">
-          <section><strong>1 · Open</strong><p>The leopard player places one leopard, the cattle player places one safe cattle piece, then the second leopard is placed.</p></section>
-          <section><strong>2 · Deploy</strong><p>Place one cattle piece after each leopard move. Cattle remain fixed until all twenty-four have entered play.</p></section>
-          <section><strong>3 · Move</strong><p>Every piece moves one step to an adjacent empty intersection along a printed line.</p></section>
-          <section><strong>4 · Capture</strong><p>A leopard may jump one adjacent cattle piece to the next empty point on the same line. Remove the jumped piece.</p></section>
-          <section><strong>Cattle victory</strong><p>Win by imprisoning both leopards so neither can move or capture.</p></section>
-          <section><strong>Leopard victory</strong><p>Win by capturing all twenty-four cattle pieces. Parker notes that losing eight is strategically severe, not a formal victory threshold.</p></section>
+          <section><strong>1 · Set the hunt</strong><p>Place both snow leopards on the marked opposite outer-wing starts. Place eight penguin colonisers on the highlighted central intersections. Keep the remaining sixteen as the colony reserve.</p></section>
+          <section><strong>2 · Deploy the reserve</strong><p>During deployment, the colony places one reserve penguin on any open intersection. The leopard player then takes one leopard turn. Continue until all twenty-four penguins have entered play; penguins do not make ordinary moves yet.</p></section>
+          <section><strong>3 · Follow the ice lines</strong><p>Every piece stands on an intersection. A normal move goes exactly one step to an adjacent open intersection joined by a visible line. Nearby points are not connected unless a line links them.</p></section>
+          <section><strong>4 · Hunt and capture</strong><p>A snow leopard captures by jumping a directly adjacent penguin along a legal line to the empty intersection immediately beyond it. Remove that penguin permanently. Penguins never jump or capture.</p></section>
+          <section><strong>5 · Continue the chase</strong><p>If a leopard lands after a capture and can legally jump another penguin, it must continue with that same leopard. Each landing point must be open, and a leopard can never jump the other leopard.</p></section>
+          <section><strong>6 · Win the four wings</strong><p>The snow leopards win immediately after capturing twelve or more penguins. The colony wins immediately when both leopards have no legal one-step move and no legal capture.</p></section>
         </div>
-        <div className="fwh-modern-policy"><strong>Modern digital policy</strong><span>Threefold repetition and 160 captureless movement plies produce a draw after deployment. These are platform policies, not heritage claims.</span></div>
+        <div className="fwh-modern-policy"><strong>Quick clarification</strong><span>Captured penguins never return to the board. A capture needs an empty landing point. Once a multi-capture begins, continuing legal jumps are mandatory. The digital edition records a draw only after three identical movement positions or 160 captureless movement turns.</span></div>
         <button className="fwh-rules-start" onClick={onStart}>Start as Snow Leopards</button>
       </article>
     </section>

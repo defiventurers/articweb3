@@ -201,6 +201,14 @@
   line-height: 0.95;
 }
 
+.fwh-rules-intro {
+  max-width: 720px;
+  margin: 18px 0 0;
+  color: #c3e3eb;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
 .fwh-menu-card > p:not(.fwh-eyebrow) {
   color: #c0e0e9;
   font-size: 18px;
