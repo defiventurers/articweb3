@@ -1,3 +1,4 @@
+/* Arctic Four-Wing visual language: a dark physical-ice stage, high-contrast cyan game rails, and natural snow-leopard/penguin pieces. */
 :root {
   --fwh-night: #061225;
   --fwh-deep: #08233d;
@@ -801,10 +802,22 @@
 
 .fwh-board.fwh-standard-board .fwh-board-lines .fwh-rail {
   fill: none;
-  stroke: #c9f8ff;
-  stroke-width: 1.12;
+  stroke: #d4fbff;
+  stroke-width: 1.32;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
+}
+
+.fwh-board.fwh-standard-board .fwh-board-lines .fwh-rail-court-grid {
+  stroke: #e1fdff;
+  stroke-width: 1.58;
+  opacity: 0.98;
+}
+
+.fwh-board.fwh-standard-board .fwh-board-lines .fwh-rail-reference-axis {
+  stroke: #f0feff;
+  stroke-width: 1.94;
+  opacity: 1;
 }
 
 .fwh-board.fwh-standard-board .fwh-board-lines .fwh-rail-curve { stroke-width: 1.26; }

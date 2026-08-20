@@ -1,4 +1,4 @@
-// Reference-board contract: 49 visible ice-cap nodes, four compact fan wings, and two non-dot leopard entries.
+// Arctic reference-board geometry: explicit ice rails, glowing cap nodes, penguin colony, and snow-leopard entries.
 export const FOUR_WING_STANDARD_RULESET = Object.freeze({
   gameId: "four-wing-ice-hunt",
   rulesetVersion: "four-wing-reference-1.2.0",
@@ -35,8 +35,20 @@ const DIAGONAL_LINES = [
   ["c02", "c11", "c20"], ["c20", "c31", "c42"], ["c02", "c13", "c24"], ["c42", "c33", "c24"]
 ];
 
+// These visible axes are explicitly called out in the supplied mobile markup. Listing them first gives their
+// rail class priority over the equivalent court/wing edges so they cannot fade into the ice background.
+const REQUIRED_VISIBLE_AXES = [
+  ["tOC", "tIC", "c20", "c21", "c22", "c23", "c24", "bIC", "bOC"], // 1 → 2
+  ["c02", "c12", "c22", "c32", "c42"], // 5 → 6
+  ["c04", "c14", "c24", "c34", "c44"], // 3 → 4
+  ["c02", "c03", "c04"], // 5 ↔ 3
+  ["c42", "c43", "c44"] // 6 ↔ 4
+];
+
 const straightRails = [
-  ...railsFromLines([...COURT_ROWS, ...COURT_COLUMNS, ...DIAGONAL_LINES]),
+  ...railsFromLines(REQUIRED_VISIBLE_AXES, "reference-axis"),
+  ...railsFromLines([...COURT_ROWS, ...COURT_COLUMNS], "court-grid"),
+  ...railsFromLines(DIAGONAL_LINES),
   ...wingSpokes("c20", ["tIL", "tIC", "tIR"], ["tOL", "tOC", "tOR"]),
   ...wingSpokes("c24", ["bIL", "bIC", "bIR"], ["bOL", "bOC", "bOR"]),
   ...wingSpokes("c02", ["lIU", "lIC", "lID"], ["lOU", "lOC", "lOD"]),
@@ -94,7 +106,7 @@ export function describeTurn(state) { if (state.winner) return resultTitle(state
 export function resultTitle(state) { if (state.winner === "draw") return "The hunt ends in a draw"; return state.winner === "leopards" ? "Snow Leopards win" : "The Colony wins"; }
 export function resultDetail(state) { return { "twelve-captures": "The snow leopards captured twelve penguin colonisers.", "leopards-imprisoned": "Both snow leopards have no legal move or capture.", "threefold-repetition": "The same movement position occurred three times.", "no-capture-limit": "The digital no-capture limit was reached." }[state.winReason] || "The match is complete."; }
 
-function railsFromLines(lines) { return lines.flatMap((line) => line.slice(0, -1).map((from, index) => ({ from, to: line[index + 1], kind: "straight" }))); }
+function railsFromLines(lines, kind = "straight") { return lines.flatMap((line) => line.slice(0, -1).map((from, index) => ({ from, to: line[index + 1], kind }))); }
 function wingSpokes(anchor, inner, outer) { return [...inner.map((to) => ({ from: anchor, to, kind: "straight" })), ...inner.map((from, index) => ({ from, to: outer[index], kind: "straight" }))]; }
 function fanArcs(nodes, direction, ring) { return nodes.slice(0, -1).map((from, index) => ({ from, to: nodes[index + 1], kind: "curve", curve: `${direction}-${ring}` })); }
 function dedupeRails(rails) { const seen = new Map(); rails.forEach((rail) => { const key = [rail.from, rail.to].sort().join(":"); if (!seen.has(key)) seen.set(key, rail); }); return [...seen.values()]; }
