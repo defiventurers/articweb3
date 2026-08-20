@@ -22,8 +22,8 @@ export function FourWingStandardBoard({ state, selectedNode, onNode, interactive
         const legal = legalTargets.has(node.id) || legalOrigins.has(node.id);
         const capture = captureTargets.has(node.id);
         return <button key={node.id} type="button" role="gridcell" disabled={!interactive} className={`fwh-node ${node.outside ? "outside-start" : ""} ${piece ? `piece-${piece}` : "empty"} ${selected ? "selected" : ""} ${legal ? "legal" : ""} ${capture ? "capture" : ""}`} style={{ left: `${node.x}%`, top: `${node.y}%` }} onClick={() => onNode(node.id)} aria-label={`${node.outside ? "outside leopard entry" : node.id}${piece ? ` occupied by ${piece}` : " open"}${selected ? " selected" : ""}`}>
-          {piece === "leopards" && <span className="fwh-piece fwh-leopard"><img src="/assets/four-wing/snow-leopard.png" alt="" /></span>}
-          {piece === "cattle" && <span className="fwh-piece fwh-cattle"><img src="/assets/four-wing/penguin-coloniser.png" alt="" /></span>}
+          {piece === "leopards" && <span className="fwh-piece fwh-leopard"><img src="/assets/four-wing/refined-snow-leopard.png" alt="" /></span>}
+          {piece === "cattle" && <span className="fwh-piece fwh-cattle"><img src="/assets/four-wing/retba-coloniser.png" alt="" /></span>}
         </button>;
       })}
     </div>
