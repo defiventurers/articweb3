@@ -23,7 +23,7 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByText(/Coral places a scout/i)).toBeVisible();
   });
 
-  test("Four-Wing Ice Hunt opens and follows the standard deployment order", async ({ page }) => {
+  test("Four-Wing Ice Hunt opens with the reference formation and alternates leopard then colony turns", async ({ page }) => {
     await page.goto("/?skipLoader=1&game=four-wing-ice-hunt");
     await expect(page.getByLabel("Four-Wing Ice Hunt cover")).toBeVisible();
 
@@ -32,14 +32,14 @@ test.describe("closed beta smoke", () => {
     await page.getByRole("button", { name: "Local Two Player" }).click();
     await expect(page.getByLabel("Four-Wing Ice Hunt game")).toBeVisible();
 
-    await page.getByRole("gridcell", { name: "c22 open" }).click();
-    await expect(page.getByRole("gridcell", { name: "c22 occupied by cattle" })).toBeVisible();
-    await expect(page.getByText(/Move one snow leopard from its entry point/i)).toBeVisible();
-
     await page.getByRole("gridcell", { name: "outside leopard entry occupied by leopards" }).first().click();
     await page.getByRole("gridcell", { name: "c00 open" }).click();
     await expect(page.getByRole("gridcell", { name: "c00 occupied by leopards" })).toBeVisible();
     await expect(page.getByText(/Deploy one reserve coloniser/i)).toBeVisible();
+
+    await page.getByRole("gridcell", { name: "c01 open" }).click();
+    await expect(page.getByRole("gridcell", { name: "c01 occupied by cattle" })).toBeVisible();
+    await expect(page.getByText(/Move one snow leopard/i)).toBeVisible();
   });
 
   test("Fishflow opens and resolves a complete relay-sowing turn", async ({ page }) => {
