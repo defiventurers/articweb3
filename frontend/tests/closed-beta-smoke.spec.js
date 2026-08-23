@@ -33,6 +33,8 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByLabel("Four-Wing Ice Hunt game")).toBeVisible();
     await expect(page.locator(".fwh-board-lines .fwh-rail-reference-axis")).toHaveCount(20);
     await expect(page.locator(".fwh-board-lines .fwh-rail-court-grid")).toHaveCount(24);
+    await expect(page.getByRole("gridcell", { name: "c22 open" })).toBeVisible();
+    await expect(page.getByText(/8 active · 16 reserve/i)).toBeVisible();
 
     await page.getByRole("gridcell", { name: "outside leopard entry occupied by leopards" }).first().click();
     await page.getByRole("gridcell", { name: "c00 open" }).click();

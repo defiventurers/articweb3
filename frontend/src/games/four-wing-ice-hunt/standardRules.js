@@ -4,7 +4,7 @@ export const FOUR_WING_STANDARD_RULESET = Object.freeze({
   rulesetVersion: "four-wing-reference-1.2.0",
   leopards: 2,
   cattle: 24,
-  initialCattle: 9,
+  initialCattle: 8,
   leopardWinThreshold: 12,
   repetitionLimit: 3,
   noCapturePlyLimit: 160
@@ -70,7 +70,8 @@ export const ADJACENCY = EDGES.reduce((map, [a, b]) => { map[a] = [...(map[a] ||
 const JUMP_LINES = [...COURT_ROWS, ...COURT_COLUMNS, ...DIAGONAL_LINES, ["c20", "tIC", "tOC"], ["c24", "bIC", "bOC"], ["c02", "lIC", "lOC"], ["c42", "rIC", "rOC"]];
 const JUMP_PATHS = Object.freeze(buildJumpPaths(JUMP_LINES));
 const LEOPARD_STARTS = ["leopard-nw", "leopard-se"];
-const CATTLE_STARTS = ["c11", "c21", "c31", "c12", "c22", "c32", "c13", "c23", "c33"];
+// The centre court node c22 starts open in the required eight-penguin formation.
+const CATTLE_STARTS = ["c11", "c21", "c31", "c12", "c32", "c13", "c23", "c33"];
 
 export function createStandardFourWingState({ mode = "hotseat" } = {}) {
   const board = Object.fromEntries(NODES.map((node) => [node.id, null]));
