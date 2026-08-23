@@ -3,6 +3,11 @@ import { useMemo } from "react";
 import { EDGES, NODES, RAILS, getLegalActions } from "./standardRules.js";
 
 const NODE_BY_ID = Object.fromEntries(NODES.map((node) => [node.id, node]));
+const GUIDE_LINES = [
+  ["c00", "c10", "c20", "c30", "c40"], ["c01", "c11", "c21", "c31", "c41"], ["c02", "c12", "c22", "c32", "c42"], ["c03", "c13", "c23", "c33", "c43"], ["c04", "c14", "c24", "c34", "c44"],
+  ["c00", "c01", "c02", "c03", "c04"], ["c10", "c11", "c12", "c13", "c14"], ["c20", "c21", "c22", "c23", "c24"], ["c30", "c31", "c32", "c33", "c34"], ["c40", "c41", "c42", "c43", "c44"],
+  ["tOC", "tIC", "c20"], ["c24", "bIC", "bOC"], ["lOC", "lIC", "c02"], ["c42", "rIC", "rOC"]
+];
 
 export function FourWingStandardBoard({ state, selectedNode, onNode, interactive = true }) {
   const legalActions = useMemo(() => interactive ? getLegalActions(state) : [], [interactive, state]);
@@ -11,8 +16,9 @@ export function FourWingStandardBoard({ state, selectedNode, onNode, interactive
   const captureTargets = new Set(legalActions.filter((action) => action.type === "capture").map((action) => action.to));
   return (
     <div className="fwh-board fwh-standard-board" role="grid" aria-label="Four-Wing Hunt board">
-      <svg className="fwh-board-lines" viewBox="0 0 100 100" aria-hidden="true">
+      <svg className="fwh-board-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         <defs><filter id="fwhReferenceGlow"><feGaussianBlur stdDeviation="0.48" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs>
+        {GUIDE_LINES.map((nodes, index) => <GuideLine key={nodes.join("-")} nodes={nodes} filter="url(#fwhReferenceGlow)" axis={index >= 10} />)}
         {RAILS.map((rail) => <BoardRail key={`${rail.from}-${rail.to}`} rail={rail} filter="url(#fwhReferenceGlow)" />)}
       </svg>
       <div className="fwh-aurora-core" aria-hidden="true" />
@@ -29,6 +35,11 @@ export function FourWingStandardBoard({ state, selectedNode, onNode, interactive
       })}
     </div>
   );
+}
+
+function GuideLine({ nodes, filter, axis }) {
+  const points = nodes.map((nodeId) => `${NODE_BY_ID[nodeId].x},${NODE_BY_ID[nodeId].y}`).join(" ");
+  return <polyline className={`fwh-guide-line ${axis ? "fwh-guide-axis" : "fwh-guide-court"}`} points={points} filter={filter} />;
 }
 
 function BoardRail({ rail, filter }) {

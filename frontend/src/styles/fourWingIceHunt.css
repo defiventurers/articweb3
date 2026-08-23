@@ -800,6 +800,22 @@
   height: 100%;
 }
 
+.fwh-board.fwh-standard-board .fwh-board-lines .fwh-guide-line {
+  fill: none;
+  stroke: #bdf8ff;
+  stroke-width: 2.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 1;
+  filter: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.fwh-board.fwh-standard-board .fwh-board-lines .fwh-guide-axis {
+  stroke: #eafeff;
+  stroke-width: 2.65;
+}
+
 .fwh-board.fwh-standard-board .fwh-board-lines .fwh-rail {
   fill: none;
   stroke: #d4fbff;

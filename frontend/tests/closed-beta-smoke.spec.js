@@ -31,6 +31,11 @@ test.describe("closed beta smoke", () => {
     await expect(page.getByLabel("Four-Wing Ice Hunt menu")).toBeVisible();
     await page.getByRole("button", { name: "Local Two Player" }).click();
     await expect(page.getByLabel("Four-Wing Ice Hunt game")).toBeVisible();
+    await expect(page.locator(".fwh-board-lines")).toHaveAttribute("preserveAspectRatio", "none");
+    await expect(page.locator(".fwh-board-lines .fwh-guide-line")).toHaveCount(14);
+    await expect(page.locator(".fwh-board-lines .fwh-guide-axis")).toHaveCount(4);
+    await expect(page.locator(".fwh-board-lines .fwh-guide-court").first()).toHaveCSS("stroke-width", "2.35px");
+    await expect(page.locator(".fwh-board-lines .fwh-guide-axis").first()).toHaveCSS("stroke-width", "2.65px");
     await expect(page.locator(".fwh-board-lines .fwh-rail-reference-axis")).toHaveCount(20);
     await expect(page.locator(".fwh-board-lines .fwh-rail-court-grid")).toHaveCount(24);
     await expect(page.getByRole("gridcell", { name: "c22 open" })).toBeVisible();
