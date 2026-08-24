@@ -1,9 +1,10 @@
 import { ADJACENCY, EDGES, POINTS, occupantAt } from "./rules.js";
+import { HeritageSticker } from "../../components/HeritageSticker.jsx";
 
 // Arctic Do Guti treatment: distinct physical glacial stones sit over the documented five-point blockade graph.
 const DOGUTI_STICKERS = Object.freeze({
-  blue: "/manus-storage/doguti-aurora-stone-sticker_fb998e42.png",
-  coral: "/manus-storage/doguti-coral-stone-sticker_2cc85007.png"
+  blue: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663892017223/IbhHBKNyczhKNVIu.png",
+  coral: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663892017223/tCWVAGNZwMqUeaNo.png"
 });
 
 export function TwoStonesBoard({ state, legalActions = [], selectedPieceId = null, onSelectPiece, onAction, interactive = true }) {
@@ -48,7 +49,7 @@ export function TwoStonesBoard({ state, legalActions = [], selectedPieceId = nul
               if (selectable) return onSelectPiece?.(piece.id);
             }}
           >
-            {piece ? <><img className="ts-stone-sticker" src={DOGUTI_STICKERS[piece.side]} alt="" aria-hidden="true" /><small>{piece.id.split("-").at(-1)}</small></> : <span className="ts-empty-core" />}
+            {piece ? <><HeritageSticker className="ts-stone-sticker" fallbackClassName={piece.side === "blue" ? "aurora" : "coral"} src={DOGUTI_STICKERS[piece.side]} alt="" aria-hidden="true" /><small>{piece.id.split("-").at(-1)}</small></> : <span className="ts-empty-core" />}
           </button>
         );
       })}
@@ -67,7 +68,7 @@ export function StoneDock({ side, state }) {
     <aside className={`ts-dock ${side}`}>
       <span className="ts-tribe-mark">{side === "blue" ? "❄" : "◆"}</span>
       <div><strong>{side === "blue" ? "Aurora Stones" : "Coral Stones"}</strong><small>{placed}/2 placed{mobility === null ? "" : ` · ${mobility} moves`}</small></div>
-      <div className="ts-dock-stones">{stones.map((piece) => <img key={piece.id} className={piece.point ? "on-board" : "waiting"} src={DOGUTI_STICKERS[side]} alt="" aria-hidden="true" />)}</div>
+      <div className="ts-dock-stones">{stones.map((piece) => <HeritageSticker key={piece.id} className={piece.point ? "on-board" : "waiting"} fallbackClassName={side === "blue" ? "aurora" : "coral"} src={DOGUTI_STICKERS[side]} alt="" aria-hidden="true" />)}</div>
     </aside>
   );
 }

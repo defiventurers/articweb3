@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { HeritageSticker } from "../../components/HeritageSticker.jsx";
 import {
   FINISH_PROGRESS,
   SAFE_SPACES,
@@ -13,8 +14,8 @@ import {
 
 // Arctic Pancha Keliya treatment: tactile penguin courier stickers preserve the board's semantic counter buttons.
 const RUNNER_STICKERS = Object.freeze({
-  aurora: "/manus-storage/pancha-aurora-runner-sticker_25e15750.png",
-  ember: "/manus-storage/pancha-ember-runner-sticker_33b710b9.png"
+  aurora: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663892017223/hbQphkTQyeavHhHj.png",
+  ember: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663892017223/toogtsOrWYVFLhpf.png"
 });
 
 export function GlacierTrailBoard({ state, legalActions = [], onAction, interactive = true, selectedAllocation = null }) {
@@ -62,7 +63,7 @@ export function GlacierTrailBoard({ state, legalActions = [], onAction, interact
                   onClick={() => onAction(action)}
                   aria-label={`${sideName(occupant.side)} ${pieceLabel(occupant.id)} on ${space.label}${legal ? `, legal move by ${action.value}` : ""}`}
                 >
-                  <img className="gt-runner-sticker" src={RUNNER_STICKERS[occupant.side]} alt="" aria-hidden="true" />
+                  <HeritageSticker className="gt-runner-sticker" fallbackClassName={occupant.side === "aurora" ? "aurora" : "ember"} src={RUNNER_STICKERS[occupant.side]} alt="" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -92,7 +93,7 @@ function CounterDock({ side, state, summary, actionByPiece, interactive, onActio
               onClick={() => onAction(action)}
               aria-label={`${sideName(side)} waiting ${pieceLabel(piece.id)}${action ? `, legal entry with ${action.value}` : ""}`}
             >
-              <img className="gt-home-runner-sticker" src={RUNNER_STICKERS[side]} alt="" aria-hidden="true" />
+              <HeritageSticker className="gt-home-runner-sticker" fallbackClassName={side === "aurora" ? "aurora" : "ember"} src={RUNNER_STICKERS[side]} alt="" aria-hidden="true" />
             </button>
           );
         })}

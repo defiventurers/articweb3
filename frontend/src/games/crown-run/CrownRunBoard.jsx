@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { HeritageSticker } from "../../components/HeritageSticker.jsx";
 import {
   SAFE_SPACES,
   SPACE_BY_ID,
@@ -11,8 +12,8 @@ import {
 
 // Arctic Dadu treatment: a royal fox distinguishes nakta while compact court-fox stickers represent kaangi pieces.
 const DADU_STICKERS = Object.freeze({
-  king: "/manus-storage/dadu-royal-fox-sticker_11e3d520.png",
-  standard: "/manus-storage/dadu-court-pawn-sticker_8668d9a2.png"
+  king: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663892017223/USszTSLFtQxGkizG.png",
+  standard: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663892017223/VjbNQXZntnVTVdWw.png"
 });
 
 export function CrownRunBoard({ state, selectedThrowId, onPiece, interactive = true, interactiveSide = state.currentPlayer }) {
@@ -165,7 +166,7 @@ function CrownPiece({ piece, legal = false, capture = false, interactive, onPiec
       onClick={() => onPiece(piece.id)}
       aria-label={`${sideLabel(piece.side)} ${name} on ${location}${legal ? capture ? ", legal capture" : ", legal move" : ""}`}
     >
-      <img className="cr-piece-sticker" src={DADU_STICKERS[piece.kind]} alt="" aria-hidden="true" />
+      <HeritageSticker className="cr-piece-sticker" fallbackClassName={piece.side === "aurora" ? "aurora" : "ember"} src={DADU_STICKERS[piece.kind]} alt="" aria-hidden="true" />
     </button>
   );
 }

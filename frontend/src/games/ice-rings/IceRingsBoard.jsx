@@ -1,7 +1,8 @@
 import { EDGES, NODES, NODE_BY_ID } from "./rules.js";
+import { HeritageSticker } from "../../components/HeritageSticker.jsx";
 
 // Arctic Pretwa treatment: a physical ring-guard sticker replaces symbolic CSS guards while node controls retain all move semantics.
-const PRETWA_GUARD_STICKER = "/manus-storage/pretwa-ring-guard-sticker_f6c2dba3.png";
+const PRETWA_GUARD_STICKER = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663892017223/duYJeoPUggTCiJIJ.png";
 
 export function IceRingsBoard({ state, legalActions = [], selectedFrom = null, onNodeClick, interactive = true }) {
   const sourceIds = new Set(legalActions.map((action) => action.from));
@@ -51,7 +52,7 @@ export function IceRingsBoard({ state, legalActions = [], selectedFrom = null, o
             onClick={() => clickable && onNodeClick?.(node.id, targetAction)}
           >
             <span className="ir-node-core" aria-hidden="true">
-              {occupant && <img className={`ir-guard-sticker ${occupant}`} src={PRETWA_GUARD_STICKER} alt="" aria-hidden="true" />}
+              {occupant && <HeritageSticker className={`ir-guard-sticker ${occupant}`} fallbackClassName={occupant === "aurora" ? "aurora" : "ember"} src={PRETWA_GUARD_STICKER} alt="" aria-hidden="true" />}
               {!occupant && <em>•</em>}
             </span>
           </button>

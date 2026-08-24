@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { HeritageSticker } from "../../components/HeritageSticker.jsx";
 import {
   SAFE_SPACES,
   SPACE_BY_ID,
@@ -11,8 +12,8 @@ import {
 
 // Arctic Panchi treatment: physical penguin courier stickers sit above the source-game route and retain semantic button controls.
 const RUNNER_STICKERS = Object.freeze({
-  blue: "/manus-storage/panchi-blue-runner-sticker_915bfcb4.png",
-  coral: "/manus-storage/panchi-coral-runner-sticker_f55d65d1.png"
+  blue: null,
+  coral: null
 });
 
 export function BreakTheIceBoard({ state, onPiece, interactive = true, interactivePlayer = state.currentPlayer }) {
@@ -56,7 +57,7 @@ export function BreakTheIceBoard({ state, onPiece, interactive = true, interacti
                   onClick={() => onPiece(action || { type: "move", pieceId: occupant.id })}
                   aria-label={`${occupant.player === "blue" ? "Blue" : "Coral"} runner ${occupant.id.split("-")[1]} on ${space.label}${legal ? ", legal move" : ""}`}
                 >
-                  <img className="bti-runner-sticker" src={RUNNER_STICKERS[occupant.player]} alt="" aria-hidden="true" />
+                  <HeritageSticker className="bti-runner-sticker" fallbackClassName={occupant.player === "blue" ? "aurora" : "coral"} src={RUNNER_STICKERS[occupant.player]} alt="" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -92,7 +93,7 @@ function RunnerDock({ player, state, summary, legalByPiece, interactive, onPiece
               onClick={() => onPiece(action || { type: "enter", pieceId: piece.id })}
               aria-label={`${player === "blue" ? "Blue" : "Coral"} waiting runner ${piece.id.split("-")[1]}${legal ? ", legal entry" : ""}`}
             >
-              <img className="bti-home-runner-sticker" src={RUNNER_STICKERS[player]} alt="" aria-hidden="true" />
+              <HeritageSticker className="bti-home-runner-sticker" fallbackClassName={player === "blue" ? "aurora" : "coral"} src={RUNNER_STICKERS[player]} alt="" aria-hidden="true" />
             </button>
           );
         })}

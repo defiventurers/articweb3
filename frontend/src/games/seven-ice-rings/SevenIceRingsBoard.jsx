@@ -1,7 +1,8 @@
 import { forcedStartPit, sideName } from "./rules.js";
+import { HeritageSticker } from "../../components/HeritageSticker.jsx";
 
 // Arctic Sat-gol treatment: compact physical stone stickers replace generic dots inside the shared seven-pit relay board.
-const SATGOL_STONE_STICKER = "/manus-storage/satgol-stone-sticker_eb8c91ff.png";
+const SATGOL_STONE_STICKER = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663892017223/XkjpRBzBalOUhClY.png";
 
 const POSITIONS = [
   [50, 7], [82, 26], [90, 63], [68, 91], [32, 91], [10, 63], [18, 26]
@@ -68,5 +69,5 @@ export function EndClaimControls({ state, legalActions, onAction, interactive = 
 
 function renderStones(count) {
   const shown = Math.min(count, 12);
-  return Array.from({ length: shown }, (_, index) => <img key={index} src={SATGOL_STONE_STICKER} alt="" />);
+  return Array.from({ length: shown }, (_, index) => <HeritageSticker key={index} className="sir-stone-sticker" fallbackClassName="aurora" src={SATGOL_STONE_STICKER} alt="" />);
 }

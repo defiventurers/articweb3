@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import { EDGES, NODES, getLegalActions } from "./rules.js";
+import { HeritageSticker } from "../../components/HeritageSticker.jsx";
 
 // Arctic Hewakam treatment: readable physical soldier stickers replace decorative lettered helmets without altering the line-board rules.
 const NODE_BY_ID = Object.fromEntries(NODES.map((node) => [node.id, node]));
 const SOLDIER_STICKERS = Object.freeze({
-  aurora: "/manus-storage/aurora-soldier-sticker_cd32f073.png",
-  ember: "/manus-storage/ember-soldier-sticker_cb8900ab.png"
+  aurora: null,
+  ember: null
 });
 
 export function SixteenIceWarriorsBoard({ state, selectedNode, onNode, interactive = true, viewerSide = state.currentPlayer }) {
@@ -48,7 +49,7 @@ export function SixteenIceWarriorsBoard({ state, selectedNode, onNode, interacti
             onClick={() => onNode(node.id)}
             aria-label={`${node.id}${piece ? ` occupied by ${piece}` : " empty"}${selected ? " selected" : ""}${actionHint}`}
           >
-            {piece && <img className={`siw-piece-sticker ${piece}`} src={SOLDIER_STICKERS[piece]} alt="" aria-hidden="true" />}
+            {piece && <HeritageSticker className={`siw-piece-sticker ${piece}`} fallbackClassName={`${piece} soldier`} src={SOLDIER_STICKERS[piece]} alt="" aria-hidden="true" />}
           </button>
         );
       })}

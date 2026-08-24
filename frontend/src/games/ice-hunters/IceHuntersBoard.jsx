@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import { EDGES, NODES, getLegalActions } from "./rules.js";
+import { HeritageSticker } from "../../components/HeritageSticker.jsx";
 
 // Arctic Bagh-Chal treatment: source-accurate tiger and goat roles use tactile sticker tokens instead of CSS character glyphs.
 const NODE_BY_ID = Object.fromEntries(NODES.map((node) => [node.id, node]));
 const BAGH_STICKERS = Object.freeze({
-  tigers: "/manus-storage/bagh-tiger-sticker_1742b51e.png",
-  goats: "/manus-storage/bagh-goat-sticker_660a70be.png"
+  tigers: null,
+  goats: null
 });
 
 export function IceHuntersBoard({
@@ -52,7 +53,7 @@ export function IceHuntersBoard({
             onClick={() => onNode(node.id)}
             aria-label={`${node.id}${piece ? ` occupied by ${piece}` : " empty"}${selected ? " selected" : ""}${capture ? " capture target" : legal ? " legal" : ""}`}
           >
-            {piece && <img className={`ih-piece-sticker ${piece}`} src={BAGH_STICKERS[piece]} alt="" aria-hidden="true" />}
+            {piece && <HeritageSticker className={`ih-piece-sticker ${piece}`} fallbackClassName={piece} src={BAGH_STICKERS[piece]} alt="" aria-hidden="true" />}
           </button>
         );
       })}

@@ -6,9 +6,10 @@ import {
   cellId,
   getPieceSpaceId
 } from "./rules.js";
+import { HeritageSticker } from "../../components/HeritageSticker.jsx";
 
 // Arctic Ashta-Kashte treatment: physical penguin runner stickers preserve all semantic controls and the 7×7 spiral race.
-const ASHTA_RUNNER_STICKER = "/manus-storage/ashta-aurora-runner-sticker_2c451264.png";
+const ASHTA_RUNNER_STICKER = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663892017223/gDgxQHLOMmGXQjMg.png";
 
 export function CowrieKingdomsBoard({ state, legalActions = [], onAction, interactive = true }) {
   const singleActionsByPiece = new Map();
@@ -63,7 +64,7 @@ export function CowrieKingdomsBoard({ state, legalActions = [], onAction, intera
                       onClick={() => action && onAction?.(action)}
                       aria-label={label}
                     >
-                      <img className={`ck-runner-sticker ${piece.side}`} src={ASHTA_RUNNER_STICKER} alt="" aria-hidden="true" />
+                      <HeritageSticker className={`ck-runner-sticker ${piece.side}`} fallbackClassName={piece.side === "aurora" ? "aurora" : "ember"} src={ASHTA_RUNNER_STICKER} alt="" aria-hidden="true" />
                       <small>{number}</small>
                     </button>
                   );
@@ -118,7 +119,7 @@ export function KingdomDock({ side, state, legalActions = [], onAction, interact
               onClick={() => action && onAction?.(action)}
               aria-label={label}
             >
-              <img className={`ck-home-runner-sticker ${side}`} src={ASHTA_RUNNER_STICKER} alt="" aria-hidden="true" />
+              <HeritageSticker className={`ck-home-runner-sticker ${side}`} fallbackClassName={side === "aurora" ? "aurora" : "ember"} src={ASHTA_RUNNER_STICKER} alt="" aria-hidden="true" />
               <small>{number}</small>
             </button>
           );
