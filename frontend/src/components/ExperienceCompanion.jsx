@@ -39,6 +39,10 @@ export function ExperienceCompanion({ gameId }) {
           <p>FIRST LOOK · {brief.label.toUpperCase()}</p>
           <strong>{brief.cue}</strong>
           <small>{brief.action}</small>
+          <div className="experience-companion-path" aria-label="A gentle learning path">
+            <span><b>1</b> Notice</span><span><b>2</b> Try</span><span><b>3</b> Return</span>
+          </div>
+          <em>Play at your own pace. The board will wait.</em>
         </div>
       )}
     </aside>
