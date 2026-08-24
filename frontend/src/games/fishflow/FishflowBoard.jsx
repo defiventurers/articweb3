@@ -62,7 +62,7 @@ function Pit({ player, pitIndex, count, active, legal, onPit }) {
     >
       <span className="fishflow-pit-number">{count}</span>
       <span className="fishflow-fish-cluster" aria-hidden="true">
-        {Array.from({ length: fishCount }, (_, index) => <i key={index}>◆</i>)}
+        {Array.from({ length: fishCount }, (_, index) => <i key={index} />)}
       </span>
       {count > 12 && <small>+{count - 12}</small>}
       {!active && <span className="fishflow-frozen-mark" aria-hidden="true">❄</span>}

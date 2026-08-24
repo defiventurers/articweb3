@@ -3,7 +3,8 @@ import { seatName } from "./rules.js";
 export function GanjifaCard({ card, legal = false, hidden = false, onPlay, disabled = false, compact = false }) {
   if (hidden) return <div className={`ag-card back ${compact ? "compact" : ""}`} aria-label="Hidden Ganjifa card"><span>❄</span></div>;
   return (
-    <button type="button" className={`ag-card ${card.suitClass} ${legal ? "legal" : ""} ${compact ? "compact" : ""}`} disabled={disabled || !legal} onClick={() => legal && onPlay?.(card.id)} aria-label={`${card.suitName} ${card.rankLabel}${legal ? ", legal play" : ""}`}>
+    <button type="button" className={`ag-card ${card.suitClass} suit-${card.suit} ${legal ? "legal" : ""} ${compact ? "compact" : ""}`} disabled={disabled || !legal} onClick={() => legal && onPlay?.(card.id)} aria-label={`${card.suitName} ${card.rankLabel}${legal ? ", legal play" : ""}`}>
+      <i className="ag-card-medallion" aria-hidden="true" />
       <span className="ag-card-symbol" aria-hidden="true">{card.symbol}</span>
       <strong>{card.rankLabel}</strong>
       <small>{card.suitName}</small>

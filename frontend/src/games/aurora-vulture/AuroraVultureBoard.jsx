@@ -53,8 +53,8 @@ export function AuroraVultureBoard({
               }}
             >
               <span className="av-node-core" aria-hidden="true" />
-              {occupant?.side === "vulture" && <span className="av-vulture-token" aria-hidden="true"><b>V</b><i>◆</i></span>}
-              {occupant?.side === "crows" && <span className="av-crow-token" aria-hidden="true"><b>●</b><small>{Number(occupant.id.split("-").at(-1))}</small></span>}
+              {occupant?.side === "vulture" && <span className="av-vulture-token" aria-hidden="true"><i className="av-wing left" /><i className="av-wing right" /><b className="av-vulture-head" /><em className="av-vulture-beak" /></span>}
+              {occupant?.side === "crows" && <span className="av-crow-token" aria-hidden="true"><i className="av-crow-body" /><i className="av-crow-wing" /><small>{Number(occupant.id.split("-").at(-1))}</small></span>}
               {action && !occupant && <span className="av-target-mark" aria-hidden="true">{capture ? "✦" : "·"}</span>}
             </button>
           );
@@ -71,8 +71,8 @@ export function VultureDock({ state }) {
     : 0;
   return (
     <aside className="av-dock vulture">
-      <header><span className="av-dock-icon">◆</span><div><strong>Glacier Vulture</strong><small>Single hunter</small></div></header>
-      <div className="av-vulture-portrait" aria-hidden="true"><span>V</span><i /></div>
+      <header><span className="av-dock-icon av-mini-vulture" /><div><strong>Glacier Vulture</strong><small>Single hunter</small></div></header>
+      <div className="av-vulture-portrait" aria-hidden="true"><span className="av-vulture-token"><i className="av-wing left" /><i className="av-wing right" /><b className="av-vulture-head" /><em className="av-vulture-beak" /></span></div>
       <div className="av-meter"><span style={{ width: `${Math.min(100, state.capturedCrows * 25)}%` }} /></div>
       <footer><span>{state.capturedCrows}/4 captures</span><span>{legal} legal options</span></footer>
     </aside>
@@ -85,9 +85,9 @@ export function CrowDock({ state }) {
   const captured = state.crows.filter((crow) => crow.status === "captured");
   return (
     <aside className="av-dock crows">
-      <header><span className="av-dock-icon">❄</span><div><strong>Aurora Crows</strong><small>Seven defenders</small></div></header>
+      <header><span className="av-dock-icon av-mini-crow" /><div><strong>Aurora Crows</strong><small>Seven defenders</small></div></header>
       <div className="av-flock" aria-label={`${waiting.length} waiting, ${active.length} on board, ${captured.length} captured`}>
-        {state.crows.map((crow) => <i key={crow.id} className={crow.status} title={`${crow.id}: ${crow.status}`}>●</i>)}
+        {state.crows.map((crow) => <i key={crow.id} className={crow.status} title={`${crow.id}: ${crow.status}`} />)}
       </div>
       <footer><span>{active.length} on star</span><span>{waiting.length} waiting</span><span>{captured.length} lost</span></footer>
     </aside>
