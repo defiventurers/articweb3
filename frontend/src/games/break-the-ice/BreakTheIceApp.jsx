@@ -93,11 +93,11 @@ export function BreakTheIceApp({ onExitToLibrary, profile, onProfileChange }) {
       <section className="bti-cover" aria-label="Break the Ice cover">
         <button className="bti-back-pill" onClick={onExitToLibrary}>← All Games</button>
         <div className="bti-cover-route" aria-hidden="true"><span /><span /><span /><span /><b>✦</b></div>
-        <div className="bti-cover-cowries" aria-hidden="true">{Array.from({ length: 7 }, (_, index) => <i key={index} className={index < 5 ? "open" : "closed"} />)}</div>
+        <div className="bti-cover-cowries" aria-hidden="true">{Array.from({ length: 5 }, (_, index) => <i key={index} className={index < 3 ? "open" : "closed"} />)}</div>
         <div className="bti-cover-copy">
           <p>MYSORE PANCHI · VASANTHA 2006</p>
           <h1>BREAK<br />THE ICE</h1>
-          <span>Cast seven cowries. Enter on 1, 5, or 7. Circle the frozen kingdom and escape with an exact throw.</span>
+          <span>Cast five cowries. Enter on one mouth up, circle the frozen kingdom, then escape with an exact throw.</span>
           <button onClick={() => setScreen("menu")}>Start the race</button>
         </div>
       </section>
@@ -119,7 +119,7 @@ export function BreakTheIceApp({ onExitToLibrary, profile, onProfileChange }) {
             <button onClick={() => setScreen("online")}>Online Multiplayer</button>
             <button onClick={() => setScreen("rules")}>How to Play</button>
           </div>
-          <div className="bti-source-note">This release uses the two-player Mysore Panchi rules recorded by R. Vasantha. It does not import the capture-gated inner-route rule from another family summary.</div>
+          <div className="bti-source-note">This release follows the two-player Mysore Panchi route: five cowries, one-mouth entry, bonus throws on 0, 1 and 5 mouths-up, and a captured-rival requirement before using the inner finishing stem.</div>
         </article>
       </section>
     );
@@ -133,17 +133,17 @@ export function BreakTheIceApp({ onExitToLibrary, profile, onProfileChange }) {
           <p className="bti-eyebrow">HERITAGE RULES</p>
           <h1>How to break through</h1>
           <div className="bti-rule-grid">
-            <section><strong>1 · Cast</strong><p>Throw seven cowries. The number of mouths up is the movement value. Zero loses the throw.</p></section>
-            <section><strong>2 · Enter</strong><p>A throw of 1, 5, or 7 may place one waiting runner on that player's marked outer starting square.</p></section>
-            <section><strong>3 · Bonus</strong><p>Throws of 1, 5, or 7 grant another cowrie throw after the move is resolved.</p></section>
+            <section><strong>1 · Cast</strong><p>Throw five cowries. One to five mouths up move that many spaces; no mouths up moves ten spaces.</p></section>
+            <section><strong>2 · Enter</strong><p>Only one mouth up may place one waiting runner on that player's marked outer starting square.</p></section>
+            <section><strong>3 · Bonus</strong><p>Throws of 0, 1, or 5 mouths-up grant another cowrie throw after the move is resolved.</p></section>
             <section><strong>4 · Race</strong><p>Move one runner the complete value: along the bottom track, up the stem, around the square, then up the final inner path.</p></section>
             <section><strong>5 · Capture</strong><p>Exact landing on an unprotected rival sends that runner back off-board. Marked spaces protect their occupant.</p></section>
-            <section><strong>6 · Finish</strong><p>A runner leaves beyond the final marked space only with the exact required value. Finish all five to win.</p></section>
+            <section><strong>6 · Finish</strong><p>Capture at least one rival before moving from D into the inner finishing stem toward L. A runner leaves only with the exact required value; finish all five to win.</p></section>
           </div>
           <div className="bti-modern-policy">
             <strong>Declared digital table policy</strong>
             <span>One runner may occupy a space. Friendly occupied spaces and enemy-occupied protected spaces block landing. Pieces may pass over occupied spaces.</span>
-            <small>No capture is required before entering the square or final inner route in this Vasantha ruleset.</small>
+            <small>The original Panchi finishing-stem condition is enforced: a player must have captured at least one rival before entering the D-to-L inner route.</small>
           </div>
           <button className="bti-rules-start" onClick={() => startGame("practice")}>Start Practice</button>
         </article>
@@ -181,12 +181,12 @@ export function BreakTheIceApp({ onExitToLibrary, profile, onProfileChange }) {
       <main className="bti-game-main">
         <div className="bti-score-row"><RunnerScore player="coral" summary={coral} active={state.currentPlayer === "coral"} /><div className="bti-turn-medallion"><small>THROW</small><strong>{state.throwCount}</strong><span>TURN {state.turn}</span></div><RunnerScore player="blue" summary={blue} active={state.currentPlayer === "blue"} /></div>
         <CowrieTray roll={state.roll || state.lastRoll} onRoll={castCowries} canRoll={canHumanRoll} busy={botThinking && state.awaiting === "roll"} />
-        <div className="bti-turn-banner" data-player={state.currentPlayer}><strong>{botThinking ? state.awaiting === "roll" ? "Glacier Guide is casting…" : "Glacier Guide is choosing a runner…" : describeTurn(state)}</strong><span>{state.winner ? resultDetail(state) : state.awaiting === "move" ? `${state.roll.value} mouths up${state.roll.bonus ? " · another throw follows" : ""}.` : "Mouths-up cowries determine the complete movement value."}</span></div>
+        <div className="bti-turn-banner" data-player={state.currentPlayer}><strong>{botThinking ? state.awaiting === "roll" ? "Glacier Guide is casting…" : "Glacier Guide is choosing a runner…" : describeTurn(state)}</strong><span>{state.winner ? resultDetail(state) : state.awaiting === "move" ? `${state.roll.mouthsUp ?? state.roll.value} mouths up · move ${state.roll.value}${state.roll.bonus ? " · another throw follows" : ""}.` : "Mouths-up cowries determine the complete movement value."}</span></div>
         <BreakTheIceBoard state={state} onPiece={moveRunner} interactive={canHumanMove} interactivePlayer={interactivePlayer} />
         {message && <p className="bti-game-message" role="status">{message}</p>}
         {state.winner && <div className="bti-result-panel"><h2>{resultTitle(state)}</h2><p>{resultDetail(state)}</p><div className="bti-result-actions"><button onClick={resetGame}>Race Again</button><button onClick={() => setScreen("menu")}>Return to Menu</button></div></div>}
       </main>
-      <footer className="bti-game-footer"><span>Seven cowries · bonus on 1, 5, and 7 · exact finish.</span><span>Single occupancy is a declared digital policy for this versioned ruleset.</span></footer>
+      <footer className="bti-game-footer"><span>Five cowries · bonus on 0, 1, and 5 · exact finish.</span><span>Single occupancy is a declared digital policy for this versioned ruleset.</span></footer>
     </section>
   );
 }
@@ -201,7 +201,7 @@ function pieceLabel(pieceId) {
 
 function rollSummary(roll, pass) {
   if (!roll) return "";
-  if (roll.value === 0) return `${runnerLabel(roll.player)} rolled zero mouths up and loses the throw.`;
+  if (roll.mouthsUp === 0) return `${runnerLabel(roll.player)} rolled zero mouths up, moves 10, and earns another throw.`;
   if (pass?.reason === "no-legal-runner") return `${runnerLabel(roll.player)} rolled ${roll.value}, but no runner can move${roll.bonus ? "; the bonus throw remains" : ""}.`;
   return `${runnerLabel(roll.player)} rolled ${roll.value}${roll.bonus ? " and earns another throw" : ""}.`;
 }

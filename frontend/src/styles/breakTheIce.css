@@ -456,6 +456,7 @@
   margin-top: 12px;
 }
 
+/* Arctic Panchi language: route-first board geometry with tactile penguin-courier sticker pieces. */
 .bti-board {
   position: relative;
   width: min(100%, 760px);
@@ -521,6 +522,7 @@
 .bti-runner.legal,
 .bti-home-runner.legal { cursor: pointer; animation: bti-pulse 1.1s ease-in-out infinite alternate; }
 .bti-runner:disabled { opacity: 1; }
+.bti-runner-sticker { position: absolute; z-index: 2; width: 170%; height: 170%; max-width: none; object-fit: contain; pointer-events: none; }
 .bti-runner-face { position: absolute; inset: 20% 20% 14%; border-radius: 50% 50% 42% 42%; background: #eefcff; }
 .bti-runner-face i, .bti-runner-face b { position: absolute; top: 35%; width: 3px; height: 3px; border-radius: 50%; background: #06192e; }
 .bti-runner-face i { left: 28%; }.bti-runner-face b { right: 28%; }
@@ -565,6 +567,7 @@
 .bti-home-runner { width: 38px; height: 42px; border: 1px solid rgba(231, 251, 255, 0.7); border-radius: 50% 50% 44% 44%; color: #fff; background: linear-gradient(155deg, #7aeaff, #167cc4); }
 .bti-home-runner.piece-coral { background: linear-gradient(155deg, #ffaaa9, #bd4d70); }
 .bti-home-runner:disabled { opacity: 0.72; }
+.bti-home-runner-sticker { display: block; width: 148%; height: 148%; max-width: none; margin: -25% 0 0 -25%; object-fit: contain; pointer-events: none; }
 .bti-empty-home { align-self: center; color: #87b7c8; font-size: 11px; }
 .bti-dock-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 12px; }
 .bti-dock-stats span { padding: 7px 4px; border-radius: 8px; color: #8fbccc; background: rgba(2, 18, 35, 0.5); font-size: 8px; text-align: center; }

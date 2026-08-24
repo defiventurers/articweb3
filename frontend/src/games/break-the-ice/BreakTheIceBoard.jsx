@@ -9,6 +9,12 @@ import {
   getPlayerSummary
 } from "./rules.js";
 
+// Arctic Panchi treatment: physical penguin courier stickers sit above the source-game route and retain semantic button controls.
+const RUNNER_STICKERS = Object.freeze({
+  blue: "/manus-storage/panchi-blue-runner-sticker_915bfcb4.png",
+  coral: "/manus-storage/panchi-coral-runner-sticker_f55d65d1.png"
+});
+
 export function BreakTheIceBoard({ state, onPiece, interactive = true, interactivePlayer = state.currentPlayer }) {
   const legalActions = useMemo(() => getLegalActions(state, interactivePlayer), [state, interactivePlayer]);
   const legalByPiece = new Map(legalActions.map((action) => [action.pieceId, action]));
@@ -50,7 +56,7 @@ export function BreakTheIceBoard({ state, onPiece, interactive = true, interacti
                   onClick={() => onPiece(action || { type: "move", pieceId: occupant.id })}
                   aria-label={`${occupant.player === "blue" ? "Blue" : "Coral"} runner ${occupant.id.split("-")[1]} on ${space.label}${legal ? ", legal move" : ""}`}
                 >
-                  <span className="bti-runner-face" aria-hidden="true"><i /><b /></span>
+                  <img className="bti-runner-sticker" src={RUNNER_STICKERS[occupant.player]} alt="" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -86,7 +92,7 @@ function RunnerDock({ player, state, summary, legalByPiece, interactive, onPiece
               onClick={() => onPiece(action || { type: "enter", pieceId: piece.id })}
               aria-label={`${player === "blue" ? "Blue" : "Coral"} waiting runner ${piece.id.split("-")[1]}${legal ? ", legal entry" : ""}`}
             >
-              <span aria-hidden="true">♟</span>
+              <img className="bti-home-runner-sticker" src={RUNNER_STICKERS[player]} alt="" aria-hidden="true" />
             </button>
           );
         })}
@@ -98,18 +104,18 @@ function RunnerDock({ player, state, summary, legalByPiece, interactive, onPiece
 }
 
 export function CowrieTray({ roll, onRoll, canRoll, busy = false, label = "Cast Cowries" }) {
-  const visibleRoll = roll || { faces: Array(7).fill(0), value: null, bonus: false };
+  const visibleRoll = roll || { faces: Array(5).fill(0), mouthsUp: null, value: null, bonus: false };
   return (
     <div className="bti-cowrie-panel">
-      <div className="bti-cowries" aria-label={visibleRoll.value === null ? "Seven cowries ready" : `${visibleRoll.value} mouths up`}>
+      <div className="bti-cowries" aria-label={visibleRoll.value === null ? "Five cowries ready" : `${visibleRoll.mouthsUp ?? visibleRoll.value} mouths up`}>
         {visibleRoll.faces.map((face, index) => (
           <span key={index} className={`bti-cowrie ${face ? "mouth-up" : "closed"}`} aria-label={face ? "mouth up" : "closed"}><i /></span>
         ))}
       </div>
       <div className="bti-roll-value">
-        <small>MOUTHS UP</small>
+        <small>{visibleRoll.mouthsUp === 0 ? "MOVE" : "MOUTHS UP"}</small>
         <strong>{visibleRoll.value === null ? "—" : visibleRoll.value}</strong>
-        <span>{visibleRoll.bonus ? "BONUS THROW" : visibleRoll.value === 0 ? "TURN LOST" : ""}</span>
+        <span>{visibleRoll.bonus ? "BONUS THROW" : ""}</span>
       </div>
       {onRoll && <button type="button" className="bti-roll-button" disabled={!canRoll || busy} onClick={onRoll}>{busy ? "Casting…" : label}</button>}
     </div>

@@ -14,6 +14,8 @@ import {
 } from "./rules.js";
 
 const BEST_SCORE_KEY = "articweb3:ruma-best-scores";
+// Arctic Tchuka Ruma treatment: every counter is a compact fish sticker; board logic remains pure relay sowing.
+const RUMA_FISH_STICKER = "/manus-storage/ruma-fish-sticker_0aff1cfa.png";
 
 export function RumaIcePuzzleApp({ onExitToLibrary }) {
   const [screen, setScreen] = useState("cover");
@@ -238,7 +240,7 @@ function RumaBoard({ state, legalIndexes, hintPit, onPit }) {
           return (
             <button key={pitIndex} type="button" role="gridcell" disabled={!legal} className={`${legal ? "legal" : ""} ${hinted ? "hinted" : ""}`} onClick={() => onPit(pitIndex)} aria-label={`Pit ${pitIndex + 1} with ${count} fish${legal ? ", legal" : ""}${hinted ? ", hinted" : ""}`}>
               <small>PIT {pitIndex + 1}</small><strong>{count}</strong>
-              <span className="ruma-fish-cluster" aria-hidden="true">{Array.from({ length: count }, (_, index) => <i key={index}>◆</i>)}</span>
+              <span className="ruma-fish-cluster" aria-hidden="true">{Array.from({ length: count }, (_, index) => <img key={index} src={RUMA_FISH_STICKER} alt="" />)}</span>
               {hinted && <em>TRY THIS</em>}
             </button>
           );
@@ -246,7 +248,7 @@ function RumaBoard({ state, legalIndexes, hintPit, onPit }) {
       </div>
       <aside className="ruma-store" role="gridcell" aria-label={`Ruma store with ${state.ruma} fish`}>
         <small>RUMA</small><strong>{state.ruma}</strong>
-        <span className="ruma-fish-cluster" aria-hidden="true">{Array.from({ length: state.ruma }, (_, index) => <i key={index}>◆</i>)}</span>
+        <span className="ruma-fish-cluster" aria-hidden="true">{Array.from({ length: state.ruma }, (_, index) => <img key={index} src={RUMA_FISH_STICKER} alt="" />)}</span>
         <em>STORE ONLY</em>
       </aside>
     </section>

@@ -342,6 +342,7 @@
 .ih-turn-banner strong { font-size: 14px; }
 .ih-turn-banner span { color: #a6cdd9; font-size: 11px; text-align: right; }
 
+/* Arctic Bagh-Chal language: an exact 25-point line graph with tactile tiger and goat sticker tokens. */
 .ih-board {
   position: relative;
   width: min(100%, 720px);
@@ -424,6 +425,8 @@
 .ih-goat { background: linear-gradient(145deg, #9ff2ff, #268fc8 72%, #0c4f81); }
 .ih-goat i { position: absolute; inset: 18% 22% 16%; border-radius: 50% 50% 44% 44%; background: #f2fdff; }
 .ih-goat b { position: absolute; z-index: 2; left: 50%; top: 45%; transform: translate(-50%, -50%); color: #08243a; font-size: 16px; }
+.ih-piece-sticker { position: relative; z-index: 4; display: block; width: 124%; height: 124%; max-width: none; object-fit: contain; filter: drop-shadow(0 6px 7px rgba(0, 7, 17, 0.48)); pointer-events: none; }
+.ih-piece-sticker.tigers { width: 148%; height: 148%; }
 
 .ih-game-message { min-height: 20px; margin: 9px 0 0; color: #d8ecf3; text-align: center; font-size: 13px; }
 .ih-result-actions { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }

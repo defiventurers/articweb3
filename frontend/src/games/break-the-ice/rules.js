@@ -5,15 +5,16 @@ export const BREAK_THE_ICE_RULESET = Object.freeze({
   region: "Mysore, Karnataka, India",
   players: 2,
   piecesPerPlayer: 5,
-  cowries: 7,
-  entryValues: [1, 5, 7],
-  bonusValues: [1, 5, 7],
+  cowries: 5,
+  entryValues: [1],
+  bonusValues: [0, 1, 5],
   stackingPolicy: "single-occupancy",
   safeSpacePolicy: "occupied-safe-space-blocks-entry"
 });
 
 export const PLAYERS = Object.freeze(["blue", "coral"]);
 export const FINISH_PROGRESS = 56;
+const INNER_STEM_START = 51;
 
 function space(id, x, y, label, kind = "track") {
   return { id, x, y, label, kind };
@@ -141,6 +142,7 @@ export function getLegalActions(state, player = state.currentPlayer) {
       continue;
     }
     const targetSpace = route[targetProgress];
+    if (targetProgress >= INNER_STEM_START && state.captures[player] < 1) continue;
     if (targetSpace && canLand(state, player, targetSpace, piece.id)) {
       const occupant = getOccupantAtSpace(state, targetSpace, piece.id);
       actions.push({
@@ -160,7 +162,7 @@ export function validateRoll(state, faces, player = state.currentPlayer) {
   if (state.winner) return { valid: false, reason: "The Break the Ice match has already ended." };
   if (player !== state.currentPlayer) return { valid: false, reason: "It is not this runner's turn." };
   if (state.awaiting !== "roll") return { valid: false, reason: "Choose a runner for the current cowrie throw first." };
-  if (!Array.isArray(faces) || faces.length !== BREAK_THE_ICE_RULESET.cowries || faces.some((face) => ![0, 1, false, true].includes(face))) return { valid: false, reason: "A cowrie throw must contain seven shells." };
+  if (!Array.isArray(faces) || faces.length !== BREAK_THE_ICE_RULESET.cowries || faces.some((face) => ![0, 1, false, true].includes(face))) return { valid: false, reason: "A Panchi throw must contain five cowries." };
   return { valid: true };
 }
 
@@ -169,17 +171,18 @@ export function applyRoll(state, faces, player = state.currentPlayer, meta = {})
   if (!validation.valid) return { state, error: validation.reason };
   const next = cloneState(state);
   const normalizedFaces = faces.map((face) => Number(Boolean(face)));
-  const value = normalizedFaces.reduce((sum, face) => sum + face, 0);
-  const bonus = BREAK_THE_ICE_RULESET.bonusValues.includes(value);
-  const roll = { faces: normalizedFaces, value, bonus, proofHash: meta.proofHash || null, nonce: meta.nonce || null, throwNumber: next.throwCount + 1 };
+  const mouthsUp = normalizedFaces.reduce((sum, face) => sum + face, 0);
+  const value = mouthsUp === 0 ? 10 : mouthsUp;
+  const bonus = BREAK_THE_ICE_RULESET.bonusValues.includes(mouthsUp);
+  const roll = { faces: normalizedFaces, mouthsUp, value, bonus, proofHash: meta.proofHash || null, nonce: meta.nonce || null, throwNumber: next.throwCount + 1 };
   next.roll = roll;
   next.lastRoll = { ...roll, player };
   next.awaiting = "move";
   next.throwCount += 1;
   next.history.push({ type: "roll", turn: next.turn, player, roll: cloneState(roll) });
   const legalActions = getLegalActions(next, player);
-  if (value === 0 || legalActions.length === 0) {
-    next.lastMove = { type: "pass", player, reason: value === 0 ? "no-mouths-up" : "no-legal-runner", value };
+  if (legalActions.length === 0) {
+    next.lastMove = { type: "pass", player, reason: "no-legal-runner", value, mouthsUp };
     next.history.push({ type: "pass", turn: next.turn, player, reason: next.lastMove.reason, value });
     finishThrow(next);
   }
@@ -191,7 +194,7 @@ export function validateAction(state, action, player = state.currentPlayer) {
   if (!state) return { valid: false, reason: "Missing game state." };
   if (state.winner) return { valid: false, reason: "The Break the Ice match has already ended." };
   if (player !== state.currentPlayer) return { valid: false, reason: "It is not this runner's turn." };
-  if (state.awaiting !== "move" || !state.roll) return { valid: false, reason: "Roll the seven cowries first." };
+  if (state.awaiting !== "move" || !state.roll) return { valid: false, reason: "Cast the five Panchi cowries first." };
   if (!action || !["enter", "move"].includes(action.type) || typeof action.pieceId !== "string") return { valid: false, reason: "Choose one legal penguin runner." };
   const legal = getLegalActions(state, player).find((candidate) => candidate.type === action.type && candidate.pieceId === action.pieceId);
   return legal ? { valid: true, action: legal } : { valid: false, reason: explainIllegalAction(state, action, player) };
@@ -271,7 +274,7 @@ export function getPlayerSummary(state, player) {
 export function describeTurn(state) {
   if (state.winner) return resultTitle(state);
   const label = state.currentPlayer === "blue" ? "Blue Runners" : "Coral Runners";
-  return state.awaiting === "roll" ? `${label}: cast seven cowries.` : `${label}: move one legal runner by ${state.roll?.value || 0}.`;
+  return state.awaiting === "roll" ? `${label}: cast five cowries.` : `${label}: move one legal runner by ${state.roll?.value || 0}.`;
 }
 
 export function resultTitle(state) {
@@ -299,7 +302,7 @@ export function createCowrieDrill() {
   state.pieces.blue[2] = { ...state.pieces.blue[2], status: "track", progress: 7 };
   state.pieces.coral[0] = { ...state.pieces.coral[0], status: "track", progress: 24 };
   state.awaiting = "move";
-  state.roll = { faces: [1, 1, 1, 1, 1, 0, 0], value: 5, bonus: true, throwNumber: 1 };
+  state.roll = { faces: [1, 1, 1, 1, 1], mouthsUp: 5, value: 5, bonus: true, throwNumber: 1 };
   state.lastRoll = { ...state.roll, player: "blue" };
   assertStateInvariant(state);
   return state;
