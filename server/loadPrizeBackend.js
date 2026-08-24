@@ -76,7 +76,15 @@ function findFunctionEnd(source, startIndex) {
 function replaceFunctionByName(source, signature, replacement) {
   const start = source.indexOf(signature);
   if (start === -1) throw new Error(`Unable to locate ${signature}.`);
-  const openBrace = source.indexOf("{", start);
+  let parameterDepth = 0;
+  let sawParameterList = false;
+  let openBrace = -1;
+  for (let index = start; index < source.length; index += 1) {
+    const char = source[index];
+    if (char === "(") { parameterDepth += 1; sawParameterList = true; continue; }
+    if (char === ")") { parameterDepth -= 1; continue; }
+    if (char === "{" && sawParameterList && parameterDepth === 0) { openBrace = index; break; }
+  }
   if (openBrace === -1) throw new Error(`Unable to locate ${signature} body.`);
   const end = findFunctionEnd(source, openBrace);
   return `${source.slice(0, start)}${replacement}${source.slice(end)}`;
@@ -160,9 +168,85 @@ function replaceLoginSessionBinding(source) {
   return source.replace(needle, replacement);
 }
 
+function injectWalletAuthentication(source) {
+  let transformed = source;
+  const viemNeedle = 'const { createPublicClient, http: viemHttp, parseAbi } = require("viem");';
+  const viemReplacement = 'const { createPublicClient, http: viemHttp, parseAbi, verifyMessage } = require("viem");';
+  if (!transformed.includes("verifyMessage } = require(\"viem\")")) {
+    if (!transformed.includes(viemNeedle)) throw new Error("Unable to locate viem import for wallet authentication.");
+    transformed = transformed.replace(viemNeedle, viemReplacement);
+  }
+
+  const socketAnchor = "const sockets = new Map();";
+  const socketAddition = `${socketAnchor}
+const WALLET_ADDRESS_RE = /^0x[a-f0-9]{40}$/i;
+const AUTH_CHALLENGE_TTL_MS = Math.min(300000, Math.max(30000, Number(process.env.AUTH_CHALLENGE_TTL_MS || 120000)));`;
+  if (!transformed.includes("const WALLET_ADDRESS_RE")) {
+    if (!transformed.includes(socketAnchor)) throw new Error("Unable to locate socket map for wallet authentication.");
+    transformed = transformed.replace(socketAnchor, socketAddition);
+  }
+
+  const loginSignature = "async function login(ws, requestId, payload)";
+  const loginReplacement = `async function createAuthChallenge(ws, requestId, payload = {}) {
+  const wallet = walletOf(payload.address);
+  if (!WALLET_ADDRESS_RE.test(wallet)) return fail(ws, requestId, "Provide a valid wallet address.");
+  const nonce = randomBytes(24).toString("hex");
+  const expiresAt = Date.now() + AUTH_CHALLENGE_TTL_MS;
+  const message = \`Arctic Dominion sign-in\\nWallet: \${wallet}\\nNonce: \${nonce}\\nExpires: \${expiresAt}\`;
+  ws.authChallenge = { wallet, message, expiresAt };
+  return ok(ws, requestId, "profile_auth_challenge_result", { challenge: message, expiresAt });
+}
+async function login(ws, requestId, payload = {}) {
+  const wallet = walletOf(payload.address);
+  const name = String(payload.name || "").trim();
+  if (!WALLET_ADDRESS_RE.test(wallet)) return fail(ws, requestId, "Provide a valid wallet address.");
+  if (!/^[\\p{L}\\p{N} ._-]{3,20}$/u.test(name)) return fail(ws, requestId, "Name must use 3–20 letters, numbers, spaces, dots, underscores, or hyphens.");
+  const challenge = ws.authChallenge;
+  if (!challenge || challenge.wallet !== wallet || challenge.message !== String(payload.challenge || "") || Date.now() > challenge.expiresAt) return fail(ws, requestId, "Wallet sign-in challenge expired. Please try again.");
+  let signatureValid = false;
+  try { signatureValid = await verifyMessage({ address: wallet, message: challenge.message, signature: String(payload.signature || "") }); } catch (err) { console.error("[auth] signature verification failed", err?.message || err); }
+  if (!signatureValid) return fail(ws, requestId, "Wallet signature could not be verified.");
+  delete ws.authChallenge;
+  try { const profile = await upsertProfile({ wallet, name }); profiles.set(wallet, profile); sockets.set(wallet, ws); return ok(ws, requestId, "profile_login_result", { profile }); } catch (err) { return fail(ws, requestId, err.message || "Could not save profile."); }
+}`;
+  if (!transformed.includes("async function createAuthChallenge")) {
+    if (!transformed.includes(loginSignature)) throw new Error("Unable to locate profile login for wallet authentication.");
+    transformed = replaceFunctionByName(transformed, loginSignature, loginReplacement);
+  }
+  return transformed;
+}
+
+function injectRateLimitConfig(source) {
+  const anchor = "const sockets = new Map();";
+  const addition = `${anchor}
+const accountRateBuckets = new Map();
+const ipRateBuckets = new Map();
+function boundedPositiveEnv(name, fallback, min, max) { const parsed = Number(process.env[name]); return Number.isFinite(parsed) ? Math.min(max, Math.max(min, Math.floor(parsed))) : fallback; }
+const RATE_LIMITS = {
+  maxPayloadBytes: boundedPositiveEnv("WS_MAX_PAYLOAD_BYTES", 65536, 1024, 1048576),
+  actionWindowMs: boundedPositiveEnv("WS_ACTION_WINDOW_MS", 10000, 1000, 300000),
+  actionsPerWindow: boundedPositiveEnv("WS_ACTION_LIMIT", 120, 10, 1000),
+  authWindowMs: boundedPositiveEnv("WS_AUTH_WINDOW_MS", 60000, 10000, 3600000),
+  authPerWindow: boundedPositiveEnv("WS_AUTH_LIMIT", 12, 3, 100),
+  roomCreateWindowMs: boundedPositiveEnv("WS_ROOM_CREATE_WINDOW_MS", 60000, 10000, 3600000),
+  roomCreatePerWindow: boundedPositiveEnv("WS_ROOM_CREATE_LIMIT", 8, 1, 100)
+};
+function consumeRateLimit(bucketMap, key, now, limit, windowMs) { const existing = bucketMap.get(key); const bucket = !existing || now - existing.startedAt >= windowMs ? { startedAt: now, count: 0 } : existing; bucket.count += 1; bucketMap.set(key, bucket); return bucket.count <= limit; }`;
+  if (source.includes("const accountRateBuckets = new Map();")) return source;
+  if (!source.includes(anchor)) throw new Error("Unable to locate socket map for rate-limit configuration.");
+  return source.replace(anchor, addition);
+}
+
+function replaceMessageBodyLimit(source) {
+  const needle = 'new WebSocket.Server({ server }).on("connection", (ws) => { ws.on("message", async (raw) => { let packet;';
+  const replacement = 'new WebSocket.Server({ server, maxPayload: RATE_LIMITS.maxPayloadBytes }).on("connection", (ws) => { ws.on("message", async (raw) => { if (Buffer.byteLength(raw) > RATE_LIMITS.maxPayloadBytes) return fail(ws, null, "Request payload is too large."); let packet;';
+  if (!source.includes(needle) || source.includes("Request payload is too large.")) return source;
+  return source.replace(needle, replacement);
+}
+
 function replaceMessageIngressGates(source) {
   const needle = 'const { type, requestId, payload = {} } = packet; if (type === "profile_login")';
-  const replacement = 'const { type, requestId, payload = {} } = packet; const now = Date.now(); ws.rateLimit = ws.rateLimit || { windowStartedAt: now, count: 0, roomCreateStartedAt: now, roomCreateCount: 0 }; if (now - ws.rateLimit.windowStartedAt > 10000) ws.rateLimit = { ...ws.rateLimit, windowStartedAt: now, count: 0 }; ws.rateLimit.count += 1; if (ws.rateLimit.count > 120) return fail(ws, requestId, "Too many requests. Slow down."); if (type === "room_create") { if (now - ws.rateLimit.roomCreateStartedAt > 60000) { ws.rateLimit.roomCreateStartedAt = now; ws.rateLimit.roomCreateCount = 0; } ws.rateLimit.roomCreateCount += 1; if (ws.rateLimit.roomCreateCount > 8) return fail(ws, requestId, "Too many room create attempts. Try again later."); } const protectedTypes = new Set(["game_history", "my_rooms", "vault_activity", "vault_activity_record", "room_create", "room_join", "room_confirm_entry", "room_select_team", "dev_fill_room", "game_state", "game_roll_dice", "game_select_square", "game_end_turn"]); const payloadWallet = walletOf(payload.wallet || payload.address); if (protectedTypes.has(type) && !ws.authorizedWallet) return fail(ws, requestId, "Login with this wallet before using this action."); if (type !== "profile_login" && payloadWallet && ws.authorizedWallet && payloadWallet !== ws.authorizedWallet) return fail(ws, requestId, "Wallet session mismatch. Log in again with this wallet."); if (type === "profile_login")';
+  const replacement = 'if (!packet || typeof packet !== "object" || Array.isArray(packet)) return fail(ws, null, "Invalid request envelope."); const { type, requestId, payload = {} } = packet; if (typeof type !== "string" || !/^[a-z][a-z0-9_]{0,63}$/.test(type)) return fail(ws, requestId, "Invalid request type."); if (requestId !== undefined && typeof requestId !== "string" && typeof requestId !== "number") return fail(ws, null, "Invalid request identifier."); if (!payload || typeof payload !== "object" || Array.isArray(payload) || Object.getPrototypeOf(payload) !== Object.prototype || Object.keys(payload).length > 40) return fail(ws, requestId, "Invalid request payload."); const now = Date.now(); const payloadWallet = walletOf(payload.wallet || payload.address); const clientIp = String(ws?._socket?.remoteAddress || "unknown"); const rateIdentity = payloadWallet || ws.authorizedWallet || `ip:${clientIp}`; const isAuthAction = type === "profile_login" || type === "profile_auth_challenge"; const actionLimit = isAuthAction ? RATE_LIMITS.authPerWindow : RATE_LIMITS.actionsPerWindow; const actionWindowMs = isAuthAction ? RATE_LIMITS.authWindowMs : RATE_LIMITS.actionWindowMs; if (!consumeRateLimit(ipRateBuckets, `${clientIp}:${isAuthAction ? "auth" : "action"}`, now, actionLimit, actionWindowMs) || !consumeRateLimit(accountRateBuckets, `${rateIdentity}:${isAuthAction ? "auth" : "action"}`, now, actionLimit, actionWindowMs)) return fail(ws, requestId, isAuthAction ? "Too many attempts. Please wait before trying again." : "Too many requests. Slow down."); if (type === "room_create" && (!consumeRateLimit(ipRateBuckets, `${clientIp}:room_create`, now, RATE_LIMITS.roomCreatePerWindow, RATE_LIMITS.roomCreateWindowMs) || !consumeRateLimit(accountRateBuckets, `${rateIdentity}:room_create`, now, RATE_LIMITS.roomCreatePerWindow, RATE_LIMITS.roomCreateWindowMs))) return fail(ws, requestId, "Too many room create attempts. Try again later."); const protectedTypes = new Set(["game_history", "my_rooms", "vault_activity", "vault_activity_record", "room_create", "room_join", "room_confirm_entry", "room_select_team", "dev_fill_room", "game_state", "game_roll_dice", "game_select_square", "game_end_turn"]); if (protectedTypes.has(type) && !ws.authorizedWallet) return fail(ws, requestId, "Login with this wallet before using this action."); if (type !== "profile_login" && type !== "profile_auth_challenge" && payloadWallet && ws.authorizedWallet && payloadWallet !== ws.authorizedWallet) return fail(ws, requestId, "Wallet session mismatch. Log in again with this wallet."); if (type === "profile_auth_challenge") return createAuthChallenge(ws, requestId, payload); if (type === "profile_login")';
   if (!source.includes(needle) || source.includes("Wallet session mismatch. Log in again with this wallet.")) return source;
   return source.replace(needle, replacement);
 }
@@ -175,6 +259,22 @@ function replaceAuditHashChain(source) {
 function replaceLeaderboardAwardGuard(source) {
   const replacement = 'function addPoints(wallet, points, won) { const normalizedWallet = walletOf(wallet); if (!normalizedWallet || isBotWallet(normalizedWallet)) return; const profile = profileFor(normalizedWallet); if (profile) { profile.points += points; profile.gamesPlayed += 1; if (won) profile.wins += 1; profiles.set(normalizedWallet, profile); } addProfileStats(normalizedWallet, points, won).catch((err) => console.error(`[profile-db] stat update failed wallet=${normalizedWallet}: ${err.message}`)); }';
   return replaceFunctionByName(source, "function addPoints(wallet, points, won)", replacement);
+}
+
+function replaceClientErrorDisclosure(source) {
+  let transformed = source;
+  const replacements = [
+    ['return fail(ws, requestId, err.message || "Could not save profile.");', 'console.error("[profile] save failed", err?.message || err); return fail(ws, requestId, "Could not save profile.");'],
+    ['return fail(ws, requestId, err.message || "Could not load leaderboard.");', 'console.error("[leaderboard] load failed", err?.message || err); return fail(ws, requestId, "Could not load leaderboard.");'],
+    ['return fail(ws, requestId, err.shortMessage || err.message || "Could not verify entry lock.");', 'console.error("[entry-lock] verification failed", err?.message || err); return fail(ws, requestId, "Could not verify entry lock.");']
+  ];
+  replacements.forEach(([needle, replacement]) => { if (transformed.includes(needle)) transformed = transformed.replace(needle, replacement); });
+  return transformed;
+}
+
+function replaceSettlementErrorDisclosure(source) {
+  const replacement = 'function settlementErrorMessage(err) { console.error("[settlement] operation failed", err?.shortMessage || err?.message || err); return "Settlement failed. Check the room status or contact support."; }';
+  return replaceFunctionByName(source, "function settlementErrorMessage(err)", replacement);
 }
 
 function injectHighStakesRoomStatus(source) {
@@ -214,7 +314,7 @@ function replaceAntiCheatGates(source) {
 }
 
 function replaceSessionAndRateLimitGates(source) {
-  return replaceMessageIngressGates(replaceLoginSessionBinding(source));
+  return replaceMessageIngressGates(replaceMessageBodyLimit(replaceLoginSessionBinding(injectRateLimitConfig(source))));
 }
 
 function replaceReplayEvidence(source) {
@@ -230,8 +330,16 @@ function replaceHighStakesUxStatus(source) {
 }
 
 function transformBackendSource(source) {
-  let transformed = replaceBuildPayoutPlan(source);
+  let transformed = injectWalletAuthentication(source);
+  transformed = replaceBuildPayoutPlan(transformed);
   transformed = replaceLaunchModeGate(transformed);
+  transformed = replaceAntiCheatGates(transformed);
+  transformed = replaceSessionAndRateLimitGates(transformed);
+  transformed = replaceReplayEvidence(transformed);
+  transformed = replaceLeaderboardIntegrity(transformed);
+  transformed = replaceClientErrorDisclosure(transformed);
+  transformed = replaceSettlementErrorDisclosure(transformed);
+  transformed = replaceHighStakesUxStatus(transformed);
   return transformed;
 }
 
@@ -258,9 +366,12 @@ module.exports = {
   replaceEndTurnGate,
   replaceSessionAndRateLimitGates,
   replaceLoginSessionBinding,
+  injectWalletAuthentication,
   replaceMessageIngressGates,
   replaceReplayEvidence,
   replaceLeaderboardIntegrity,
+  replaceClientErrorDisclosure,
+  replaceSettlementErrorDisclosure,
   replaceHighStakesUxStatus,
   transformBackendSource,
   HIGH_STAKES_PAYOUT_MULTIPLIERS,

@@ -41,7 +41,13 @@ export async function request(type, payload = {}) {
   });
 }
 
-export async function createProfile({ address, name }) { return (await request("profile_login", { address, name })).profile; }
+export async function createProfile({ address, name, signMessageAsync }) {
+  if (typeof signMessageAsync !== "function") throw new Error("Wallet signature is required to create a profile.");
+  const { challenge } = await request("profile_auth_challenge", { address });
+  if (typeof challenge !== "string" || !challenge) throw new Error("Could not start secure wallet sign-in.");
+  const signature = await signMessageAsync({ message: challenge });
+  return (await request("profile_login", { address, name, challenge, signature })).profile;
+}
 export async function listRooms({ roomMode = "open_ice" } = {}) { return (await request("room_list", { roomMode })).rooms || []; }
 export async function getGameHistory({ profile, gameId = null }) { return (await request("game_history", { wallet: profile.wallet, gameId })).history || []; }
 export async function getLeaderboard() { return (await request("leaderboard", {})).leaderboard || []; }

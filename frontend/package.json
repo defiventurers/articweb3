@@ -22,19 +22,23 @@
     "assets:webp": "node scripts/convert-assets-to-webp.mjs"
   },
   "dependencies": {
-    "@abstract-foundation/agw-client": "latest",
-    "@abstract-foundation/agw-react": "latest",
-    "@tanstack/react-query": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "three": "^0.185.1",
-    "viem": "latest",
-    "vite": "latest",
-    "wagmi": "latest"
+    "@abstract-foundation/agw-client": "1.12.3",
+    "@abstract-foundation/agw-react": "1.13.0",
+    "@tanstack/react-query": "5.101.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "three": "0.185.1",
+    "viem": "2.55.19",
+    "vite": "8.0.16",
+    "wagmi": "2.19.5"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
-    "@vitejs/plugin-react": "latest",
-    "sharp": "latest"
+    "@playwright/test": "1.62.1",
+    "@vitejs/plugin-react": "6.0.2",
+    "sharp": "0.35.1"
+  },
+  "overrides": {
+    "axios": "1.19.0",
+    "ws": "8.21.3"
   }
 }

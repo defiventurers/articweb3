@@ -16,12 +16,20 @@ const transformed = transformBackendSource(backendSource);
 assert.match(transformed, /ws\.authorizedWallet = wallet/, "login must bind the socket to the wallet");
 assert.match(transformed, /Login with this wallet before using this action\./, "protected actions must require login");
 assert.match(transformed, /Wallet session mismatch\. Log in again with this wallet\./, "payload wallet must match the logged-in socket wallet");
-assert.match(transformed, /type !== "profile_login" && payloadWallet/, "profile_login must still be able to rebind the socket wallet");
+assert.match(transformed, /type !== "profile_login" && type !== "profile_auth_challenge" && payloadWallet/, "wallet-authentication routes must remain able to establish a new session");
+assert.match(transformed, /profile_auth_challenge_result/, "wallet authentication must issue a signed challenge");
+assert.match(transformed, /verifyMessage\(/, "wallet authentication must verify the returned signature");
 
 // Phase 47: rate limits / abuse protection.
 assert.match(transformed, /Too many requests\. Slow down\./, "per-socket action rate limit must be present");
 assert.match(transformed, /Too many room create attempts\. Try again later\./, "room-create abuse limit must be present");
 assert.match(transformed, /rateLimitedWsActions: true/, "health anti-cheat flags must expose WS rate limits");
+assert.match(transformed, /accountRateBuckets = new Map\(\)/, "per-account rate-limit buckets must be present");
+assert.match(transformed, /WS_AUTH_LIMIT/, "authentication rate limits must be configurable");
+assert.match(transformed, /Invalid request envelope\./, "message envelopes must be validated before dispatch");
+assert.match(transformed, /Request payload is too large\./, "WebSocket message size must be bounded");
+assert.match(transformed, /console\.error\("\[profile\] save failed"/, "profile storage errors must be logged server-side");
+assert.match(transformed, /return fail\(ws, requestId, "Could not save profile\."\)/, "profile storage errors must remain generic for clients");
 
 // Phase 48: match replay evidence.
 assert.match(transformed, /lastAuditHash/, "rooms must track the latest audit hash");

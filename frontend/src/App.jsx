@@ -75,8 +75,8 @@ const PLAYABLE_GAME_IDS = new Set([
 
 export default function App() {
   const params = new URLSearchParams(window.location.search);
-  const calibrationTarget = params.get("calibrate");
-  const isDevPath = /^\/dev\/?$/.test(window.location.pathname);
+  const calibrationTarget = import.meta.env.DEV ? params.get("calibrate") : null;
+  const isDevPath = import.meta.env.DEV && /^\/dev\/?$/.test(window.location.pathname);
   const smokeProfileEnabled = import.meta.env.DEV && params.get("smokeProfile") === "1";
   const skipLoader = params.get("skipLoader") === "1" || Boolean(calibrationTarget) || smokeProfileEnabled || isDevPath;
   const initialSpectateCode = params.get("spectate") || "";
