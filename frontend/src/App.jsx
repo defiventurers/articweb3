@@ -7,6 +7,7 @@ import {
 } from "./components/FrostLoadingScreen.jsx";
 import { AudioToggle } from "./components/AudioToggle.jsx";
 import { ExperienceCompanion } from "./components/ExperienceCompanion.jsx";
+import { HeritageExperienceFrame } from "./components/HeritageExperienceFrame.jsx";
 import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { GameLibraryScreen } from "./screens/GameLibraryScreen.jsx";
 import { GamePreviewScreen } from "./screens/GamePreviewScreen.jsx";
@@ -119,33 +120,39 @@ export default function App() {
   function roomLobbyScreen(targetRoom = room) { return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu"; }
   function goTo(nextScreen, options = {}) { window.clearTimeout(transitionTimerRef.current); if (options.tapSound !== false) soundManager.play("uiTap", { cooldownMs: 80 }); if (nextScreen === "how-to-play") warmHowToPlayAssets(); if (nextScreen === "game" || nextScreen === "team-select" || nextScreen === "waiting") warmGameAssets(); setScreen(nextScreen); }
   function playTrackThenGo(trackName, nextScreen, delayMs) { window.clearTimeout(transitionTimerRef.current); soundManager.unlock(); unlockUiAudio(); soundManager.playTrack(trackName, { restart: true }); transitionTimerRef.current = window.setTimeout(() => goTo(nextScreen, { tapSound: false }), delayMs); }
-  function withAppChrome(node) { return <><AudioToggle />{node}<ExperienceCompanion gameId={PLAYABLE_GAME_IDS.has(screen) ? screen : null} /></>; }
+  function withAppChrome(node, heritageGameId = null) {
+    return <>
+      <AudioToggle />
+      {heritageGameId ? <HeritageExperienceFrame gameId={heritageGameId}>{node}</HeritageExperienceFrame> : node}
+      <ExperienceCompanion gameId={heritageGameId} />
+    </>;
+  }
   function selectCatalogGame(gameId) { const game = getCatalogGame(gameId); if (!game) return; setSelectedGameId(game.id); syncGameQuery(game.id); if (PLAYABLE_GAME_IDS.has(game.id)) return goTo(game.id); goTo(game.available ? "cover" : "game-preview"); }
   function exitToLibrary() { setSelectedGameId(null); syncGameQuery(null); goTo("library"); }
   function resumeRoom(nextRoom) { setRoom(nextRoom); if (nextRoom.status === "finished") return goTo("results"); if (nextRoom.status === "playing") return goTo("game"); if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return goTo("waiting"); return goTo("team-select"); }
 
   if (screen === "kingdoms") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
   if (screen === "library") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
-  if (screen === "nine-ice-forts") return withAppChrome(<NineIceFortsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "four-wing-ice-hunt") return withAppChrome(<FourWingIceHuntApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "fishflow") return withAppChrome(<FishflowApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "break-the-ice") return withAppChrome(<BreakTheIceApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "ice-hunters") return withAppChrome(<IceHuntersApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "sixteen-ice-warriors") return withAppChrome(<SixteenIceWarriorsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "glacier-trail") return withAppChrome(<GlacierTrailApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "crown-run") return withAppChrome(<CrownRunApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "forty-glacier-guards") return withAppChrome(<FortyGlacierGuardsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "sky-temple-run") return withAppChrome(<SkyTempleRunApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "ice-rings") return withAppChrome(<IceRingsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "cowrie-kingdoms") return withAppChrome(<CowrieKingdomsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "two-stones") return withAppChrome(<TwoStonesApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "aurora-vulture") return withAppChrome(<AuroraVultureApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "polar-tablan") return withAppChrome(<PolarTablanApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "aurora-ganjifa-academy") return withAppChrome(<AuroraGanjifaAcademyApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "sige") return withAppChrome(<SigeApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "seven-ice-rings") return withAppChrome(<SevenIceRingsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "khasi-fishflow") return withAppChrome(<KhasiFishflowApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />);
-  if (screen === "ruma-ice-puzzle") return withAppChrome(<RumaIcePuzzleApp onExitToLibrary={exitToLibrary} />);
+  if (screen === "nine-ice-forts") return withAppChrome(<NineIceFortsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "four-wing-ice-hunt") return withAppChrome(<FourWingIceHuntApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "fishflow") return withAppChrome(<FishflowApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "break-the-ice") return withAppChrome(<BreakTheIceApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "ice-hunters") return withAppChrome(<IceHuntersApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "sixteen-ice-warriors") return withAppChrome(<SixteenIceWarriorsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "glacier-trail") return withAppChrome(<GlacierTrailApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "crown-run") return withAppChrome(<CrownRunApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "forty-glacier-guards") return withAppChrome(<FortyGlacierGuardsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "sky-temple-run") return withAppChrome(<SkyTempleRunApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "ice-rings") return withAppChrome(<IceRingsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "cowrie-kingdoms") return withAppChrome(<CowrieKingdomsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "two-stones") return withAppChrome(<TwoStonesApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "aurora-vulture") return withAppChrome(<AuroraVultureApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "polar-tablan") return withAppChrome(<PolarTablanApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "aurora-ganjifa-academy") return withAppChrome(<AuroraGanjifaAcademyApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "sige") return withAppChrome(<SigeApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "seven-ice-rings") return withAppChrome(<SevenIceRingsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "khasi-fishflow") return withAppChrome(<KhasiFishflowApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
+  if (screen === "ruma-ice-puzzle") return withAppChrome(<RumaIcePuzzleApp onExitToLibrary={exitToLibrary} />, screen);
   if (screen === "game-preview" && selectedGame) return withAppChrome(<GamePreviewScreen game={selectedGame} onBack={exitToLibrary} />);
 
   if (screen === "dev-home") return withAppChrome(renderLazy(<DevPortalScreen onTestRunbook={() => goTo("test-runbook")} onDevQA={() => goTo("dev-qa")} onSettlementAdmin={() => goTo("settlement-admin")} onVaultDeployer={() => goTo("vault-deployer")} onExit={() => window.location.assign("/")} />, "Loading developer console..."));
