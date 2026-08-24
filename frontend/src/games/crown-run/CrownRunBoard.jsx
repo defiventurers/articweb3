@@ -9,6 +9,12 @@ import {
   getSideSummary
 } from "./rules.js";
 
+// Arctic Dadu treatment: a royal fox distinguishes nakta while compact court-fox stickers represent kaangi pieces.
+const DADU_STICKERS = Object.freeze({
+  king: "/manus-storage/dadu-royal-fox-sticker_11e3d520.png",
+  standard: "/manus-storage/dadu-court-pawn-sticker_8668d9a2.png"
+});
+
 export function CrownRunBoard({ state, selectedThrowId, onPiece, interactive = true, interactiveSide = state.currentPlayer }) {
   const legalActions = useMemo(
     () => interactive && interactiveSide === state.currentPlayer
@@ -159,7 +165,7 @@ function CrownPiece({ piece, legal = false, capture = false, interactive, onPiec
       onClick={() => onPiece(piece.id)}
       aria-label={`${sideLabel(piece.side)} ${name} on ${location}${legal ? capture ? ", legal capture" : ", legal move" : ""}`}
     >
-      <span aria-hidden="true">{piece.kind === "king" ? "♛" : "●"}</span>
+      <img className="cr-piece-sticker" src={DADU_STICKERS[piece.kind]} alt="" aria-hidden="true" />
     </button>
   );
 }

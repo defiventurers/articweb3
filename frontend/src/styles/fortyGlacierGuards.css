@@ -1,3 +1,4 @@
+/* Arctic Chalis Gutiya language: a dense 9-by-9 orthogonal battle grid with compact, readable guard stickers. */
 :root {
   --fgg-ink: #eafcff;
   --fgg-muted: #9eb9ca;
@@ -181,6 +182,10 @@
 .fgg-piece b { font-size: 10px; color: #03121e; }
 .fgg-piece .guard-crest { position: absolute; top: -5px; width: 11px; height: 7px; clip-path: polygon(50% 0, 100% 100%, 0 100%); background: rgba(255,255,255,.86); }
 .fgg-node.selected .fgg-piece { outline: 3px solid #fff4a8; outline-offset: 2px; }
+.fgg-piece-sticker { position: absolute; z-index: 2; left: 50%; top: 50%; width: 146%; height: 146%; max-width: none; object-fit: contain; pointer-events: none; transform: translate(-50%, -50%); filter: drop-shadow(0 3px 4px rgba(0, 6, 16, .5)); }
+.fgg-piece-sticker.ember { filter: hue-rotate(145deg) saturate(1.2) drop-shadow(0 3px 4px rgba(0, 6, 16, .5)); }
+.fgg-node.selected .fgg-piece-sticker { filter: drop-shadow(0 0 7px #fff4a8) drop-shadow(0 3px 4px rgba(0, 6, 16, .5)); }
+.fgg-node.selected .fgg-piece-sticker.ember { filter: hue-rotate(145deg) saturate(1.2) drop-shadow(0 0 7px #fff4a8) drop-shadow(0 3px 4px rgba(0, 6, 16, .5)); }
 .fgg-node:disabled { opacity: 1; }
 
 .fgg-end-chain { background: linear-gradient(135deg, #8b5d19, #4c2d08); }

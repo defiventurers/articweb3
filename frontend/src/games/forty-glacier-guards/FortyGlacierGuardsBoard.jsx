@@ -3,6 +3,8 @@ import { EDGES, NODES, getLegalActions } from "./rules.js";
 
 const NODE_BY_ID = Object.fromEntries(NODES.map((node) => [node.id, node]));
 const BASE_SIZE = 620;
+// Arctic Chalis Gutiya treatment: physical guard stickers retain native button hit areas on the dense orthogonal battle grid.
+const CHALIS_GUARD_STICKER = "/manus-storage/chalis-guard-sticker_a0df743d.png";
 
 export function FortyGlacierGuardsBoard({ state, selectedNode, onNode, interactive = true, viewerSide = state.currentPlayer }) {
   const [zoom, setZoom] = useState(() => typeof window !== "undefined" && window.innerWidth < 720 ? 0.82 : 1);
@@ -58,12 +60,7 @@ export function FortyGlacierGuardsBoard({ state, selectedNode, onNode, interacti
                   onClick={() => onNode(node.id)}
                   aria-label={`${node.id}${piece ? ` occupied by ${piece}` : " empty"}${selected ? " selected" : ""}${actionHint}`}
                 >
-                  {piece && (
-                    <span className={`fgg-piece fgg-piece-${piece}`}>
-                      <i className="guard-crest" />
-                      <b>{piece === "aurora" ? "A" : "E"}</b>
-                    </span>
-                  )}
+                  {piece && <img className={`fgg-piece-sticker ${piece}`} src={CHALIS_GUARD_STICKER} alt="" aria-hidden="true" />}
                 </button>
               );
             })}

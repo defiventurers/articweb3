@@ -1,3 +1,4 @@
+/* Arctic Dadu language: a source-accurate stitched-track race with tactile royal and court-fox sticker pieces. */
 :root {
   --cr-night: #050913;
   --cr-deep: #0a1930;
@@ -218,6 +219,8 @@
 .cr-piece.capture { box-shadow: 0 0 0 3px rgba(255, 121, 92, 0.18), 0 0 20px rgba(255, 128, 94, 0.78); }
 .cr-piece:not(:disabled):hover { transform: scale(1.16); }
 .cr-piece:disabled { cursor: default; }
+.cr-piece-sticker { position: absolute; inset: -36%; z-index: 2; width: 172%; height: 172%; max-width: none; object-fit: contain; pointer-events: none; filter: drop-shadow(0 4px 5px rgba(0, 5, 15, 0.48)); }
+.cr-piece.king .cr-piece-sticker { inset: -31%; width: 162%; height: 162%; }
 .cr-dock .cr-piece { width: 25px; }
 .cr-dock .cr-piece.king { width: 30px; }
 .cr-center-stacks .cr-piece { width: 19px; }

@@ -1,3 +1,4 @@
+/* Arctic Pancha Keliya language: a narrow bent race path with tactile penguin-courier sticker counters. */
 :root {
   --gt-night: #05111d;
   --gt-deep: #09263b;
@@ -220,6 +221,7 @@
 .gt-counter.legal,
 .gt-home-counter.legal { box-shadow: 0 0 0 4px rgba(255, 218, 135, .16), 0 0 25px rgba(255, 215, 128, .72), 0 7px 12px rgba(0,0,0,.35); animation: gtPulse 1.4s ease-in-out infinite; }
 .gt-counter:disabled { cursor: default; }
+.gt-runner-sticker { position: absolute; z-index: 2; left: 50%; top: 50%; width: 160%; height: 160%; max-width: none; object-fit: contain; pointer-events: none; transform: translate(-50%, -50%); filter: drop-shadow(0 5px 6px rgba(0, 5, 14, 0.48)); }
 @keyframes gtPulse { 50% { filter: brightness(1.15); } }
 .gt-summit { position: absolute; left: 18.3%; top: 1%; transform: translate(-50%, -50%); display: grid; justify-items: center; color: #d9fbff; pointer-events: none; }
 .gt-summit span { font-size: 7px; letter-spacing: .1em; }
@@ -235,6 +237,7 @@
 .gt-home-counters { display: flex; flex-wrap: wrap; gap: 7px; min-height: 42px; }
 .gt-home-counter { width: 38px; aspect-ratio: 1; padding: 0; border: 1px solid rgba(255,255,255,.45); border-radius: 50%; font-weight: 900; cursor: pointer; }
 .gt-home-counter:disabled { cursor: default; opacity: .72; }
+.gt-home-runner-sticker { display: block; width: 145%; height: 145%; max-width: none; margin: -23% 0 0 -23%; object-fit: contain; pointer-events: none; }
 .gt-empty-home { color: #91b2ba; font-size: 11px; }
 .gt-dock-stats { display: flex; justify-content: space-between; gap: 5px; color: #8eafb7; font-size: 8px; }
 .gt-dock-stats b { color: #eaffff; font-size: 11px; }

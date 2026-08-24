@@ -11,6 +11,12 @@ import {
   pieceLabel
 } from "./rules.js";
 
+// Arctic Pancha Keliya treatment: tactile penguin courier stickers preserve the board's semantic counter buttons.
+const RUNNER_STICKERS = Object.freeze({
+  aurora: "/manus-storage/pancha-aurora-runner-sticker_25e15750.png",
+  ember: "/manus-storage/pancha-ember-runner-sticker_33b710b9.png"
+});
+
 export function GlacierTrailBoard({ state, legalActions = [], onAction, interactive = true, selectedAllocation = null }) {
   const actions = useMemo(
     () => legalActions.filter((action) => allocationKey(action) === selectedAllocation),
@@ -56,7 +62,7 @@ export function GlacierTrailBoard({ state, legalActions = [], onAction, interact
                   onClick={() => onAction(action)}
                   aria-label={`${sideName(occupant.side)} ${pieceLabel(occupant.id)} on ${space.label}${legal ? `, legal move by ${action.value}` : ""}`}
                 >
-                  <span aria-hidden="true"><i /><b>{occupant.id.split("-")[1]}</b></span>
+                  <img className="gt-runner-sticker" src={RUNNER_STICKERS[occupant.side]} alt="" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -86,7 +92,7 @@ function CounterDock({ side, state, summary, actionByPiece, interactive, onActio
               onClick={() => onAction(action)}
               aria-label={`${sideName(side)} waiting ${pieceLabel(piece.id)}${action ? `, legal entry with ${action.value}` : ""}`}
             >
-              <span aria-hidden="true">{piece.id.split("-")[1]}</span>
+              <img className="gt-home-runner-sticker" src={RUNNER_STICKERS[side]} alt="" aria-hidden="true" />
             </button>
           );
         })}

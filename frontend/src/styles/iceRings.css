@@ -1,3 +1,4 @@
+/* Arctic Pretwa language: three source-accurate concentric rings, six diameters, and tactile guard-sticker counters. */
 :root {
   --ir-night: #020817;
   --ir-blue: #70e8ff;
@@ -94,8 +95,9 @@
 .ir-node-core em { color:#22445f; font-style:normal; font-size:16px; }.ir-node:disabled{opacity:1}
 .ir-guard { position:absolute; inset:-28%; display:grid; place-items:center; border-radius:52% 52% 44% 44%; font-style:normal; border:2px solid rgba(255,255,255,.82); box-shadow:0 7px 14px rgba(0,7,20,.46),inset 0 0 0 3px rgba(255,255,255,.14); }
 .ir-guard.aurora{background:linear-gradient(145deg,#e5fdff,#46cfe9 62%,#1576b8);color:#092947}.ir-guard.ember{background:linear-gradient(145deg,#ffe5ea,#ff7995 62%,#a73e69);color:#4b1024}.ir-guard b{font-size:clamp(15px,2.5vw,25px)}
+.ir-guard-sticker{position:absolute;z-index:2;left:50%;top:50%;width:164%;height:164%;max-width:none;object-fit:contain;pointer-events:none;transform:translate(-50%,-50%);filter:drop-shadow(0 5px 6px rgba(0,6,20,.5))}.ir-guard-sticker.ember{filter:hue-rotate(150deg) saturate(1.18) drop-shadow(0 5px 6px rgba(0,6,20,.5))}
 .ir-node.legal-source,.ir-node.legal-target{cursor:pointer}.ir-node.legal-source .ir-guard,.ir-node.legal-target .ir-node-core{outline:2px solid #e7fcff;outline-offset:3px;filter:brightness(1.18);box-shadow:0 0 0 5px rgba(83,218,255,.13),0 0 22px rgba(109,230,255,.58)}
-.ir-node.capture-target .ir-node-core{background:linear-gradient(145deg,#fff5c6,#ff936f);box-shadow:0 0 25px rgba(255,178,101,.66)}.ir-node.selected .ir-guard{outline-color:var(--ir-gold);box-shadow:0 0 0 5px rgba(255,222,146,.14),0 0 24px rgba(255,225,155,.72)}
+.ir-node.legal-source .ir-guard-sticker{filter:drop-shadow(0 0 7px #e7fcff) drop-shadow(0 5px 6px rgba(0,6,20,.5))}.ir-node.legal-source .ir-guard-sticker.ember{filter:hue-rotate(150deg) saturate(1.18) drop-shadow(0 0 7px #e7fcff) drop-shadow(0 5px 6px rgba(0,6,20,.5))}.ir-node.capture-target .ir-node-core{background:linear-gradient(145deg,#fff5c6,#ff936f);box-shadow:0 0 25px rgba(255,178,101,.66)}.ir-node.selected .ir-guard-sticker{filter:drop-shadow(0 0 8px var(--ir-gold)) drop-shadow(0 5px 6px rgba(0,6,20,.5))}.ir-node.selected .ir-guard-sticker.ember{filter:hue-rotate(150deg) saturate(1.18) drop-shadow(0 0 8px var(--ir-gold)) drop-shadow(0 5px 6px rgba(0,6,20,.5))}
 .ir-board-caption { position:absolute; left:50%; transform:translateX(-50%); color:rgba(214,245,255,.38); font-size:8px; font-weight:900; letter-spacing:.2em; }.ir-board-caption.top{top:4%}.ir-board-caption.bottom{bottom:4%}
 .ir-game-message { margin:0; padding:10px 14px; border:1px solid rgba(180,237,255,.14); border-radius:14px; background:rgba(93,204,255,.08); color:#c8e8f3; text-align:center; }.ir-result-actions{display:flex;justify-content:center;gap:10px}.ir-game-footer{max-width:1450px;margin:9px auto 0;display:flex;justify-content:space-between;color:#7894a6;font-size:10px}
 
