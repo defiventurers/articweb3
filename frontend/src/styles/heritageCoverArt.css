@@ -1,0 +1,15 @@
+/* Tactile Expedition Theatre: inline catalogue covers are physical, varied, and deliberately separate from interactive boards. */
+.heritage-cover-art { position: absolute; inset: 0; overflow: hidden; color: var(--cover-accent); background: #06121e; }
+.heritage-cover-art__scene { display: block; width: 100%; height: 100%; }
+.heritage-cover-art__glyph { transform-origin: 120px 151px; filter: drop-shadow(0 11px 10px rgba(0,0,0,.34)); }
+.heritage-cover-art__frame { position: absolute; inset: 6.5%; border: 1px solid color-mix(in srgb, var(--cover-accent) 76%, white); box-shadow: inset 0 0 1.75rem color-mix(in srgb, var(--cover-accent) 16%, transparent), 0 0 0 .25rem rgba(255,255,255,.04); pointer-events: none; }
+.heritage-cover-art::before { position: absolute; inset: 0; content: ""; background: linear-gradient(144deg, rgba(255,255,255,.18), transparent 18% 73%, rgba(0,0,0,.32)), radial-gradient(ellipse at 86% 18%, color-mix(in srgb, var(--cover-accent) 38%, transparent), transparent 28%); mix-blend-mode: screen; pointer-events: none; }
+.heritage-cover-art__series, .heritage-cover-art__number, .heritage-cover-art__label, .heritage-cover-art__heritage { position: absolute; z-index: 1; font-family: "DM Mono", monospace; letter-spacing: .1em; }
+.heritage-cover-art__series { top: 9%; left: 10%; color: color-mix(in srgb, var(--cover-accent) 90%, white); font-size: clamp(.29rem,.48vw,.43rem); }
+.heritage-cover-art__number { top: 9%; right: 10%; color: rgba(255,255,255,.55); font-size: clamp(.38rem,.6vw,.54rem); }
+.heritage-cover-art__label { right: 10%; bottom: 29%; color: var(--cover-accent); font-size: clamp(.3rem,.5vw,.47rem); text-transform: uppercase; writing-mode: vertical-rl; }
+.heritage-cover-art__title { position: absolute; z-index: 1; right: 10%; bottom: 13%; left: 10%; color: #f6ffff; font-family: "Bebas Neue", "Rajdhani", sans-serif; font-size: clamp(1.5rem, 3.2vw, 3rem); font-weight: 400; line-height: .84; letter-spacing: .035em; text-transform: uppercase; text-shadow: 0 3px 10px rgba(0,0,0,.52); }
+.heritage-cover-art__heritage { right: 10%; bottom: 7%; left: 10%; color: rgba(238,250,251,.72); font-size: clamp(.26rem,.48vw,.42rem); line-height: 1.28; letter-spacing: .045em; }
+.heritage-cover-art--compact .heritage-cover-art__glyph { transform-origin: 120px 151px; }
+@media (prefers-reduced-motion: no-preference) { .game-box--selected .heritage-cover-art__glyph { animation: heritage-cover-drift 7s ease-in-out infinite alternate; } }
+@keyframes heritage-cover-drift { from { transform: translate3d(-1px,1px,0) rotate(-.65deg); } to { transform: translate3d(2px,-2px,0) rotate(.65deg); } }

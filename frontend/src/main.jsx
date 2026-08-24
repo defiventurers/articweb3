@@ -36,6 +36,8 @@ import "./styles/heritageStickerFallback.css";
 import "./styles/catalogueExperience.css";
 import "./styles/heritageGameExperience.css";
 import "./styles/recurringCharacters.css";
+import "./styles/heritageCoverArt.css";
+import "./styles/heritageVisualRefresh.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";

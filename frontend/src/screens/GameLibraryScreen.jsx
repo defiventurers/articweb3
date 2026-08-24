@@ -69,7 +69,7 @@ export function GameLibraryScreen({ onSelectGame }) {
   }
 
   return (
-    <main className={`arctic-game-world theme-${selectedGame.theme} ${webglReady === true ? "arctic-game-world--webgl" : ""}`} onWheel={onWheel}>
+    <main className={`arctic-game-world theme-${selectedGame.theme} ${selectedGame.id !== "arctic-dominion" ? "heritage-library-selection" : ""} ${webglReady === true ? "arctic-game-world--webgl" : ""}`} onWheel={onWheel}>
       {webglReady !== true && <GameEnvironment theme={selectedGame.theme} />}
       {webglReady !== false && (
         <ArcticWebGLArchive

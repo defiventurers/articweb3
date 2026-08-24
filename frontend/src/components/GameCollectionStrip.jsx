@@ -1,4 +1,5 @@
-import { boxAssetPath } from "./GameBox.jsx";
+/* Tactile Expedition Theatre: thumbnail covers reuse the reliable inline art system instead of image URLs. */
+import { HeritageCoverArt } from "./HeritageCoverArt.jsx";
 
 export function GameCollectionStrip({ games, selectedIndex, onSelectIndex }) {
   return (
@@ -22,17 +23,7 @@ export function GameCollectionStrip({ games, selectedIndex, onSelectIndex }) {
                 onClick={() => onSelectIndex(index)}
               >
                 <span className="game-collection-strip__thumb" aria-hidden="true">
-                  <img
-                    src={boxAssetPath(game.id)}
-                    alt=""
-                    loading={index < 7 ? "eager" : "lazy"}
-                    decoding="async"
-                    onError={(event) => {
-                      event.currentTarget.hidden = true;
-                      event.currentTarget.parentElement.classList.add("is-failed");
-                    }}
-                  />
-                  <span className="game-collection-strip__thumb-fallback">{game.mark}</span>
+                  {game.id === "arctic-dominion" ? <img src="/assets/games/arctic-dominion/front.webp" alt="" /> : <HeritageCoverArt game={game} compact />}
                   <span className="game-collection-strip__thumb-shine" />
                 </span>
                 <span className="game-collection-strip__number">{String(index + 1).padStart(2, "0")}</span>

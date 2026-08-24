@@ -1,4 +1,4 @@
-/* Arctic Dominion experience note: this compact guide offers a calm, honest first-action cue on every game route without interrupting play or changing rules. */
+/* Tactile Expedition Theatre: this compact heritage-only guide offers a calm first-action cue without interrupting play or changing rules. */
 import { useState } from "react";
 import { RecurringCharacter } from "./RecurringCharacter.jsx";
 
@@ -33,7 +33,7 @@ export function ExperienceCompanion({ gameId }) {
   return (
     <aside className={`experience-companion ${open ? "open" : ""}`} aria-label={`${brief.label} field guide`}>
       <button type="button" className="experience-companion-trigger" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
-        <span aria-hidden="true">✦</span><span>{open ? "Close field guide" : "Field guide"}</span>
+        <span aria-hidden="true">✦</span><span>{open ? "Close field guide" : "Pip’s field guide"}</span>
       </button>
       {open && (
         <div className="experience-companion-card">

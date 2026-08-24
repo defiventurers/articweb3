@@ -1,17 +1,12 @@
+/* Tactile Expedition Theatre: durable inline cover art applies only to heritage titles; the Arctic Dominion shell keeps its original art. */
 import { useEffect, useState } from "react";
+import { HeritageCoverArt } from "./HeritageCoverArt.jsx";
 
-const BOX_ART_VERSION = "front-1";
-const boxAssetPath = (gameId) => gameId === "four-wing-ice-hunt"
-  ? `/assets/games/${gameId}/front.png?v=${BOX_ART_VERSION}`
-  : `/assets/games/${gameId}/front.webp?v=${BOX_ART_VERSION}`;
+export function GameBox({ game, position = "selected" }) {
+  const [arcticImageFailed, setArcticImageFailed] = useState(false);
+  const isArcticDominion = game.id === "arctic-dominion";
 
-export function GameBox({ game, position = "selected", priority = false }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const imageSource = boxAssetPath(game.id);
-
-  useEffect(() => {
-    setImageFailed(false);
-  }, [game.id]);
+  useEffect(() => setArcticImageFailed(false), [game.id]);
 
   return (
     <div
@@ -25,17 +20,11 @@ export function GameBox({ game, position = "selected", priority = false }) {
           <strong>{game.title}</strong>
         </div>
         <div className="game-box__face">
-          {!imageFailed && (
-            <img
-              className="game-box__image"
-              src={imageSource}
-              alt=""
-              loading={priority ? "eager" : "lazy"}
-              fetchPriority={priority ? "high" : "auto"}
-              onError={() => setImageFailed(true)}
-            />
-          )}
-          {imageFailed && <GameBoxPlaceholder game={game} />}
+          {isArcticDominion && !arcticImageFailed ? (
+            <img className="game-box__image" src="/assets/games/arctic-dominion/front.webp" alt="" onError={() => setArcticImageFailed(true)} />
+          ) : isArcticDominion ? (
+            <div className="game-box__placeholder"><span className="game-box__mark">AD</span><span className="game-box__placeholder-title">Arctic Dominion</span></div>
+          ) : <HeritageCoverArt game={game} />}
           <div className="game-box__frost" />
           <div className="game-box__glint" />
         </div>
@@ -43,18 +32,3 @@ export function GameBox({ game, position = "selected", priority = false }) {
     </div>
   );
 }
-
-function GameBoxPlaceholder({ game }) {
-  return (
-    <div className="game-box__placeholder">
-      <span className="game-box__seal">ARCTIC GAME KINGDOMS</span>
-      <span className="game-box__mark">{game.mark}</span>
-      <span className="game-box__placeholder-title">{game.title}</span>
-      <span className="game-box__placeholder-rule" />
-      <span className="game-box__placeholder-meta">{game.heritage}</span>
-      <span className="game-box__placeholder-index">{String(game.priority + 1).padStart(2, "0")}</span>
-    </div>
-  );
-}
-
-export { boxAssetPath };
