@@ -7,3 +7,7 @@ The local desktop catalogue was checked in both the untouched Arctic Dominion se
 The selected heritage cover is visually legible at the main desktop viewport. The two neighbouring box positions retain a catalogue-shelf effect without obscuring the selected title or primary action. The in-game treatment remains constrained to surrounding surfaces and the shared Field guide; no board wrapper, grid-cell geometry, pointer target, or z-index layer was changed.
 
 The Nine Ice Forts cover route and its post-entry mode menu were also checked at 1280×720. The game cover retains a focused board-mark hero, direct entry control, and visible Pip field-guide trigger. The post-entry mode selection remains readable, preserves Online Multiplayer, Practice vs Frost Bot, Local Two Player, and How to Play, and retains the protected board path behind those modes.
+
+## 2026-08-24 four-penguin host pass
+
+The refreshed Nine Ice Forts catalogue selection rendered compact Pengu Order and Retsba Legion host seals beside the Expedition Brief and on the cover edge. The four-penguin host styling is inline SVG rather than a remote image, therefore remains visible even when external asset delivery is unavailable. The opened Retsba-led Field guide displayed the lead and supporting hosts in its non-interactive panel while the game cover and board route remained unobstructed.

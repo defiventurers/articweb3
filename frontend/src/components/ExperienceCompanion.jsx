@@ -1,6 +1,7 @@
 /* Tactile Expedition Theatre: this compact heritage-only guide offers a calm first-action cue without interrupting play or changing rules. */
 import { useState } from "react";
 import { RecurringCharacter } from "./RecurringCharacter.jsx";
+import { PenguinHost, PenguinHostPair, getGameHosts, HOST_META } from "./PenguinHosts.jsx";
 
 const GAME_BRIEFS = Object.freeze({
   "nine-ice-forts": { label: "Nine Ice Forts", cue: "Build a line of pressure between the forts; a clear bridge is worth more than a rushed move.", action: "New here? Open How to Play, then choose a practice game." },
@@ -28,22 +29,23 @@ const GAME_BRIEFS = Object.freeze({
 export function ExperienceCompanion({ gameId }) {
   const [open, setOpen] = useState(false);
   const brief = GAME_BRIEFS[gameId];
+  const hosts = getGameHosts(gameId);
   if (!brief) return null;
 
   return (
     <aside className={`experience-companion ${open ? "open" : ""}`} aria-label={`${brief.label} field guide`}>
       <button type="button" className="experience-companion-trigger" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
-        <span aria-hidden="true">✦</span><span>{open ? "Close field guide" : "Pip’s field guide"}</span>
+        {hosts ? <PenguinHost host={hosts.lead} size="mini" /> : <span aria-hidden="true">✦</span>}<span>{open ? "Close field guide" : `${hosts ? HOST_META[hosts.lead].short : "Pip"}’s field guide`}</span>
       </button>
       {open && (
         <div className="experience-companion-card">
-          <p><RecurringCharacter kind="guide" className="experience-companion-pip" />FIRST LOOK · {brief.label.toUpperCase()}</p>
+          <p>{hosts ? <PenguinHostPair gameId={gameId} compact /> : <RecurringCharacter kind="guide" className="experience-companion-pip" />}FIRST LOOK · {brief.label.toUpperCase()}</p>
           <strong>{brief.cue}</strong>
           <small>{brief.action}</small>
           <div className="experience-companion-path" aria-label="A gentle learning path">
             <span><b>1</b> Notice</span><span><b>2</b> Try</span><span><b>3</b> Return</span>
           </div>
-          <em>Pip says: play at your own pace. The board will wait.</em>
+          <em>{hosts ? `${HOST_META[hosts.lead].short} says: play at your own pace. The board will wait.` : "Pip says: play at your own pace. The board will wait."}</em>
         </div>
       )}
     </aside>

@@ -1,4 +1,5 @@
 /* Tactile Expedition Theatre: inline, reliable cover art keeps each heritage game distinct without competing with play surfaces. */
+import { PenguinHostPair } from "./PenguinHosts.jsx";
 const COVER_META = {
   "nine-ice-forts": { accent: "#bdeeff", glow: "#3d8bd0", label: "Mill alignment" },
   "four-wing-ice-hunt": { accent: "#efba7f", glow: "#b75c35", label: "Four-wing hunt" },
@@ -81,6 +82,7 @@ export function HeritageCoverArt({ game, compact = false }) {
         <rect width="240" height="300" fill={`url(#${gradientId}-grain)`} />
       </svg>
       <div className="heritage-cover-art__frame" />
+      <PenguinHostPair gameId={game.id} className="heritage-cover-art__hosts" />
       {!compact && <>
         <span className="heritage-cover-art__series">ARCTIC GAME KINGDOMS</span>
         <span className="heritage-cover-art__number">{String(game.priority).padStart(2, "0")}</span>

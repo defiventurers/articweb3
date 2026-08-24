@@ -1,4 +1,5 @@
 /* Tactile Expedition Theatre: this is the heritage-only invitation layer; it describes a first decision without changing any game rule. */
+import { PenguinHostPair, getGameHosts, HOST_META } from "./PenguinHosts.jsx";
 const EXPEDITION_BRIEFS = {
   "nine-ice-forts": "Build pressure between three points before you rush a mill.",
   "four-wing-ice-hunt": "Trace the lattice first; every open wing changes the hunt.",
@@ -25,6 +26,7 @@ const EXPEDITION_BRIEFS = {
 export function GameInfo({ game, index, total, onEnter }) {
   const playable = Boolean(game.available);
   const isArcticDominion = game.id === "arctic-dominion";
+  const hosts = getGameHosts(game.id);
   const expeditionBrief = EXPEDITION_BRIEFS[game.id] || "Study the board shape, then take one deliberate first move.";
 
   return (
@@ -38,6 +40,7 @@ export function GameInfo({ game, index, total, onEnter }) {
       <p className="game-info__heritage">{game.heritage}</p>
       <p className="game-info__metadata">{game.players.toUpperCase()} <span>·</span> {game.engine.toUpperCase()}</p>
       <p className="game-info__summary">{game.summary}</p>
+      {!isArcticDominion && hosts && <div className="game-info__hosts"><PenguinHostPair gameId={game.id} /> <span>{HOST_META[hosts.lead].name} hosts this expedition</span></div>}
       {!isArcticDominion && <div className="game-info__brief">
         <span>EXPEDITION BRIEF</span>
         <strong>{expeditionBrief}</strong>
