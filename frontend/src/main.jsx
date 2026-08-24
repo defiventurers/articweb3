@@ -33,6 +33,7 @@ import "./styles/auroraGanjifaAcademy.css";
 import "./styles/sige.css";
 import "./styles/sevenIceRings.css";
 import "./styles/heritageStickerFallback.css";
+import "./styles/catalogueExperience.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";

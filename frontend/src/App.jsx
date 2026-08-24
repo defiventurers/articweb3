@@ -6,6 +6,7 @@ import {
   warmHowToPlayAssets
 } from "./components/FrostLoadingScreen.jsx";
 import { AudioToggle } from "./components/AudioToggle.jsx";
+import { ExperienceCompanion } from "./components/ExperienceCompanion.jsx";
 import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { GameLibraryScreen } from "./screens/GameLibraryScreen.jsx";
 import { GamePreviewScreen } from "./screens/GamePreviewScreen.jsx";
@@ -118,7 +119,7 @@ export default function App() {
   function roomLobbyScreen(targetRoom = room) { return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu"; }
   function goTo(nextScreen, options = {}) { window.clearTimeout(transitionTimerRef.current); if (options.tapSound !== false) soundManager.play("uiTap", { cooldownMs: 80 }); if (nextScreen === "how-to-play") warmHowToPlayAssets(); if (nextScreen === "game" || nextScreen === "team-select" || nextScreen === "waiting") warmGameAssets(); setScreen(nextScreen); }
   function playTrackThenGo(trackName, nextScreen, delayMs) { window.clearTimeout(transitionTimerRef.current); soundManager.unlock(); unlockUiAudio(); soundManager.playTrack(trackName, { restart: true }); transitionTimerRef.current = window.setTimeout(() => goTo(nextScreen, { tapSound: false }), delayMs); }
-  function withAppChrome(node) { return <><AudioToggle />{node}</>; }
+  function withAppChrome(node) { return <><AudioToggle />{node}<ExperienceCompanion gameId={PLAYABLE_GAME_IDS.has(screen) ? screen : null} /></>; }
   function selectCatalogGame(gameId) { const game = getCatalogGame(gameId); if (!game) return; setSelectedGameId(game.id); syncGameQuery(game.id); if (PLAYABLE_GAME_IDS.has(game.id)) return goTo(game.id); goTo(game.available ? "cover" : "game-preview"); }
   function exitToLibrary() { setSelectedGameId(null); syncGameQuery(null); goTo("library"); }
   function resumeRoom(nextRoom) { setRoom(nextRoom); if (nextRoom.status === "finished") return goTo("results"); if (nextRoom.status === "playing") return goTo("game"); if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return goTo("waiting"); return goTo("team-select"); }
