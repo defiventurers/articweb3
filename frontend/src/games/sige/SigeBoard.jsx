@@ -1,5 +1,6 @@
 /* Arctic Dominion design note: Parker’s 5×5 Sige lattice stays visibly continuous; cold ivory-and-coral physical counters replace glyph pieces. */
 import { BOARD_SIZE, CELLS, ROUTES, SAFE_SPACES, getPieceSpaceId, sideName } from "./rules.js";
+import { RecurringCharacter } from "../../components/RecurringCharacter.jsx";
 
 const GRID_LINES = Object.freeze([0, 1, 2, 3, 4, 5]);
 
@@ -50,7 +51,7 @@ export function SigeBoard({ state, legalActions = [], onAction, interactive = tr
                     onClick={() => action && onAction?.(action)}
                     aria-label={`${sideName(piece.side)} counter ${number} on ${cell.id}${action ? `, legal ${action.type === "enter" ? "entry" : action.finishes ? "exact centre finish" : action.capturedPieceIds?.length ? "capture" : `move ${action.value}`}` : ""}`}
                   >
-                    <span className="sg-piece-art" aria-hidden="true" />
+                    <RecurringCharacter className="sg-piece-art" kind="guardian" side={piece.side} />
                     <small>{number}</small>
                   </button>
                 );
@@ -85,7 +86,7 @@ export function SigeDock({ side, state, legalActions = [], onAction, interactive
               onClick={() => action && onAction?.(action)}
               aria-label={`${sideName(side)} counter ${number} at home${action ? ", legal entry with 1" : ""}`}
             >
-              <span className="sg-piece-art" aria-hidden="true" /><small>{number}</small>
+              <RecurringCharacter className="sg-piece-art" kind="guardian" side={side} /><small>{number}</small>
             </button>
           );
         })}

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { getLegalActions } from "./rules.js";
+import { RecurringCharacter } from "../../components/RecurringCharacter.jsx";
 
 export function KhasiFishflowBoard({ state, onPit, interactivePlayer = state.currentPlayer, interactive = true }) {
   const legalIndexes = useMemo(() => {
@@ -34,7 +35,7 @@ function Pit({ player, pitIndex, count, active, legal, onPit }) {
   return (
     <button type="button" role="gridcell" disabled={!active || !legal} className={`fishflow-pit ${player} ${active ? "active" : "inactive"} ${legal ? "legal" : ""}`} onClick={() => onPit(player, pitIndex)} aria-label={`${player} pit ${pitIndex + 1} with ${count} fish${active ? "" : ", inactive"}`}>
       <span className="fishflow-pit-number">{count}</span>
-      <span className="fishflow-fish-cluster khasi-stones" aria-hidden="true">{Array.from({ length: fishCount }, (_, index) => <i key={index} />)}</span>
+      <span className="fishflow-fish-cluster khasi-stones" aria-hidden="true">{fishCount > 0 && <RecurringCharacter kind="mica" side={player} className="fishflow-mica" />}{Array.from({ length: fishCount }, (_, index) => <i key={index} />)}</span>
       {count > 12 && <small>+{count - 12}</small>}
       {!active && <span className="fishflow-frozen-mark" aria-hidden="true">❄</span>}
     </button>

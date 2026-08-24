@@ -1,0 +1,5 @@
+/* Arctic Dominion cast note: SVG characters are self-contained; nothing here depends on remote image delivery. */
+.recurring-character{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 3px rgba(2,16,34,.28))}.recurring-character.guide{width:42px;height:42px}.recurring-character.mica,.recurring-character.seed,.recurring-character.stone{filter:drop-shadow(0 2px 2px rgba(2,16,34,.24))}@media (prefers-reduced-motion:reduce){.recurring-character{filter:none}}
+.experience-companion-pip{display:inline-block;vertical-align:middle;width:32px!important;height:32px!important;margin:-7px 6px -7px -2px}
+.fishflow-mica{flex:0 0 auto;width:clamp(10px,1vw,15px)!important;height:clamp(10px,1vw,15px)!important}
+.nif-piece-character{position:relative;width:88%!important;height:88%!important;z-index:1}

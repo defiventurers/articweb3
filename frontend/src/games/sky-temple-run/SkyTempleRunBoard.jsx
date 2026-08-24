@@ -1,5 +1,6 @@
 /* Arctic Dominion design note: the Vimanam tail, outer circuit, bridge, and two inner arms remain source-led; physical lacquered pilgrims replace chess glyphs. */
 import { ROUTES, SAFE_SPACES, SKY_TEMPLE_RUN_RULESET, SPACES, SPACE_BY_ID, getPieceSpaceId } from "./rules.js";
+import { RecurringCharacter } from "../../components/RecurringCharacter.jsx";
 
 export function SkyTempleRunBoard({ state, legalActions = [], onAction, interactive = true }) {
   const legalByPiece = new Map(legalActions.map((action) => [action.pieceId, action]));
@@ -54,7 +55,7 @@ export function SkyTempleRunBoard({ state, legalActions = [], onAction, interact
                 onClick={() => legal && onAction?.(legal)}
                 aria-label={aria}
               >
-                <span className="str-piece-art" aria-hidden="true" />
+                <RecurringCharacter className="str-piece-art" kind="pilgrim" side={piece.side} />
                 <small>{pieceNumber}</small>
               </button>
             )}
@@ -86,7 +87,7 @@ export function PilgrimDock({ side, state, legalActions = [], onAction, interact
           const legal = legalByPiece.get(piece.id);
           const number = Number(piece.id.split("-").at(-1));
           const aria = `${side === "aurora" ? "Aurora" : "Ember"} pilgrim ${number} at home${legal ? ", legal entry" : ""}`;
-          return <button key={piece.id} disabled={!interactive || !legal} className={`${side} ${legal ? "legal" : ""}`} onClick={() => legal && onAction?.(legal)} aria-label={aria}><span className="str-piece-art" aria-hidden="true" /><small>{number}</small></button>;
+          return <button key={piece.id} disabled={!interactive || !legal} className={`${side} ${legal ? "legal" : ""}`} onClick={() => legal && onAction?.(legal)} aria-label={aria}><RecurringCharacter className="str-piece-art" kind="pilgrim" side={side} /><small>{number}</small></button>;
         })}
       </div>
       <footer><span>{homePieces.length} home</span><span>{finished}/{SKY_TEMPLE_RUN_RULESET.piecesPerPlayer} finished</span><span>{state.captures[side]} captures</span></footer>

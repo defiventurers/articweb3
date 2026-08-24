@@ -1,5 +1,6 @@
 /* Arctic Dominion experience note: this compact guide offers a calm, honest first-action cue on every game route without interrupting play or changing rules. */
 import { useState } from "react";
+import { RecurringCharacter } from "./RecurringCharacter.jsx";
 
 const GAME_BRIEFS = Object.freeze({
   "nine-ice-forts": { label: "Nine Ice Forts", cue: "Build a line of pressure between the forts; a clear bridge is worth more than a rushed move.", action: "New here? Open How to Play, then choose a practice game." },
@@ -36,13 +37,13 @@ export function ExperienceCompanion({ gameId }) {
       </button>
       {open && (
         <div className="experience-companion-card">
-          <p>FIRST LOOK · {brief.label.toUpperCase()}</p>
+          <p><RecurringCharacter kind="guide" className="experience-companion-pip" />FIRST LOOK · {brief.label.toUpperCase()}</p>
           <strong>{brief.cue}</strong>
           <small>{brief.action}</small>
           <div className="experience-companion-path" aria-label="A gentle learning path">
             <span><b>1</b> Notice</span><span><b>2</b> Try</span><span><b>3</b> Return</span>
           </div>
-          <em>Play at your own pace. The board will wait.</em>
+          <em>Pip says: play at your own pace. The board will wait.</em>
         </div>
       )}
     </aside>

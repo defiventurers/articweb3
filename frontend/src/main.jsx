@@ -35,6 +35,7 @@ import "./styles/sevenIceRings.css";
 import "./styles/heritageStickerFallback.css";
 import "./styles/catalogueExperience.css";
 import "./styles/heritageGameExperience.css";
+import "./styles/recurringCharacters.css";
 import "./styles/frostLoading.css";
 import "./styles/lobbyModes.css";
 import "./styles/highStakes.css";

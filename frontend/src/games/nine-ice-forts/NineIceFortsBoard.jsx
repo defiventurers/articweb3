@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { EDGES, NODES, getLegalActions } from "./rules.js";
+import { RecurringCharacter } from "../../components/RecurringCharacter.jsx";
 
 export function NineIceFortsBoard({ state, selectedNode, onNode, interactive = true }) {
   const legalActions = useMemo(() => getLegalActions(state), [state]);
@@ -30,7 +31,7 @@ export function NineIceFortsBoard({ state, selectedNode, onNode, interactive = t
             aria-label={`${node.id}${piece ? ` occupied by ${piece}` : " empty"}${selected ? " selected" : ""}`}
             role="gridcell"
           >
-            {piece && <span className="nif-piece"><i /></span>}
+            {piece && <span className="nif-piece"><RecurringCharacter className="nif-piece-character" kind="scout" side={piece} /></span>}
           </button>
         );
       })}

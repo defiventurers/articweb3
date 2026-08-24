@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { chooseBotAction } from "./bot.js";
 import { NineIceFortsOnline } from "./NineIceFortsOnline.jsx";
+import { RecurringCharacter } from "../../components/RecurringCharacter.jsx";
 import {
   EDGES,
   NINE_ICE_FORTS_RULESET,
@@ -164,7 +165,7 @@ export function NineIceFortsBoard({ state, selectedNode, onNode, interactive = t
         const piece = state.board[node.id];
         const selected = selectedNode === node.id;
         const legal = interactive && (legalNodeIds.has(node.id) || movableFrom.has(node.id));
-        return <button key={node.id} type="button" disabled={!interactive} className={`nif-node ${piece ? `piece-${piece}` : "empty"} ${selected ? "selected" : ""} ${legal ? "legal" : ""}`} style={{ left: `${node.x}%`, top: `${node.y}%` }} onClick={() => onNode(node.id)} aria-label={`${node.id}${piece ? ` occupied by ${piece}` : " empty"}${selected ? " selected" : ""}`} role="gridcell">{piece && <span className="nif-piece"><i /></span>}</button>;
+        return <button key={node.id} type="button" disabled={!interactive} className={`nif-node ${piece ? `piece-${piece}` : "empty"} ${selected ? "selected" : ""} ${legal ? "legal" : ""}`} style={{ left: `${node.x}%`, top: `${node.y}%` }} onClick={() => onNode(node.id)} aria-label={`${node.id}${piece ? ` occupied by ${piece}` : " empty"}${selected ? " selected" : ""}`} role="gridcell">{piece && <span className="nif-piece"><RecurringCharacter className="nif-piece-character" kind="scout" side={piece} /></span>}</button>;
       })}
     </div>
   );

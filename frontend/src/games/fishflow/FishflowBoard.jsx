@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { getLegalActions } from "./rules.js";
+import { RecurringCharacter } from "../../components/RecurringCharacter.jsx";
 
 export function FishflowBoard({ state, onPit, interactivePlayer = state.currentPlayer, interactive = true }) {
   const legalIndexes = useMemo(() => {
@@ -62,6 +63,7 @@ function Pit({ player, pitIndex, count, active, legal, onPit }) {
     >
       <span className="fishflow-pit-number">{count}</span>
       <span className="fishflow-fish-cluster" aria-hidden="true">
+        {fishCount > 0 && <RecurringCharacter kind="mica" side={player} className="fishflow-mica" />}
         {Array.from({ length: fishCount }, (_, index) => <i key={index} />)}
       </span>
       {count > 12 && <small>+{count - 12}</small>}
