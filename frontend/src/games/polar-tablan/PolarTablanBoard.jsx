@@ -1,5 +1,8 @@
 import { COLS, ROWS, cellId, getPieceCell } from "./rules.js";
 
+// Arctic Tablan treatment: physical warrior stickers distinguish runners without changing Bell's folded-track rules.
+const TABLAN_WARRIOR_STICKER = "/manus-storage/tablan-aurora-warrior-sticker_4ff310c3.png";
+
 export function PolarTablanBoard({ state, legalActions = [], onAction, interactive = true }) {
   const piecesByCell = new Map();
   for (const side of ["aurora", "ember"]) for (const piece of state.pieces[side]) {
@@ -21,7 +24,7 @@ export function PolarTablanBoard({ state, legalActions = [], onAction, interacti
           return (
             <div key={id} role="gridcell" aria-label={`${id} ${piece ? `occupied by ${piece.side} runner ${piece.id.split("-").at(-1)} ${piece.status}` : "empty"}${target ? " legal destination" : ""}`} className={`pt-cell ${isFinish ? "home-row" : "middle-row"} ${target ? "target" : ""}`}>
               <small>{col + 1}</small>
-              {piece && <button type="button" className={`pt-runner ${piece.side} ${piece.status} ${movableIds.has(piece.id) ? "movable" : ""}`} disabled={!interactive || !movableIds.has(piece.id)} aria-label={`${piece.side === "aurora" ? "Aurora" : "Ember"} runner ${piece.id.split("-").at(-1)} on ${id}, ${piece.status}`}><span>{piece.status === "locked" ? "🔒" : piece.side === "aurora" ? "🐧" : "🧊"}</span><b>{piece.id.split("-").at(-1)}</b></button>}
+              {piece && <button type="button" className={`pt-runner ${piece.side} ${piece.status} ${movableIds.has(piece.id) ? "movable" : ""}`} disabled={!interactive || !movableIds.has(piece.id)} aria-label={`${piece.side === "aurora" ? "Aurora" : "Ember"} runner ${piece.id.split("-").at(-1)} on ${id}, ${piece.status}`}><img className="pt-runner-sticker" src={TABLAN_WARRIOR_STICKER} alt="" aria-hidden="true" /><b>{piece.id.split("-").at(-1)}</b></button>}
             </div>
           );
         }))}

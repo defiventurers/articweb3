@@ -1,5 +1,11 @@
 import { ADJACENCY, EDGES, POINTS, occupantAt } from "./rules.js";
 
+// Arctic Do Guti treatment: distinct physical glacial stones sit over the documented five-point blockade graph.
+const DOGUTI_STICKERS = Object.freeze({
+  blue: "/manus-storage/doguti-aurora-stone-sticker_fb998e42.png",
+  coral: "/manus-storage/doguti-coral-stone-sticker_2cc85007.png"
+});
+
 export function TwoStonesBoard({ state, legalActions = [], selectedPieceId = null, onSelectPiece, onAction, interactive = true }) {
   const placementByPoint = new Map(legalActions.filter((action) => action.type === "place").map((action) => [action.to, action]));
   const movesByPiece = new Map();
@@ -42,7 +48,7 @@ export function TwoStonesBoard({ state, legalActions = [], selectedPieceId = nul
               if (selectable) return onSelectPiece?.(piece.id);
             }}
           >
-            {piece ? <><span aria-hidden="true">●</span><small>{piece.id.split("-").at(-1)}</small></> : <span className="ts-empty-core" />}
+            {piece ? <><img className="ts-stone-sticker" src={DOGUTI_STICKERS[piece.side]} alt="" aria-hidden="true" /><small>{piece.id.split("-").at(-1)}</small></> : <span className="ts-empty-core" />}
           </button>
         );
       })}
@@ -61,7 +67,7 @@ export function StoneDock({ side, state }) {
     <aside className={`ts-dock ${side}`}>
       <span className="ts-tribe-mark">{side === "blue" ? "❄" : "◆"}</span>
       <div><strong>{side === "blue" ? "Aurora Stones" : "Coral Stones"}</strong><small>{placed}/2 placed{mobility === null ? "" : ` · ${mobility} moves`}</small></div>
-      <div className="ts-dock-stones">{stones.map((piece) => <i key={piece.id} className={piece.point ? "on-board" : "waiting"}>●</i>)}</div>
+      <div className="ts-dock-stones">{stones.map((piece) => <img key={piece.id} className={piece.point ? "on-board" : "waiting"} src={DOGUTI_STICKERS[side]} alt="" aria-hidden="true" />)}</div>
     </aside>
   );
 }

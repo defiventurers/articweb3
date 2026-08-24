@@ -7,6 +7,9 @@ import {
   getPieceSpaceId
 } from "./rules.js";
 
+// Arctic Ashta-Kashte treatment: physical penguin runner stickers preserve all semantic controls and the 7×7 spiral race.
+const ASHTA_RUNNER_STICKER = "/manus-storage/ashta-aurora-runner-sticker_2c451264.png";
+
 export function CowrieKingdomsBoard({ state, legalActions = [], onAction, interactive = true }) {
   const singleActionsByPiece = new Map();
   const pairActionsByCell = new Map();
@@ -60,7 +63,7 @@ export function CowrieKingdomsBoard({ state, legalActions = [], onAction, intera
                       onClick={() => action && onAction?.(action)}
                       aria-label={label}
                     >
-                      <span aria-hidden="true">{piece.side === "aurora" ? "♙" : "♟"}</span>
+                      <img className={`ck-runner-sticker ${piece.side}`} src={ASHTA_RUNNER_STICKER} alt="" aria-hidden="true" />
                       <small>{number}</small>
                     </button>
                   );
@@ -115,7 +118,7 @@ export function KingdomDock({ side, state, legalActions = [], onAction, interact
               onClick={() => action && onAction?.(action)}
               aria-label={label}
             >
-              <span aria-hidden="true">{side === "aurora" ? "♙" : "♟"}</span>
+              <img className={`ck-home-runner-sticker ${side}`} src={ASHTA_RUNNER_STICKER} alt="" aria-hidden="true" />
               <small>{number}</small>
             </button>
           );

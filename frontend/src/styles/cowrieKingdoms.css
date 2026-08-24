@@ -1,3 +1,4 @@
+/* Arctic Ashta-Kashte language: a source-accurate seven-by-seven spiral with tactile cowrie-race runner stickers. */
 :root {
   --ck-deep: #030b19;
   --ck-ice: #8aeaff;
@@ -70,6 +71,7 @@
 .ck-dock header { display:flex; gap:10px; align-items:center; }.ck-dock header>span { font-size:29px; }.ck-dock header div { display:grid; gap:2px; }.ck-dock header small { color:#9eb9c7; font-size:10px; }
 .ck-home-pieces { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; margin:16px 0; min-height:50px; }
 .ck-home-pieces button { position:relative; min-width:0; padding:0; aspect-ratio:1; min-height:55px; border-radius:17px; font-size:28px; }.ck-home-pieces button small { position:absolute; right:6px; bottom:4px; font-size:9px; }
+.ck-home-runner-sticker{display:block;width:145%;height:145%;max-width:none;margin:-23% 0 0 -23%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 4px 5px rgba(0,7,20,.45))}.ck-home-runner-sticker.ember{filter:hue-rotate(150deg) saturate(1.2) drop-shadow(0 4px 5px rgba(0,7,20,.45))}
 .ck-home-pieces button.legal { outline:2px solid #c8f8ff; outline-offset:2px; box-shadow:0 0 22px rgba(115,232,255,.6); }
 .ck-home-pieces em { grid-column:1/-1; color:#839cac; font-size:12px; }.ck-dock footer { display:grid; gap:4px; color:#9ab6c5; font-size:11px; }
 
@@ -88,6 +90,7 @@
 .ck-route-number { position:absolute; font-size:6px; color:rgba(169,236,255,.42); }.ck-route-number.aurora { left:4px; bottom:3px; }.ck-route-number.ember { right:4px; top:3px; color:rgba(255,175,188,.45); }
 .ck-cell-stack { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:1px; padding:8px 3px 3px; z-index:4; }
 .ck-piece { position:relative; pointer-events:auto; width:clamp(25px,3.7vw,43px); min-height:0 !important; aspect-ratio:.82; padding:0 !important; border-radius:55% 55% 45% 45% !important; display:grid; place-items:center; border:2px solid rgba(255,255,255,.78) !important; font-size:clamp(16px,2.5vw,29px); z-index:8; }.ck-piece.aurora { background:linear-gradient(145deg,#e8fdff,#50cae7) !important; color:#082846 !important; }.ck-piece.ember { background:linear-gradient(145deg,#ffe8eb,#ff7892) !important; color:#4c1024 !important; }.ck-piece small { position:absolute; right:3px; bottom:1px; font-size:7px; }.ck-piece.legal { outline:2px solid #fff; outline-offset:2px; filter:brightness(1.18); box-shadow:0 0 20px rgba(199,248,255,.75) !important; }
+.ck-runner-sticker{position:absolute;z-index:2;left:50%;top:50%;width:165%;height:165%;max-width:none;object-fit:contain;pointer-events:none;transform:translate(-50%,-50%);filter:drop-shadow(0 4px 5px rgba(0,7,20,.45))}.ck-runner-sticker.ember{filter:hue-rotate(150deg) saturate(1.2) drop-shadow(0 4px 5px rgba(0,7,20,.45))}
 .ck-direction { position:absolute; z-index:2; font-size:8px; letter-spacing:.16em; font-weight:900; color:rgba(216,246,255,.48); }.ck-direction.aurora { left:3%; top:49%; transform:rotate(-90deg); }.ck-direction.ember { right:3%; top:49%; transform:rotate(90deg); color:rgba(255,184,197,.5); }
 .ck-game-message { margin:0; padding:9px 13px; border-radius:13px; background:rgba(135,218,255,.1); color:#c7e9f4; text-align:center; }.ck-result-actions { display:flex; gap:10px; justify-content:center; }.ck-game-footer { max-width:1480px; margin:8px auto 0; display:flex; justify-content:space-between; color:#7895a8; font-size:10px; }
 
