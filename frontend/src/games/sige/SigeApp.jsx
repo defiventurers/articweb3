@@ -1,3 +1,4 @@
+/* Arctic Dominion design note: Sige uses a source-faithful crossed 5×5 lattice and tactile counter motifs across cover and play. */
 import { useEffect, useRef, useState } from "react";
 import { chooseSigeBotAction } from "./bot.js";
 import { SigeBoard, SigeCowries, SigeDock, SplitFinishControl } from "./SigeBoard.jsx";
@@ -71,8 +72,8 @@ export function SigeApp({ onExitToLibrary, profile, onProfileChange }) {
       <button className="sg-back-pill" onClick={onExitToLibrary}>← All Games</button>
       <div className="sg-cover-art" aria-hidden="true">
         <div className="sg-cover-grid">{Array.from({ length: 25 }, (_, index) => <i key={index} className={[2, 10, 12, 14, 22].includes(index) ? "safe" : ""} />)}</div>
-        <div className="sg-cover-orbit"><span>🐧</span><span>🧊</span><span>🐧</span><span>🧊</span></div>
-        <div className="sg-cover-cowries"><i>◡</i><i>●</i><i>◡</i><i>●</i></div>
+        <div className="sg-cover-orbit"><span className="aurora" /><span className="ember" /><span className="aurora" /><span className="ember" /></div>
+        <div className="sg-cover-cowries"><i className="open" /><i /><i className="open" /><i /></div>
       </div>
       <div className="sg-cover-copy">
         <p>SIGA / SIGE · COLOMBO · PARKER 1909</p>

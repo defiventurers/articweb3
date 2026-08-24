@@ -1,4 +1,7 @@
+/* Arctic Dominion design note: Parker’s 5×5 Sige lattice stays visibly continuous; cold ivory-and-coral physical counters replace glyph pieces. */
 import { BOARD_SIZE, CELLS, ROUTES, SAFE_SPACES, getPieceSpaceId, sideName } from "./rules.js";
+
+const GRID_LINES = Object.freeze([0, 1, 2, 3, 4, 5]);
 
 export function SigeBoard({ state, legalActions = [], onAction, interactive = true }) {
   const actionByPiece = new Map(legalActions.filter((action) => action.pieceId).map((action) => [action.pieceId, action]));
@@ -12,7 +15,12 @@ export function SigeBoard({ state, legalActions = [], onAction, interactive = tr
   const emberIndex = new Map(ROUTES.ember.map((space, index) => [space, index]));
 
   return (
-    <div className="sg-board" role="grid" aria-label="Sige five by five spiral board">
+    <div className="sg-board" role="grid" aria-label="Sige five by five protected lattice board">
+      <svg className="sg-board-rails" viewBox="0 0 5 5" preserveAspectRatio="none" aria-hidden="true">
+        <rect x="0.03" y="0.03" width="4.94" height="4.94" />
+        {GRID_LINES.slice(1, -1).map((line) => <line key={`vertical-${line}`} x1={line} y1="0" x2={line} y2="5" />)}
+        {GRID_LINES.slice(1, -1).map((line) => <line key={`horizontal-${line}`} x1="0" y1={line} x2="5" y2={line} />)}
+      </svg>
       {CELLS.map((cell) => {
         const pieces = piecesBySpace.get(cell.id) || [];
         const safe = SAFE_SPACES.has(cell.id);
@@ -25,10 +33,10 @@ export function SigeBoard({ state, legalActions = [], onAction, interactive = tr
             className={`sg-cell ${safe ? "safe" : ""} ${centre ? "centre" : ""}`}
             style={{ gridRow: cell.row + 1, gridColumn: cell.col + 1 }}
           >
-            <span className="sg-cell-name">{centre ? "TACHI" : safe ? "KATTI" : cell.id}</span>
-            {safe && <span className="sg-safe-mark" aria-hidden="true">✕</span>}
-            {!centre && <span className="sg-route-step aurora" aria-hidden="true">{auroraIndex.get(cell.id)}</span>}
-            {!centre && <span className="sg-route-step ember" aria-hidden="true">{emberIndex.get(cell.id)}</span>}
+            <span className="sg-cell-name">{centre ? "TACHI" : safe ? "KATTI" : ""}</span>
+            {safe && <span className="sg-safe-mark" aria-hidden="true" />}
+            {!centre && auroraIndex.has(cell.id) && <span className="sg-route-step aurora" aria-hidden="true">{auroraIndex.get(cell.id)}</span>}
+            {!centre && emberIndex.has(cell.id) && <span className="sg-route-step ember" aria-hidden="true">{emberIndex.get(cell.id)}</span>}
             <div className="sg-piece-stack">
               {pieces.map((piece) => {
                 const action = actionByPiece.get(piece.id);
@@ -42,7 +50,7 @@ export function SigeBoard({ state, legalActions = [], onAction, interactive = tr
                     onClick={() => action && onAction?.(action)}
                     aria-label={`${sideName(piece.side)} counter ${number} on ${cell.id}${action ? `, legal ${action.type === "enter" ? "entry" : action.finishes ? "exact centre finish" : action.capturedPieceIds?.length ? "capture" : `move ${action.value}`}` : ""}`}
                   >
-                    <span aria-hidden="true">{piece.side === "aurora" ? "🐧" : "🧊"}</span>
+                    <span className="sg-piece-art" aria-hidden="true" />
                     <small>{number}</small>
                   </button>
                 );
@@ -51,8 +59,8 @@ export function SigeBoard({ state, legalActions = [], onAction, interactive = tr
           </div>
         );
       })}
-      <div className="sg-board-arrow outer" aria-hidden="true">OUTER ↺</div>
-      <div className="sg-board-arrow inner" aria-hidden="true">INNER ↻</div>
+      <div className="sg-board-arrow outer" aria-hidden="true">OUTER ROUTE · ANTI-CLOCKWISE</div>
+      <div className="sg-board-arrow inner" aria-hidden="true">INNER ROUTE · CLOCKWISE</div>
     </div>
   );
 }
@@ -72,12 +80,12 @@ export function SigeDock({ side, state, legalActions = [], onAction, interactive
           return (
             <button
               key={piece.id}
-              className={action ? "legal" : ""}
+              className={`${side} ${action ? "legal" : ""}`}
               disabled={!interactive || !action}
               onClick={() => action && onAction?.(action)}
               aria-label={`${sideName(side)} counter ${number} at home${action ? ", legal entry with 1" : ""}`}
             >
-              <span>{side === "aurora" ? "🐧" : "🧊"}</span><small>{number}</small>
+              <span className="sg-piece-art" aria-hidden="true" /><small>{number}</small>
             </button>
           );
         })}
@@ -92,7 +100,7 @@ export function SigeCowries({ roll, canRoll, onRoll, busy = false }) {
   return (
     <section className="sg-cowrie-tray" aria-label="Four Sige cowries">
       <div className="sg-cowries">
-        {faces.map((face, index) => <i key={index} className={face ? "open" : "closed"}><span>{face ? "◡" : "●"}</span></i>)}
+        {faces.map((face, index) => <i key={index} className={face ? "open" : "closed"}><span aria-hidden="true" /></i>)}
       </div>
       <div><strong>{roll ? roll.value : "CAST"}</strong><small>{roll ? roll.mouthsUp === 0 ? "No mouths up = 8" : `${roll.mouthsUp} mouths up` : "Four cowries"}</small></div>
       <button type="button" disabled={!canRoll || busy} onClick={onRoll}>{busy ? "Casting…" : "Cast Cowries"}</button>

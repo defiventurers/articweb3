@@ -16,11 +16,12 @@ export const SIDES = Object.freeze(["aurora", "ember"]);
 const INTERMEDIATE_PER_EDGE = 3;
 
 const ANCHOR_COORDS = Object.freeze({
-  a: [8, 14], c: [8, 50], b: [8, 86], d: [30, 50],
-  e: [30, 14], f: [52, 14], g: [82, 14], h: [92, 50],
-  i: [82, 86], j: [52, 86], k: [30, 86],
-  l: [41, 70], m: [41, 30], n: [55, 50],
-  q: [68, 38], r: [84, 27], o: [68, 62], p: [84, 73]
+  // Rotated into the source cloth's upright form: lower tail, square outer circuit, central bridge, and two upper inner arms.
+  a: [23, 92], c: [50, 92], b: [77, 92], d: [50, 70],
+  e: [77, 70], f: [77, 48], g: [77, 18], h: [50, 8],
+  i: [23, 18], j: [23, 48], k: [23, 70],
+  l: [35, 59], m: [65, 59], n: [50, 45],
+  q: [59, 32], r: [67, 16], o: [41, 32], p: [33, 16]
 });
 
 export const ANCHOR_ROUTES = Object.freeze({

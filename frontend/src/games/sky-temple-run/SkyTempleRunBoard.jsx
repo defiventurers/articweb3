@@ -1,3 +1,4 @@
+/* Arctic Dominion design note: the Vimanam tail, outer circuit, bridge, and two inner arms remain source-led; physical lacquered pilgrims replace chess glyphs. */
 import { ROUTES, SAFE_SPACES, SKY_TEMPLE_RUN_RULESET, SPACES, SPACE_BY_ID, getPieceSpaceId } from "./rules.js";
 
 export function SkyTempleRunBoard({ state, legalActions = [], onAction, interactive = true }) {
@@ -10,21 +11,22 @@ export function SkyTempleRunBoard({ state, legalActions = [], onAction, interact
   const lineSegments = routeSegments();
 
   return (
-    <div className="str-board" role="grid" aria-label="Sky Temple Run route board">
+    <div className="str-board" role="grid" aria-label="Vimanam tail, circuit, bridge, and inner-arm route board">
       <svg className="str-board-lines" viewBox="0 0 100 100" aria-hidden="true">
         <defs>
-          <linearGradient id="str-route" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#baf8ff" />
-            <stop offset="0.55" stopColor="#64bfff" />
-            <stop offset="1" stopColor="#d6a5ff" />
+          <linearGradient id="str-route" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stopColor="#d8fcff" />
+            <stop offset="0.5" stopColor="#8ec9de" />
+            <stop offset="1" stopColor="#ffe0a0" />
           </linearGradient>
         </defs>
+        <path className="str-board-field" d="M8 96V4H92V96" />
         {lineSegments.map(([from, to]) => {
           const a = SPACE_BY_ID[from];
           const b = SPACE_BY_ID[to];
           return <line key={`${from}-${to}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} />;
         })}
-        <path className="str-temple-outline" d="M75 35 L84 22 L93 35 M75 65 L84 78 L93 65" />
+        <path className="str-temple-outline" d="M50 4 L41 14 L50 9 L59 14 Z M46 9V2 M50 9V0 M54 9V2" />
       </svg>
 
       {SPACES.map((space) => {
@@ -43,7 +45,7 @@ export function SkyTempleRunBoard({ state, legalActions = [], onAction, interact
             role="gridcell"
             aria-label={aria}
           >
-            {safe && <span className="str-safe-mark" aria-hidden="true">✦</span>}
+            {safe && <span className="str-safe-mark" aria-hidden="true" />}
             {piece && (
               <button
                 type="button"
@@ -52,7 +54,7 @@ export function SkyTempleRunBoard({ state, legalActions = [], onAction, interact
                 onClick={() => legal && onAction?.(legal)}
                 aria-label={aria}
               >
-                <span aria-hidden="true">{piece.side === "aurora" ? "♙" : "♟"}</span>
+                <span className="str-piece-art" aria-hidden="true" />
                 <small>{pieceNumber}</small>
               </button>
             )}
@@ -60,10 +62,10 @@ export function SkyTempleRunBoard({ state, legalActions = [], onAction, interact
         );
       })}
 
-      <div className="str-gate-label aurora" aria-hidden="true">AURORA GATE</div>
-      <div className="str-gate-label ember" aria-hidden="true">EMBER GATE</div>
-      <div className="str-temple-label aurora" aria-hidden="true">SKY TEMPLE</div>
-      <div className="str-temple-label ember" aria-hidden="true">SKY TEMPLE</div>
+      <div className="str-gate-label aurora" aria-hidden="true">AURORA INNER ARM</div>
+      <div className="str-gate-label ember" aria-hidden="true">EMBER INNER ARM</div>
+      <div className="str-temple-label" aria-hidden="true">VIMANAM</div>
+      <div className="str-tail-label" aria-hidden="true">TAIL · START</div>
     </div>
   );
 }
@@ -75,7 +77,7 @@ export function PilgrimDock({ side, state, legalActions = [], onAction, interact
   return (
     <aside className={`str-dock ${side}`}>
       <header>
-        <span>{side === "aurora" ? "✦" : "◆"}</span>
+        <span className="str-court-mark" aria-hidden="true" />
         <div><strong>{side === "aurora" ? "Aurora Pilgrims" : "Ember Pilgrims"}</strong><small>{state.captureLicense[side] ? "Temple gate unlocked" : "Capture required for inner route"}</small></div>
       </header>
       <div className="str-home-pieces">
@@ -84,7 +86,7 @@ export function PilgrimDock({ side, state, legalActions = [], onAction, interact
           const legal = legalByPiece.get(piece.id);
           const number = Number(piece.id.split("-").at(-1));
           const aria = `${side === "aurora" ? "Aurora" : "Ember"} pilgrim ${number} at home${legal ? ", legal entry" : ""}`;
-          return <button key={piece.id} disabled={!interactive || !legal} className={legal ? "legal" : ""} onClick={() => legal && onAction?.(legal)} aria-label={aria}><span>{side === "aurora" ? "♙" : "♟"}</span><small>{number}</small></button>;
+          return <button key={piece.id} disabled={!interactive || !legal} className={`${side} ${legal ? "legal" : ""}`} onClick={() => legal && onAction?.(legal)} aria-label={aria}><span className="str-piece-art" aria-hidden="true" /><small>{number}</small></button>;
         })}
       </div>
       <footer><span>{homePieces.length} home</span><span>{finished}/{SKY_TEMPLE_RUN_RULESET.piecesPerPlayer} finished</span><span>{state.captures[side]} captures</span></footer>
@@ -97,7 +99,7 @@ export function CowrieTray({ roll, onRoll, canRoll, busy = false }) {
   return (
     <section className="str-cowrie-tray" aria-label="Six cowries">
       <div className="str-cowries" aria-label={roll ? `Cowrie result ${roll.value}` : "Cowries ready"}>
-        {shown.faces.map((face, index) => <i className={face ? "open" : "closed"} key={index}><span>{face ? "◡" : "●"}</span></i>)}
+        {shown.faces.map((face, index) => <i className={face ? "open" : "closed"} key={index}><span aria-hidden="true" /></i>)}
       </div>
       <div className="str-roll-copy">
         <strong>{roll ? `${roll.value}` : "CAST"}</strong>

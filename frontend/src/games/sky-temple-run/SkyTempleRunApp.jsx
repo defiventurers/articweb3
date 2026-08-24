@@ -1,3 +1,4 @@
+/* Arctic Dominion design note: Vimanam’s upright tail-and-bridge board is paired with physical pilgrimage counters, never chess glyphs. */
 import { useEffect, useRef, useState } from "react";
 import { chooseSkyTempleRunBotAction } from "./bot.js";
 import { CowrieTray, PilgrimDock, SkyTempleRunBoard } from "./SkyTempleRunBoard.jsx";
@@ -76,9 +77,9 @@ export function SkyTempleRunApp({ onExitToLibrary, profile, onProfileChange }) {
         <button className="str-back-pill" onClick={onExitToLibrary}>← All Games</button>
         <div className="str-cover-art" aria-hidden="true">
           <div className="str-cover-mountain" />
-          <div className="str-cover-temple"><i /><i /><i /><b>✦</b></div>
+          <div className="str-cover-temple"><i /><i /><i /><b /></div>
           <div className="str-cover-route"><span /><span /><span /><span /><span /><span /></div>
-          <div className="str-cover-penguins"><i>♙</i><i>♟</i></div>
+          <div className="str-cover-penguins"><i className="aurora" /><i className="ember" /></div>
         </div>
         <div className="str-cover-copy">
           <p>VIMANAM · SOUTH INDIA</p>
