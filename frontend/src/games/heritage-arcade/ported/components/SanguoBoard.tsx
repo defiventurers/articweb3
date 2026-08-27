@@ -4,7 +4,7 @@ import { ArrowLeft, BookOpen, Bug, RotateCcw, Undo2 } from "lucide-react";
 import SanguoManual from "@/components/SanguoManual";
 import { fieldPoint, SOURCE_NODES, SANGUO_VIEWBOX, type SanguoFaction } from "@/game/sanguoTopology";
 import {
-  applySanguoMove, initialSanguoState, legalSanguoTargets, resolveSanguoAppropriation, roleLabels,
+  applySanguoMove, initialSanguoPieces, initialSanguoState, legalSanguoTargets, resolveSanguoAppropriation, roleLabels,
   sameNode, sanguoFactions, type SanguoNode, type SanguoPiece, type SanguoRole, type SanguoState,
 } from "@/game/sanguoRules";
 import "@/sanguo.css";
@@ -19,6 +19,8 @@ type Snapshot = SanguoState;
 
 const heritageAsset = "/assets/heritage-arcade";
 const sourceLineLayer = `${heritageAsset}/board/source-ink-unbroken.png`;
+// The preserved trace contains the source image's printed opening coins. Live state owns every playable coin, so mask only those obsolete impressions.
+const sourcePrintMaskNodes = initialSanguoPieces().map((piece) => piece.node);
 const useBannermen = () => new URLSearchParams(window.location.search).has("banners");
 const useRailDemo = () => new URLSearchParams(window.location.search).has("rail-demo");
 
@@ -89,7 +91,7 @@ export default function SanguoBoard({ onBack }: { onBack: () => void }) {
   return <main className="sanguo-screen">
     <header className="sanguo-header">
       <button type="button" onClick={onBack}><ArrowLeft size={15} /> Atlas</button>
-      <div><div className="sanguo-brand"><img src="/manus-storage/ppba-compass-mark_d370b6c6.png" alt="" /><span>PUDGY PENGUINS BOARD ARCADE</span></div><span>SOURCE FIELD · 135 INTERSECTIONS · {bannermenEnabled ? 54 : 48} OPENING COINS</span><h1>Sanguo Qi</h1><p>{state.winner ? `${factions[state.winner].name} has claimed the field.` : "Three source sectors around broad river arms"}</p></div>
+      <div><div className="sanguo-brand"><img src={`${heritageAsset}/board/ppba-compass-mark.png`} alt="" /><span>PUDGY PENGUINS BOARD ARCADE</span></div><span>SOURCE FIELD · 135 INTERSECTIONS · {bannermenEnabled ? 54 : 48} OPENING COINS</span><h1>Sanguo Qi</h1><p>{state.winner ? `${factions[state.winner].name} has claimed the field.` : "Three source sectors around broad river arms"}</p></div>
       <div><button type="button" onClick={() => setDebug((value) => !value)}><Bug size={14} /> {debug ? "Hide IDs" : "Node IDs"}</button><button type="button" onClick={() => setManual(true)}><BookOpen size={14} /> Field manual</button><button type="button" onClick={resolve} disabled={!state.pending}>Resolve army</button><button type="button" onClick={undo} disabled={!history.length}><Undo2 size={14} /> Undo</button><button type="button" onClick={reset}><RotateCcw size={14} /> Reset</button></div>
     </header>
     <section className="sanguo-layout">
@@ -99,7 +101,8 @@ export default function SanguoBoard({ onBack }: { onBack: () => void }) {
         <svg className="sanguo-board reference-board trace-backed-board" viewBox={SANGUO_VIEWBOX} aria-label="Source-traced playable Sanguo Qi board">
           <rect width="1280" height="1124" fill="#ffffff" />
           <image href={sourceLineLayer} x="0" y="0" width="1280" height="1124" preserveAspectRatio="none" pointerEvents="none" />
-          {sanguoFactions.map((sector) => <g key={sector}>{SOURCE_NODES[sector].flatMap((rank, rankIndex) => rank.map((point, file) => { const node = { sector, rank: rankIndex, file }; const active = activeTarget(node); return <g key={`node-${rankIndex}-${file}`}><circle className={`fan-node ${active ? "legal" : ""}`} cx={point.x} cy={point.y} r={active ? 11 : 7} onClick={() => move(node)} />{debug && <text className="node-id" x={point.x + 8} y={point.y - 8}>{`${sector[0].toUpperCase()}${rankIndex}${file}`}</text>}</g>; }))}{state.pieces.filter((piece) => !piece.captured && piece.node.sector === sector).map((piece) => { const point = fieldPoint(piece.node.sector, piece.node.rank, piece.node.file); const isTarget = activeTarget(piece.node); return <g key={piece.id} className={`fan-piece source-character supplied-role-coin ${piece.id === selected ? "selected" : ""} ${piece.controller !== piece.sector ? "appropriated" : ""}`} style={{ "--piece-color": factions[piece.sector].color } as CSSProperties} transform={`translate(${point.x} ${point.y})`} onClick={(event) => { event.stopPropagation(); if (isTarget && picked) move(piece.node); else choosePiece(piece); }} role="button" tabIndex={0} aria-label={`${factions[piece.controller].name} controls ${factions[piece.sector].name}'s ${roleLabels[piece.role]}`}><circle className="coin-art-mask" r="31" /><image className="supplied-coin-art" href={teamCoinAssets[piece.sector][piece.role]} x="-31" y="-31" width="62" height="62" preserveAspectRatio="xMidYMid meet" /><circle className="coin-state-ring" r="31" /></g>; })}</g>)}
+          <g className="source-print-masks" aria-hidden="true" pointerEvents="none">{sourcePrintMaskNodes.map((node) => { const point = fieldPoint(node.sector, node.rank, node.file); return <circle key={`source-print-${node.sector}-${node.rank}-${node.file}`} cx={point.x} cy={point.y} r="33" />; })}</g>
+          {sanguoFactions.map((sector) => <g key={sector}>{SOURCE_NODES[sector].flatMap((rank, rankIndex) => rank.map((point, file) => { const node = { sector, rank: rankIndex, file }; const active = activeTarget(node); return <g key={`node-${rankIndex}-${file}`}><circle className={`fan-node-hitbox ${active ? "active" : ""}`} cx={point.x} cy={point.y} r={active ? 27 : 0} pointerEvents={active ? "all" : "none"} onClick={(event) => { event.stopPropagation(); move(node); }} /><circle className={`fan-node ${active ? "legal" : ""}`} cx={point.x} cy={point.y} r={active ? 11 : 7} pointerEvents="none" />{debug && <text className="node-id" x={point.x + 8} y={point.y - 8}>{`${sector[0].toUpperCase()}${rankIndex}${file}`}</text>}</g>; }))}{state.pieces.filter((piece) => !piece.captured && piece.node.sector === sector).map((piece) => { const point = fieldPoint(piece.node.sector, piece.node.rank, piece.node.file); const isTarget = activeTarget(piece.node); return <g key={piece.id} className={`fan-piece source-character supplied-role-coin ${piece.id === selected ? "selected" : ""} ${piece.controller !== piece.sector ? "appropriated" : ""}`} style={{ "--piece-color": factions[piece.sector].color } as CSSProperties} transform={`translate(${point.x} ${point.y})`} onClick={(event) => { event.stopPropagation(); if (isTarget && picked) move(piece.node); else choosePiece(piece); }} role="button" tabIndex={0} aria-label={`${factions[piece.controller].name} controls ${factions[piece.sector].name}'s ${roleLabels[piece.role]}`}><circle className="coin-art-mask" r="31" /><image className="supplied-coin-art" href={teamCoinAssets[piece.sector][piece.role]} x="-31" y="-31" width="62" height="62" preserveAspectRatio="xMidYMid meet" /><circle className="coin-state-ring" r="31" /></g>; })}</g>)}
         </svg>
         <div className="sanguo-legend"><span><i className="legal" /> exact legal route</span><span><i className="capture" /> capture target</span><span>{debug ? "Debug IDs visible" : "Select a current-controller coin to inspect legal source nodes."}</span></div>
       </section>
