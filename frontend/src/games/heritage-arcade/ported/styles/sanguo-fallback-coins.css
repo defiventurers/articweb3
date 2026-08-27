@@ -1,0 +1,2 @@
+/* Pudgy Penguins Sanguo Qi: semantic fallback coin art while the image quota is exhausted. */
+.vector-coin circle{fill:color-mix(in srgb,var(--piece) 34%,#ecffff);stroke:var(--piece);stroke-width:3}.vector-coin text{fill:#0c3644!important;font-size:19px!important;font-weight:900}
