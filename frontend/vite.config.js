@@ -49,5 +49,13 @@ function publicAssetManifestPlugin() {
 }
 
 export default defineConfig({
-  plugins: [publicAssetManifestPlugin(), react()]
+  plugins: [publicAssetManifestPlugin(), react()],
+  server: {
+    allowedHosts: true
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(CONFIG_DIR, "src/games/heritage-arcade/ported")
+    }
+  }
 });

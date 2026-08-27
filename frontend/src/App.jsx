@@ -32,6 +32,7 @@ import { SigeApp } from "./games/sige/SigeApp.jsx";
 import { SevenIceRingsApp } from "./games/seven-ice-rings/SevenIceRingsApp.jsx";
 import { KhasiFishflowApp } from "./games/khasi-fishflow/KhasiFishflowApp.jsx";
 import { RumaIcePuzzleApp } from "./games/ruma-ice-puzzle/RumaIcePuzzleApp.jsx";
+import { HeritageArcadeApp } from "./games/heritage-arcade/HeritageArcadeApp.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
@@ -68,6 +69,7 @@ const SMOKE_PROFILE = { wallet: "0x0000000000000000000000000000000000000019", na
 const COVER_TRACK_DELAY_MS = 650;
 const PLAY_NOW_TRACK_DELAY_MS = 500;
 const PLAYABLE_GAME_IDS = new Set([
+  "heritage-arcade",
   "nine-ice-forts", "four-wing-ice-hunt", "fishflow", "break-the-ice", "ice-hunters", "sixteen-ice-warriors", "glacier-trail",
   "crown-run", "forty-glacier-guards", "sky-temple-run", "ice-rings", "cowrie-kingdoms", "two-stones", "aurora-vulture",
   "khasi-fishflow", "seven-ice-rings", "ruma-ice-puzzle", "polar-tablan", "sige", "aurora-ganjifa-academy"
@@ -133,6 +135,7 @@ export default function App() {
 
   if (screen === "kingdoms") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
   if (screen === "library") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
+  if (screen === "heritage-arcade") return withAppChrome(<HeritageArcadeApp onExitToLibrary={exitToLibrary} profile={profile} />, screen);
   if (screen === "nine-ice-forts") return withAppChrome(<NineIceFortsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
   if (screen === "four-wing-ice-hunt") return withAppChrome(<FourWingIceHuntApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
   if (screen === "fishflow") return withAppChrome(<FishflowApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
