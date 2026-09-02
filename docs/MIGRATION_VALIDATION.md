@@ -33,3 +33,15 @@ The former Sanguo target resolver relied on rank/file offsets that could return 
 The central delta is now modelled by the three actual central-triangle connections—Red–Blue, Red–Green, and Blue–Green—rather than false outer-perimeter hops. Chariots and Cannons may enter the documented opposing central files and continue only along that matching visible file. Soldiers may use the connected central node to cross, then move forward or sideways within the entered enemy field; Elephants, Generals, Advisors, Horses, and Bannermen remain subject to their field or palace restrictions.
 
 Local checks confirmed a graph-native Red opening, a clear central-file Chariot route reaching both eligible opposing fields, no Horse cross-field result, and a Soldier central-delta crossing only to the two corresponding opposing nodes. The testnet and mainnet frontend builds passed, and the existing Ruma regression remains 6/6. The historical movement source used for the crossing interpretation is Quadibloc’s *The Game of the Three Kingdoms* (<http://www.quadibloc.com/chess/ch0304.htm>).
+
+## Reference-coordinate translation layer
+
+Sanguo Qi now exposes reference-facing node IDs through `sanguoReferenceCoordinates.ts`. The layer translates each immutable source node into a sector-prefixed axis/depth label: Red uses the reference W–E axis, while Blue and Green use explicit rotated-sector axis tables. Movement traversal and target deduplication compare these translated identities, while source pixel coordinates and the authoritative rail adjacency remain unchanged. Central delta nodes remain reserved for explicit portal naming in the next historical transcription pass.
+
+## Reference-coordinate layer validation
+
+The clean local preview rebuilt successfully in testnet and mainnet modes. The translated-coordinate audit route mounts after the normal Heritage Arcade atlas flow; the initial blank frame was a transient first-load state, and a subsequent view confirmed the route rendered normally.
+
+The translated audit route now renders labels from the reference layer across all 135 nodes. The first visual pass exposed an ambiguity in multi-digit Green labels such as `G-100`, where axis `10` and depth `0` run together; the next correction will use a delimiter (`G-10-0`) so every axis/depth component is unambiguous.
+
+The final local audit pass renders the translated IDs with explicit separators: Red `R-W-0` through `R-E-4`, Blue numeric-axis labels such as `B-9-0`, and Green numeric-axis labels such as `G-10-0`. The piece-free board remains readable at the board scale, and the audit legend identifies the translated reference-coordinate mode.

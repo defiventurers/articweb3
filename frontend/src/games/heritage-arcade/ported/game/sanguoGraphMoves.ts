@@ -1,10 +1,12 @@
 /* Source-faithful movement: every legal route is a chain of declared visible rails, never a hidden grid offset. */
 import { sourceNodeKey, sourceRailNeighbours } from "./sanguoRailGraph";
 import { fieldPoint } from "./sanguoTopology";
+import { referenceNodeId } from "./sanguoReferenceCoordinates";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const CENTER = { x: 640, y: 625 };
-const id = (node: SanguoNode) => sourceNodeKey(node.sector, node.rank, node.file);
+const sourceId = (node: SanguoNode) => sourceNodeKey(node.sector, node.rank, node.file);
+const id = (node: SanguoNode) => referenceNodeId(node);
 const fromId = (value: string): SanguoNode => { const [sector, rank, file] = value.split("-"); return { sector: sector as SanguoNode["sector"], rank: Number(rank), file: Number(file) }; };
 const same = (left: SanguoNode, right: SanguoNode) => id(left) === id(right);
 const neighbours = (node: SanguoNode) => sourceRailNeighbours(node.sector, node.rank, node.file).map(fromId);
@@ -22,12 +24,13 @@ const crossField = (from: SanguoNode, to: SanguoNode) => from.sector !== to.sect
 
 function railLineTargets(piece: SanguoPiece, pieces: SanguoPiece[], cannon: boolean) {
   const found: SanguoNode[] = [];
-  const queue = neighbours(piece.node).map((current) => ({ previous: piece.node, current, screened: false, crossedRiver: false, permitFieldContinuation: false, visited: new Set([id(piece.node)]) }));
+  const queue = neighbours(piece.node).map((current) => ({ previous: piece.node, current, screened: false, crossedRiver: false, permitFieldContinuation: false, visited: new Set([sourceId(piece.node)]) }));
   while (queue.length) {
     const route = queue.shift()!;
     const routeKey = `${id(route.previous)}>${id(route.current)}>${route.screened ? "screen" : "clear"}>${route.crossedRiver ? "crossed" : "home"}>${route.permitFieldContinuation ? "entry" : "ray"}`;
-    if (route.visited.has(routeKey)) continue;
-    route.visited.add(routeKey);
+    const currentSourceKey = sourceId(route.current);
+    if (route.visited.has(currentSourceKey)) continue;
+    route.visited.add(currentSourceKey);
     const hit = occupant(pieces, route.current);
     if (!cannon) {
       if (hit) { if (hit.controller !== piece.controller) found.push(route.current); continue; }
