@@ -45,3 +45,15 @@ The clean local preview rebuilt successfully in testnet and mainnet modes. The t
 The translated audit route now renders labels from the reference layer across all 135 nodes. The first visual pass exposed an ambiguity in multi-digit Green labels such as `G-100`, where axis `10` and depth `0` run together; the next correction will use a delimiter (`G-10-0`) so every axis/depth component is unambiguous.
 
 The final local audit pass renders the translated IDs with explicit separators: Red `R-W-0` through `R-E-4`, Blue numeric-axis labels such as `B-9-0`, and Green numeric-axis labels such as `G-10-0`. The piece-free board remains readable at the board scale, and the audit legend identifies the translated reference-coordinate mode.
+
+## Sanguo asset-loading investigation
+
+The clean preview initially showed a blank first frame but mounted the Heritage Arcade atlas after waiting; no browser runtime errors were emitted. The next check opens Sanguo Qi directly and inspects the actual SVG image hrefs and network responses before changing asset code.
+
+The clean Sanguo Qi board mounts all 48 accessible piece groups, but the screenshot shows black circular placeholders instead of the supplied artwork. The page also exposes graph-validation orphan warnings. Asset hrefs and image natural dimensions will be checked separately before changing the UI.
+
+The representative token WebP contains the expected supplied artwork, and live fetch requests return HTTP 200 with image/webp. The rendered board still shows black circles, so the repair should target SVG image rendering or its presentation layer, not generate or replace assets.
+
+The HTML token wrapper reports XHTML namespace, natural size 384x384, visible opacity, and a nonzero layout rectangle. The WebP is decoded inside the wrapper; remaining black circles indicate SVG paint/compositing order rather than missing URLs.
+
+The final local preview now visibly renders the supplied Red, Green, and Blue role artwork on all 48 pieces. Root cause was the Arctic board using a default-filled top `coin-state-ring` that painted black over valid artwork, compounded by SVG image presentation. The fix uses explicit transparent Arctic ring styling plus an XHTML-namespaced HTML image wrapper, reusing the existing WebPs with no generated assets.
