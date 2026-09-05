@@ -25,7 +25,7 @@ describe("San Guo Qi Phase 3 Horse movement", () => {
     ]));
   });
 
-  it("does not jump an occupied orthogonal horse-leg", () => {
+  it("blocks both L destinations that use an occupied horse-leg", () => {
     const horse = piece("red-horse", "red", 2, 4);
     const blocker = piece("red-leg-blocker", "red", 1, 4, "red", "scout");
     const moves = ids(horse, [horse, blocker]);
@@ -46,11 +46,34 @@ describe("San Guo Qi Phase 3 Horse movement", () => {
     expect(moves).toContain("red-0-5");
   });
 
-  it("stays inside its current kingdom and never uses Chariot continuation files", () => {
-    const horse = piece("red-horse", "red", 1, 0);
+  it("crosses a river arm like a normal Xiangqi Horse", () => {
+    // R2 continues into B8. From R2-4 (rank 1/file 1), an inward long-leg
+    // Horse move uses R2-5 as the leg, crosses the river to B8-5 as the
+    // two-step point, then lands one file sideways on B7-5 or B9-5.
+    const horse = piece("red-horse", "red", 1, 1);
     const moves = ids(horse, [horse]);
-    expect(moves.length).toBeGreaterThan(0);
-    expect(moves.every((target) => target.startsWith("red-"))).toBe(true);
+
+    expect(moves).toContain("blue-0-6");
+    expect(moves).toContain("blue-0-8");
+  });
+
+  it("cannot cross that river when the cross-river horse-leg is blocked", () => {
+    const horse = piece("red-horse", "red", 1, 1);
+    const blocker = piece("red-river-leg", "red", 0, 1, "red", "scout");
+    const moves = ids(horse, [horse, blocker]);
+
+    expect(moves).not.toContain("blue-0-6");
+    expect(moves).not.toContain("blue-0-8");
+  });
+
+  it("can use the river as the one-point perpendicular part of the L", () => {
+    // From R2-5 (rank 0/file 1), moving two files toward R4 and one point
+    // across the river lands on B6-5 while the mirror L remains on Red.
+    const horse = piece("red-horse", "red", 0, 1);
+    const moves = ids(horse, [horse]);
+
+    expect(moves).toContain("red-1-3");
+    expect(moves).toContain("blue-0-5");
   });
 
   it("respects the actual home-rank blocker in the standard setup", () => {
@@ -63,7 +86,7 @@ describe("San Guo Qi Phase 3 Horse movement", () => {
     expect(moves).not.toContain("red-3-3");
   });
 
-  it("is rotationally symmetric across red, green, and blue fields", () => {
+  it("is rotationally symmetric across red, green, and blue away from the rivers", () => {
     for (const sector of ["red", "green", "blue"] as const) {
       const horse = piece(`${sector}-horse`, sector, 2, 4);
       const moves = sanguoHorseTargets(horse, [horse]);
