@@ -1,4 +1,4 @@
-import { continuousFileRays } from "./sanguoOrthogonalTopology";
+import { fileRays } from "./sanguoLogicalTopology";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const sameNode = (left: SanguoNode, right: SanguoNode) =>
@@ -8,18 +8,18 @@ const occupant = (pieces: SanguoPiece[], node: SanguoNode) =>
   pieces.find((piece) => !piece.captured && sameNode(piece.node, node));
 
 /**
- * Xiangqi flying-General prohibition on the confirmed Sanguo straight files.
+ * Xiangqi flying-General prohibition on logical straight files.
  *
- * A legal position may never leave two surviving Generals facing one another
- * on one uninterrupted physical file with no coin between them. On Sanguo L5,
- * the central file branches into the other two kingdoms, so each branch is
- * checked independently. Any intervening coin blocks the line of sight.
+ * Within a sector this is the ordinary Xiangqi file test. If the sightline
+ * reaches rank 0, the Sanguo river layer may continue it into one foreign file.
+ * At L5 there are exactly two separately-tested branches from the explicit
+ * central three-way junction. Any intervening coin blocks that branch.
  */
-export function generalsFacingOnConfirmedFiles(pieces: SanguoPiece[]) {
+export function generalsFacingOnLogicalFiles(pieces: SanguoPiece[]) {
   const generals = pieces.filter((piece) => !piece.captured && piece.role === "king");
 
   for (const general of generals) {
-    for (const ray of continuousFileRays(general.node)) {
+    for (const ray of fileRays(general.node)) {
       for (const node of ray) {
         const hit = occupant(pieces, node);
         if (!hit) continue;
@@ -31,3 +31,6 @@ export function generalsFacingOnConfirmedFiles(pieces: SanguoPiece[]) {
 
   return false;
 }
+
+/** Compatibility name retained for older callers/tests. */
+export const generalsFacingOnConfirmedFiles = generalsFacingOnLogicalFiles;
