@@ -1,3 +1,4 @@
+import { continuousFileRays, logicalNode, rankRays } from "./sanguoOrthogonalTopology";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const sameNode = (left: SanguoNode, right: SanguoNode) =>
@@ -6,48 +7,66 @@ const sameNode = (left: SanguoNode, right: SanguoNode) =>
 const occupant = (pieces: SanguoPiece[], node: SanguoNode) =>
   pieces.find((piece) => !piece.captured && sameNode(piece.node, node));
 
-const insideField = (rank: number, file: number) =>
-  rank >= 0 && rank <= 4 && file >= 0 && file <= 8;
+const unique = (nodes: SanguoNode[]) =>
+  [...new Map(nodes.map((node) => [`${node.sector}-${node.rank}-${node.file}`, node])).values()];
 
-const HORSE_DELTAS = [
-  [-2, -1], [-2, 1],
-  [-1, -2], [-1, 2],
-  [1, -2], [1, 2],
-  [2, -1], [2, 1],
-] as const;
+const landable = (piece: SanguoPiece, pieces: SanguoPiece[], node: SanguoNode) => {
+  const hit = occupant(pieces, node);
+  return !hit || hit.controller !== piece.controller;
+};
+
+const insideFile = (file: number) => file >= 0 && file <= 8;
 
 /**
- * Exact Xiangqi Horse rule on one Sanguo kingdom field.
+ * Exact Xiangqi Horse movement on the three joined Sanguo half-boards.
  *
- * The Horse makes an L move: one orthogonal leg followed by one outward
- * diagonal step. It never jumps: if the orthogonal leg point is occupied,
- * both Horse destinations that depend on that leg are blocked.
+ * A Horse makes one L-shaped move: two orthogonal points in one axis and one
+ * point in the perpendicular axis. It does NOT execute two separate moves.
+ * The adjacent point in the long direction is the horse-leg; if that point is
+ * occupied by any coin, both L destinations using that leg are blocked.
  *
- * Horse movement does not use the Chariot/Cannon cross-kingdom file
- * continuations. It remains in its current kingdom field.
+ * Standard Xiangqi Horses are not river-bound. On Sanguo, an L can therefore
+ * cross a river arm using the same confirmed file continuations as the board's
+ * orthogonal geometry. The centre L5 branch can naturally produce destinations
+ * into either opposing kingdom when the L geometry reaches that junction.
  */
 export function sanguoHorseTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
   if (piece.captured) return [];
 
   const output: SanguoNode[] = [];
-  const { sector, rank, file } = piece.node;
 
-  for (const [rankDelta, fileDelta] of HORSE_DELTAS) {
-    const destinationRank = rank + rankDelta;
-    const destinationFile = file + fileDelta;
-    if (!insideField(destinationRank, destinationFile)) continue;
-
-    // Xiangqi horse-leg rule: the first orthogonal point must be empty.
-    const leg: SanguoNode = Math.abs(rankDelta) === 2
-      ? { sector, rank: rank + Math.sign(rankDelta), file }
-      : { sector, rank, file: file + Math.sign(fileDelta) };
-
+  // Long axis = file direction (toward/away from a river).
+  // The first node is the horse-leg. The second node establishes the point
+  // two orthogonal steps away; occupancy there does not block a Horse.
+  for (const ray of continuousFileRays(piece.node)) {
+    if (ray.length < 2) continue;
+    const leg = ray[0];
+    const second = ray[1];
     if (occupant(pieces, leg)) continue;
 
-    const destination: SanguoNode = { sector, rank: destinationRank, file: destinationFile };
-    const hit = occupant(pieces, destination);
-    if (!hit || hit.controller !== piece.controller) output.push(destination);
+    for (const side of [-1, 1] as const) {
+      const destinationFile = second.file + side;
+      if (!insideFile(destinationFile)) continue;
+      const destination = logicalNode(second.sector, second.rank, destinationFile);
+      if (landable(piece, pieces, destination)) output.push(destination);
+    }
   }
 
-  return output;
+  // Long axis = rank direction (left/right across the current half-board).
+  // After the two-point rank component, the one-point perpendicular component
+  // is simply the first node of either physical file ray. This also handles a
+  // perpendicular river crossing correctly when the second point lies on rank 0.
+  for (const ray of rankRays(piece.node)) {
+    if (ray.length < 2) continue;
+    const leg = ray[0];
+    const second = ray[1];
+    if (occupant(pieces, leg)) continue;
+
+    for (const perpendicular of continuousFileRays(second)) {
+      const destination = perpendicular[0];
+      if (destination && landable(piece, pieces, destination)) output.push(destination);
+    }
+  }
+
+  return unique(output);
 }
