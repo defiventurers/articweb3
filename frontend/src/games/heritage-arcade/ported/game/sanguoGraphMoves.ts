@@ -3,13 +3,15 @@
    Phase 2: Cannons use the same straight lines, move like a Chariot when not capturing, and require exactly one screen to capture.
    Phase 3: Horses use exact Xiangqi L movement with a blocking horse-leg and the confirmed joined-board topology.
    Phase 4: Elephants move exactly two points diagonally, require a clear elephant-eye midpoint, and never cross a river.
-   Phase 5: Advisors move exactly one diagonal step on the five-node palace X and never leave their original palace. */
+   Phase 5: Advisors move exactly one diagonal step on the five-node palace X and never leave their original palace.
+   Phase 6: Generals move exactly one orthogonal point and never leave their original 3x3 palace. */
 import { sourceRailNeighbours } from "./sanguoRailGraph";
 import { fieldPoint } from "./sanguoTopology";
 import { referenceNodeId } from "./sanguoReferenceCoordinates";
 import { sanguoHorseTargets } from "./sanguoHorseMoves";
 import { sanguoElephantTargets } from "./sanguoElephantMoves";
 import { sanguoAdvisorTargets } from "./sanguoAdvisorMoves";
+import { sanguoGeneralTargets } from "./sanguoGeneralMoves";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const CENTER = { x: 640, y: 625 };
@@ -24,8 +26,6 @@ const point = (node: SanguoNode) => fieldPoint(node.sector, node.rank, node.file
 const vector = (from: SanguoNode, to: SanguoNode) => { const a = point(from); const b = point(to); return { x: b.x - a.x, y: b.y - a.y }; };
 const alignment = (a: { x: number; y: number }, b: { x: number; y: number }) => { const size = Math.hypot(a.x, a.y) * Math.hypot(b.x, b.y); return size ? (a.x * b.x + a.y * b.y) / size : -1; };
 const distanceFromCenter = (node: SanguoNode) => { const current = point(node); return Math.hypot(current.x - CENTER.x, current.y - CENTER.y); };
-const ownPalace = (piece: SanguoPiece, node: SanguoNode) => node.sector === piece.sector && node.rank >= 2 && node.rank <= 4 && node.file >= 3 && node.file <= 5;
-const cardinal = (from: SanguoNode, to: SanguoNode) => from.rank === to.rank || from.file === to.file;
 const logicalNode = (sector: SanguoNode["sector"], rank: number, file: number): SanguoNode => ({ sector, rank, file });
 
 type FileContinuation = { sector: SanguoNode["sector"]; file: number };
@@ -145,12 +145,8 @@ export function chariotTargets(piece: SanguoPiece, pieces: SanguoPiece[]): Sangu
   return logicalChariotTargets(piece, pieces);
 }
 
-function oneStep(piece: SanguoPiece, pieces: SanguoPiece[], predicate: (node: SanguoNode) => boolean) {
-  return neighbours(piece.node).filter(predicate).filter((node) => landable(piece, node, pieces));
-}
-
-// Legacy three-step graph walker retained only for the optional Bannerman until
-// its own movement phase is rebuilt. Horses no longer use this approximation.
+// Legacy graph walker retained only for the optional Bannerman until its own
+// movement phase is rebuilt.
 function horseTargets(piece: SanguoPiece, pieces: SanguoPiece[], steps: number) {
   const output: SanguoNode[] = [];
   for (const leg of neighbours(piece.node).filter((node) => node.sector === piece.sector)) {
@@ -179,7 +175,8 @@ function elephantTargets(piece: SanguoPiece, pieces: SanguoPiece[]) {
 function soldierTargets(piece: SanguoPiece, pieces: SanguoPiece[]) {
   const originDistance = distanceFromCenter(piece.node);
   const crossed = piece.node.sector !== piece.sector;
-  return oneStep(piece, pieces, (node) => {
+  return neighbours(piece.node).filter((node) => {
+    if (!landable(piece, node, pieces)) return false;
     if (!crossed && node.sector !== piece.node.sector) return node.sector !== piece.sector && piece.node.rank === 0 && piece.node.file === 4;
     if (crossed && node.sector !== piece.node.sector) return false;
     const progress = distanceFromCenter(node) - originDistance;
@@ -192,7 +189,7 @@ export function graphPseudoTargets(piece: SanguoPiece, pieces: SanguoPiece[]): S
   if (piece.captured) return [];
   if (piece.role === "icebreaker") return chariotTargets(piece, pieces);
   if (piece.role === "cannon") return cannonTargets(piece, pieces);
-  if (piece.role === "king") return oneStep(piece, pieces, (node) => ownPalace(piece, node) && cardinal(piece.node, node));
+  if (piece.role === "king") return sanguoGeneralTargets(piece, pieces);
   if (piece.role === "guard") return sanguoAdvisorTargets(piece, pieces);
   if (piece.role === "seer") return elephantTargets(piece, pieces);
   if (piece.role === "rider") return sanguoHorseTargets(piece, pieces);
