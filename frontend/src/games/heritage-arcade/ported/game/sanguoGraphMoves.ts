@@ -1,10 +1,12 @@
-/* Sanguo movement engine. Phase 1 gives the Chariot Xiangqi-style unrestricted straight-line movement along the actual visible Sanguo rails, including rotated-sector lines such as Blue L6, while preserving the explicit centre routing. Other roles remain on the legacy rail implementation until their migration phases. */
+/* Sanguo movement engine. Phase 1: Chariots use Xiangqi-style straight rays inside each sector, plus actual traced-rail continuation where the irregular three-player board requires it. */
 import { sourceNodeKey, sourceRailNeighbours } from "./sanguoRailGraph";
 import { fieldPoint } from "./sanguoTopology";
 import { referenceNodeId } from "./sanguoReferenceCoordinates";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const CENTER = { x: 640, y: 625 };
+const CENTER_FILE = 4;
+const SECTORS: ReadonlyArray<SanguoNode["sector"]> = ["red", "green", "blue"];
 const sourceId = (node: SanguoNode) => sourceNodeKey(node.sector, node.rank, node.file);
 const id = (node: SanguoNode) => referenceNodeId(node);
 const fromId = (value: string): SanguoNode => { const [sector, rank, file] = value.split("-"); return { sector: sector as SanguoNode["sector"], rank: Number(rank), file: Number(file) }; };
@@ -21,6 +23,43 @@ const ownPalace = (piece: SanguoPiece, node: SanguoNode) => node.sector === piec
 const cardinal = (from: SanguoNode, to: SanguoNode) => from.rank === to.rank || from.file === to.file;
 const diagonal = (from: SanguoNode, to: SanguoNode) => from.rank !== to.rank && from.file !== to.file;
 const crossField = (from: SanguoNode, to: SanguoNode) => from.sector !== to.sector;
+const logicalNode = (sector: SanguoNode["sector"], rank: number, file: number): SanguoNode => ({ sector, rank, file });
+
+function appendChariotRay(piece: SanguoPiece, pieces: SanguoPiece[], ray: SanguoNode[], output: SanguoNode[]) {
+  for (const node of ray) {
+    const hit = occupant(pieces, node);
+    if (!hit) { output.push(node); continue; }
+    if (hit.controller !== piece.controller) output.push(node);
+    break;
+  }
+}
+
+function logicalChariotTargets(piece: SanguoPiece, pieces: SanguoPiece[]) {
+  const output: SanguoNode[] = [];
+  const { sector, rank, file } = piece.node;
+
+  appendChariotRay(piece, pieces, Array.from({ length: file }, (_, offset) => logicalNode(sector, rank, file - offset - 1)), output);
+  appendChariotRay(piece, pieces, Array.from({ length: 8 - file }, (_, offset) => logicalNode(sector, rank, file + offset + 1)), output);
+  appendChariotRay(piece, pieces, Array.from({ length: rank }, (_, offset) => logicalNode(sector, rank - offset - 1, file)), output);
+  appendChariotRay(piece, pieces, Array.from({ length: 4 - rank }, (_, offset) => logicalNode(sector, rank + offset + 1, file)), output);
+
+  // The three centre files share the central junction. A Chariot that has a clear
+  // route to that junction can continue down either opposing centre branch.
+  if (file === CENTER_FILE) {
+    let centreOpen = true;
+    for (let currentRank = rank - 1; currentRank >= 0; currentRank -= 1) {
+      if (occupant(pieces, logicalNode(sector, currentRank, CENTER_FILE))) { centreOpen = false; break; }
+    }
+    if (centreOpen) {
+      for (const destinationSector of SECTORS) {
+        if (destinationSector === sector) continue;
+        appendChariotRay(piece, pieces, Array.from({ length: 5 }, (_, destinationRank) => logicalNode(destinationSector, destinationRank, CENTER_FILE)), output);
+      }
+    }
+  }
+
+  return output;
+}
 
 function railLineTargets(piece: SanguoPiece, pieces: SanguoPiece[], cannon: boolean) {
   const found: SanguoNode[] = [];
@@ -49,12 +88,11 @@ function railLineTargets(piece: SanguoPiece, pieces: SanguoPiece[], cannon: bool
 }
 
 export function chariotTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
-  // A Sanguo Chariot follows the inked board line itself, not the sector's
-  // rectangular rank/file indices. That is essential on the rotated Blue and
-  // Green fields: a straight visual rail (for example Blue L6) can cross many
-  // logical rank/file values. Stop at the first occupied node, capturing only
-  // an opponent there, exactly like a Xiangqi rook.
-  return railLineTargets(piece, pieces, false);
+  // Use the reliable Xiangqi rank/file rays first so ordinary Chariot moves can
+  // never disappear because of an incomplete traced-edge table. Add traced-rail
+  // targets as an extension for irregular Sanguo connections (including rotated
+  // Blue/Green field continuations). Both obey first-blocker / first-capture rules.
+  return unique([...logicalChariotTargets(piece, pieces), ...railLineTargets(piece, pieces, false)]);
 }
 
 function oneStep(piece: SanguoPiece, pieces: SanguoPiece[], predicate: (node: SanguoNode) => boolean) {
