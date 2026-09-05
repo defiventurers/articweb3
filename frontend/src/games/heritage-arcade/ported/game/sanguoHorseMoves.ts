@@ -1,4 +1,4 @@
-import { continuousFileRays, logicalNode, rankRays } from "./sanguoOrthogonalTopology";
+import { fileRays, logicalNode, rankRays } from "./sanguoLogicalTopology";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const sameNode = (left: SanguoNode, right: SanguoNode) =>
@@ -25,12 +25,7 @@ const HORSE_DELTAS = [
   [2, -1], [2, 1],
 ] as const;
 
-/**
- * Add every ordinary same-kingdom Xiangqi Horse destination directly from the
- * local 5x9 logical grid. This deliberately does not depend on the irregular
- * source-rail trace or on pixel geometry, so Red, Green, and Blue always receive
- * identical L-shape behaviour at equivalent local positions.
- */
+/** Standard same-sector Xiangqi Horse geometry on the logical 5x9 grid. */
 function appendLocalHorseTargets(piece: SanguoPiece, pieces: SanguoPiece[], output: SanguoNode[]) {
   const { sector, rank, file } = piece.node;
 
@@ -52,35 +47,23 @@ function appendLocalHorseTargets(piece: SanguoPiece, pieces: SanguoPiece[], outp
 }
 
 /**
- * Exact Xiangqi Horse movement on the three joined Sanguo half-boards.
- *
- * A Horse makes one L-shaped move: two points along one orthogonal axis and one
- * point along the perpendicular axis. It does NOT execute two separate moves.
- * The adjacent point in the long direction is the horse-leg; if that point is
- * occupied by any coin, both L destinations using that leg are blocked.
- *
- * Same-kingdom L moves are generated from the local logical grid so all three
- * kingdoms are guaranteed to be rotationally equivalent. River-crossing L moves
- * are then added using the confirmed Red/Blue/Green continuation topology.
+ * Xiangqi Horse movement with only the river boundary adapted for Sanguo.
+ * Local moves are the ordinary eight (±2,±1)/(±1,±2) possibilities. If an L
+ * reaches across rank 0, the final geometry uses the explicit river exit of the
+ * logical board; L5 may therefore choose either branch of the central junction.
  */
 export function sanguoHorseTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
   if (piece.captured) return [];
 
   const output: SanguoNode[] = [];
-
-  // Canonical local Xiangqi L-shapes. This is the authoritative same-sector rule.
   appendLocalHorseTargets(piece, pieces, output);
 
-  // River-crossing cases: long axis follows a physical file toward/through a
-  // river. The first point is still the horse-leg and must be empty.
-  for (const ray of continuousFileRays(piece.node)) {
+  // Long component runs along a file and crosses the river.
+  for (const ray of fileRays(piece.node)) {
     if (ray.length < 2) continue;
     const leg = ray[0];
     const second = ray[1];
     if (occupant(pieces, leg)) continue;
-
-    // Same-sector destinations were already generated above. Here we only add
-    // cases where the two-step component has crossed into another kingdom.
     if (second.sector === piece.node.sector) continue;
 
     for (const side of [-1, 1] as const) {
@@ -91,17 +74,15 @@ export function sanguoHorseTargets(piece: SanguoPiece, pieces: SanguoPiece[]): S
     }
   }
 
-  // River as the one-point perpendicular part of the L. First move two points
-  // sideways inside the current kingdom; if the final one-point file step crosses
-  // the river, add that foreign destination. Ordinary same-sector counterparts
-  // are already covered by appendLocalHorseTargets.
+  // Long component runs across a rank; the one-point perpendicular finish may
+  // cross rank 0 through one of the explicit Sanguo river exits.
   for (const ray of rankRays(piece.node)) {
     if (ray.length < 2) continue;
     const leg = ray[0];
     const second = ray[1];
     if (occupant(pieces, leg)) continue;
 
-    for (const perpendicular of continuousFileRays(second)) {
+    for (const perpendicular of fileRays(second)) {
       const destination = perpendicular[0];
       if (!destination || destination.sector === piece.node.sector) continue;
       if (landable(piece, pieces, destination)) output.push(destination);
