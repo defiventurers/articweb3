@@ -1,13 +1,12 @@
-/* Sanguo movement engine.
-   Phase 1: Chariots use Xiangqi-style orthogonal rays with the exact cross-kingdom file continuations.
-   Phase 2: Cannons use the same straight lines, move like a Chariot when not capturing, and require exactly one screen to capture.
-   Phase 3: Horses use exact Xiangqi L movement with a blocking horse-leg and the confirmed joined-board topology.
-   Phase 4: Elephants move exactly two points diagonally, require a clear elephant-eye midpoint, and never cross a river.
-   Phase 5: Advisors move exactly one diagonal step on the five-node palace X and never leave their original palace.
-   Phase 6: Generals move exactly one orthogonal point and never leave their original 3x3 palace.
-   Phase 7: Soldiers move one point forward; after crossing a river they also gain one-point sideways movement and never retreat.
-   Phase 8: Optional Bannermen use the historical extended-Horse route: two clear orthogonal transit points, then one diagonal outward. */
-import { continuousFileRays, rankRays } from "./sanguoOrthogonalTopology";
+/*
+ * Sanguo logical movement engine.
+ *
+ * Standard piece geometry is Xiangqi on a local 5x9 sector. No movement rule
+ * consults pixels or the traced visual rail graph. The only Sanguo-specific
+ * geometry is the river continuation layer in sanguoLogicalTopology.ts,
+ * including the explicit three-way L5 junction.
+ */
+import { fileRays, rankRays } from "./sanguoLogicalTopology";
 import { sanguoHorseTargets } from "./sanguoHorseMoves";
 import { sanguoElephantTargets } from "./sanguoElephantMoves";
 import { sanguoAdvisorTargets } from "./sanguoAdvisorMoves";
@@ -35,9 +34,10 @@ function appendChariotRay(piece: SanguoPiece, pieces: SanguoPiece[], ray: Sanguo
   }
 }
 
+/** Xiangqi Chariot rays on logical coordinates, extended only at a Sanguo river boundary. */
 export function chariotTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
   const output: SanguoNode[] = [];
-  for (const ray of [...rankRays(piece.node), ...continuousFileRays(piece.node)]) {
+  for (const ray of [...rankRays(piece.node), ...fileRays(piece.node)]) {
     appendChariotRay(piece, pieces, ray, output);
   }
   return unique(output);
@@ -64,15 +64,17 @@ function appendCannonRay(piece: SanguoPiece, pieces: SanguoPiece[], ray: SanguoN
   }
 }
 
+/** Xiangqi Cannon rule on the same logical straight rays as the Chariot. */
 export function cannonTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
   const output: SanguoNode[] = [];
-  for (const ray of [...rankRays(piece.node), ...continuousFileRays(piece.node)]) {
+  for (const ray of [...rankRays(piece.node), ...fileRays(piece.node)]) {
     appendCannonRay(piece, pieces, ray, output);
   }
   return unique(output);
 }
 
-export function graphPseudoTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
+/** Authoritative pseudo-legal resolver. */
+export function logicalPseudoTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
   if (piece.captured) return [];
   if (piece.role === "icebreaker") return chariotTargets(piece, pieces);
   if (piece.role === "cannon") return cannonTargets(piece, pieces);
@@ -83,3 +85,6 @@ export function graphPseudoTargets(piece: SanguoPiece, pieces: SanguoPiece[]): S
   if (piece.role === "runner") return sanguoBannermanTargets(piece, pieces);
   return sanguoSoldierTargets(piece, pieces);
 }
+
+/** Compatibility alias for older callers; it no longer means graph-derived movement. */
+export const graphPseudoTargets = logicalPseudoTargets;
