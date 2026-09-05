@@ -1,11 +1,12 @@
-/* Sanguo movement engine. Phase 1: Chariots use Xiangqi-style orthogonal rays, but a file does not stop at a river. The numbered San Guo Qi files continue into the paired kingdom exactly as drawn on the three-player board. */
-import { sourceNodeKey, sourceRailNeighbours } from "./sanguoRailGraph";
+/* Sanguo movement engine.
+   Phase 1: Chariots use Xiangqi-style orthogonal rays with the exact cross-kingdom file continuations.
+   Phase 2: Cannons use the same straight lines, move like a Chariot when not capturing, and require exactly one screen to capture. */
+import { sourceRailNeighbours } from "./sanguoRailGraph";
 import { fieldPoint } from "./sanguoTopology";
 import { referenceNodeId } from "./sanguoReferenceCoordinates";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const CENTER = { x: 640, y: 625 };
-const sourceId = (node: SanguoNode) => sourceNodeKey(node.sector, node.rank, node.file);
 const id = (node: SanguoNode) => referenceNodeId(node);
 const fromId = (value: string): SanguoNode => { const [sector, rank, file] = value.split("-"); return { sector: sector as SanguoNode["sector"], rank: Number(rank), file: Number(file) }; };
 const same = (left: SanguoNode, right: SanguoNode) => id(left) === id(right);
@@ -20,10 +21,9 @@ const distanceFromCenter = (node: SanguoNode) => { const current = point(node); 
 const ownPalace = (piece: SanguoPiece, node: SanguoNode) => node.sector === piece.sector && node.rank >= 2 && node.rank <= 4 && node.file >= 3 && node.file <= 5;
 const cardinal = (from: SanguoNode, to: SanguoNode) => from.rank === to.rank || from.file === to.file;
 const diagonal = (from: SanguoNode, to: SanguoNode) => from.rank !== to.rank && from.file !== to.file;
-const crossField = (from: SanguoNode, to: SanguoNode) => from.sector !== to.sector;
 const logicalNode = (sector: SanguoNode["sector"], rank: number, file: number): SanguoNode => ({ sector, rank, file });
 
-type ChariotContinuation = { sector: SanguoNode["sector"]; file: number };
+type FileContinuation = { sector: SanguoNode["sector"]; file: number };
 
 /*
   Human line labels are file + 1. The centre-facing end is rank 0 (Lx-5)
@@ -35,10 +35,10 @@ type ChariotContinuation = { sector: SanguoNode["sector"]; file: number };
     R6-G4, R7-G3, R8-G2, R9-G1,
     B1-G9, B2-G8, B3-G7, B4-G6.
 
-  The reverse relationships are included explicitly so movement is symmetric
-  regardless of which kingdom the Chariot currently occupies.
+  These continuations are shared by every straight-line piece rule. They do not
+  create diagonal turns; they describe one physical file continuing into another kingdom.
 */
-const CHARIOT_CONTINUATIONS: Record<SanguoNode["sector"], readonly (readonly ChariotContinuation[])[]> = {
+const FILE_CONTINUATIONS: Record<SanguoNode["sector"], readonly (readonly FileContinuation[])[]> = {
   red: [
     [{ sector: "blue", file: 8 }],
     [{ sector: "blue", file: 7 }],
@@ -83,59 +83,61 @@ function appendChariotRay(piece: SanguoPiece, pieces: SanguoPiece[], ray: Sanguo
   }
 }
 
+function continuousFileRays(node: SanguoNode): SanguoNode[][] {
+  const { sector, rank, file } = node;
+  const outward = Array.from({ length: 4 - rank }, (_, offset) => logicalNode(sector, rank + offset + 1, file));
+  const homeToCentre = Array.from({ length: rank }, (_, offset) => logicalNode(sector, rank - offset - 1, file));
+  const continuations = FILE_CONTINUATIONS[sector][file] ?? [];
+  const inward = continuations.length
+    ? continuations.map((continuation) => [
+        ...homeToCentre,
+        ...Array.from({ length: 5 }, (_, destinationRank) => logicalNode(continuation.sector, destinationRank, continuation.file)),
+      ])
+    : [homeToCentre];
+  return [outward, ...inward].filter((ray) => ray.length > 0);
+}
+
+function rankRays(node: SanguoNode): SanguoNode[][] {
+  const { sector, rank, file } = node;
+  return [
+    Array.from({ length: file }, (_, offset) => logicalNode(sector, rank, file - offset - 1)),
+    Array.from({ length: 8 - file }, (_, offset) => logicalNode(sector, rank, file + offset + 1)),
+  ].filter((ray) => ray.length > 0);
+}
+
 function logicalChariotTargets(piece: SanguoPiece, pieces: SanguoPiece[]) {
   const output: SanguoNode[] = [];
-  const { sector, rank, file } = piece.node;
-
-  // Across the current kingdom: ordinary Xiangqi rank movement. This never
-  // crosses a river and therefore cannot create a diagonal turn.
-  appendChariotRay(piece, pieces, Array.from({ length: file }, (_, offset) => logicalNode(sector, rank, file - offset - 1)), output);
-  appendChariotRay(piece, pieces, Array.from({ length: 8 - file }, (_, offset) => logicalNode(sector, rank, file + offset + 1)), output);
-
-  // Away from the centre on the current file.
-  appendChariotRay(piece, pieces, Array.from({ length: 4 - rank }, (_, offset) => logicalNode(sector, rank + offset + 1, file)), output);
-
-  // Toward the centre, then continue along the exact paired file in the next
-  // kingdom. Example: R1-1..R1-5 continues B9-5..B9-1. The centre line L5 is
-  // the only branching file and may continue into either of the other L5s.
-  const homeToCentre = Array.from({ length: rank }, (_, offset) => logicalNode(sector, rank - offset - 1, file));
-  const continuations = CHARIOT_CONTINUATIONS[sector][file] ?? [];
-  if (!continuations.length) {
-    appendChariotRay(piece, pieces, homeToCentre, output);
-  } else {
-    for (const continuation of continuations) {
-      const acrossRiver = Array.from({ length: 5 }, (_, destinationRank) => logicalNode(continuation.sector, destinationRank, continuation.file));
-      appendChariotRay(piece, pieces, [...homeToCentre, ...acrossRiver], output);
-    }
-  }
-
+  for (const ray of [...rankRays(piece.node), ...continuousFileRays(piece.node)]) appendChariotRay(piece, pieces, ray, output);
   return unique(output);
 }
 
-function railLineTargets(piece: SanguoPiece, pieces: SanguoPiece[], cannon: boolean) {
-  const found: SanguoNode[] = [];
-  const queue = neighbours(piece.node).map((current) => ({ previous: piece.node, current, screened: false, crossedRiver: false, permitFieldContinuation: false, visited: new Set([sourceId(piece.node)]) }));
-  while (queue.length) {
-    const route = queue.shift()!;
-    const currentSourceKey = sourceId(route.current);
-    if (route.visited.has(currentSourceKey)) continue;
-    route.visited.add(currentSourceKey);
-    const hit = occupant(pieces, route.current);
-    if (!cannon) {
-      if (hit) { if (hit.controller !== piece.controller) found.push(route.current); continue; }
-      found.push(route.current);
-    } else if (!route.screened) {
-      if (hit) route.screened = true; else found.push(route.current);
-    } else {
-      if (hit) { if (hit.controller !== piece.controller) found.push(route.current); continue; }
+function appendCannonRay(piece: SanguoPiece, pieces: SanguoPiece[], ray: SanguoNode[], output: SanguoNode[]) {
+  let screened = false;
+  for (const node of ray) {
+    const hit = occupant(pieces, node);
+    if (!screened) {
+      if (!hit) {
+        // Before the screen, a Cannon moves exactly like a Chariot.
+        output.push(node);
+        continue;
+      }
+      // The first occupied node is the screen. It is never a legal destination.
+      screened = true;
+      continue;
     }
-    const direction = vector(route.previous, route.current);
-    neighbours(route.current)
-      .filter((candidate) => !same(candidate, route.previous))
-      .filter((candidate) => alignment(direction, vector(route.current, candidate)) >= .9 || (!route.crossedRiver && crossField(route.current, candidate)) || (route.permitFieldContinuation && candidate.sector === route.current.sector && candidate.file === route.current.file))
-      .forEach((candidate) => queue.push({ previous: route.current, current: candidate, screened: route.screened, crossedRiver: route.crossedRiver || crossField(route.current, candidate), permitFieldContinuation: crossField(route.current, candidate), visited: new Set(route.visited) }));
+
+    // After the screen, empty nodes cannot be landed on. The first occupied node
+    // is the only possible capture, and only if it belongs to an opponent.
+    if (!hit) continue;
+    if (hit.controller !== piece.controller) output.push(node);
+    break;
   }
-  return unique(found);
+}
+
+export function cannonTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
+  const output: SanguoNode[] = [];
+  for (const ray of [...rankRays(piece.node), ...continuousFileRays(piece.node)]) appendCannonRay(piece, pieces, ray, output);
+  return unique(output);
 }
 
 export function chariotTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
@@ -194,7 +196,7 @@ function soldierTargets(piece: SanguoPiece, pieces: SanguoPiece[]) {
 export function graphPseudoTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
   if (piece.captured) return [];
   if (piece.role === "icebreaker") return chariotTargets(piece, pieces);
-  if (piece.role === "cannon") return railLineTargets(piece, pieces, true);
+  if (piece.role === "cannon") return cannonTargets(piece, pieces);
   if (piece.role === "king") return oneStep(piece, pieces, (node) => ownPalace(piece, node) && cardinal(piece.node, node));
   if (piece.role === "guard") return oneStep(piece, pieces, (node) => ownPalace(piece, node) && diagonal(piece.node, node));
   if (piece.role === "seer") return elephantTargets(piece, pieces);
