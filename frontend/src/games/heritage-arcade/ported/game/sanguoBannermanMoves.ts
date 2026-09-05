@@ -1,4 +1,4 @@
-import { continuousFileRays, logicalNode, rankRays } from "./sanguoOrthogonalTopology";
+import { fileRays, logicalNode, rankRays } from "./sanguoLogicalTopology";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const sameNode = (left: SanguoNode, right: SanguoNode) =>
@@ -18,22 +18,17 @@ const landable = (piece: SanguoPiece, pieces: SanguoPiece[], node: SanguoNode) =
 const insideFile = (file: number) => file >= 0 && file <= 8;
 
 /**
- * Historical optional Bannerman rule used by Sanguo Qi.
- *
- * The piece moves two points orthogonally and then one diagonal point outward.
- * This produces a (3,1) or (1,3) displacement on a regular half-board. Unlike
- * a normal Horse it does not jump: both orthogonal transit points must be empty.
- * The final diagonal lands directly on its destination, which may be empty or
- * occupied by an enemy. The joined-board topology is respected when the move
- * reaches a river continuation.
+ * Optional Sanguo Bannerman rule on logical coordinates.
+ * Two clear orthogonal transit points, then one outward diagonal finish.
+ * The only non-Xiangqi geometry is a river-boundary continuation supplied by
+ * sanguoLogicalTopology; no pixel/rail tracing participates in the rule.
  */
 export function sanguoBannermanTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
   if (piece.captured) return [];
 
   const output: SanguoNode[] = [];
 
-  // Two steps along a physical file, then one diagonal outward.
-  for (const ray of continuousFileRays(piece.node)) {
+  for (const ray of fileRays(piece.node)) {
     if (ray.length < 3) continue;
     const first = ray[0];
     const second = ray[1];
@@ -48,7 +43,6 @@ export function sanguoBannermanTargets(piece: SanguoPiece, pieces: SanguoPiece[]
     }
   }
 
-  // Two steps across a rank, then one diagonal outward in either file direction.
   for (const ray of rankRays(piece.node)) {
     if (ray.length < 3) continue;
     const first = ray[0];
@@ -56,7 +50,7 @@ export function sanguoBannermanTargets(piece: SanguoPiece, pieces: SanguoPiece[]
     const longEndpoint = ray[2];
     if (occupant(pieces, first) || occupant(pieces, second)) continue;
 
-    for (const perpendicular of continuousFileRays(longEndpoint)) {
+    for (const perpendicular of fileRays(longEndpoint)) {
       const destination = perpendicular[0];
       if (destination && landable(piece, pieces, destination)) output.push(destination);
     }
