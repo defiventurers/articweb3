@@ -1,0 +1,14 @@
+/* Desktop Heritage Board Arcade layout fix.
+   Keep the primary board-entry action above the absolute collection rail so it
+   remains visible and clickable on shorter desktop viewports. */
+@media (min-width: 761px) {
+  .arctic-game-world.arctic-game-world--webgl .arctic-game-world__content {
+    bottom: clamp(9rem, 18vh, 11rem);
+    z-index: 7;
+  }
+
+  .arctic-game-world.arctic-game-world--webgl .game-info__action {
+    position: relative;
+    z-index: 2;
+  }
+}
