@@ -2,12 +2,14 @@
    Phase 1: Chariots use Xiangqi-style orthogonal rays with the exact cross-kingdom file continuations.
    Phase 2: Cannons use the same straight lines, move like a Chariot when not capturing, and require exactly one screen to capture.
    Phase 3: Horses use exact Xiangqi L movement with a blocking horse-leg and the confirmed joined-board topology.
-   Phase 4: Elephants move exactly two points diagonally, require a clear elephant-eye midpoint, and never cross a river. */
+   Phase 4: Elephants move exactly two points diagonally, require a clear elephant-eye midpoint, and never cross a river.
+   Phase 5: Advisors move exactly one diagonal step on the five-node palace X and never leave their original palace. */
 import { sourceRailNeighbours } from "./sanguoRailGraph";
 import { fieldPoint } from "./sanguoTopology";
 import { referenceNodeId } from "./sanguoReferenceCoordinates";
 import { sanguoHorseTargets } from "./sanguoHorseMoves";
 import { sanguoElephantTargets } from "./sanguoElephantMoves";
+import { sanguoAdvisorTargets } from "./sanguoAdvisorMoves";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const CENTER = { x: 640, y: 625 };
@@ -24,7 +26,6 @@ const alignment = (a: { x: number; y: number }, b: { x: number; y: number }) => 
 const distanceFromCenter = (node: SanguoNode) => { const current = point(node); return Math.hypot(current.x - CENTER.x, current.y - CENTER.y); };
 const ownPalace = (piece: SanguoPiece, node: SanguoNode) => node.sector === piece.sector && node.rank >= 2 && node.rank <= 4 && node.file >= 3 && node.file <= 5;
 const cardinal = (from: SanguoNode, to: SanguoNode) => from.rank === to.rank || from.file === to.file;
-const diagonal = (from: SanguoNode, to: SanguoNode) => from.rank !== to.rank && from.file !== to.file;
 const logicalNode = (sector: SanguoNode["sector"], rank: number, file: number): SanguoNode => ({ sector, rank, file });
 
 type FileContinuation = { sector: SanguoNode["sector"]; file: number };
@@ -192,7 +193,7 @@ export function graphPseudoTargets(piece: SanguoPiece, pieces: SanguoPiece[]): S
   if (piece.role === "icebreaker") return chariotTargets(piece, pieces);
   if (piece.role === "cannon") return cannonTargets(piece, pieces);
   if (piece.role === "king") return oneStep(piece, pieces, (node) => ownPalace(piece, node) && cardinal(piece.node, node));
-  if (piece.role === "guard") return oneStep(piece, pieces, (node) => ownPalace(piece, node) && diagonal(piece.node, node));
+  if (piece.role === "guard") return sanguoAdvisorTargets(piece, pieces);
   if (piece.role === "seer") return elephantTargets(piece, pieces);
   if (piece.role === "rider") return sanguoHorseTargets(piece, pieces);
   if (piece.role === "runner") return horseTargets(piece, pieces, 3);
