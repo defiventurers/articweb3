@@ -1,12 +1,10 @@
-/* Sanguo movement engine. Phase 1: Chariots use strict Xiangqi-style orthogonal rays inside each sector, with only the explicit three-way centre continuation. Chariots must never gain diagonal moves from the irregular traced-rail graph. */
+/* Sanguo movement engine. Phase 1: Chariots use Xiangqi-style orthogonal rays, but a file does not stop at a river. The numbered San Guo Qi files continue into the paired kingdom exactly as drawn on the three-player board. */
 import { sourceNodeKey, sourceRailNeighbours } from "./sanguoRailGraph";
 import { fieldPoint } from "./sanguoTopology";
 import { referenceNodeId } from "./sanguoReferenceCoordinates";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const CENTER = { x: 640, y: 625 };
-const CENTER_FILE = 4;
-const SECTORS: ReadonlyArray<SanguoNode["sector"]> = ["red", "green", "blue"];
 const sourceId = (node: SanguoNode) => sourceNodeKey(node.sector, node.rank, node.file);
 const id = (node: SanguoNode) => referenceNodeId(node);
 const fromId = (value: string): SanguoNode => { const [sector, rank, file] = value.split("-"); return { sector: sector as SanguoNode["sector"], rank: Number(rank), file: Number(file) }; };
@@ -25,6 +23,57 @@ const diagonal = (from: SanguoNode, to: SanguoNode) => from.rank !== to.rank && 
 const crossField = (from: SanguoNode, to: SanguoNode) => from.sector !== to.sector;
 const logicalNode = (sector: SanguoNode["sector"], rank: number, file: number): SanguoNode => ({ sector, rank, file });
 
+type ChariotContinuation = { sector: SanguoNode["sector"]; file: number };
+
+/*
+  Human line labels are file + 1. The centre-facing end is rank 0 (Lx-5)
+  and the outside edge is rank 4 (Lx-1).
+
+  Confirmed continuous files:
+    R1-B9, R2-B8, R3-B7, R4-B6,
+    R5-B5-G5,
+    R6-G4, R7-G3, R8-G2, R9-G1,
+    B1-G9, B2-G8, B3-G7, B4-G6.
+
+  The reverse relationships are included explicitly so movement is symmetric
+  regardless of which kingdom the Chariot currently occupies.
+*/
+const CHARIOT_CONTINUATIONS: Record<SanguoNode["sector"], readonly (readonly ChariotContinuation[])[]> = {
+  red: [
+    [{ sector: "blue", file: 8 }],
+    [{ sector: "blue", file: 7 }],
+    [{ sector: "blue", file: 6 }],
+    [{ sector: "blue", file: 5 }],
+    [{ sector: "blue", file: 4 }, { sector: "green", file: 4 }],
+    [{ sector: "green", file: 3 }],
+    [{ sector: "green", file: 2 }],
+    [{ sector: "green", file: 1 }],
+    [{ sector: "green", file: 0 }],
+  ],
+  blue: [
+    [{ sector: "green", file: 8 }],
+    [{ sector: "green", file: 7 }],
+    [{ sector: "green", file: 6 }],
+    [{ sector: "green", file: 5 }],
+    [{ sector: "red", file: 4 }, { sector: "green", file: 4 }],
+    [{ sector: "red", file: 3 }],
+    [{ sector: "red", file: 2 }],
+    [{ sector: "red", file: 1 }],
+    [{ sector: "red", file: 0 }],
+  ],
+  green: [
+    [{ sector: "red", file: 8 }],
+    [{ sector: "red", file: 7 }],
+    [{ sector: "red", file: 6 }],
+    [{ sector: "red", file: 5 }],
+    [{ sector: "red", file: 4 }, { sector: "blue", file: 4 }],
+    [{ sector: "blue", file: 3 }],
+    [{ sector: "blue", file: 2 }],
+    [{ sector: "blue", file: 1 }],
+    [{ sector: "blue", file: 0 }],
+  ],
+};
+
 function appendChariotRay(piece: SanguoPiece, pieces: SanguoPiece[], ray: SanguoNode[], output: SanguoNode[]) {
   for (const node of ray) {
     const hit = occupant(pieces, node);
@@ -38,26 +87,25 @@ function logicalChariotTargets(piece: SanguoPiece, pieces: SanguoPiece[]) {
   const output: SanguoNode[] = [];
   const { sector, rank, file } = piece.node;
 
-  // Strict Xiangqi rook movement: same rank OR same file only.
-  // These logical axes rotate with the Blue/Green sectors, so Blue L6 remains
-  // a valid straight file while visually diagonal graph branches are excluded.
+  // Across the current kingdom: ordinary Xiangqi rank movement. This never
+  // crosses a river and therefore cannot create a diagonal turn.
   appendChariotRay(piece, pieces, Array.from({ length: file }, (_, offset) => logicalNode(sector, rank, file - offset - 1)), output);
   appendChariotRay(piece, pieces, Array.from({ length: 8 - file }, (_, offset) => logicalNode(sector, rank, file + offset + 1)), output);
-  appendChariotRay(piece, pieces, Array.from({ length: rank }, (_, offset) => logicalNode(sector, rank - offset - 1, file)), output);
+
+  // Away from the centre on the current file.
   appendChariotRay(piece, pieces, Array.from({ length: 4 - rank }, (_, offset) => logicalNode(sector, rank + offset + 1, file)), output);
 
-  // Special San Guo Qi rule: only the central file can route through the shared
-  // three-way junction. No other traced graph edge may alter Chariot direction.
-  if (file === CENTER_FILE) {
-    let centreOpen = true;
-    for (let currentRank = rank - 1; currentRank >= 0; currentRank -= 1) {
-      if (occupant(pieces, logicalNode(sector, currentRank, CENTER_FILE))) { centreOpen = false; break; }
-    }
-    if (centreOpen) {
-      for (const destinationSector of SECTORS) {
-        if (destinationSector === sector) continue;
-        appendChariotRay(piece, pieces, Array.from({ length: 5 }, (_, destinationRank) => logicalNode(destinationSector, destinationRank, CENTER_FILE)), output);
-      }
+  // Toward the centre, then continue along the exact paired file in the next
+  // kingdom. Example: R1-1..R1-5 continues B9-5..B9-1. The centre line L5 is
+  // the only branching file and may continue into either of the other L5s.
+  const homeToCentre = Array.from({ length: rank }, (_, offset) => logicalNode(sector, rank - offset - 1, file));
+  const continuations = CHARIOT_CONTINUATIONS[sector][file] ?? [];
+  if (!continuations.length) {
+    appendChariotRay(piece, pieces, homeToCentre, output);
+  } else {
+    for (const continuation of continuations) {
+      const acrossRiver = Array.from({ length: 5 }, (_, destinationRank) => logicalNode(continuation.sector, destinationRank, continuation.file));
+      appendChariotRay(piece, pieces, [...homeToCentre, ...acrossRiver], output);
     }
   }
 
