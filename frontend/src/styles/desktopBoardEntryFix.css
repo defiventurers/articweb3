@@ -1,14 +1,53 @@
 /* Desktop Heritage Board Arcade layout fix.
-   Keep the primary board-entry action above the absolute collection rail so it
-   remains visible and clickable on shorter desktop viewports. */
+   Reserve a real interaction lane above the absolute collection rail on desktop.
+   The rail background must never intercept the primary ENTER BOARD action. */
 @media (min-width: 761px) {
   .arctic-game-world.arctic-game-world--webgl .arctic-game-world__content {
-    bottom: clamp(9rem, 18vh, 11rem);
-    z-index: 7;
+    /* The thumbnail rail is roughly 9–11rem tall on desktop. Keep the entire
+       info/action block comfortably above it, including shorter laptop screens. */
+    bottom: clamp(11rem, 23vh, 14rem);
+    z-index: 9;
+  }
+
+  .arctic-game-world.arctic-game-world--webgl .game-info {
+    position: relative;
+    z-index: 10;
   }
 
   .arctic-game-world.arctic-game-world--webgl .game-info__action {
     position: relative;
-    z-index: 2;
+    z-index: 12;
+    pointer-events: auto;
+  }
+
+  /* The strip owns only its actual controls. Its large transparent/gradient
+     container must not form an invisible click shield over ENTER BOARD. */
+  .arctic-game-world.arctic-game-world--webgl .game-collection-strip {
+    pointer-events: none;
+  }
+
+  .arctic-game-world.arctic-game-world--webgl .game-collection-strip__viewport,
+  .arctic-game-world.arctic-game-world--webgl .game-collection-strip__rail,
+  .arctic-game-world.arctic-game-world--webgl .game-collection-strip__item {
+    pointer-events: auto;
+  }
+
+  /* On shallow desktop/laptop viewports, tighten text rather than allowing the
+     CTA to fall back into the thumbnail rail. */
+  @media (max-height: 900px) {
+    .arctic-game-world.arctic-game-world--webgl .game-info__summary {
+      margin-top: .45rem;
+      margin-bottom: .6rem;
+      line-height: 1.3;
+    }
+
+    .arctic-game-world.arctic-game-world--webgl .game-info__heritage {
+      margin-top: .45rem;
+    }
+
+    .arctic-game-world.arctic-game-world--webgl .game-info__action {
+      min-height: 2.55rem;
+      padding-block: .62rem;
+    }
   }
 }
