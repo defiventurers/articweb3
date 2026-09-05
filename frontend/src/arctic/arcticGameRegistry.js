@@ -1,4 +1,4 @@
-import { GAME_CATALOG } from "../data/gameCatalog.js";
+import { LANDING_GAME_CATALOG } from "../data/gameCatalog.js";
 
 const WORLD_LAYOUT = {
   "arctic-dominion": { zone: "crown-citadel", x: 52, y: 48, depth: 12, rotation: -8, scale: 1.22, landmark: "The Crown Citadel", reveal: "royal" },
@@ -49,7 +49,7 @@ function defaultArtwork(gameId) {
   };
 }
 
-export const ARCTIC_GAME_REGISTRY = GAME_CATALOG.map((game) => {
+export const ARCTIC_GAME_REGISTRY = LANDING_GAME_CATALOG.map((game) => {
   const layout = WORLD_LAYOUT[game.id];
   if (!layout) throw new Error(`Missing Arctic world layout for ${game.id}`);
 
