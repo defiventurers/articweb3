@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import PUBLIC_ASSETS from "virtual:arctic-public-assets";
-import { GAME_CATALOG } from "../data/gameCatalog.js";
+import { LANDING_GAME_CATALOG } from "../data/gameCatalog.js";
 
 const DESKTOP_MEDIA = "(min-width: 900px) and (orientation: landscape)";
 const LANDING_BACKGROUND_ASSET = "/assets/arctic-dominion-citadel-final-1658x949.png";
-const LANDING_COVER_ASSETS = GAME_CATALOG.map(
+const LANDING_COVER_ASSETS = LANDING_GAME_CATALOG.map(
   (game) => `/assets/games/${game.id}/front.webp?v=front-1`
 );
 const LANDING_STICKER_ASSETS = [
