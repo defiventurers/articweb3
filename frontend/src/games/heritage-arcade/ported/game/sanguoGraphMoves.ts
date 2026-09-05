@@ -6,7 +6,7 @@ import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const CENTER = { x: 640, y: 625 };
 const CENTER_FILE = 4;
-const SECTORS: readonly SanguoNode["sector"][] = ["red", "green", "blue"];
+const SECTORS: ReadonlyArray<SanguoNode["sector"]> = ["red", "green", "blue"];
 const sourceId = (node: SanguoNode) => sourceNodeKey(node.sector, node.rank, node.file);
 const id = (node: SanguoNode) => referenceNodeId(node);
 const fromId = (value: string): SanguoNode => { const [sector, rank, file] = value.split("-"); return { sector: sector as SanguoNode["sector"], rank: Number(rank), file: Number(file) }; };
@@ -25,7 +25,6 @@ const diagonal = (from: SanguoNode, to: SanguoNode) => from.rank !== to.rank && 
 const crossField = (from: SanguoNode, to: SanguoNode) => from.sector !== to.sector;
 const logicalNode = (sector: SanguoNode["sector"], rank: number, file: number): SanguoNode => ({ sector, rank, file });
 
-/** Add a Xiangqi-style ray. Empty nodes are legal; the first occupied node is capturable only when enemy-controlled and ends the ray. */
 function appendChariotRay(piece: SanguoPiece, pieces: SanguoPiece[], ray: SanguoNode[], output: SanguoNode[]) {
   for (const node of ray) {
     const hit = occupant(pieces, node);
@@ -35,16 +34,6 @@ function appendChariotRay(piece: SanguoPiece, pieces: SanguoPiece[], ray: Sanguo
   }
 }
 
-/**
- * Phase 1 Chariot contract:
- * - each 45-node sector is a logical 5x9 Xiangqi half-board;
- * - Chariots move any unobstructed distance along rank or file;
- * - only file 4 can reach the centre;
- * - if the path to the mover's sector portal (rank 0, file 4) is clear, the Chariot may choose either other kingdom,
- *   enter at that kingdom's rank-0/file-4 portal, and continue outward on that same centre file;
- * - a move may cross the centre at most once: no second turn into the third kingdom.
- * Visual pixel angles never participate in this calculation.
- */
 export function chariotTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
   const output: SanguoNode[] = [];
   const { sector, rank, file } = piece.node;
@@ -56,7 +45,6 @@ export function chariotTargets(piece: SanguoPiece, pieces: SanguoPiece[]): Sangu
 
   if (file !== CENTER_FILE) return unique(output);
 
-  // Crossing is permitted only when every node between the current Chariot and its own centre portal is empty.
   let centreOpen = true;
   for (let currentRank = rank - 1; currentRank >= 0; currentRank -= 1) {
     if (occupant(pieces, logicalNode(sector, currentRank, CENTER_FILE))) { centreOpen = false; break; }
@@ -72,7 +60,6 @@ export function chariotTargets(piece: SanguoPiece, pieces: SanguoPiece[]): Sangu
   return unique(output);
 }
 
-/** Legacy line walker retained for Cannon only until Phase 2. */
 function railLineTargets(piece: SanguoPiece, pieces: SanguoPiece[], cannon: boolean) {
   const found: SanguoNode[] = [];
   const queue = neighbours(piece.node).map((current) => ({ previous: piece.node, current, screened: false, crossedRiver: false, permitFieldContinuation: false, visited: new Set([sourceId(piece.node)]) }));
