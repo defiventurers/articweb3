@@ -6,6 +6,7 @@ import { ALL_CLANS, CLANS } from "./ported/game/millsRules.ts";
 import SanguoBoard from "./ported/components/SanguoBoard.tsx";
 import XiangqiBoard from "./ported/components/XiangqiBoard.tsx";
 import ShogiBoard from "./ported/components/ShogiBoard.tsx";
+import SanninShogiBoard from "./ported/components/SanninShogiBoard.tsx";
 import MillsBoard from "./ported/components/MillsBoard.tsx";
 import CompactBoard from "./ported/components/CompactBoard.tsx";
 import AttaqueBoard from "./ported/components/AttaqueBoard.tsx";
@@ -51,6 +52,7 @@ export function HeritageArcadeApp({ onExitToLibrary }) {
 
 function renderBoard(modeId, roster, onBack) {
   if (modeId === 1) return <SanguoBoard onBack={onBack} />;
+  if (modeId === 24) return <SanninShogiBoard onBack={onBack} />;
   if (modeId === 25) return <XiangqiBoard onBack={onBack} />;
   if (modeId === 26) return <ShogiBoard onBack={onBack} />;
   if (modeId === 7) return <RyukyuSanzanBoard key={roster.join("-")} roster={roster} onBack={onBack} />;
