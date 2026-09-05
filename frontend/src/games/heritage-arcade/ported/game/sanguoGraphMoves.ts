@@ -1,11 +1,13 @@
 /* Sanguo movement engine.
    Phase 1: Chariots use Xiangqi-style orthogonal rays with the exact cross-kingdom file continuations.
    Phase 2: Cannons use the same straight lines, move like a Chariot when not capturing, and require exactly one screen to capture.
-   Phase 3: Horses use exact Xiangqi L movement with a blocking orthogonal horse-leg and stay inside their current kingdom field. */
+   Phase 3: Horses use exact Xiangqi L movement with a blocking horse-leg and the confirmed joined-board topology.
+   Phase 4: Elephants move exactly two points diagonally, require a clear elephant-eye midpoint, and never cross a river. */
 import { sourceRailNeighbours } from "./sanguoRailGraph";
 import { fieldPoint } from "./sanguoTopology";
 import { referenceNodeId } from "./sanguoReferenceCoordinates";
 import { sanguoHorseTargets } from "./sanguoHorseMoves";
+import { sanguoElephantTargets } from "./sanguoElephantMoves";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const CENTER = { x: 640, y: 625 };
@@ -119,17 +121,13 @@ function appendCannonRay(piece: SanguoPiece, pieces: SanguoPiece[], ray: SanguoN
     const hit = occupant(pieces, node);
     if (!screened) {
       if (!hit) {
-        // Before the screen, a Cannon moves exactly like a Chariot.
         output.push(node);
         continue;
       }
-      // The first occupied node is the screen. It is never a legal destination.
       screened = true;
       continue;
     }
 
-    // After the screen, empty nodes cannot be landed on. The first occupied node
-    // is the only possible capture, and only if it belongs to an opponent.
     if (!hit) continue;
     if (hit.controller !== piece.controller) output.push(node);
     break;
@@ -174,15 +172,7 @@ function horseTargets(piece: SanguoPiece, pieces: SanguoPiece[], steps: number) 
 }
 
 function elephantTargets(piece: SanguoPiece, pieces: SanguoPiece[]) {
-  const output: SanguoNode[] = [];
-  for (const eye of neighbours(piece.node).filter((node) => node.sector === piece.sector)) {
-    if (occupant(pieces, eye)) continue;
-    const first = vector(piece.node, eye);
-    for (const finish of neighbours(eye).filter((node) => node.sector === piece.sector && !same(node, piece.node))) {
-      if (alignment(first, vector(eye, finish)) > .72 && landable(piece, finish, pieces)) output.push(finish);
-    }
-  }
-  return unique(output);
+  return sanguoElephantTargets(piece, pieces);
 }
 
 function soldierTargets(piece: SanguoPiece, pieces: SanguoPiece[]) {
