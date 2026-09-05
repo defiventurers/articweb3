@@ -1,7 +1,15 @@
-/* Sanguo rule contract: standard Xiangqi legality plus the documented Three-Kingdoms turn, river, elimination, and appropriation conventions. */
-import { SOURCE_RAIL_EDGES, sourceNodeKey } from "./sanguoRailGraph";
-import { graphPseudoTargets } from "./sanguoGraphMoves";
-import { generalsFacingOnConfirmedFiles } from "./sanguoSpecialRules";
+/*
+ * Sanguo rule contract.
+ *
+ * Core legality is standard Xiangqi on three logical 5x9 sectors. The only
+ * board-specific movement adaptation is the explicit river/junction layer in
+ * sanguoLogicalTopology.ts. The traced source rail graph is retained below only
+ * for renderer/audit validation; it is never consulted to decide a legal move.
+ */
+import { SOURCE_RAIL_EDGES } from "./sanguoRailGraph";
+import { logicalPseudoTargets } from "./sanguoGraphMoves";
+import { logicalNodeKey } from "./sanguoLogicalTopology";
+import { generalsFacingOnLogicalFiles } from "./sanguoSpecialRules";
 
 export const sanguoFactions = ["red", "green", "blue"] as const;
 export type SanguoFaction = (typeof sanguoFactions)[number];
@@ -13,22 +21,24 @@ export type SanguoMove = { pieceId: string; from: SanguoNode; to: SanguoNode; co
 export type SanguoState = { pieces: SanguoPiece[]; turn: SanguoFaction; defeated: SanguoFaction[]; winner: SanguoFaction | null; pending: PendingResolution | null; note: string; moveNumber: number; lastMove: SanguoMove | null };
 
 export const roleLabels: Record<SanguoRole, string> = { king: "General", guard: "Advisor", seer: "Elephant", rider: "Horse", runner: "Bannerman", icebreaker: "Chariot", cannon: "Cannon", scout: "Soldier" };
-export const nodeId = (node: SanguoNode) => sourceNodeKey(node.sector, node.rank, node.file);
+export const nodeId = (node: SanguoNode) => logicalNodeKey(node);
 export const sameNode = (left: SanguoNode, right: SanguoNode) => nodeId(left) === nodeId(right);
-export const sanguoNodeIds = () => sanguoFactions.flatMap((sector) => Array.from({ length: 45 }, (_, index) => sourceNodeKey(sector, Math.floor(index / 9), index % 9)));
+export const sanguoNodeIds = () => sanguoFactions.flatMap((sector) => Array.from({ length: 45 }, (_, index) => logicalNodeKey({ sector, rank: Math.floor(index / 9), file: index % 9 })));
 export const railNodeIds = new Set(sanguoNodeIds());
+
+/** Renderer/audit-only validation. Movement legality does not use SOURCE_RAIL_EDGES. */
 export const graphHasOnlyKnownNodes = () => SOURCE_RAIL_EDGES.every(([from, to]) => railNodeIds.has(from) && railNodeIds.has(to));
 export const optionalBannermenCount = (enabled: boolean) => enabled ? 54 : 48;
 export const otherFactions = (faction: SanguoFaction) => sanguoFactions.filter((candidate) => candidate !== faction);
 
 const occupant = (pieces: SanguoPiece[], node: SanguoNode) => pieces.find((piece) => !piece.captured && sameNode(piece.node, node));
 
-/** Public pseudo-target resolver used by attack and legality checks. */
-export const pseudoSanguoTargets = (piece: SanguoPiece, pieces: SanguoPiece[]) => graphPseudoTargets(piece, pieces);
+/** Public pseudo-target resolver: logical Xiangqi geometry + explicit Sanguo boundary rules. */
+export const pseudoSanguoTargets = (piece: SanguoPiece, pieces: SanguoPiece[]) => logicalPseudoTargets(piece, pieces);
 
-/** Xiangqi flying-General rule, evaluated on the confirmed Sanguo file continuations. */
+/** Xiangqi flying-General rule on logical files, including explicit L5 branching. */
 export function generalsFacing(pieces: SanguoPiece[]) {
-  return generalsFacingOnConfirmedFiles(pieces);
+  return generalsFacingOnLogicalFiles(pieces);
 }
 
 export function generalIsAttacked(controller: SanguoFaction, pieces: SanguoPiece[]) {
@@ -172,8 +182,6 @@ export function resolveSanguoAppropriation(state: SanguoState): SanguoState | nu
   if (!state.pending) return null;
 
   const defeated = [...state.defeated, state.pending.defeated];
-  // Historical Sanguo convention: on checkmate, the mating piece occupies the
-  // defeated General's point during the separate resolution turn.
   const resolvedPosition = placeMatingPieceOnGeneral(state.pieces, state.pending);
   const pieces = removeGeneralAndAppropriate(resolvedPosition, state.pending);
   const winner = winnerFromDefeats(defeated);
