@@ -1,9 +1,11 @@
 /* Sanguo movement engine.
    Phase 1: Chariots use Xiangqi-style orthogonal rays with the exact cross-kingdom file continuations.
-   Phase 2: Cannons use the same straight lines, move like a Chariot when not capturing, and require exactly one screen to capture. */
+   Phase 2: Cannons use the same straight lines, move like a Chariot when not capturing, and require exactly one screen to capture.
+   Phase 3: Horses use exact Xiangqi L movement with a blocking orthogonal horse-leg and stay inside their current kingdom field. */
 import { sourceRailNeighbours } from "./sanguoRailGraph";
 import { fieldPoint } from "./sanguoTopology";
 import { referenceNodeId } from "./sanguoReferenceCoordinates";
+import { sanguoHorseTargets } from "./sanguoHorseMoves";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const CENTER = { x: 640, y: 625 };
@@ -148,6 +150,8 @@ function oneStep(piece: SanguoPiece, pieces: SanguoPiece[], predicate: (node: Sa
   return neighbours(piece.node).filter(predicate).filter((node) => landable(piece, node, pieces));
 }
 
+// Legacy three-step graph walker retained only for the optional Bannerman until
+// its own movement phase is rebuilt. Horses no longer use this approximation.
 function horseTargets(piece: SanguoPiece, pieces: SanguoPiece[], steps: number) {
   const output: SanguoNode[] = [];
   for (const leg of neighbours(piece.node).filter((node) => node.sector === piece.sector)) {
@@ -200,7 +204,7 @@ export function graphPseudoTargets(piece: SanguoPiece, pieces: SanguoPiece[]): S
   if (piece.role === "king") return oneStep(piece, pieces, (node) => ownPalace(piece, node) && cardinal(piece.node, node));
   if (piece.role === "guard") return oneStep(piece, pieces, (node) => ownPalace(piece, node) && diagonal(piece.node, node));
   if (piece.role === "seer") return elephantTargets(piece, pieces);
-  if (piece.role === "rider") return horseTargets(piece, pieces, 2);
+  if (piece.role === "rider") return sanguoHorseTargets(piece, pieces);
   if (piece.role === "runner") return horseTargets(piece, pieces, 3);
   return soldierTargets(piece, pieces);
 }
