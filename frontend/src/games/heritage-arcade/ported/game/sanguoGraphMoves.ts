@@ -1,10 +1,12 @@
-/* Source-faithful movement: every legal route is a chain of declared visible rails, never a hidden grid offset. */
+/* Sanguo movement engine. Phase 1 replaces Chariot geometry heuristics with logical Xiangqi rays plus an explicit three-way centre router. Other roles remain on the legacy rail implementation until their migration phases. */
 import { sourceNodeKey, sourceRailNeighbours } from "./sanguoRailGraph";
 import { fieldPoint } from "./sanguoTopology";
 import { referenceNodeId } from "./sanguoReferenceCoordinates";
 import type { SanguoNode, SanguoPiece } from "./sanguoRules";
 
 const CENTER = { x: 640, y: 625 };
+const CENTER_FILE = 4;
+const SECTORS: readonly SanguoNode["sector"][] = ["red", "green", "blue"];
 const sourceId = (node: SanguoNode) => sourceNodeKey(node.sector, node.rank, node.file);
 const id = (node: SanguoNode) => referenceNodeId(node);
 const fromId = (value: string): SanguoNode => { const [sector, rank, file] = value.split("-"); return { sector: sector as SanguoNode["sector"], rank: Number(rank), file: Number(file) }; };
@@ -21,13 +23,61 @@ const ownPalace = (piece: SanguoPiece, node: SanguoNode) => node.sector === piec
 const cardinal = (from: SanguoNode, to: SanguoNode) => from.rank === to.rank || from.file === to.file;
 const diagonal = (from: SanguoNode, to: SanguoNode) => from.rank !== to.rank && from.file !== to.file;
 const crossField = (from: SanguoNode, to: SanguoNode) => from.sector !== to.sector;
+const logicalNode = (sector: SanguoNode["sector"], rank: number, file: number): SanguoNode => ({ sector, rank, file });
 
+/** Add a Xiangqi-style ray. Empty nodes are legal; the first occupied node is capturable only when enemy-controlled and ends the ray. */
+function appendChariotRay(piece: SanguoPiece, pieces: SanguoPiece[], ray: SanguoNode[], output: SanguoNode[]) {
+  for (const node of ray) {
+    const hit = occupant(pieces, node);
+    if (!hit) { output.push(node); continue; }
+    if (hit.controller !== piece.controller) output.push(node);
+    break;
+  }
+}
+
+/**
+ * Phase 1 Chariot contract:
+ * - each 45-node sector is a logical 5x9 Xiangqi half-board;
+ * - Chariots move any unobstructed distance along rank or file;
+ * - only file 4 can reach the centre;
+ * - if the path to the mover's sector portal (rank 0, file 4) is clear, the Chariot may choose either other kingdom,
+ *   enter at that kingdom's rank-0/file-4 portal, and continue outward on that same centre file;
+ * - a move may cross the centre at most once: no second turn into the third kingdom.
+ * Visual pixel angles never participate in this calculation.
+ */
+export function chariotTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
+  const output: SanguoNode[] = [];
+  const { sector, rank, file } = piece.node;
+
+  appendChariotRay(piece, pieces, Array.from({ length: file }, (_, offset) => logicalNode(sector, rank, file - offset - 1)), output);
+  appendChariotRay(piece, pieces, Array.from({ length: 8 - file }, (_, offset) => logicalNode(sector, rank, file + offset + 1)), output);
+  appendChariotRay(piece, pieces, Array.from({ length: rank }, (_, offset) => logicalNode(sector, rank - offset - 1, file)), output);
+  appendChariotRay(piece, pieces, Array.from({ length: 4 - rank }, (_, offset) => logicalNode(sector, rank + offset + 1, file)), output);
+
+  if (file !== CENTER_FILE) return unique(output);
+
+  // Crossing is permitted only when every node between the current Chariot and its own centre portal is empty.
+  let centreOpen = true;
+  for (let currentRank = rank - 1; currentRank >= 0; currentRank -= 1) {
+    if (occupant(pieces, logicalNode(sector, currentRank, CENTER_FILE))) { centreOpen = false; break; }
+  }
+  if (!centreOpen) return unique(output);
+
+  for (const destinationSector of SECTORS) {
+    if (destinationSector === sector) continue;
+    const branch = Array.from({ length: 5 }, (_, destinationRank) => logicalNode(destinationSector, destinationRank, CENTER_FILE));
+    appendChariotRay(piece, pieces, branch, output);
+  }
+
+  return unique(output);
+}
+
+/** Legacy line walker retained for Cannon only until Phase 2. */
 function railLineTargets(piece: SanguoPiece, pieces: SanguoPiece[], cannon: boolean) {
   const found: SanguoNode[] = [];
   const queue = neighbours(piece.node).map((current) => ({ previous: piece.node, current, screened: false, crossedRiver: false, permitFieldContinuation: false, visited: new Set([sourceId(piece.node)]) }));
   while (queue.length) {
     const route = queue.shift()!;
-    const routeKey = `${id(route.previous)}>${id(route.current)}>${route.screened ? "screen" : "clear"}>${route.crossedRiver ? "crossed" : "home"}>${route.permitFieldContinuation ? "entry" : "ray"}`;
     const currentSourceKey = sourceId(route.current);
     if (route.visited.has(currentSourceKey)) continue;
     route.visited.add(currentSourceKey);
@@ -100,7 +150,7 @@ function soldierTargets(piece: SanguoPiece, pieces: SanguoPiece[]) {
 
 export function graphPseudoTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
   if (piece.captured) return [];
-  if (piece.role === "icebreaker") return railLineTargets(piece, pieces, false);
+  if (piece.role === "icebreaker") return chariotTargets(piece, pieces);
   if (piece.role === "cannon") return railLineTargets(piece, pieces, true);
   if (piece.role === "king") return oneStep(piece, pieces, (node) => ownPalace(piece, node) && cardinal(piece.node, node));
   if (piece.role === "guard") return oneStep(piece, pieces, (node) => ownPalace(piece, node) && diagonal(piece.node, node));
