@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>San Guo Qi Piece Placement</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0e1726;color:#eef5ff;font-family:Inter,Arial,sans-serif}header{position:sticky;top:0;z-index:20;background:#152238;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid #2b3d59}header h1{font-size:18px;margin:0;margin-right:auto}button,select{font:inherit;background:#263b5a;color:white;border:1px solid #405778;border-radius:7px;padding:8px 10px;cursor:pointer}button:hover{background:#314a6d}.layout{display:grid;grid-template-columns:minmax(520px,1fr) 320px;gap:12px;padding:12px}.board-wrap{position:relative;max-width:1000px;margin:auto;background:white;border-radius:8px;overflow:hidden}.board-wrap>img{display:block;width:100%;height:auto}.node{position:absolute;width:12px;height:12px;border-radius:50%;background:#fff;border:1px solid #111;transform:translate(-50%,-50%);opacity:.72;z-index:2;cursor:pointer}.node:hover{width:18px;height:18px;opacity:1}.piece{position:absolute;width:42px;height:42px;transform:translate(-50%,-50%);z-index:5;cursor:pointer;border-radius:50%}.piece img{width:100%;height:100%;display:block;pointer-events:none}.piece.selected{outline:4px solid #fff;outline-offset:2px}.piece.red{filter:drop-shadow(0 0 5px #ff4d4d)}.piece.green{filter:drop-shadow(0 0 5px #44df74)}.piece.blue{filter:drop-shadow(0 0 5px #4fa3ff)}aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px;height:max-content}.team-tabs{display:flex;gap:6px;margin:10px 0}.piece-list{display:grid;gap:6px;max-height:430px;overflow:auto}.piece-row{display:grid;grid-template-columns:36px 1fr;gap:8px;align-items:center;text-align:left}.piece-row img{width:34px;height:34px}.piece-row small{display:block;color:#9fb2cc}.hint{font-size:12px;color:#aebed4;line-height:1.5}.export{width:100%;height:220px;background:#0b1320;color:#d9e6f7;border:1px solid #405778;border-radius:7px;padding:8px;font-family:Consolas,monospace;font-size:11px;margin-top:8px;resize:vertical}@media(max-width:850px){.layout{grid-template-columns:1fr}.board-wrap{max-width:none}aside{position:static}}
+</style>
+</head>
+<body>
+<header><h1>San Guo Qi — Piece Placement</h1><button id="reset">Reset opening</button><button id="copy">Copy setup JSON</button></header>
+<div class="layout">
+<div class="board-wrap" id="boardWrap"><img src="/assets/heritage-arcade/board/sanguo-arctic-board.png" alt="San Guo Qi Arctic board" /></div>
+<aside>
+<div><b>1.</b> Select a team and piece.<br><b>2.</b> Click any node to place it.<br><b>3.</b> Occupied nodes swap pieces automatically.</div>
+<div class="team-tabs"><button data-team="red">Red</button><button data-team="green">Green</button><button data-team="blue">Blue</button></div>
+<div class="piece-list" id="pieceList"></div>
+<p class="hint">This uses the actual production token artwork in <code>/assets/heritage-arcade/tokens/</code> and the finalized 135 board positions.</p>
+<textarea class="export" id="output" readonly></textarea>
+</aside>
+</div>
+<script>
+const A='/assets/heritage-arcade/tokens/';
+const roleFiles={general:'general',advisor:'advisor',elephant:'elephant',horse:'horse',chariot:'chariot',cannon:'cannon',soldier:'soldier'};
+const positions={
+red:[[.301,.869],[.279,.818],[.258,.771],[.238,.723],[.218,.679],[.356,.868],[.342,.801],[.330,.741],[.315,.679],[.303,.622],[.410,.869],[.399,.786],[.390,.715],[.380,.645],[.372,.578],[.460,.867],[.455,.773],[.450,.687],[.445,.606],[.442,.533],[.510,.868],[.511,.763],[.510,.659],[.510,.575],[.510,.486],[.564,.867],[.567,.773],[.570,.686],[.576,.608],[.581,.532],[.614,.868],[.623,.787],[.632,.714],[.641,.645],[.650,.577],[.665,.868],[.679,.800],[.691,.742],[.704,.680],[.717,.618],[.721,.869],[.741,.819],[.764,.773],[.784,.722],[.805,.675]],
+green:[[.917677,.430591],[.894242,.482271],[.872424,.532137],[.849798,.581096],[.832828,.615549],[.891010,.379818],[.854646,.429685],[.822323,.473204],[.790000,.516724],[.759293,.562056],[.861919,.327232],[.817475,.375285],[.772222,.421525],[.728586,.466857],[.687374,.504937],[.832828,.280086],[.777879,.324512],[.724545,.367125],[.671212,.411551],[.621111,.455071],[.806970,.230220],[.740707,.275553],[.677677,.317259],[.611414,.359872],[.550000,.402485],[.783535,.186701],[.722121,.217527],[.662323,.247447],[.602525,.281899],[.546768,.309099],[.757677,.140461],[.702727,.160407],[.649394,.182167],[.594444,.202114],[.543535,.221153],[.733434,.094221],[.684141,.105101],[.634848,.115981],[.585556,.128674],[.541111,.139554],[.709192,.048889],[.663939,.048889],[.620303,.049795],[.576667,.049795],[.533838,.049795]],
+blue:[[.308384,.046169],[.352828,.047075],[.399697,.047075],[.444141,.047982],[.482121,.047075],[.284950,.089688],[.337475,.102381],[.385151,.115981],[.434444,.126861],[.475657,.137741],[.259091,.135021],[.318081,.160407],[.373838,.181261],[.426364,.201207],[.474849,.220247],[.234848,.182167],[.300303,.215714],[.359293,.247447],[.417475,.279179],[.473232,.307286],[.209798,.228407],[.280101,.273740],[.344747,.315446],[.406970,.358965],[.468384,.399765],[.181515,.278273],[.242929,.324512],[.296263,.368032],[.350404,.411551],[.401313,.455978],[.154849,.323606],[.205758,.373472],[.247778,.421525],[.292222,.465044],[.329394,.504937],[.127374,.375285],[.164545,.426965],[.196869,.474111],[.230000,.522164],[.256667,.557523],[.098283,.428778],[.121717,.481364],[.144343,.530323],[.164545,.582003],[.181515,.613736]]};
+const labels=[];for(let line=1;line<=9;line++)for(let depth=1;depth<=5;depth++)labels.push(`L${line}-${depth}`);
+const backRoles=['chariot','horse','elephant','advisor','general','advisor','elephant','horse','chariot'];
+function opening(team){const p=[];backRoles.forEach((role,i)=>p.push({id:`${team}-${role}-${i}`,team,role,node:`L${i+1}-1`}));p.push({id:`${team}-cannon-0`,team,role:'cannon',node:'L2-3'});p.push({id:`${team}-cannon-1`,team,role:'cannon',node:'L8-3'});[1,3,5,7,9].forEach((l,i)=>p.push({id:`${team}-soldier-${i}`,team,role:'soldier',node:`L${l}-4`}));return p}
+let pieces=[...opening('red'),...opening('green'),...opening('blue')],team='red',selected=null;
+const board=document.getElementById('boardWrap'),list=document.getElementById('pieceList'),output=document.getElementById('output');
+function coord(t,label){const i=labels.indexOf(label);return positions[t][i]}
+function asset(p){return `${A}token-sanguo-${p.team}-${roleFiles[p.role]}.webp`}
+function render(){board.querySelectorAll('.node,.piece').forEach(e=>e.remove());Object.keys(positions).forEach(t=>labels.forEach((label,i)=>{const [x,y]=positions[t][i],n=document.createElement('div');n.className='node';n.style.left=x*100+'%';n.style.top=y*100+'%';n.title=`${t.toUpperCase()} ${label}`;n.onclick=()=>place(t,label);board.appendChild(n)}));pieces.forEach(p=>{const [x,y]=coord(p.team,p.node),d=document.createElement('div');d.className=`piece ${p.team}${selected===p.id?' selected':''}`;d.style.left=x*100+'%';d.style.top=y*100+'%';d.title=`${p.id} @ ${p.node}`;d.innerHTML=`<img src="${asset(p)}" alt="${p.team} ${p.role}">`;d.onclick=e=>{e.stopPropagation();selected=p.id;team=p.team;render()};board.appendChild(d)});renderList();updateOutput()}
+function renderList(){list.innerHTML='';pieces.filter(p=>p.team===team).forEach(p=>{const b=document.createElement('button');b.className='piece-row';b.innerHTML=`<img src="${asset(p)}" alt=""><span><b>${p.role}</b><small>${p.id} · ${p.node}</small></span>`;b.onclick=()=>{selected=p.id;render()};list.appendChild(b)})}
+function place(targetTeam,label){if(!selected)return;const current=pieces.find(p=>p.id===selected);const hit=pieces.find(p=>p.team===targetTeam&&p.node===label);if(hit&&hit.id!==current.id){const oldTeam=current.team,oldNode=current.node;hit.team=oldTeam;hit.node=oldNode}current.team=targetTeam;current.node=label;team=current.team;render()}
+function updateOutput(){output.value=JSON.stringify({pieces:pieces.map(p=>{const [x,y]=coord(p.team,p.node);return {...p,x:+x.toFixed(6),y:+y.toFixed(6)}})},null,2)}
+document.querySelectorAll('[data-team]').forEach(b=>b.onclick=()=>{team=b.dataset.team;selected=null;render()});document.getElementById('reset').onclick=()=>{pieces=[...opening('red'),...opening('green'),...opening('blue')];selected=null;team='red';render()};document.getElementById('copy').onclick=async()=>{updateOutput();try{await navigator.clipboard.writeText(output.value);alert('Setup JSON copied.')}catch{output.select();document.execCommand('copy');alert('Setup JSON copied.')}};render();
+</script>
+</body>
+</html>
