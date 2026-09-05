@@ -1,5 +1,7 @@
 /* Tactile Expedition Theatre: this is the heritage-only invitation layer; it describes a first decision without changing any game rule. */
 import { PenguinHostPair, getGameHosts, HOST_META } from "./PenguinHosts.jsx";
+import "../styles/desktopBoardEntryFix.css";
+
 const EXPEDITION_BRIEFS = {
   "nine-ice-forts": "Build pressure between three points before you rush a mill.",
   "four-wing-ice-hunt": "Trace the lattice first; every open wing changes the hunt.",
