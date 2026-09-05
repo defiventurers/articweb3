@@ -6,16 +6,16 @@ import { GameCollectionStrip } from "../components/GameCollectionStrip.jsx";
 import { GameEnvironment } from "../components/GameEnvironment.jsx";
 import { GameInfo } from "../components/GameInfo.jsx";
 import { GameNavigation } from "../components/GameNavigation.jsx";
-import { GAME_CATALOG } from "../data/gameCatalog.js";
+import { LANDING_GAME_CATALOG } from "../data/gameCatalog.js";
 
 export function GameLibraryScreen({ onSelectGame }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [webglReady, setWebglReady] = useState(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const wheelLockRef = useRef(false);
-  const selectedGame = GAME_CATALOG[selectedIndex];
-  const previousGame = GAME_CATALOG[wrapIndex(selectedIndex - 1, GAME_CATALOG.length)];
-  const nextGame = GAME_CATALOG[wrapIndex(selectedIndex + 1, GAME_CATALOG.length)];
+  const selectedGame = LANDING_GAME_CATALOG[selectedIndex];
+  const previousGame = LANDING_GAME_CATALOG[wrapIndex(selectedIndex - 1, LANDING_GAME_CATALOG.length)];
+  const nextGame = LANDING_GAME_CATALOG[wrapIndex(selectedIndex + 1, LANDING_GAME_CATALOG.length)];
 
   const handleWebglReady = useCallback((ready) => {
     setWebglReady(ready);
@@ -31,15 +31,15 @@ export function GameLibraryScreen({ onSelectGame }) {
   }, []);
 
   const selectIndex = useCallback((index) => {
-    setSelectedIndex(wrapIndex(index, GAME_CATALOG.length));
+    setSelectedIndex(wrapIndex(index, LANDING_GAME_CATALOG.length));
   }, []);
 
   const selectPrevious = useCallback(() => {
-    setSelectedIndex((index) => wrapIndex(index - 1, GAME_CATALOG.length));
+    setSelectedIndex((index) => wrapIndex(index - 1, LANDING_GAME_CATALOG.length));
   }, []);
 
   const selectNext = useCallback(() => {
-    setSelectedIndex((index) => wrapIndex(index + 1, GAME_CATALOG.length));
+    setSelectedIndex((index) => wrapIndex(index + 1, LANDING_GAME_CATALOG.length));
   }, []);
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export function GameLibraryScreen({ onSelectGame }) {
       {webglReady !== true && <GameEnvironment theme={selectedGame.theme} />}
       {webglReady !== false && (
         <ArcticWebGLArchive
-          games={GAME_CATALOG}
+          games={LANDING_GAME_CATALOG}
           selectedIndex={selectedIndex}
           onSelectIndex={selectIndex}
           onReady={handleWebglReady}
@@ -85,7 +85,7 @@ export function GameLibraryScreen({ onSelectGame }) {
         <ArcticFocalStickerLayer
           gameId={selectedGame.id}
           selectedIndex={selectedIndex}
-          totalGames={GAME_CATALOG.length}
+          totalGames={LANDING_GAME_CATALOG.length}
           reducedMotion={reducedMotion}
         />
       )}
@@ -96,7 +96,7 @@ export function GameLibraryScreen({ onSelectGame }) {
           <strong>ARCTIC DOMINION</strong>
         </a>
         <div className="arctic-game-world__masthead-meta">
-          <span>21 PRESERVED KINGDOMS</span>
+          <span>{LANDING_GAME_CATALOG.length} PRESERVED KINGDOMS</span>
           <p className="arctic-game-world__instruction">DRAG · SCROLL · ARROW KEYS</p>
         </div>
       </header>
@@ -105,13 +105,13 @@ export function GameLibraryScreen({ onSelectGame }) {
         <GameInfo
           game={selectedGame}
           index={selectedIndex}
-          total={GAME_CATALOG.length}
+          total={LANDING_GAME_CATALOG.length}
           onEnter={() => onSelectGame(selectedGame.id)}
         />
 
         {webglReady === false && (
           <GameCarousel
-            games={GAME_CATALOG}
+            games={LANDING_GAME_CATALOG}
             selectedIndex={selectedIndex}
             onSelectIndex={selectIndex}
             onPrevious={selectPrevious}
@@ -128,7 +128,7 @@ export function GameLibraryScreen({ onSelectGame }) {
       </div>
 
       <GameCollectionStrip
-        games={GAME_CATALOG}
+        games={LANDING_GAME_CATALOG}
         selectedIndex={selectedIndex}
         onSelectIndex={selectIndex}
       />
