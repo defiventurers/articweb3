@@ -1,5 +1,5 @@
 export const GAME_CATALOG = [
-  { id: "heritage-arcade", title: "Heritage Board Arcade", heritage: "25 preserved and reconstructed strategy tables", engine: "Local rules catalogue · Abstract-ready shell", players: "2–4 players", status: "PLAYABLE", statusKey: "playable", priority: 0, theme: "heritage", mark: "HB", summary: "A source-labeled collection of Indian-origin, Asian, and Arctic strategy games, including Sanguo Qi and Xiangqi.", available: true },
+  { id: "heritage-arcade", title: "Heritage Board Arcade", heritage: "25 preserved and reconstructed strategy tables", engine: "Local rules catalogue · Abstract-ready shell", players: "2–4 players", status: "PLAYABLE", statusKey: "playable", priority: 0, theme: "heritage", mark: "HB", summary: "A source-labeled collection of Indian-origin, Asian, and Arctic strategy games, including Sanguo Qi and Xiangqi.", available: true, hiddenFromLanding: true },
   { id: "arctic-dominion", title: "Arctic Dominion", heritage: "Modern Chaturanga-inspired flagship", engine: "Dice-activated grid war", players: "4 players", status: "PLAYABLE", statusKey: "playable", priority: 0, theme: "dominion", mark: "AD", summary: "Command four penguin kingdoms across a frozen 8×8 battlefield.", available: true },
   { id: "nine-ice-forts", title: "Nine Ice Forts", heritage: "Navakankari / Nine Men’s Morris", engine: "Graph alignment", players: "2 players", status: "PLAYABLE", statusKey: "playable", priority: 1, theme: "forts", mark: "IX", summary: "Form mills, break formations and trap the rival tribe.", available: true },
   { id: "four-wing-ice-hunt", title: "Four-Wing Ice Hunt", heritage: "Diviyan Keliya / Leopards and Cattle", engine: "Graph hunt", players: "2 players", status: "PLAYABLE", statusKey: "playable", priority: 2, theme: "hunt", mark: "4W", summary: "Two hunters face a surrounding colony on a striking four-wing board.", available: true },
@@ -22,4 +22,9 @@ export const GAME_CATALOG = [
   { id: "sige", title: "Sige", heritage: "Siga / Sige", engine: "Small race", players: "2 players", status: "PLAYABLE", statusKey: "playable", priority: 19, theme: "sige", mark: "SG", summary: "Two pieces race around a protected outer route toward the centre.", available: true },
   { id: "aurora-ganjifa-academy", title: "Aurora Ganjifa Academy", heritage: "IGNCA Ganjifa teaching baseline", engine: "Hidden-state cards", players: "3–4 players", status: "PLAYABLE", statusKey: "playable", priority: 20, theme: "ganjifa", mark: "AG", summary: "Learn India’s circular trick-taking tradition before advanced tables unlock.", available: true }
 ];
+
+// Landing/discovery surfaces must never expose direct-link-only game collections.
+// Keep the full GAME_CATALOG for URL routing so ?game=heritage-arcade continues to work.
+export const LANDING_GAME_CATALOG = GAME_CATALOG.filter((game) => !game.hiddenFromLanding);
+
 export function getCatalogGame(gameId) { return GAME_CATALOG.find((game) => game.id === gameId) || null; }
