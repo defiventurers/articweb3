@@ -6,16 +6,24 @@ import { GameCollectionStrip } from "../components/GameCollectionStrip.jsx";
 import { GameEnvironment } from "../components/GameEnvironment.jsx";
 import { GameInfo } from "../components/GameInfo.jsx";
 import { GameNavigation } from "../components/GameNavigation.jsx";
-import { LANDING_GAME_CATALOG } from "../data/gameCatalog.js";
+import { LANDING_GAME_CATALOG, RACE_SOWING_GAME_CATALOG } from "../data/gameCatalog.js";
 
 export function GameLibraryScreen({ onSelectGame }) {
+  const params = new URLSearchParams(window.location.search);
+  const isRaceSowingArchive = params.get("collection") === "race-sowing";
+  const games = isRaceSowingArchive ? RACE_SOWING_GAME_CATALOG : LANDING_GAME_CATALOG;
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [webglReady, setWebglReady] = useState(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const wheelLockRef = useRef(false);
-  const selectedGame = LANDING_GAME_CATALOG[selectedIndex];
-  const previousGame = LANDING_GAME_CATALOG[wrapIndex(selectedIndex - 1, LANDING_GAME_CATALOG.length)];
-  const nextGame = LANDING_GAME_CATALOG[wrapIndex(selectedIndex + 1, LANDING_GAME_CATALOG.length)];
+  const selectedGame = games[selectedIndex];
+  const previousGame = games[wrapIndex(selectedIndex - 1, games.length)];
+  const nextGame = games[wrapIndex(selectedIndex + 1, games.length)];
+  const archiveHref = isRaceSowingArchive ? "?" : "?collection=race-sowing";
+  const archiveLinkLabel = isRaceSowingArchive ? "← MAIN STRATEGY ARCHIVE" : "RACE & SOWING ARCHIVE →";
+  const archiveEyebrow = isRaceSowingArchive ? "RACE & SOWING ARCHIVE" : "THE FROZEN ARCHIVE";
+  const archiveTitle = isRaceSowingArchive ? "ROUTES & RELAYS" : "ARCTIC DOMINION";
+  const archiveCountLabel = isRaceSowingArchive ? "RACE / SOWING TABLES" : "PRESERVED KINGDOMS";
 
   const handleWebglReady = useCallback((ready) => {
     setWebglReady(ready);
@@ -31,16 +39,20 @@ export function GameLibraryScreen({ onSelectGame }) {
   }, []);
 
   const selectIndex = useCallback((index) => {
-    setSelectedIndex(wrapIndex(index, LANDING_GAME_CATALOG.length));
-  }, []);
+    setSelectedIndex(wrapIndex(index, games.length));
+  }, [games.length]);
 
   const selectPrevious = useCallback(() => {
-    setSelectedIndex((index) => wrapIndex(index - 1, LANDING_GAME_CATALOG.length));
-  }, []);
+    setSelectedIndex((index) => wrapIndex(index - 1, games.length));
+  }, [games.length]);
 
   const selectNext = useCallback(() => {
-    setSelectedIndex((index) => wrapIndex(index + 1, LANDING_GAME_CATALOG.length));
-  }, []);
+    setSelectedIndex((index) => wrapIndex(index + 1, games.length));
+  }, [games.length]);
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [isRaceSowingArchive]);
 
   useEffect(() => {
     function onKeyDown(event) {
@@ -73,7 +85,7 @@ export function GameLibraryScreen({ onSelectGame }) {
       {webglReady !== true && <GameEnvironment theme={selectedGame.theme} />}
       {webglReady !== false && (
         <ArcticWebGLArchive
-          games={LANDING_GAME_CATALOG}
+          games={games}
           selectedIndex={selectedIndex}
           onSelectIndex={selectIndex}
           onReady={handleWebglReady}
@@ -85,18 +97,24 @@ export function GameLibraryScreen({ onSelectGame }) {
         <ArcticFocalStickerLayer
           gameId={selectedGame.id}
           selectedIndex={selectedIndex}
-          totalGames={LANDING_GAME_CATALOG.length}
+          totalGames={games.length}
           reducedMotion={reducedMotion}
         />
       )}
 
       <header className="arctic-game-world__masthead">
-        <a className="arctic-game-world__wordmark" href="/" aria-label="Arctic Dominion home">
-          <span>THE FROZEN ARCHIVE</span>
-          <strong>ARCTIC DOMINION</strong>
+        <a className="arctic-game-world__wordmark" href={isRaceSowingArchive ? "?" : "/"} aria-label={isRaceSowingArchive ? "Return to main Arctic Dominion archive" : "Arctic Dominion home"}>
+          <span>{archiveEyebrow}</span>
+          <strong>{archiveTitle}</strong>
         </a>
         <div className="arctic-game-world__masthead-meta">
-          <span>{LANDING_GAME_CATALOG.length} PRESERVED KINGDOMS</span>
+          <span>{games.length} {archiveCountLabel}</span>
+          <a
+            href={archiveHref}
+            style={{ color: "var(--accent)", textDecoration: "none", letterSpacing: ".11em" }}
+          >
+            {archiveLinkLabel}
+          </a>
           <p className="arctic-game-world__instruction">DRAG · SCROLL · ARROW KEYS</p>
         </div>
       </header>
@@ -105,13 +123,13 @@ export function GameLibraryScreen({ onSelectGame }) {
         <GameInfo
           game={selectedGame}
           index={selectedIndex}
-          total={LANDING_GAME_CATALOG.length}
+          total={games.length}
           onEnter={() => onSelectGame(selectedGame.id)}
         />
 
         {webglReady === false && (
           <GameCarousel
-            games={LANDING_GAME_CATALOG}
+            games={games}
             selectedIndex={selectedIndex}
             onSelectIndex={selectIndex}
             onPrevious={selectPrevious}
@@ -128,7 +146,7 @@ export function GameLibraryScreen({ onSelectGame }) {
       </div>
 
       <GameCollectionStrip
-        games={LANDING_GAME_CATALOG}
+        games={games}
         selectedIndex={selectedIndex}
         onSelectIndex={selectIndex}
       />
