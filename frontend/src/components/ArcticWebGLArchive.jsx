@@ -314,7 +314,8 @@ export function ArcticWebGLArchive({ games, selectedIndex, onSelectIndex, onRead
       });
       renderer.dispose();
       mount.removeChild(renderer.domElement);
-      onReady?.(false);
+      // Normal effect cleanup/restarts are not WebGL failures. Reporting false
+      // here caused the parent to permanently switch back to the legacy layout.
     };
   }, [games, onReady, onSelectIndex, reducedMotion]);
 
