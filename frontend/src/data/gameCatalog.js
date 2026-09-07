@@ -23,8 +23,28 @@ export const GAME_CATALOG = [
   { id: "aurora-ganjifa-academy", title: "Aurora Ganjifa Academy", heritage: "IGNCA Ganjifa teaching baseline", engine: "Hidden-state cards", players: "3–4 players", status: "PLAYABLE", statusKey: "playable", priority: 20, theme: "ganjifa", mark: "AG", summary: "Learn India’s circular trick-taking tradition before advanced tables unlock.", available: true }
 ];
 
-// Landing/discovery surfaces must never expose direct-link-only game collections.
-// Keep the full GAME_CATALOG for URL routing so ?game=heritage-arcade continues to work.
-export const LANDING_GAME_CATALOG = GAME_CATALOG.filter((game) => !game.hiddenFromLanding);
+export const RACE_SOWING_GAME_IDS = new Set([
+  "fishflow",
+  "break-the-ice",
+  "glacier-trail",
+  "crown-run",
+  "sky-temple-run",
+  "cowrie-kingdoms",
+  "khasi-fishflow",
+  "seven-ice-rings",
+  "ruma-ice-puzzle",
+  "polar-tablan",
+  "sige"
+]);
+
+// The primary Frozen Archive is strategy-first: race and sowing titles live in a separate collection.
+// Direct game URLs remain valid because GAME_CATALOG still contains every title.
+export const LANDING_GAME_CATALOG = GAME_CATALOG.filter(
+  (game) => !game.hiddenFromLanding && !RACE_SOWING_GAME_IDS.has(game.id)
+);
+
+export const RACE_SOWING_GAME_CATALOG = GAME_CATALOG.filter(
+  (game) => RACE_SOWING_GAME_IDS.has(game.id)
+);
 
 export function getCatalogGame(gameId) { return GAME_CATALOG.find((game) => game.id === gameId) || null; }
