@@ -27,7 +27,9 @@ describe("exact source-rail movement adapter", () => {
 
   it("keeps a Chariot delta hop explicit and does not treat a Bannerman as an arbitrary graph walk", () => {
     const chariot: RailPiece = { sector: "blue", controller: "blue", role: "icebreaker", rank: 1, file: 0 };
-    expect(sourceRailTargets(chariot, [chariot])).toContainEqual({ sector: "green", rank: 1, file: 0 });
+    // Approved logical mapping: Blue L1 continues into Green L9.
+    expect(sourceRailTargets(chariot, [chariot])).toContainEqual({ sector: "green", rank: 1, file: 8 });
+    expect(sourceRailTargets(chariot, [chariot])).not.toContainEqual({ sector: "green", rank: 1, file: 0 });
     const banner: RailPiece = { sector: "red", controller: "red", role: "runner", rank: 3, file: 4 };
     const targets = sourceRailTargets(banner, [banner]);
     expect(targets).toEqual(expect.arrayContaining([{ sector: "red", rank: 0, file: 3 }, { sector: "red", rank: 0, file: 5 }]));

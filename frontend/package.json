@@ -19,7 +19,10 @@
     "test:e2e:smoke": "playwright test tests/closed-beta-smoke.spec.js",
     "test:e2e:ui": "playwright test --ui",
     "assets:audit": "node scripts/audit-assets.mjs",
-    "assets:webp": "node scripts/convert-assets-to-webp.mjs"
+    "assets:webp": "node scripts/convert-assets-to-webp.mjs",
+    "test:sanguo": "vitest run --config vitest.sanguo.config.ts",
+    "build:sanguo-engine": "node scripts/build-sanguo-engine.mjs",
+    "check:sanguo-engine": "node scripts/build-sanguo-engine.mjs --check"
   },
   "dependencies": {
     "@abstract-foundation/agw-client": "1.12.3",
@@ -36,7 +39,8 @@
   "devDependencies": {
     "@playwright/test": "1.62.1",
     "@vitejs/plugin-react": "6.0.2",
-    "sharp": "0.35.1"
+    "sharp": "0.35.1",
+    "vitest": "5.0.0"
   },
   "overrides": {
     "axios": "1.19.0",

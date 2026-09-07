@@ -79,9 +79,12 @@ describe("exact Xiangqi-derived source routes", () => {
 
   it("gives Soldiers only one forward node until they reach the far river boundary, then unlocks sideways nodes", () => {
     expect(targets([piece("soldier", "scout", 1, 4)], "soldier")).toEqual(["red-0-4"]);
-    const crossed = targets([piece("soldier", "scout", 0, 4)], "soldier");
-    expect(crossed).toEqual(expect.arrayContaining(["red-0-3", "red-0-5"]));
-    expect(crossed).not.toContain("red-1-4");
+    expect(targets([piece("soldier", "scout", 0, 4)], "soldier")).toEqual(["blue-0-4", "green-0-4"]);
+    const soldier = piece("soldier", "scout", 0, 4);
+    soldier.node.sector = "blue"; // Sideways unlocks AFTER crossing, not on the home bank.
+    const crossed = targets([soldier], "soldier");
+    expect(crossed).toEqual(expect.arrayContaining(["blue-0-3", "blue-0-5", "blue-1-4"]));
+    expect(crossed).not.toContain("red-0-4");
   });
 });
 
@@ -106,7 +109,7 @@ describe("General safety, turns, and appropriation", () => {
   });
 
   it("removes only the defeated General and transfers every remaining physical army coin on the separate resolution action", () => {
-    const pieces = [piece("red-general", "king", 4, 4), piece("green-general", "king", 4, 4, "green"), piece("green-horse", "rider", 2, 2, "green")];
+    const pieces = [piece("red-general", "king", 4, 3), piece("green-general", "king", 4, 3, "green"), piece("blue-general", "king", 4, 3, "blue"), piece("green-horse", "rider", 2, 2, "green")];
     const resolved = removeGeneralAndAppropriate(pieces, { defeated: "green", victor: "red", reason: "checkmate" });
     expect(resolved.find((candidate) => candidate.id === "green-general")?.captured).toBe(true);
     expect(resolved.find((candidate) => candidate.id === "green-horse")).toMatchObject({ sector: "green", controller: "red", node: { sector: "green", rank: 2, file: 2 } });

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { ArcadeChainStatus } from "./ArcadeChainStatus.jsx";
 import { ARCADE_GAMES, CATEGORIES } from "./ported/data/games.ts";
 import { ALL_CLANS, CLANS } from "./ported/game/millsRules.ts";
-import SanguoBoard from "./ported/components/SanguoBoard.tsx";
+import SanguoGame from "./ported/components/SanguoGame.tsx";
 import XiangqiBoard from "./ported/components/XiangqiBoard.tsx";
 import MillsBoard from "./ported/components/MillsBoard.tsx";
 import CompactBoard from "./ported/components/CompactBoard.tsx";
@@ -37,7 +37,7 @@ export function HeritageArcadeApp({ onExitToLibrary }) {
 
   const [selected, setSelected] = useState(featuredGame);
   const [category, setCategory] = useState("All routes");
-  const [activeMode, setActiveMode] = useState(null);
+  const [activeMode, setActiveMode] = useState(() => params.get("table") === "sanguo" || params.has("room") ? 1 : null);
   const [roster, setRoster] = useState(["polly", "retsba", "pengu"]);
   const filtered = useMemo(() => category === "All routes" ? games : games.filter((game) => game.category === category), [category, games]);
   const toggleClan = (clan) => setRoster((current) => current.includes(clan) ? current.length === 3 ? current : current.filter((id) => id !== clan) : [...current.slice(0, 2), clan]);
@@ -65,7 +65,7 @@ export function HeritageArcadeApp({ onExitToLibrary }) {
 }
 
 function renderBoard(modeId, roster, onBack) {
-  if (modeId === 1) return <SanguoBoard onBack={onBack} />;
+  if (modeId === 1) return <SanguoGame onBack={onBack} />;
   if (modeId === 25) return <XiangqiBoard onBack={onBack} />;
   if (modeId === 7) return <RyukyuSanzanBoard key={roster.join("-")} roster={roster} onBack={onBack} />;
   if (modeId === 12) return <MillsBoard key={roster.join("-")} roster={roster} onBack={onBack} />;
