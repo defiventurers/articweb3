@@ -18,7 +18,7 @@ export type SanguoNode = { sector: SanguoFaction; rank: number; file: number };
 export type SanguoPiece = { id: string; sector: SanguoFaction; controller: SanguoFaction; role: SanguoRole; node: SanguoNode; captured?: boolean };
 export type PendingResolution = { defeated: SanguoFaction; victor: SanguoFaction; reason: "checkmate" | "stalemate"; matingPieceId?: string };
 export type SanguoMove = { pieceId: string; from: SanguoNode; to: SanguoNode; controller: SanguoFaction; role: SanguoRole; captured?: SanguoRole };
-export type SanguoState = { pieces: SanguoPiece[]; turn: SanguoFaction; defeated: SanguoFaction[]; winner: SanguoFaction | null; pending: PendingResolution | null; note: string; moveNumber: number; lastMove: SanguoMove | null };
+export type SanguoState = { pieces: SanguoPiece[]; turn: SanguoFaction; defeated: SanguoFaction[]; winner: SanguoFaction | null; pending: PendingResolution | null; note: string; moveNumber: number; lastMove: SanguoMove | null; draw?: "repetition" | "no-progress"; positions?: string[]; quietMoves?: number };
 
 export const roleLabels: Record<SanguoRole, string> = { king: "General", guard: "Advisor", seer: "Elephant", rider: "Horse", runner: "Bannerman", icebreaker: "Chariot", cannon: "Cannon", scout: "Soldier" };
 export const nodeId = (node: SanguoNode) => logicalNodeKey(node);
@@ -119,11 +119,11 @@ export const winnerFromDefeats = (defeated: SanguoFaction[]) => {
 };
 
 export const appropriateArmy = (pieces: SanguoPiece[], defeated: SanguoFaction, victor: SanguoFaction) => pieces.map((piece) =>
-  piece.sector === defeated && !piece.captured && piece.role !== "king" ? { ...piece, controller: victor } : piece,
+  piece.controller === defeated && !piece.captured && piece.role !== "king" ? { ...piece, controller: victor } : piece,
 );
 
 export const removeGeneralAndAppropriate = (pieces: SanguoPiece[], resolution: PendingResolution) => pieces.map((piece) =>
-  piece.sector !== resolution.defeated
+  piece.controller !== resolution.defeated
     ? piece
     : piece.role === "king"
       ? { ...piece, captured: true }
@@ -133,7 +133,7 @@ export const removeGeneralAndAppropriate = (pieces: SanguoPiece[], resolution: P
 );
 
 export function applySanguoMove(state: SanguoState, pieceId: string, destination: SanguoNode): SanguoState | null {
-  if (state.winner || state.pending) return null;
+  if (state.winner || state.draw || state.pending) return null;
   const piece = state.pieces.find((candidate) => candidate.id === pieceId);
   if (!piece || piece.captured || piece.controller !== state.turn || !legalSanguoTargets(piece, state.pieces).some((target) => sameNode(target, destination))) return null;
 
@@ -160,14 +160,28 @@ export function applySanguoMove(state: SanguoState, pieceId: string, destination
     };
   }
 
-  return {
+  return trackSanguoPosition({
     ...state,
     pieces,
     turn: nextTurn,
     note: nextInCheck ? `${action}. ${nextTurn} is in check and must answer it.` : `${action}. ${nextTurn} to move.`,
     moveNumber: state.moveNumber + 1,
     lastMove,
-  };
+    positions: state.positions ?? [sanguoPositionKey(state)],
+    quietMoves: victim || piece.role === "scout" ? 0 : (state.quietMoves ?? 0) + 1,
+  });
+}
+
+/** Arctic completion rules: three identical positions, or 120 quiet plies, draw. */
+export function sanguoPositionKey(state: SanguoState) {
+  const roleCode = { king: "k", guard: "g", seer: "e", rider: "h", runner: "b", icebreaker: "r", cannon: "c", scout: "s" };
+  return state.turn + ":" + state.pieces.filter(p => !p.captured).map(p => `${p.sector[0]}${p.controller[0]}${roleCode[p.role]}${p.node.sector[0]}${p.node.rank}${p.node.file}`).sort().join("");
+}
+function trackSanguoPosition(state: SanguoState): SanguoState {
+  const key = sanguoPositionKey(state);
+  const positions = [...(state.positions ?? []), key].slice(-121);
+  const draw = positions.filter(p => p === key).length >= 3 ? "repetition" : (state.quietMoves ?? 0) >= 120 ? "no-progress" : undefined;
+  return { ...state, positions, ...(draw ? { draw, note: draw === "repetition" ? "Draw: the same position occurred three times." : "Draw: 120 moves without a capture or Soldier move." } : {}) };
 }
 
 const placeMatingPieceOnGeneral = (pieces: SanguoPiece[], resolution: PendingResolution) => {
@@ -191,7 +205,7 @@ export function resolveSanguoAppropriation(state: SanguoState): SanguoState | nu
   }
 
   const turn = nextSanguoTurn(state.turn, defeated);
-  return {
+  const next: SanguoState = {
     ...state,
     pieces,
     defeated,
@@ -199,7 +213,37 @@ export function resolveSanguoAppropriation(state: SanguoState): SanguoState | nu
     pending: null,
     note: `${state.pending.victor} appropriates the ${state.pending.defeated} army. ${turn} to move.`,
     lastMove: state.lastMove,
+    positions: [],
+    quietMoves: 0,
   };
+  // Appropriation itself can leave the next surviving kingdom without a reply.
+  if (!hasSanguoLegalMove(turn, pieces)) {
+    const check = generalIsAttacked(turn, pieces);
+    next.pending = { defeated: turn, victor: state.pending.victor, reason: check ? "checkmate" : "stalemate", matingPieceId: checkingPiecesAgainst(turn, state.pending.victor, pieces)[0]?.id };
+    next.turn = state.pending.victor;
+    next.note = `${turn} has no legal reply after appropriation. Resolve its army.`;
+  }
+  return next;
+}
+
+/** Resignation is an explicit Arctic completion: the resigning army leaves play. */
+export function resignSanguoFaction(state: SanguoState, faction: SanguoFaction): SanguoState | null {
+  if (state.winner || state.draw || state.defeated.includes(faction)) return null;
+  if (state.pending) {
+    const resolved = resolveSanguoAppropriation(state)!;
+    return resolved.winner || resolved.defeated.includes(faction) ? resolved : resignSanguoFaction(resolved, faction);
+  }
+  const defeated = [...state.defeated, faction];
+  const pieces = state.pieces.map(p => p.controller === faction ? { ...p, captured: true } : p);
+  const turn = state.turn === faction ? nextSanguoTurn(faction, defeated) : state.turn;
+  const winner = winnerFromDefeats(defeated);
+  const next: SanguoState = { ...state, pieces, defeated, turn, winner, positions: [], quietMoves: 0, note: winner ? `${winner} is the last surviving kingdom.` : `${faction} resigned. ${turn} to move.` };
+  if (!winner && !hasSanguoLegalMove(turn, pieces)) {
+    const victor = nextSanguoTurn(turn, defeated);
+    next.pending = { defeated: turn, victor, reason: generalIsAttacked(turn, pieces) ? "checkmate" : "stalemate", matingPieceId: checkingPiecesAgainst(turn, victor, pieces)[0]?.id };
+    next.turn = victor;
+  }
+  return next;
 }
 
 export const sanguoStateFrom = (pieces: SanguoPiece[], turn: SanguoFaction = "red", defeated: SanguoFaction[] = []): SanguoState => ({

@@ -1,12 +1,12 @@
 /**
- * Arctic board presentation graph. The source rail graph remains the rules
- * authority; this map binds every one of its 135 nodes to the user-approved
- * intersections on the supplied Arctic board image in normalized coordinates.
+ * Arctic board presentation graph. Coordinates are the user-approved positions;
+ * the optional debug overlay displays logical rank/file and river connections.
+ * The old traced rails are not an authority for movement or connectivity.
  *
  * User coordinate mapping: L{file+1}-{depth}, where source rank 4 is depth 1
  * (the outer starting rank) and source rank 0 is depth 5 (toward the centre).
  */
-import { SOURCE_RAIL_EDGES } from "./sanguoRailGraph";
+import { riverExits } from "./sanguoLogicalTopology";
 import { referenceNodeId } from "./sanguoReferenceCoordinates";
 import { SOURCE_NODES, type SanguoFaction } from "./sanguoTopology";
 
@@ -44,7 +44,20 @@ const nodes: Record<string, ArcticBoardNode> = {};
     nodes[id] = { id, coordinate: referenceNodeId({ sector: region, rank: rankIndex, file }), ...normalized, region, connections: [] };
   }));
 });
-SOURCE_RAIL_EDGES.forEach(([from, to]) => { nodes[from]?.connections.push(to); nodes[to]?.connections.push(from); });
+const connect = (from: string, to: string) => {
+  if (!nodes[from] || !nodes[to]) return;
+  if (!nodes[from].connections.includes(to)) nodes[from].connections.push(to);
+  if (!nodes[to].connections.includes(from)) nodes[to].connections.push(from);
+};
+for (const sector of Object.keys(SOURCE_NODES) as SanguoFaction[]) {
+  for (let rank = 0; rank < 5; rank++) for (let file = 0; file < 9; file++) {
+    const from = sourceId(sector, rank, file);
+    if (rank < 4) connect(from, sourceId(sector, rank + 1, file));
+    if (file < 8) connect(from, sourceId(sector, rank, file + 1));
+    for (const exit of riverExits({ sector, rank, file })) connect(from, sourceId(exit.sector, exit.rank, exit.file));
+  }
+  for (const rank of [2, 4]) for (const file of [3, 5]) connect(sourceId(sector, rank, file), sourceId(sector, 3, 4));
+}
 export const ARCTIC_BOARD_GRAPH: ArcticBoardGraph = { nodes };
 
 export const arcticBoardNodeId = (sector: SanguoFaction, rank: number, file: number) => sourceId(sector, rank, file);
