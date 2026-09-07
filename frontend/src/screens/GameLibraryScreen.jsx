@@ -24,6 +24,7 @@ export function GameLibraryScreen({ onSelectGame }) {
   const archiveEyebrow = isRaceSowingArchive ? "RACE & SOWING ARCHIVE" : "THE FROZEN ARCHIVE";
   const archiveTitle = isRaceSowingArchive ? "ROUTES & RELAYS" : "ARCTIC DOMINION";
   const archiveCountLabel = isRaceSowingArchive ? "RACE / SOWING TABLES" : "PRESERVED KINGDOMS";
+  const webglAvailable = webglReady !== false;
 
   const handleWebglReady = useCallback((ready) => {
     setWebglReady(ready);
@@ -81,9 +82,9 @@ export function GameLibraryScreen({ onSelectGame }) {
   }
 
   return (
-    <main className={`arctic-game-world theme-${selectedGame.theme} ${selectedGame.id !== "arctic-dominion" ? "heritage-library-selection" : ""} ${webglReady === true ? "arctic-game-world--webgl" : ""}`} onWheel={onWheel}>
-      {webglReady !== true && <GameEnvironment theme={selectedGame.theme} />}
-      {webglReady !== false && (
+    <main className={`arctic-game-world theme-${selectedGame.theme} ${selectedGame.id !== "arctic-dominion" ? "heritage-library-selection" : ""} ${webglAvailable ? "arctic-game-world--webgl" : ""}`} onWheel={onWheel}>
+      {!webglAvailable && <GameEnvironment theme={selectedGame.theme} />}
+      {webglAvailable && (
         <ArcticWebGLArchive
           games={games}
           selectedIndex={selectedIndex}
@@ -93,7 +94,7 @@ export function GameLibraryScreen({ onSelectGame }) {
         />
       )}
 
-      {webglReady === true && (
+      {webglAvailable && (
         <ArcticFocalStickerLayer
           gameId={selectedGame.id}
           selectedIndex={selectedIndex}
@@ -127,7 +128,7 @@ export function GameLibraryScreen({ onSelectGame }) {
           onEnter={() => onSelectGame(selectedGame.id)}
         />
 
-        {webglReady === false && (
+        {!webglAvailable && (
           <GameCarousel
             games={games}
             selectedIndex={selectedIndex}
