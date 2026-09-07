@@ -19,12 +19,27 @@ const visualReference = "/assets/heritage-arcade/board/ppba-arcade-reference.png
 const auditedTables = new Set([5, 19, 23, 25]);
 const originalComplete = new Set([6, 7, 8, 10, 11, 13, 16, 20, 22]);
 
+// Tables intentionally separated from the primary Heritage strategy collection.
+const SECONDARY_TABLE_IDS = new Set([3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 20, 22]);
+const PRIMARY_HERITAGE_GAMES = ARCADE_GAMES.filter((game) => !SECONDARY_TABLE_IDS.has(game.id));
+const SECONDARY_HERITAGE_GAMES = ARCADE_GAMES.filter((game) => SECONDARY_TABLE_IDS.has(game.id));
+
 export function HeritageArcadeApp({ onExitToLibrary }) {
-  const [selected, setSelected] = useState(ARCADE_GAMES[11]);
+  const params = new URLSearchParams(window.location.search);
+  const isSecondaryArchive = params.get("collection") === "heritage-secondary";
+  const games = isSecondaryArchive ? SECONDARY_HERITAGE_GAMES : PRIMARY_HERITAGE_GAMES;
+  const featuredGame = isSecondaryArchive ? games.find((game) => game.id === 12) || games[0] : games.find((game) => game.id === 1) || games[0];
+  const archiveHref = isSecondaryArchive ? "?game=heritage-arcade" : "?game=heritage-arcade&collection=heritage-secondary";
+  const archiveLinkLabel = isSecondaryArchive ? "← MAIN HERITAGE TABLES" : "SECONDARY HERITAGE ARCHIVE →";
+  const collectionLabel = isSecondaryArchive ? "SECONDARY HERITAGE ARCHIVE" : "HERITAGE COLLECTION";
+  const collectionTitle = isSecondaryArchive ? "Separated Tables" : "Heritage Board Arcade";
+  const availableCategories = CATEGORIES.filter((item) => item === "All routes" || games.some((game) => game.category === item));
+
+  const [selected, setSelected] = useState(featuredGame);
   const [category, setCategory] = useState("All routes");
   const [activeMode, setActiveMode] = useState(null);
   const [roster, setRoster] = useState(["polly", "retsba", "pengu"]);
-  const filtered = useMemo(() => category === "All routes" ? ARCADE_GAMES : ARCADE_GAMES.filter((game) => game.category === category), [category]);
+  const filtered = useMemo(() => category === "All routes" ? games : games.filter((game) => game.category === category), [category, games]);
   const toggleClan = (clan) => setRoster((current) => current.includes(clan) ? current.length === 3 ? current : current.filter((id) => id !== clan) : [...current.slice(0, 2), clan]);
   const backToAtlas = () => setActiveMode(null);
 
@@ -33,13 +48,14 @@ export function HeritageArcadeApp({ onExitToLibrary }) {
   return <main className="atlas-shell heritage-arcade-shell">
     <aside className="atlas-rail">
       <button type="button" className="text-button heritage-back" onClick={onExitToLibrary}>← Arctic Kingdoms</button>
-      <div className="brand-lockup"><img src={compassMark} alt="" /><div><span>ARCTIC DOMINION COLLECTION</span><strong>Heritage Board<br />Arcade</strong></div></div>
-      <nav className="route-nav" aria-label="Heritage game categories"><span className="rail-label">PRESERVED ROUTES</span>{CATEGORIES.map((item) => <button type="button" key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}><i />{item}<small>{item === "All routes" ? ARCADE_GAMES.length : ARCADE_GAMES.filter((game) => game.category === item).length}</small></button>)}</nav>
+      <a className="text-button heritage-back" href={archiveHref} style={{ textDecoration: "none" }}>{archiveLinkLabel}</a>
+      <div className="brand-lockup"><img src={compassMark} alt="" /><div><span>ARCTIC DOMINION COLLECTION</span><strong>{collectionTitle === "Heritage Board Arcade" ? <>Heritage Board<br />Arcade</> : <>Separated<br />Tables</>}</strong></div></div>
+      <nav className="route-nav" aria-label="Heritage game categories"><span className="rail-label">PRESERVED ROUTES</span>{availableCategories.map((item) => <button type="button" key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}><i />{item}<small>{item === "All routes" ? games.length : games.filter((game) => game.category === item).length}</small></button>)}</nav>
       <section className="clan-ledger"><span className="rail-label">LOCAL TABLE ROSTER</span>{ALL_CLANS.map((id) => { const clan = CLANS[id]; const fielded = roster.includes(id); return <button type="button" key={id} onClick={() => toggleClan(id)} className={`clan-choice ${fielded ? "fielded" : ""}`} style={{ "--clan": clan.color }}><img src={clan.portrait} alt="" /><span><strong>{clan.name}</strong><small>{fielded ? "Fielded locally" : "Available for 3-clan tables"}</small></span><b>{fielded ? "IN" : "OUT"}</b></button>; })}</section>
       <p className="rail-footnote">Free Play is local and transaction-free. Wallet identity is optional and inherited from Arctic Dominion.</p>
     </aside>
     <section className="atlas-main">
-      <header className="atlas-header"><div><span className="eyebrow">ARCTIC DOMINION · HERITAGE COLLECTION</span><h1>Preserve the rules.<br /><em>Command the ice.</em></h1></div><div className="header-tools"><div className="header-stats"><span><b>{ARCADE_GAMES.length}</b> tables loaded</span></div><ArcadeChainStatus /><button type="button" className="direct-play" onClick={() => { setSelected(ARCADE_GAMES[11]); setActiveMode(12); }}><span>✦</span> Play Penguin Mills</button></div></header>
+      <header className="atlas-header"><div><span className="eyebrow">ARCTIC DOMINION · {collectionLabel}</span><h1>{isSecondaryArchive ? <>Preserved separately.<br /><em>Still playable.</em></> : <>Preserve the rules.<br /><em>Command the ice.</em></>}</h1></div><div className="header-tools"><div className="header-stats"><span><b>{games.length}</b> tables loaded</span></div><ArcadeChainStatus /><button type="button" className="direct-play" onClick={() => { setSelected(featuredGame); setActiveMode(featuredGame.id); }}><span>✦</span> Play {featuredGame.name}</button></div></header>
       <section className="atlas-intro"><div><span className="eyebrow">CURRENT BRIEFING</span><h2>{selected.name} <em>— {selected.subtitle}</em></h2><p>{selected.loop}</p><div className="status-row"><span className={`status-tag ${selected.status.startsWith("Pudgy") ? "original" : selected.status.includes("Reconstruction") ? "reconstructed" : "documented"}`}>{selected.status}</span><span>{selected.players}</span><span>FREE PLAY · NO TRANSACTION</span></div></div><div className="brief-art"><img src={visualReference} alt="Icebound strategy atlas" /><span>HERITAGE TABLE {String(selected.id).padStart(2, "0")}</span></div></section>
       <section className="dossier-actions"><button type="button" className="primary-action" onClick={() => setActiveMode(selected.id)}>{selected.id === 12 ? "Open the featured ice table" : `Play ${selected.name}`}</button><button type="button" className="text-action" onClick={() => document.getElementById("heritage-briefing")?.scrollIntoView({ behavior: "smooth" })}>Read board briefing ↓</button></section>
       <section className="dossier-grid" aria-label="Heritage game tables">{filtered.map((game) => <button type="button" key={game.id} className={`dossier-card ${selected.id === game.id ? "selected" : ""} ${game.playable ? "featured" : ""}`} onClick={() => setSelected(game)}><span className="card-index">{String(game.id).padStart(2, "0")}</span><span className="card-category">{game.category}</span><h3>{game.name}</h3><p>{game.subtitle}</p><div><span>{game.players}</span><b>{auditedTables.has(game.id) ? "LIVE · AUDITED" : originalComplete.has(game.id) ? "LIVE · ORIGINAL" : "LIVE · RULES"}</b></div></button>)}</section>
