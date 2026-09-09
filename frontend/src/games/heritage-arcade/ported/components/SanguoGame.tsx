@@ -5,6 +5,8 @@ import { initialSanguoState, sanguoFactions, type SanguoFaction, type SanguoStat
 import { applySanguoAction, BOT_LEVELS, type BotDifficulty, type SanguoAction } from "../game/sanguoBot";
 import { SanguoClient, forgetSeat, inviteUrl, newSeatToken, readSeat, rememberSeat, type OnlineAction, type RoomSummary, type SanguoRoom, type SeatCredentials } from "../game/sanguoClient";
 import "../styles/sanguo-play.css";
+import { updateMatchJournal, type MatchJournal } from "../game/sanguoPresentation";
+import "../styles/sanguo-desktop.css";
 
 const names = { red: "Red · Retsba / Shu", green: "Green · Abster / Wu", blue: "Blue · Pengu / Wei" };
 const portraits = { red: "retsba", green: "abster", blue: "pengu" };
@@ -21,6 +23,8 @@ export default function SanguoGame({ onBack }: { onBack: () => void }) {
   const [name, setName] = useState("");
   const [visibility, setVisibility] = useState("private");
   const [code, setCode] = useState(roomFromUrl);
+  const localSession = useRef(0);
+  const [journal, setJournal] = useState<MatchJournal | null>(null);
   const [local, setLocal] = useState<LocalMatch | null>(null);
   const [room, setRoom] = useState<SanguoRoom | null>(null);
   const [seat, setSeat] = useState<SeatCredentials | null>(() => readSeat(roomFromUrl()));
@@ -145,6 +149,7 @@ export default function SanguoGame({ onBack }: { onBack: () => void }) {
   };
   const leave = () => run(async () => { if (seat) await client.request("sg_room_leave", seat); clearRoom(); });
   const startLocal = () => {
+    localSession.current += 1;
     const humans = humanCount === 3 ? [...sanguoFactions] : humanCount === 2 ? [faction, secondFaction === faction ? sanguoFactions.find(f => f !== faction)! : secondFaction] : [faction];
     setLocal({ state: initialSanguoState(bannermen), humans, difficulty, bannermen, history: [] }); setError("");
   };
@@ -158,6 +163,12 @@ export default function SanguoGame({ onBack }: { onBack: () => void }) {
   const me = room?.players.find(p => p.id === seat?.playerId);
   const onlineGame = room && room.status !== "waiting" && room.status !== "cancelled" && !showRoom;
   const game = onlineGame ? room.gameState : local?.state;
+  // Keep the journal alive while room details replace the board.
+  const observedGame = room && room.status !== "waiting" ? room.gameState : local?.state;
+  const sessionKey = room ? `room:${room.roomCode}` : `local:${localSession.current}`;
+  useEffect(() => {
+    if (observedGame) setJournal(previous => updateMatchJournal(previous, observedGame, sessionKey));
+  }, [observedGame, sessionKey]);
   const notice = onlineGame
     ? !connected || !synced ? "Reconnecting… your seat is reserved." : busy ? "Confirming your move…" : game?.winner || game?.draw ? game.note : me?.faction === (game?.pending?.victor || game?.turn) ? "Your turn." : `${names[(game?.pending?.victor || game?.turn)!]} ${room.seats[(game?.pending?.victor || game?.turn)!].botActive ? "bot is thinking…" : "is playing."}`
     : thinking ? `${names[game?.turn || "red"]} · ${BOT_LEVELS[local?.difficulty || difficulty].label} bot is thinking…` : game?.note || "";
@@ -167,14 +178,22 @@ export default function SanguoGame({ onBack }: { onBack: () => void }) {
   </SanguoConfirmation>;
 
   if (game && (local || onlineGame)) {
-    const labels = Object.fromEntries(sanguoFactions.map(f => [f, onlineGame ? room.seats[f].kind === "bot" ? `${BOT_LEVELS[room.difficulty].label} bot` : `${room.players.find(p => p.faction === f)?.name || "Player"}${room.seats[f].botActive ? " · bot covering" : ""}` : local!.humans.includes(f) ? `Player ${local!.humans.indexOf(f) + 1}` : `${BOT_LEVELS[local!.difficulty].label} bot`])) as Record<SanguoFaction, string>;
-    return <div className="sg-experience">{alerts}{confirmation}
-      {onlineGame && <div className="sg-room-strip"><span>Room <b>{room.roomCode}</b> · You: {me ? names[me.faction] : "Spectating"}</span><button type="button" onClick={() => setShowRoom(true)}>Room details</button>{!game.winner && !game.draw && me && !game.defeated.includes(me.faction) && <button type="button" disabled={busy || !synced} onClick={() => setConfirm("resign")}>Resign</button>}</div>}
+    const labels = Object.fromEntries(sanguoFactions.map(f => {
+      if (!onlineGame) return [f, local!.humans.includes(f) ? `Player ${local!.humans.indexOf(f) + 1}` : `${BOT_LEVELS[local!.difficulty].label} bot`];
+      if (room.seats[f].kind === "bot") return [f, `${BOT_LEVELS[room.difficulty].label} bot`];
+      const player = room.players.find(p => p.faction === f);
+      return [f, `${player?.name || "Player"}${player?.id === me?.id ? " (you)" : ""}${room.seats[f].botActive ? " · bot covering" : ""}`];
+    })) as Record<SanguoFaction, string>;
+    return <div className="sg-experience sg-match">{alerts}{confirmation}
       <SanguoBoard state={game} onBack={() => onlineGame ? setShowRoom(true) : setConfirm("new")} bannermenEnabled={onlineGame ? room.bannermen : local!.bannermen}
         canAct={onlineGame ? connected && synced && !busy && me?.faction === (game.pending?.victor || game.turn) : local!.humans.includes(game.pending?.victor || game.turn) && !thinking}
         onMove={(pieceId, to) => onlineGame ? submit({ type: "move", pieceId, to }) : playLocal({ type: "move", pieceId, to })}
         onResolve={() => onlineGame ? submit({ type: "resolve" }) : playLocal({ type: "resolve" })}
-        onUndo={undo} canUndo={!onlineGame && Boolean(local?.history.length)} onNewGame={() => setConfirm("new")} online={Boolean(onlineGame)} seatLabels={labels} notice={notice} />
+        onUndo={undo} canUndo={!onlineGame && Boolean(local?.history.length)} onNewGame={() => setConfirm("new")} online={Boolean(onlineGame)} seatLabels={labels} notice={notice}
+        events={journal?.session === sessionKey ? journal.events : []} partialHistory={journal?.partial || false}
+        roomCode={onlineGame ? room.roomCode : undefined} connectionStatus={onlineGame ? connected && synced ? "Connected" : "Reconnecting" : undefined}
+        seatStatuses={onlineGame ? Object.fromEntries(sanguoFactions.map(f => { const player = room.players.find(p => p.faction === f); return [f, room.seats[f].botActive ? "Bot covering" : room.seats[f].kind === "bot" ? "Bot" : player?.connected ? "Connected" : "Disconnected"]; })) : undefined}
+        onResign={onlineGame && !game.winner && !game.draw && me && !game.defeated.includes(me.faction) ? () => setConfirm("resign") : undefined} />
     </div>;
   }
 

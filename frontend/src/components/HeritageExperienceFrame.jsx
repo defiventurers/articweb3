@@ -3,6 +3,7 @@ import { soundManager } from "../utils/soundManager.js";
 
 export function HeritageExperienceFrame({ gameId, children }) {
   function handleFeedback(event) {
+    if (event.target?.closest?.(".sg-table-screen")) return; // Accepted Sanguo moves own their sound feedback.
     const target = event.target?.closest?.("button,[role='button'],[role='gridcell']");
     if (!target || target.disabled || target.getAttribute("aria-disabled") === "true") return;
 
