@@ -7,6 +7,7 @@ import { SanguoClient, forgetSeat, inviteUrl, newSeatToken, readSeat, rememberSe
 import "../styles/sanguo-play.css";
 import { updateMatchJournal, type MatchJournal } from "../game/sanguoPresentation";
 import "../styles/sanguo-desktop.css";
+import "../styles/sanguo-tactical.css";
 
 const names = { red: "Red · Retsba / Shu", green: "Green · Abster / Wu", blue: "Blue · Pengu / Wei" };
 const portraits = { red: "retsba", green: "abster", blue: "pengu" };
