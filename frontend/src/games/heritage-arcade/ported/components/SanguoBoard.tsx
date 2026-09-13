@@ -1,6 +1,6 @@
 /* Board artwork and approved coordinates remain in one 1280 × 1124 SVG scene. */
 import { useEffect, useMemo, useState, useRef, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent, type CSSProperties } from "react";
-import { ArrowLeft, BookOpen, Maximize, Minimize, PanelRightClose, PanelRightOpen, Minus, Plus, Scan, MoreHorizontal, X, Volume2, VolumeX, Flag, Undo2, RotateCcw, AlertTriangle } from "lucide-react";
+import { ArrowLeft, BookOpen, Maximize, Minimize, PanelRightClose, PanelRightOpen, Minus, Plus, Scan, MoreHorizontal, X, Volume2, VolumeX, Flag, Undo2, RotateCcw, AlertTriangle, ShieldCheck, Crosshair, ChevronDown } from "lucide-react";
 import SanguoManual from "@/components/SanguoManual";
 import { SANGUO_VIEWBOX, type SanguoFaction } from "@/game/sanguoTopology";
 import { ARCTIC_BOARD_GRAPH, arcticBoardNode, validateArcticBoardGraph } from "@/game/sanguoArcticBoardGraph";
@@ -24,9 +24,9 @@ const arcticBoardImage = `${heritageAsset}/board/sanguo-arctic-board.png`;
 const useRailDemo = () => new URLSearchParams(window.location.search).has("rail-demo");
 
 const factions: Record<Faction, { name: string; short: string; color: string; base: string }> = {
-  red: { name: "Retsba Legion", short: "RED · SHU", color: "#ef5750", base: `${heritageAsset}/board/ppba-retsba-token.png` },
-  blue: { name: "Pengu Order", short: "BLUE · WEI", color: "#318eed", base: `${heritageAsset}/board/ppba-pengu-token.png` },
-  green: { name: "Abster Tribe", short: "GREEN · WU", color: "#43b86a", base: `${heritageAsset}/board/ppba-abster-token.png` },
+  red: { name: "Retsba Legion", short: "RED · SHU", color: "#ef5750", base: `${heritageAsset}/tokens/token-sanguo-red-general.webp` },
+  blue: { name: "Pengu Order", short: "BLUE · WEI", color: "#318eed", base: `${heritageAsset}/tokens/token-sanguo-blue-general.webp` },
+  green: { name: "Abster Tribe", short: "GREEN · WU", color: "#43b86a", base: `${heritageAsset}/tokens/token-sanguo-green-general.webp` },
 };
 
 const teamCoinAssets: Record<Faction, Record<Role, string>> = {
@@ -109,6 +109,9 @@ export default function SanguoBoard({ onBack, state, bannermenEnabled, canAct, o
   const checked = useMemo(() => sanguoFactions.filter(f => !state.defeated.includes(f) && generalIsAttacked(f, state.pieces)), [state.pieces, state.defeated]);
   const activeFaction = state.pending?.victor || state.turn;
   const status = state.winner ? `${kingdomLabel(state.winner)} wins the match` : state.draw ? "Match drawn" : online && connectionStatus === "Reconnecting" ? "Reconnecting… your seat is reserved." : state.pending ? `${kingdomLabel(state.pending.victor)}: resolve ${state.pending.reason}` : checked.includes(state.turn) ? `${kingdomLabel(state.turn)} is in check · protect your General` : canAct ? `${kingdomLabel(state.turn)} to move · Your turn` : notice;
+  const matchFinished = Boolean(state.winner || state.draw);
+  const turnChecked = checked.includes(activeFaction);
+  const latestEvent = events.at(-1);
   const transferable = state.pending ? state.pieces.filter(p => !p.captured && p.controller === state.pending!.defeated && p.role !== "king").length : 0;
 
   // Room polling returns fresh objects even when the position is identical.
@@ -270,33 +273,34 @@ export default function SanguoBoard({ onBack, state, bannermenEnabled, canAct, o
   const action = (fn: () => void) => { if (menuRef.current) menuRef.current.open = false; fn(); };
 
   const matchPanel = <aside className="sg-match-panel" aria-label="Match panel" hidden={!compact && focusView}>
-        <div className="sg-panel-heading"><span>THREE KINGDOMS</span><small>{roomCode ? `Room ${roomCode} · ${connectionStatus}` : "Local match"}</small></div>
+        <div className="sg-panel-heading"><span>MATCH DETAILS</span><small>{roomCode ? `Room ${roomCode} · ${connectionStatus}` : "Local table"}</small></div>
         <div className="sg-kingdom-order" aria-label="Turn order">Red → Green → Blue</div>
         <div className="sg-player-list">{sanguoFactions.map(faction => {
           const count = state.pieces.filter(piece => piece.controller === faction && !piece.captured).length;
           const inherited = state.pieces.filter(piece => piece.controller === faction && piece.sector !== faction && !piece.captured).length;
-          return <div key={faction} className={`sg-player ${activeFaction === faction ? "active" : ""} ${state.defeated.includes(faction) ? "defeated" : ""}`} style={{ "--kingdom": factions[faction].color } as CSSProperties}>
-            <img src={factions[faction].base} alt="" /><div><b>{factions[faction].short}</b><span>{seatLabels[faction]}</span><small>{state.defeated.includes(faction) ? "Eliminated" : `${count} pieces${inherited ? ` · ${inherited} inherited` : ""}`}{seatStatuses?.[faction] ? ` · ${seatStatuses[faction]}` : ""}</small></div>
-            {activeFaction === faction && !state.winner && !state.draw && <span className="sg-player-turn">TO MOVE</span>}
-          </div>;
+          return <details key={faction} className={`sg-player ${activeFaction === faction && !matchFinished ? "active" : ""} ${state.defeated.includes(faction) ? "defeated" : ""}`} style={{ "--kingdom": factions[faction].color } as CSSProperties}>
+            <summary><img src={factions[faction].base} alt="" /><div><b>{factions[faction].short}</b><span>{state.defeated.includes(faction) ? "Eliminated" : activeFaction === faction && !matchFinished ? "To move" : checked.includes(faction) ? "In check" : factions[faction].name}</span></div><strong className="sg-army-count" aria-label={`${count} pieces`}>{count}</strong><ChevronDown size={14} /></summary>
+            <div className="sg-player-detail"><span>{seatLabels[faction]}</span><small>{inherited ? `${inherited} inherited pieces · ` : ""}{seatStatuses?.[faction] || (online ? "Online player" : "Local match")}</small></div>
+          </details>;
         })}</div>
-        <section className="sg-piece-inspector" aria-label="Piece inspector"><h2>Piece inspector</h2>{inspectedPiece ? <><div className="sg-inspector-title"><img src={teamCoinAssets[inspectedPiece.sector][inspectedPiece.role]} alt="" /><div><strong>{roleLabels[inspectedPiece.role]}</strong><span>{coordinateLabel(inspectedPiece.node)}</span></div></div><p>{roleRules.find(row => row.role === inspectedPiece.role)?.copy}</p><small>Controlled by {kingdomLabel(inspectedPiece.controller)}{inspectedPiece.controller !== inspectedPiece.sector ? ` · Originally ${kingdomLabel(inspectedPiece.sector)}` : ""}</small></> : <p>Hover, focus or select a piece to inspect its role and movement.</p>}</section>
+        <section className="sg-piece-inspector" aria-label="Piece inspector"><h2>{picked ? "Selected piece" : "Piece guide"}</h2>{inspectedPiece ? <><div className="sg-inspector-title"><img src={teamCoinAssets[inspectedPiece.sector][inspectedPiece.role]} alt="" /><div><strong>{roleLabels[inspectedPiece.role]}</strong><span>{coordinateLabel(inspectedPiece.node)}</span></div></div><p>{roleRules.find(row => row.role === inspectedPiece.role)?.copy}</p><small>Controlled by {kingdomLabel(inspectedPiece.controller)}{inspectedPiece.controller !== inspectedPiece.sector ? ` · Originally ${kingdomLabel(inspectedPiece.sector)}` : ""}</small></> : <p>Hover, focus or select a piece to inspect its role and movement.</p>}</section>
         {checked.length > 0 && <div className="sg-check-notice"><AlertTriangle size={18} /><span>{checked.map(kingdomLabel).join(" and ")} in check. A threatened General must be protected.</span></div>}
-        <section className="sg-move-history" aria-label="Move history"><h2>Move history</h2>{partialHistory && <small>Recent observed moves; earlier history may be unavailable.</small>}{events.length ? <ol reversed>{[...events].reverse().map(event => <li key={event.id} className={event.kind}><span className="sg-history-number">{event.moveNumber}</span><div><b>{event.text}</b>{event.detail && <small>{event.detail}</small>}</div></li>)}</ol> : <p>Red opens. Moves from all three kingdoms appear here.</p>}</section>
+        <section className="sg-move-history" aria-label="Move history"><h2>Move history <span className="sg-history-total">{events.length}</span></h2>{partialHistory && <small>Recent observed moves; earlier history may be unavailable.</small>}{events.length ? <ol reversed>{[...events].reverse().map(event => <li key={event.id} className={event.kind}><span className="sg-history-number">{event.moveNumber}</span><div><b>{event.text}</b>{event.detail && <small>{event.detail}</small>}</div></li>)}</ol> : <p>Red opens. Moves from all three kingdoms appear here.</p>}</section>
         <div className="sg-panel-legend"><span>● Legal move</span><span>⌜ ⌟ Capture target</span><span>□ Last move</span></div>
         {graphErrors.length > 0 && <p role="alert">Board validation: {graphErrors.join(" ")}</p>}
       </aside>;
 
-  return <main ref={screenRef} className={`sg-table-screen ${focusView ? "sg-focus" : ""} ${reducedMotion ? "sg-reduced-motion" : ""}`}>
+  return <main ref={screenRef} className={`sg-table-screen sg-tactical ${focusView ? "sg-focus" : ""} ${reducedMotion ? "sg-reduced-motion" : ""}`}>
     <header className="sg-table-toolbar">
       <div className="sg-table-brand"><button type="button" onClick={onBack} aria-label={online ? "Room details" : "Return to setup"} title={online ? "Room details" : "Setup"}><ArrowLeft size={17} /></button><div><h1>Sanguo Qi</h1><span>ARCTIC DOMINION</span></div></div>
-      <div className="sg-table-turn" style={{ "--kingdom": factions[activeFaction].color } as CSSProperties} role="status" aria-live="polite"><span className="sg-turn-dot" /> <span>{status}</span><small>Turn {state.moveNumber}</small></div>
+      <div className={`sg-table-turn ${turnChecked && !matchFinished ? "sg-turn-check" : ""}`} style={{ "--kingdom": factions[activeFaction].color } as CSSProperties} role="status" aria-live="polite"><small className="sg-turn-number">TURN <b>{state.moveNumber}</b></small><span className="sg-turn-dot" /><span className="sg-turn-message">{status}</span>{!matchFinished && !state.pending && <span className="sg-turn-safety">{turnChecked ? <AlertTriangle size={14} /> : <ShieldCheck size={14} />}{turnChecked ? "In check" : "Not in check"}</span>}</div>
       <nav className="sg-table-tools" aria-label="Table controls">
         <button type="button" onClick={() => setGuide(true)} aria-label="Guide" title="Guide"><BookOpen size={16} /><span>Guide</span></button>
         {compact ? <button type="button" onClick={() => setMobilePanel(true)} aria-label="Open match details" title="Match details"><PanelRightOpen size={17} /></button> : <button type="button" aria-label={focusView ? "Show match panel" : "Focus view"} aria-pressed={focusView} onClick={() => setFocusView(v => !v)} title={focusView ? "Show match panel" : "Focus view"}>{focusView ? <PanelRightOpen size={17} /> : <PanelRightClose size={17} />}</button>}
         <button type="button" onClick={toggleFullScreen} aria-label={fullScreen ? "Exit fullscreen" : "Fullscreen"} title={fullScreen ? "Exit fullscreen" : "Fullscreen"}>{fullScreen ? <Minimize size={17} /> : <Maximize size={17} />}</button>
-        <button type="button" onClick={() => { soundManager.unlock(); soundManager.toggleMuted(); }} aria-label={soundEnabled ? "Mute sound" : "Unmute sound"} title={soundEnabled ? "Mute sound" : "Unmute sound"}>{soundEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}</button>
+
         <details className="sg-table-menu" ref={menuRef}><summary aria-label="More table options"><MoreHorizontal size={19} /></summary><div>
+          <button type="button" onClick={() => { soundManager.unlock(); soundManager.toggleMuted(); }} aria-label={soundEnabled ? "Mute sound" : "Unmute sound"}>{soundEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}{soundEnabled ? "Mute sound" : "Unmute sound"}</button>
           {!online && <><button type="button" disabled={!canUndo} onClick={() => action(onUndo)}><Undo2 size={16} />Undo your turn</button><button type="button" onClick={() => action(onNewGame)}><RotateCcw size={16} />New game</button></>}
           {onResign && <button type="button" onClick={() => action(onResign)}><Flag size={16} />Resign kingdom</button>}
           <label><input type="checkbox" checked={reducedMotion} onChange={event => { setReducedMotion(event.target.checked); try { localStorage.setItem("sanguo-reduced-motion", String(event.target.checked)); } catch { /* Preferences are optional. */ } }} />Reduced motion</label>
@@ -354,12 +358,18 @@ export default function SanguoBoard({ onBack, state, bannermenEnabled, canAct, o
             })}
             {dragPoint && picked && <g className="sg-drag-preview" transform={`translate(${dragPoint.x} ${dragPoint.y})`} pointerEvents="none"><image href={teamCoinAssets[picked.sector][picked.role]} x="-31" y="-31" width="62" height="62" /><circle r="34" /></g>}
           </svg>
+          <div className="sg-camera-controls" aria-label="Board camera"><button type="button" onClick={() => setCamera(c => zoomCamera(c, c.zoom - .2))} disabled={camera.zoom <= 1} aria-label="Zoom out"><Minus size={15} /></button><output aria-label="Board zoom">{Math.round(camera.zoom * 100)}%</output><button type="button" onClick={() => setCamera(c => zoomCamera(c, c.zoom + .2))} disabled={camera.zoom >= 2.5} aria-label="Zoom in"><Plus size={15} /></button><button type="button" onClick={() => setCamera(FIT_CAMERA)} aria-label="Fit board" title="Fit board (F)"><Scan size={15} /><span>Fit board</span></button></div>
         </div>
         <footer className="sg-board-footer">
-          <span className="sg-board-feedback" role="status">{feedback || ((focusView || compact) && inspectedPiece ? `${kingdomLabel(inspectedPiece.controller)} · ${roleLabels[inspectedPiece.role]} — ${roleRules.find(r => r.role === inspectedPiece.role)?.copy}` : picked ? `${roleLabels[picked.role]} · ${targets.length} legal ${targets.length === 1 ? "move" : "moves"}` : "Select a piece · click or drag to move")}</span>
-          <div className="sg-camera-controls" aria-label="Board camera"><button type="button" onClick={() => setCamera(c => zoomCamera(c, c.zoom - .2))} disabled={camera.zoom <= 1} aria-label="Zoom out"><Minus size={15} /></button><output aria-label="Board zoom">{Math.round(camera.zoom * 100)}%</output><button type="button" onClick={() => setCamera(c => zoomCamera(c, c.zoom + .2))} disabled={camera.zoom >= 2.5} aria-label="Zoom in"><Plus size={15} /></button><button type="button" onClick={() => setCamera(FIT_CAMERA)}><Scan size={15} />Fit board</button></div>
+          <div className={`sg-selection-feedback ${picked ? "has-selection" : ""}`}>
+            {inspectedPiece ? <img src={teamCoinAssets[inspectedPiece.sector][inspectedPiece.role]} alt="" /> : <Crosshair size={16} aria-hidden="true" />}
+            <span className="sg-board-feedback" role="status">{feedback || (picked ? `${roleLabels[picked.role]} · ${targets.length} legal ${targets.length === 1 ? "move" : "moves"}` : inspectedPiece ? `${kingdomLabel(inspectedPiece.controller)} ${roleLabels[inspectedPiece.role]}` : canAct ? "Select a piece to see its legal moves" : matchFinished ? "Match complete" : "Select any piece to inspect it")}</span>
+            {(compact || focusView) && inspectedPiece && <button type="button" aria-label="Show piece movement" onClick={() => compact ? setMobilePanel(true) : setFocusView(false)}>Moves <ChevronDown size={14} /></button>}
+          </div>
+          {!compact && latestEvent && <span className="sg-last-event" title={`${latestEvent.text}${latestEvent.detail ? ` · ${latestEvent.detail}` : ""}`}>Last: {latestEvent.text}</span>}
+
         </footer>
-        {compact && <div className="sg-phone-players" aria-label="Kingdom status">{sanguoFactions.map(faction => <button type="button" key={faction} onClick={() => setMobilePanel(true)} className={faction === activeFaction ? "active" : ""} style={{ "--kingdom": factions[faction].color } as CSSProperties}><span>{kingdomLabel(faction)}{faction === activeFaction ? " · Turn" : ""}</span><small>{state.defeated.includes(faction) ? "Out" : `${state.pieces.filter(p => !p.captured && p.controller === faction).length} pieces`}</small></button>)}</div>}
+        {compact && <div className="sg-phone-players" aria-label="Kingdom status">{sanguoFactions.map(faction => <button type="button" key={faction} onClick={() => setMobilePanel(true)} className={faction === activeFaction && !matchFinished ? "active" : ""} aria-label={`${kingdomLabel(faction)}: ${state.defeated.includes(faction) ? "eliminated" : `${state.pieces.filter(p => !p.captured && p.controller === faction).length} pieces`}. Open match details`} style={{ "--kingdom": factions[faction].color } as CSSProperties}><img src={factions[faction].base} alt="" /><span>{kingdomLabel(faction)}</span><strong>{state.defeated.includes(faction) ? "Out" : state.pieces.filter(p => !p.captured && p.controller === faction).length}</strong></button>)}</div>}
         {!compact && focusView && <div className="sg-focus-order">{sanguoFactions.map((f, i) => <span key={f} className={f === activeFaction ? "active" : ""}>{i > 0 ? " → " : ""}{kingdomLabel(f)}{state.defeated.includes(f) ? " (out)" : ""}</span>)}</div>}
       </div>
       {compact ? <dialog ref={drawerRef} className="sg-mobile-drawer" aria-labelledby="sg-drawer-title" onCancel={event => { event.preventDefault(); setMobilePanel(false); }}>
