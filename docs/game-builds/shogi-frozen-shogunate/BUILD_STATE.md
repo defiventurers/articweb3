@@ -25,6 +25,8 @@
 - `npm.cmd run build:testnet` — passed.
 - Direct Shogi desktop/mobile browser tests — passed.
 - Heritage Arcade selection/open test was temporarily integrated and passed on desktop and mobile before the worker removed shared-file edits for lead ownership.
+- Lead integration commit `2238cb2` applied: id 26 in games.ts, routing in HeritageArcadeApp.jsx, auditedTables + table=shogi deep-link, integration test.
+- Full Playwright suite (`npx.cmd playwright test tests/shogi-frozen-shogunate.spec.js`) — 6/6 passed (desktop + mobile, including Heritage Arcade route).
 
 ## Shared integration requested from lead
 
