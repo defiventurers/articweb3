@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 
 const catalogGameIds = [
   "arctic-dominion",
+  "agon-cold-throne",
   "nine-ice-forts",
   "four-wing-ice-hunt",
   "fishflow",

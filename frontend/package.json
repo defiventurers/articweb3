@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "preview:mainnet": "vite preview --mode mainnet",
     "test:ruma": "node --test unit/ruma-rules.node.test.js",
+    "test:agon": "node --test unit/agon-rules.node.test.js",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test tests/closed-beta-smoke.spec.js",
     "test:e2e:ui": "playwright test --ui",
