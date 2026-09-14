@@ -1,0 +1,10 @@
+{
+  "sourceLayout": {
+    "topRow": ["king", "rook", "bishop", "gold", "silver", "knight", "lance"],
+    "bottomRow": ["pawn", "dragon", "horse", "promoted-silver", "promoted-knight", "promoted-lance", "tokin"]
+  },
+  "factions": ["green", "red", "blue"],
+  "format": "webp",
+  "dimensions": { "width": 174, "height": 340 },
+  "notes": "Dragon is promoted Rook, Horse is promoted Bishop, and Tokin is promoted Pawn. The original three supplied sheets are retained beside these individual exports."
+}

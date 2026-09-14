@@ -22,3 +22,13 @@ test("Shogi exposes its original-wording rules and sourced research", async ({ p
   await expect(page.getByRole("heading", { name: /documented modern game with medieval ancestors/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /Japan Shogi Association Official Match Rules/i })).toBeVisible();
 });
+
+test("Shogi is playable from the Heritage Board Arcade route", async ({ page }) => {
+  await page.goto("/?skipLoader=1&game=heritage-arcade");
+  await expect(page.locator(".heritage-arcade-shell")).toBeVisible();
+  await page.getByRole("heading", { name: "Shogi", exact: true }).click();
+  await page.getByRole("button", { name: "Play Shogi", exact: true }).first().click();
+  await expect(page.getByRole("heading", { name: "Frozen Shogunate" })).toBeVisible();
+  await expect(page.getByLabel("Shogi board").getByRole("gridcell")).toHaveCount(81);
+  expect(page.url()).toContain("game=heritage-arcade");
+});

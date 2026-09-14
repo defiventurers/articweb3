@@ -10,13 +10,14 @@ import CompactBoard from "./ported/components/CompactBoard.tsx";
 import AttaqueBoard from "./ported/components/AttaqueBoard.tsx";
 import HnefataflBoard from "./ported/components/HnefataflBoard.tsx";
 import AsaltoBoard from "./ported/components/AsaltoBoard.tsx";
+import { ShogiFrozenShogunateApp } from "../shogi-frozen-shogunate/ShogiFrozenShogunateApp.jsx";
 import ChaturajiBoard from "./ported/components/ChaturajiBoard.tsx";
 import RyukyuSanzanBoard from "./ported/components/RyukyuSanzanBoard.tsx";
 import "./ported/styles/heritage-arcade.css";
 
 const compassMark = "/assets/heritage-arcade/board/ppba-compass-mark.png";
 const visualReference = "/assets/heritage-arcade/board/ppba-arcade-reference.png";
-const auditedTables = new Set([5, 19, 23, 25]);
+const auditedTables = new Set([5, 19, 23, 25, 26]);
 const originalComplete = new Set([6, 7, 8, 10, 11, 13, 16, 20, 22]);
 
 // Tables intentionally separated from the primary Heritage strategy collection.
@@ -37,7 +38,7 @@ export function HeritageArcadeApp({ onExitToLibrary }) {
 
   const [selected, setSelected] = useState(featuredGame);
   const [category, setCategory] = useState("All routes");
-  const [activeMode, setActiveMode] = useState(() => params.get("table") === "sanguo" || params.has("room") ? 1 : null);
+  const [activeMode, setActiveMode] = useState(() => params.get("table") === "sanguo" || params.has("room") ? 1 : params.get("table") === "shogi" ? 26 : null);
   const [roster, setRoster] = useState(["polly", "retsba", "pengu"]);
   const filtered = useMemo(() => category === "All routes" ? games : games.filter((game) => game.category === category), [category, games]);
   const toggleClan = (clan) => setRoster((current) => current.includes(clan) ? current.length === 3 ? current : current.filter((id) => id !== clan) : [...current.slice(0, 2), clan]);
@@ -72,6 +73,7 @@ function renderBoard(modeId, roster, onBack) {
   if (modeId === 15) return <AttaqueBoard clans={roster} onBack={onBack} />;
   if (modeId === 18) return <HnefataflBoard roster={roster} onBack={onBack} />;
   if (modeId === 19) return <AsaltoBoard key={roster.join("-")} roster={roster} onBack={onBack} />;
+  if (modeId === 26) return <ShogiFrozenShogunateApp onExitToLibrary={onBack} />;
   if (modeId === 5 || modeId === 23) return <ChaturajiBoard onBack={onBack} />;
   return <CompactBoard key={`${modeId}-${roster.join("-")}`} modeId={modeId} roster={roster} onBack={onBack} />;
 }
