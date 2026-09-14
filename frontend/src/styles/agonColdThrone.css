@@ -11,3 +11,6 @@
 /* Reserve the shared app-chrome controls without hiding game status. */
 @media(min-width:781px){.agon-topbar{padding-right:max(180px,3vw)}}
 @media(max-width:780px){.agon-topbar{padding-top:52px}}
+
+/* Agon uses the same rendered Penguin King / Snow Guard assets as Arctic Dominion. */
+.agon-piece img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 3px 3px rgba(0,0,0,.38));user-select:none;-webkit-user-drag:none}.agon-piece.queen{inset:-6%}.agon-piece.queen b{right:2%;top:2%}.agon-piece.compact.queen{inset:auto}

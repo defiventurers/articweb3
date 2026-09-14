@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RecurringCharacter } from "../../components/RecurringCharacter.jsx";
 import {
   AGON_RULESET,
   CELLS,
@@ -19,6 +18,19 @@ import {
 } from "./rules.js";
 
 const BOT_SIDE = "coral";
+
+// Reuse the established Arctic Dominion artwork instead of drawing a parallel
+// HTML/SVG penguin set. Blue and pink map to Sapphire and Coral courts.
+const ARCTIC_PIECE_ART = Object.freeze({
+  blue: {
+    queen: "/assets/artic/pieces/blue-frost-king.png",
+    guard: "/assets/artic/pieces/blue-snow-guard.png"
+  },
+  coral: {
+    queen: "/assets/artic/pieces/pink-frost-king.png",
+    guard: "/assets/artic/pieces/pink-snow-guard.png"
+  }
+});
 
 export function AgonColdThroneApp({ onExitToLibrary }) {
   const [tab, setTab] = useState("play");
@@ -194,7 +206,11 @@ function PlayTable({ state, mode, variant, actions, actingSide, selectableIds, a
 }
 
 function PieceToken({ piece, compact = false }) {
-  return <span className={`agon-piece ${piece.side} ${piece.kind} ${compact ? "compact" : ""}`} aria-hidden="true"><RecurringCharacter kind={piece.kind} side={piece.side} /><b>{piece.kind === "queen" ? "♛" : "◆"}</b></span>;
+  const art = ARCTIC_PIECE_ART[piece.side][piece.kind];
+  return <span className={`agon-piece ${piece.side} ${piece.kind} ${compact ? "compact" : ""}`} aria-hidden="true">
+    <img src={art} alt="" draggable="false" />
+    <b>{piece.kind === "queen" ? "♛" : "◆"}</b>
+  </span>;
 }
 
 function CourtCard({ side, state, progress, active }) {

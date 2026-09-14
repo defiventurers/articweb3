@@ -9,6 +9,9 @@ test.describe("Agon — The Queen's Cold Throne", () => {
     await expect(page.getByRole("heading", { name: "The Queen’s Cold Throne" })).toBeVisible();
     await expect(page.getByText("DOCUMENTED RULES")).toBeVisible();
     await expect(page.locator(".agon-hex")).toHaveCount(91);
+    await expect(page.locator('.agon-piece img[src="/assets/artic/pieces/blue-frost-king.png"]')).toHaveCount(2);
+    await expect(page.locator('.agon-piece img[src="/assets/artic/pieces/pink-frost-king.png"]')).toHaveCount(2);
+    await expect(page.locator('.agon-piece img[src*="snow-guard.png"]')).toHaveCount(12);
     await page.locator(".agon-hex.selectable").first().click();
     await expect(page.locator(".agon-hex.target").first()).toBeVisible();
     await page.locator(".agon-hex.target").first().click();

@@ -8,6 +8,7 @@ import "./styles/gameLibrary.css";
 import "./styles/arcticGameLauncher.css";
 import "./styles/nineIceForts.css";
 import "./styles/agonColdThrone.css";
+import "./styles/shogiFrozenShogunate.css";
 import "./styles/nineIceFortsOnline.css";
 import "./styles/fourWingIceHunt.css";
 import "./styles/fishflow.css";
