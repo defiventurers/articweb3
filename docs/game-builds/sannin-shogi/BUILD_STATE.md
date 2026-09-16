@@ -1,5 +1,7 @@
 # Sannin Shogi build state
 
+- 2026-09-16: Reworked the local match lobby around the Sanguo Qi information hierarchy: play mode, player seating, game option, and three-army preview now precede the start action. Bot and online controls remain explicitly unavailable because this game currently implements neither system.
+
 - 2026-09-16: Applied the user-recorded board-art fit: centre `667,590`, global scale `1.3`, and per-row X/Y offsets plus horizontal scales. The SVG grid and `board.webp` share one viewBox, so the calibration scales together across responsive layouts.
 - 2026-09-16: Reduced board pieces from 63 to 56 viewBox units and set a visual faction fit for the supplied rotated art: blue `(+3,-2)`, red `(-3,-2)`, and green `(0,+2)` local units. The adjustment inherits each row and global artwork transform.
 - 2026-09-16: Corrected piece-facing transforms to match the engine's rotated opening formations and forward lanes: red `-120°`, green `0°`, blue `+120°`.

@@ -372,28 +372,21 @@ export default function SanninShogiApp({ onExit }) {
   if (!state) return (
     <main className="sannin-shell sannin-setup">
       <div className="sannin-aurora" />
-      <section className="sannin-setup-card">
-        <p className="sannin-kicker">Arctic Dominion Heritage Table 24</p>
-        <h1>Sannin Shogi</h1>
-        <p className="sannin-subtitle">Three Homes, One Pleasure Garden</p>
-        <div className="sannin-board-seal" aria-hidden="true"><span>127</span><small>ice cells</small></div>
-        <p>Seat three players around a faithful radius-6 hex board. This release is deterministic local hot-seat play.</p>
-        <label>Opening pact
-          <select value={allianceChoice} onChange={(event) => setAllianceChoice(event.target.value)}>
-            {ALLIANCE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </select>
-        </label>
-        <p className="sannin-setup-note">With an alliance, the lone player moves First and begins with an illuminated King. Seat assignment is explicit for transparent local play.</p>
-        <ol className="sannin-onboarding" aria-label="Three quick steps">
-          <li><b>Find your seat.</b><span>Each player follows the persistent forward arrow.</span></li>
-          <li><b>Tap, then land.</b><span>Select a piece and one highlighted destination.</span></li>
-          <li><b>Capture and return.</b><span>Captured pieces join your hand; tap one to drop it.</span></li>
-        </ol>
-        <div className="sannin-setup-actions">
-          <button className="sannin-primary" onClick={begin}>Begin match</button>
-          <button onClick={() => setRulesOpen(true)}>Open rule scroll</button>
-          {onExit && <button onClick={onExit}>Back to Arcade</button>}
+      <section className="sannin-setup-card sannin-match-lobby">
+        <header className="sannin-lobby-title"><p className="sannin-kicker">Arctic Dominion Heritage Table 24</p><h1>Sannin Shogi</h1><p className="sannin-subtitle">Three Homes, One Pleasure Garden</p><p>Choose your command table. Every match has three armies.</p></header>
+        <div className="sannin-lobby-grid">
+          <div className="sannin-lobby-controls">
+            <div className="sannin-mode-card is-selected"><b>On this device</b><span>Local three-seat table</span></div>
+            <fieldset><legend>Human players</legend><button type="button" className="sannin-seat-choice" aria-pressed="true"><b>3 players</b><small>All human · pass the device each turn</small></button></fieldset>
+            <label>Opening pact
+              <select value={allianceChoice} onChange={(event) => setAllianceChoice(event.target.value)}>{ALLIANCE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
+            </label>
+            <p className="sannin-setup-note">Online rooms and command bots are not enabled for this historical table. Every move is local, visible, and reversible.</p>
+          </div>
+          <aside className="sannin-army-preview" aria-label="Three armies"><b>Three armies · 54 pieces</b>{FACTIONS.map((faction, index) => <div className={`sannin-army-card sannin-army-card--${faction}`} key={faction}><span className="sannin-faction-dot" /><div><strong>{FACTION_LABELS[faction]}</strong><small>Player {index + 1} · 18 pieces</small></div><span className="sannin-forward" style={{ transform: `rotate(${ROTATION[faction]}deg)` }}>↑</span></div>)}</aside>
         </div>
+        <ol className="sannin-onboarding" aria-label="Three quick steps"><li><b>Find your seat.</b><span>Each army follows its persistent forward arrow.</span></li><li><b>Tap, then land.</b><span>Select a piece and one highlighted destination.</span></li><li><b>Capture and return.</b><span>Captured pieces join your hand; tap one to drop it.</span></li></ol>
+        <div className="sannin-setup-actions"><button className="sannin-primary" onClick={begin}>Start local game</button><button onClick={() => setRulesOpen(true)}>Open rule scroll</button>{onExit && <button onClick={onExit}>Back to Arcade</button>}</div>
       </section>
       {rulesOpen && <Rulebook onClose={() => setRulesOpen(false)} />}
     </main>
