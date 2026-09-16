@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sannin Grid Alignment Tool — Hex Grid Positioner</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a1a2a; color: #cfe3f0; overflow: hidden; }
+  .toolbar { position: fixed; top: 0; left: 0; right: 0; background: rgba(5, 30, 48, .95); border-bottom: 1px solid #2a5a75; padding: 12px 18px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; z-index: 1000; }
+  .toolbar h1 { font-size: 15px; font-weight: 700; color: #ffd27a; }
+  .toolbar label { font-size: 12px; color: #8bb8d0; }
+  .toolbar input[type="range"] { width: 120px; }
+  .toolbar input[type="number"] { width: 70px; background: #0b2f4a; color: #cfe3f0; border: 1px solid #2a5a75; border-radius: 4px; padding: 3px 6px; font-size: 12px; }
+  .toolbar button { background: #1e5a7a; border: 1px solid #2a5a75; color: #cfe3f0; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+  .toolbar button:active { background: #2a7aa8; }
+  .toolbar button.primary { background: #e6a84a; color: #0a1a2a; font-weight: 700; }
+  .toolbar .note { font-size: 11px; color: #6a92a8; margin-left: auto; }
+  .canvas-container { position: absolute; top: 56px; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center; overflow: auto; }
+  .canvas-container svg { max-width: 90vw; max-height: calc(100vh - 70px); }
+  .cell-overlay { fill: none; stroke: rgba(255, 100, 100, .6); stroke-width: 1; pointer-events: none; }
+  .cell-active { fill: rgba(255, 100, 100, .2); }
+  .center-point { fill: rgba(255, 255, 0, .9); stroke: #000; stroke-width: 1; }
+  #exportBtn { background: #1a7a3a; }
+  #exportLink { color: #4fc3f7; font-size: 12px; word-break: break-all; }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <h1>Sannin Grid Aligner — 127-cell Pointy-Top Hex Grid</h1>
+    <label>CX <input type="number" id="cx" value="667" step="1"></label>
+    <label>CY <input type="number" id="cy" value="590" step="1"></label>
+    <label>Scale <input type="number" id="scale" value="1.32" step="0.01"></label>
+    <label>Drag to pan the grid overlay</label>
+    <button id="resetBtn">Reset to Center</button>
+    <button id="exportBtn">Export Transform</button>
+    <span class="note">Red hexagons = 127-cell grid · Yellow dot = center · Pan by dragging grid layer</span>
+  </div>
+
+  <div class="canvas-container">
+    <svg id="board" width="1334" height="1179" viewBox="0 0 1334 1179">
+      <image href="https://raw.githubusercontent.com/defiventurers/articweb3/ade506d7d8b3a9b8f3a4c3e0f7e43114f5a3c7a0/frontend/public/assets/games/sannin-shogi/board.webp" width="1334" height="1179" />
+      <g id="gridLayer"></g>
+    </svg>
+  </div>
+
+  <script>
+const SIZE = 30;
+
+function projectPointyTop(q, r, size) {
+  const x = Math.sqrt(3) * size * (q + r / 2);
+  const y = 1.5 * size * r;
+  return { x, y };
+}
+
+function pointyTopCorners(q, r, size) {
+  const center = projectPointyTop(q, r, size);
+  const halfWidth = Math.sqrt(3) * size / 2;
+  const halfHeight = size / 2;
+  return [
+    [center.x, center.y - size],
+    [center.x + halfWidth, center.y - halfHeight],
+    [center.x + halfWidth, center.y + halfHeight],
+    [center.x, center.y + size],
+    [center.x - halfWidth, center.y + halfHeight],
+    [center.x - halfWidth, center.y - halfHeight],
+  ];
+}
+
+function hexDistance(q, r) {
+  return Math.max(Math.abs(q), Math.abs(r), Math.abs(q + r));
+}
+
+function buildCells(radius) {
+  const cells = [];
+  for (let r = -radius; r <= radius; r++) {
+    const minQ = Math.max(-radius, -r - radius);
+    const maxQ = Math.min(radius, -r + radius);
+    for (let q = minQ; q <= maxQ; q++) {
+      cells.push({ q, r });
+    }
+  }
+  return cells;
+}
+
+const cells = buildCells(6);
+const RADIUS = 6;
+
+let state = {
+  cx: 667,
+  cy: 590,
+  scale: 1.32,
+  offsetX: 0,
+  offsetY: 0
+};
+
+// Faction territory coloring (matching rules.js)
+const RED_HOME = [[0,-3],[0,-4],[0,-5],[0,-6],[-1,-3],[-1,-4],[-1,-5],[-1,-6],[-2,-3],[-2,-4],[-2,-5],[-2,-6],[-3,-3],[-3,-4],[-3,-5],[-3,-6],[-3,-2],[-4,-2],[-5,-2],[-6,-2]];
+const GREEN_HOME = [[3,0],[4,0],[5,0],[6,0],[3,1],[4,1],[5,1],[6,1],[3,2],[4,2],[5,2],[6,2],[3,3],[4,3],[5,3],[6,3],[2,3],[2,4],[2,5],[2,6]];
+const BLUE_HOME = [[-3,3],[-4,3],[-5,3],[-6,3],[-3,4],[-4,4],[-5,4],[-6,4],[-3,5],[-4,5],[—5,5],[-6,5],[-3,6],[-4,6],[-5,6],[-6,6],[-2,6],[-2,5],[-2,4],[-2,3]];
+
+function isRedHome(q, r) {
+  return RED_HOME.some(([dq, dr]) => q === dq && r === dr);
+}
+function isGreenHome(q, r) {
+  return GREEN_HOME.some(([dq, dr]) => q === dq && r === dr);
+}
+function isBlueHome(q, r) {
+  return BLUE_HOME.some(([dq, dr]) => q === dq && r === dr);
+}
+
+function render() {
+  const sx = document.getElementById('scale').value;
+  const cx = parseFloat(document.getElementById('cx').value);
+  const cy = parseFloat(document.getElementById('cy').value);
+  state.scale = parseFloat(sx);
+  state.cx = cx;
+  state.cy = cy;
+
+  const grid = document.getElementById('gridLayer');
+  grid.innerHTML = '';
+  grid.setAttribute('transform', `translate(${state.cx + state.offsetX},${state.cy + state.offsetY}) scale(${state.scale})`);
+
+  // Center marker
+  const center = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  center.setAttribute('cx', 0);
+  center.setAttribute('cy', 0);
+  center.setAttribute('r', 4);
+  center.className = 'center-point';
+  grid.appendChild(center);
+
+  // Center cell ring (ring 0)
+  const centerCell = pointyTopCorners(0, 0, SIZE);
+  const centerPoly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  centerPoly.setAttribute('points', centerCell.map(p => p.join(',')).join(' '));
+  centerPoly.className = 'cell-active';
+  centerPoly.setAttribute('stroke', '#fff0ad');
+  centerPoly.setAttribute('stroke-width', '2');
+  grid.appendChild(centerPoly);
+
+  // All 127 cells
+  cells.forEach(({ q, r }) => {
+    const corners = pointyTopCorners(q, r, SIZE);
+    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    poly.setAttribute('points', corners.map(p => p.join(',')).join(' '));
+    poly.className = 'cell-overlay';
+
+    // Color-code by territory
+    if (q === 0 && r === 0) {
+      poly.setAttribute('fill', 'rgba(255, 226, 132, .2)');
+      poly.setAttribute('stroke', '#fff0ad');
+    } else if (isRedHome(q, r)) {
+      poly.setAttribute('fill', 'rgba(235, 95, 102, .12)');
+      poly.setAttribute('stroke', 'rgba(235, 95, 102, .5)');
+    } else if (isGreenHome(q, r)) {
+      poly.setAttribute('fill', 'rgba(78, 190, 137, .1)');
+      poly.setAttribute('stroke', 'rgba(78, 190, 137, .5)');
+    } else if (isBlueHome(q, r)) {
+      poly.setAttribute('fill', 'rgba(73, 151, 235, .1)');
+      poly.setAttribute('stroke', 'rgba(73, 151, 235, .5)');
+    }
+
+    // Highlight boundary ring (ring 6)
+    if (hexDistance(q, r) === 6) {
+      poly.setAttribute('stroke-width', '1.5');
+    }
+
+    grid.appendChild(poly);
+  });
+}
+
+// Drag to pan
+let isDragging = false;
+let dragStart = { x: 0, y: 0 };
+
+document.getElementById('board').addEventListener('mousedown', (e) => {
+  isDragging = true;
+  dragStart = { x: e.clientX, y: e.clientY };
+  e.preventDefault();
+});
+
+document.getElementById('board').addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const dx = e.clientX - dragStart.x;
+  const dy = e.clientY - dragStart.y;
+  state.offsetX += dx;
+  state.offsetY += dy;
+  dragStart = { x: e.clientX, y: e.clientY };
+  const grid = document.getElementById('gridLayer');
+  grid.setAttribute('transform', `translate(${state.cx + state.offsetX},${state.cy + state.offsetY}) scale(${state.scale})`);
+});
+
+document.getElementById('board').addEventListener('mouseup', () => {
+  isDragging = false;
+  // Sync offset back to cx/cy inputs
+  document.getElementById('cx').value = Math.round(state.cx + state.offsetX);
+  document.getElementById('cy').value = Math.round(state.cy + state.offsetY);
+  state.cx = parseFloat(document.getElementById('cx').value);
+  state.cy = parseFloat(document.getElementById('cy').value);
+  state.offsetX = 0;
+  state.offsetY = 0;
+});
+
+document.getElementById('board').addEventListener('mouseleave', () => {
+  isDragging = false;
+});
+
+// Touch support
+document.getElementById('board').addEventListener('touchstart', (e) => {
+  if (e.touches.length === 1) {
+    isDragging = true;
+    dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    e.preventDefault();
+  }
+});
+
+document.getElementById('board').addEventListener('touchmove', (e) => {
+  if (!isDragging || e.touches.length !== 1) return;
+  const dx = e.touches[0].clientX - dragStart.x;
+  const dy = e.touches[0].clientY - dragStart.y;
+  state.offsetX += dx;
+  state.offsetY += dy;
+  dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  const grid = document.getElementById('gridLayer');
+  grid.setAttribute('transform', `translate(${state.cx + state.offsetX},${state.cy + state.offsetY}) scale(${state.scale})`);
+  e.preventDefault();
+});
+
+document.getElementById('board').addEventListener('touchend', () => {
+  isDragging = false;
+  document.getElementById('cx').value = Math.round(state.cx + state.offsetX);
+  document.getElementById('cy').value = Math.round(state.cy + state.offsetY);
+  state.cx = parseFloat(document.getElementById('cx').value);
+  state.cy = parseFloat(document.getElementById('cy').value);
+  state.offsetX = 0;
+  state.offsetY = 0;
+});
+
+// Event listeners for inputs
+document.getElementById('cx').addEventListener('input', render);
+document.getElementById('cy').addEventListener('input', render);
+document.getElementById('scale').addEventListener('input', render);
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  state.offsetX = 0;
+  state.offsetY = 0;
+  document.getElementById('cx').value = 667;
+  document.getElementById('cy').value = 590;
+  document.getElementById('scale').value = '1.32';
+  render();
+});
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const cx = document.getElementById('cx').value;
+  const cy = document.getElementById('cy').value;
+  const scale = document.getElementById('scale').value;
+  const transform = `translate(${cx} ${cy}) scale(${scale} ${scale})`;
+  const linkDiv = document.getElementById('exportLink');
+  linkDiv.innerHTML = `GRID_TRANSFORM = "translate(${cx} ${cy}) scale(${scale} ${scale})"<br>BOARD_WIDTH = 1334<br>BOARD_HEIGHT = 1179<br>BOARD_VIEW_SIZE = 1179`;
+  linkDiv.style.color = '#4fc3f7';
+  linkDiv.style.fontSize = '12px';
+  linkDiv.style.wordBreak = 'break-all';
+});
+
+// Initial render
+const exportLink = document.createElement('div');
+exportLink.id = 'exportLink';
+exportLink.className = 'note';
+document.querySelector('.toolbar').appendChild(exportLink);
+
+render();
+  </script>
+</body>
+</html>
