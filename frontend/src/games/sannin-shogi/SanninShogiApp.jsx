@@ -200,6 +200,30 @@ function MatchSeat({ state, faction, humans }) {
   </div>;
 }
 
+function ArcticScrollRail({ onAllGames }) {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const update = () => {
+      const limit = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      setProgress(Math.round((window.scrollY / limit) * 100));
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => { window.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+  }, []);
+  const moveTo = (value) => {
+    const limit = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    window.scrollTo({ top: limit * (value / 100), behavior: "smooth" });
+  };
+  return <aside className="sannin-scroll-rail" aria-label="Arctic table navigator">
+    <button type="button" className="sannin-scroll-rail__arrow" onClick={() => moveTo(Math.max(0, progress - 18))} aria-label="Scroll table up">↑</button>
+    <div className="sannin-scroll-rail__track"><span>ICE ROUTE</span><input aria-label="Page position" type="range" min="0" max="100" value={progress} onChange={(event) => moveTo(Number(event.target.value))} /><small>{progress}%</small></div>
+    <button type="button" className="sannin-scroll-rail__arrow" onClick={() => moveTo(Math.min(100, progress + 18))} aria-label="Scroll table down">↓</button>
+    {onAllGames && <button type="button" className="sannin-scroll-rail__all" onClick={onAllGames}><span>✦</span> All games</button>}
+  </aside>;
+}
+
 function useModalFocus(containerRef, onClose) {
   useEffect(() => {
     const previous = document.activeElement;
@@ -427,6 +451,7 @@ export default function SanninShogiApp({ onExit }) {
         <ol className="sannin-onboarding" aria-label="Three quick steps"><li><b>Find your seat.</b><span>Each army follows its persistent forward arrow.</span></li><li><b>Tap, then land.</b><span>Select a piece and one highlighted destination.</span></li><li><b>Capture and return.</b><span>Captured pieces join your hand; tap one to drop it.</span></li></ol>
         <div className="sannin-setup-actions"><button className="sannin-primary" onClick={begin}>Start local game</button><button onClick={() => setRulesOpen(true)}>Open rule scroll</button>{onExit && <button onClick={onExit}>Back to Arcade</button>}</div>
       </section>
+      <ArcticScrollRail onAllGames={onExit} />
       {rulesOpen && <Rulebook onClose={() => setRulesOpen(false)} />}
     </main>
   );
@@ -472,6 +497,7 @@ export default function SanninShogiApp({ onExit }) {
       </div>
       {promotionChoice && <PromotionDialog choices={promotionChoice} onChoose={commit} onClose={() => setPromotionChoice(null)} />}
       {rulesOpen && <Rulebook onClose={() => setRulesOpen(false)} />}
+      <ArcticScrollRail onAllGames={onExit} />
     </main>
   );
 }

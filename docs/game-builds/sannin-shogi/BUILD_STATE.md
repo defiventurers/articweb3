@@ -4,6 +4,8 @@
 
 - 2026-09-16: Rebuilt the active table into a board-first match screen: persistent three-army seat rail on desktop, live board/hand counts, active-turn emphasis, bot identity, disabled bot hands, and an explicit Match panel drawer on phone-sized layouts. This uses no shared shell or global CSS.
 
+- 2026-09-16: Added a game-owned Arctic Ice Route rail on the right of both the Sannin lobby and active table. Its range control tracks real page position, the arrow controls scroll in measured steps, and **All games** returns through the provided Heritage route callback without altering the shared arcade shell.
+
 ### Required lead-owned online-room integration
 
 The existing production Sanguo Qi room transport cannot host Sannin actions: it is hard-wired to Sanguo's engine, state shape, `sg_` WebSocket events, validation, bot pool, persistence, and reconnection contracts. To make the lobby's **Online rooms** mode real, the lead must add a separate authoritative Sannin service in the shared server layer, rather than exposing local state as online play:
