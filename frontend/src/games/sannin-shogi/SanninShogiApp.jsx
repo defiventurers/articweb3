@@ -55,7 +55,10 @@ const PIECE_OFFSETS = Object.freeze({
   red: Object.freeze({ x: -3, y: -2 }),
   green: Object.freeze({ x: 0, y: 2 })
 });
-const ROTATION = { red: 120, green: 0, blue: -120 };
+// Match the engine's axial seat rotations: red starts at +240° / -120° and
+// blue at +120°. This places every faction's soldier-pointing artwork toward
+// its legal forward lanes rather than back toward its home edge.
+const ROTATION = { red: -120, green: 0, blue: 120 };
 const SHORT = { king: "K", rook: "R", bishop: "B", gold: "G", silver: "S", knight: "N", lance: "L", pawn: "P" };
 const ALLIANCE_OPTIONS = [
   { value: "none", label: "No opening alliance" },

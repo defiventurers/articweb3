@@ -60,6 +60,8 @@ describe("SanninShogiApp", () => {
     expect(host.querySelector(".sannin-grid-layer")?.getAttribute("transform")).toBe("translate(667 590) scale(1.3 1.3)");
     expect(host.querySelector('.sannin-grid-row[data-row="0"]')?.getAttribute("transform")).toBe("translate(-73.07692307692308 -46.842511864032666) scale(1.02 1)");
     expect(host.querySelector(".sannin-piece image")?.getAttribute("width")).toBe("56");
+    expect(host.querySelector(".sannin-piece--red")?.getAttribute("transform")).toMatch(/^rotate\(-120 /);
+    expect(host.querySelector(".sannin-piece--blue")?.getAttribute("transform")).toMatch(/^rotate\(120 /);
     const kingCell = [...host.querySelectorAll('[role="gridcell"]')].find((cell) => cell.getAttribute("aria-label").includes("6,-3") && cell.getAttribute("aria-label").includes("First King"));
     await act(async () => kingCell.dispatchEvent(new MouseEvent("click", { bubbles: true })));
     const destination = [...host.querySelectorAll('[role="gridcell"]')].find((cell) => cell.getAttribute("aria-label").includes("legal destination"));
