@@ -292,6 +292,22 @@ describe("movement and actions", () => {
     expect(getLegalActions(state).some(matches)).toBe(false);
   });
 
+  it("records an alliance checkmate as a win rather than a draw", () => {
+    const state = sparseState([
+      ["red-king-1", "red", "king", "5,-2"],
+      ["green-king-1", "green", "king", "-3,5"],
+      ["blue-king-1", "blue", "king", "0,0"],
+      ["red-rook-1", "red", "rook", "2,0", true],
+      ["red-pawn-1", "red", "pawn", "4,-2"]
+    ]);
+    state.alliance = ["blue", "green"];
+    state.castlingCancelled = { red: true, green: true, blue: true };
+    const waitingMove = getLegalActions(state).find((action) => action.pieceId === "red-pawn-1");
+    expect(waitingMove).toBeTruthy();
+    const result = applyAction(state, waitingMove);
+    expect(result.state.outcome).toMatchObject({ type: "mate", winner: "red", losers: ["blue", "green"] });
+  });
+
   it("awards immediate victory to a safe, non-allied king entering the Garden", () => {
     const state = sparseState([
       ["red-king-1", "red", "king", "1,-1"],

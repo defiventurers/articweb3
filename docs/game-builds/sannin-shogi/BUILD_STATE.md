@@ -6,6 +6,8 @@
 
 - 2026-09-16: Added a game-owned Arctic Ice Route rail on the right of both the Sannin lobby and active table. Its range control tracks real page position, the arrow controls scroll in measured steps, and **All games** returns through the provided Heritage route callback without altering the shared arcade shell.
 
+- 2026-09-16: Repaired allied terminal resolution. Repetition-forbidden escapes are no longer counted as mate defences. If an allied seat has no independent legal move while its partner is checked, the defence turn passes to that partner when it has a legal reply; if neither can reply, the attacking faction defeats the alliance. This prevents an alliance checkmate from being mislabeled as a draw.
+
 ### Required lead-owned online-room integration
 
 The existing production Sanguo Qi room transport cannot host Sannin actions: it is hard-wired to Sanguo's engine, state shape, `sg_` WebSocket events, validation, bot pool, persistence, and reconnection contracts. To make the lobby's **Online rooms** mode real, the lead must add a separate authoritative Sannin service in the shared server layer, rather than exposing local state as online play:

@@ -397,7 +397,10 @@ function dissolveAlliance(next) {
 
 function resolveMate(next, actor) {
   const mated = activeOpponents(next, actor).filter((faction) => !areAllied(next, actor, faction)).filter((faction) =>
-    isInCheck(next, faction) && generateFor(next, faction, { skipPawnDropMate: true, skipRepetition: true }).length === 0);
+    // A repetition is an illegal reply in this ruleset. Ignoring it here could
+    // make an actually mated allied King look "escapable", then let its partner
+    // fall through to the ordinary no-move draw check on the following turn.
+    isInCheck(next, faction) && generateFor(next, faction, { skipPawnDropMate: true }).length === 0);
   if (!mated.length) return false;
   if (next.alliance && mated.some((faction) => next.alliance.includes(faction)) && !next.alliance.includes(actor)) {
     next.outcome = { type: "mate", winner: actor, losers: [...next.alliance], message: `${FACTION_LABELS[actor]} defeats the alliance.` };
@@ -490,7 +493,24 @@ function finalizeTurn(next, actor, hadMate) {
       if (kingPiece) kingPiece.everChecked = true;
     }
   }
-  if (!isInCheck(next, next.turn) && generateFor(next, next.turn, { skipRepetition: true }).length === 0) {
+  const turnActions = generateFor(next, next.turn);
+  if (turnActions.length === 0 && next.alliance?.includes(next.turn)) {
+    const checkedAlly = next.alliance.find((faction) => faction !== next.turn && isInCheck(next, faction));
+    if (checkedAlly) {
+      const allyReplies = generateFor(next, checkedAlly);
+      // An ally who can answer the check takes the defence turn. This keeps the
+      // checked alliance from being mislabeled as a stalemate merely because the
+      // other allied seat has no independently legal move.
+      if (allyReplies.length) {
+        next.turn = checkedAlly;
+        return;
+      }
+      next.outcome = { type: "mate", winner: actor, losers: [...next.alliance], message: `${FACTION_LABELS[actor]} defeats the alliance.` };
+      next.phase = "complete";
+      return;
+    }
+  }
+  if (!isInCheck(next, next.turn) && turnActions.length === 0) {
     next.outcome = { type: "draw", winner: null, losers: [], message: "Draw: the player to act has no legal action." };
     next.phase = "complete";
   }
