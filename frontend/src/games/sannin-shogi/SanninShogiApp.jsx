@@ -13,11 +13,19 @@ import {
   isHomeTerritory,
   isInCheck
 } from "./rules.js";
-import { HEX_CELLS, neighbor, pointyTopCorners, pointyTopViewBox, projectPointyTop } from "./hex.js";
+import { HEX_CELLS, neighbor, pointyTopCorners, projectPointyTop } from "./hex.js";
 import "./sanninShogi.css";
 
 const SIZE = 30;
-const VIEW = pointyTopViewBox(HEX_CELLS, SIZE, 8);
+const BOARD_ART = "/assets/games/sannin-shogi/board.webp";
+const BOARD_VIEW_SIZE = 1179;
+const BOARD_WIDTH = 1334;
+const BOARD_HEIGHT = 1179;
+// New hexagonal grid background: centred at (667, 590) in the 1334×1179 image.
+// Pointy-top 127-cell radius-6 board measures 623.54×540 at size=30; scaled to
+// fit within the visible grid area (approx 800×800) centred on image centre.
+const GRID_SCALE = 1.32;
+const GRID_TRANSFORM = "translate(667 590) scale(1.32 1.32)";
 const ROTATION = { red: 120, green: 0, blue: -120 };
 const SHORT = { king: "K", rook: "R", bishop: "B", gold: "G", silver: "S", knight: "N", lance: "L", pawn: "P" };
 const ALLIANCE_OPTIONS = [
@@ -35,12 +43,14 @@ function pieceLabel(piece) {
 }
 
 function BoardPiece({ piece, center }) {
+  const PIECE_SIZE = 63;
+  const halfPiece = PIECE_SIZE / 2;
   return (
     <>
       <g className={`sannin-piece sannin-piece--${piece.owner}`} transform={`rotate(${ROTATION[piece.owner]} ${center.x} ${center.y})`}>
-        <image href={assetUrl(piece)} x={center.x - 24} y={center.y - 24} width="48" height="48" preserveAspectRatio="xMidYMid meet" />
+        <image href={assetUrl(piece)} x={center.x - halfPiece} y={center.y - halfPiece} width={PIECE_SIZE} height={PIECE_SIZE} preserveAspectRatio="xMidYMid meet" />
       </g>
-      {piece.promoted && piece.type === "king" && <g className="sannin-piece__plus" aria-hidden="true"><circle cx={center.x + 17} cy={center.y - 15} r="10" /><text x={center.x + 17} y={center.y - 11}>+K</text></g>}
+      {piece.promoted && piece.type === "king" && <g className="sannin-piece__plus" aria-hidden="true"><circle cx={center.x + 21} cy={center.y - 19} r="13" /><text x={center.x + 21} y={center.y - 15}>+K</text></g>}
     </>
   );
 }
@@ -78,12 +88,14 @@ export function SanninBoard({ state, selected, legalActions, onCell, onCancel, z
   return (
     <div className="sannin-board-scroll" aria-label="Sannin Shogi board region">
       <p id="sannin-key-help" className="sannin-visually-hidden">Use arrow keys for four hex directions, Q for upper-right, E for lower-left, Enter or Space to select, and Escape to cancel.</p>
-      <svg className="sannin-board" style={{ "--sannin-board-scale": zoom / 100 }} viewBox={`${VIEW.minX} ${VIEW.minY} ${VIEW.width} ${VIEW.height}`} role="grid" aria-rowcount="13" aria-label="127-cell pointy-top hex board" aria-describedby="sannin-key-help">
+      <svg className="sannin-board" style={{ "--sannin-board-scale": zoom / 100 }} viewBox={`0 0 ${BOARD_WIDTH} ${BOARD_HEIGHT}`} role="grid" aria-rowcount="13" aria-label="127-cell pointy-top hex board" aria-describedby="sannin-key-help">
+        <image className="sannin-board-art" href={BOARD_ART} x="0" y="0" width={BOARD_WIDTH} height={BOARD_HEIGHT} preserveAspectRatio="xMinYMin meet" aria-hidden="true" />
         <defs>
           <radialGradient id="sannin-garden" cx="50%" cy="42%" r="70%"><stop offset="0" stopColor="#ffe49a" /><stop offset="1" stopColor="#57cae8" /></radialGradient>
           <linearGradient id="sannin-ice" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#dff8ff" /><stop offset="1" stopColor="#77bad8" /></linearGradient>
           <filter id="sannin-glow"><feGaussianBlur stdDeviation="2.8" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
         </defs>
+        <g className="sannin-grid-layer" transform={GRID_TRANSFORM}>
         {HEX_CELLS.map((cell) => {
           const center = projectPointyTop(cell, SIZE);
           const points = pointyTopCorners(cell, SIZE).map((point) => `${point.x},${point.y}`).join(" ");
@@ -100,7 +112,7 @@ export function SanninBoard({ state, selected, legalActions, onCell, onCancel, z
           const stateLabel = [isSelected && "selected", target && (piece ? "legal capture" : selected?.kind === "hand" ? "legal drop" : "legal destination"), illuminationTarget && "illumination target", lastFrom && "last move origin", lastTo && "last move destination", checked && "King in check"].filter(Boolean).join(", ");
           return (
             <g key={cell.id} ref={(node) => { cellRefs.current[cell.id] = node; }} role="gridcell" tabIndex={focusCell === cell.id ? 0 : -1} aria-selected={isSelected || undefined} aria-label={`${cell.id}, ${territory}, ${piece ? pieceLabel(piece) : "empty"}${stateLabel ? `, ${stateLabel}` : ""}`} onFocus={() => setFocusCell(cell.id)} onClick={() => onCell(cell.id)} onKeyDown={(event) => handleKey(event, cell)} className="sannin-square">
-              <polygon points={points} className={classes} fill={cell.id === "0,0" ? "url(#sannin-garden)" : "url(#sannin-ice)"} />
+              <polygon points={points} className={classes} />
               {target && <circle className="sannin-target" cx={center.x} cy={center.y} r={piece ? 22 : 6} />}
               {illuminationTarget && <path className="sannin-illumination-mark" d={`M ${center.x - 10} ${center.y} H ${center.x + 10} M ${center.x} ${center.y - 10} V ${center.y + 10}`} />}
               {cell.id === "0,0" && !piece && <text className="sannin-garden-mark" x={center.x} y={center.y + 4}>PG</text>}
@@ -108,6 +120,7 @@ export function SanninBoard({ state, selected, legalActions, onCell, onCancel, z
             </g>
           );
         })}
+        </g>
       </svg>
     </div>
   );
