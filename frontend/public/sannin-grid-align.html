@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sannin Grid Alignment Tool</title>
+<title>Sannin Manual Hex Placement Tool</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -18,235 +18,242 @@
     top: 0; left: 0; right: 0;
     background: rgba(5, 30, 48, .96);
     border-bottom: 1px solid #2a5a75;
-    padding: 14px 22px;
+    padding: 12px 18px;
     display: flex;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
     flex-wrap: wrap;
     z-index: 1000;
   }
-  .toolbar h1 {
-    font-size: 16px;
-    font-weight: 700;
-    color: #ffd27a;
-    margin-right: 8px;
-  }
-  .toolbar label {
+  .toolbar h1 { font-size: 15px; font-weight: 700; color: #ffd27a; margin-right: 8px; }
+  .toolbar button, .toolbar select {
+    background: #1e5a7a;
+    border: 1px solid #2a5a75;
+    color: #cfe3f0;
+    padding: 5px 12px;
+    border-radius: 5px;
     font-size: 12px;
-    color: #8bb8d0;
+    cursor: pointer;
+  }
+  .toolbar button:hover { background: #2a7aa8; }
+  .toolbar button.primary { background: #e6a84a; color: #0a1a2a; font-weight: 700; border-color: #f0c86e; }
+  .toolbar button.primary:hover { background: #ffd27a; }
+  .toolbar button#exportBtn { background: #1a7a3a; border-color: #2ecc71; }
+  .toolbar button.danger { background: #a83a1a; border-color: #ff6b35; }
+  .toolbar button.danger:hover { background: #ff6b35; }
+  .toolbar .label { font-size: 12px; color: #8bb8d0; }
+  .toolbar .info { font-size: 11px; color: #6a92a8; margin-left: auto; }
+  .toolbar .row { display: flex; gap: 8px; align-items: center; }
+
+  .canvas-container {
+    position: absolute;
+    top: 48px;
+    left: 0; right: 0; bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+    padding: 8px;
+  }
+  .canvas-container svg {
+    max-width: 95vw;
+    max-height: calc(100vh - 55px);
+    border: 1px solid #2a5a75;
+    border-radius: 6px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  }
+
+  .hex-outline {
+    fill: none;
+    stroke: rgba(255, 80, 80, .6);
+    stroke-width: 1;
+  }
+  .hex-placed {
+    fill: rgba(255, 226, 132, .15);
+    stroke: #fff0ad;
+    stroke-width: 2;
+  }
+  .hex-active {
+    fill: rgba(255, 80, 80, .25);
+    stroke: rgba(255, 80, 80, .8);
+    stroke-width: 2;
+    stroke-dasharray: 4 2;
+  }
+  .hex-label {
+    font: 600 9px/1 'Segoe UI', system-ui, sans-serif;
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: #ffe680;
+    pointer-events: none;
+  }
+  .hex-id-label {
+    font: 500 8px/1 'Segoe UI', system-ui, sans-serif;
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: #a0c4d8;
+    pointer-events: none;
+  }
+
+  .controls-panel {
+    position: fixed;
+    top: 48px;
+    right: 12px;
+    bottom: 12px;
+    width: 340px;
+    max-width: calc(50vw - 12px);
+    background: rgba(8, 32, 55, .92);
+    border: 1px solid #2a5a75;
+    border-radius: 10px;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 2px;
   }
-  .toolbar input[type="number"] {
-    width: 80px;
+  .controls-panel h2 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffd27a;
+    margin: 0;
+    padding: 10px 14px;
+    border-bottom: 1px solid #2a5a75;
+  }
+  .controls-content {
+    padding: 10px 14px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .control-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .control-row label { font-size: 11px; color: #8bb8d0; }
+  .control-row input[type="number"] {
+    width: 100%;
     background: #0b2f4a;
     color: #cfe3f0;
     border: 1px solid #2a5a75;
     border-radius: 4px;
     padding: 4px 8px;
-    font-size: 13px;
-  }
-  .toolbar input[type="number"]:focus {
-    outline: 2px solid #4fc3f7;
-    border-color: #4fc3f7;
-  }
-  .toolbar button {
-    background: #1e5a7a;
-    border: 1px solid #2a5a75;
-    color: #cfe3f0;
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all .15s ease;
-  }
-  .toolbar button:hover:not(:disabled) {
-    background: #2a7aa8;
-    transform: translateY(-1px);
-  }
-  .toolbar button:active {
-    transform: translateY(0);
-  }
-  .toolbar button.primary {
-    background: #e6a84a;
-    color: #0a1a2a;
-    font-weight: 700;
-    border-color: #f0c86e;
-  }
-  .toolbar button.primary:hover {
-    background: #ffd27a;
-  }
-  .toolbar button#exportBtn {
-    background: #1a7a3a;
-    border-color: #2ecc71;
-  }
-  #exportBtn:hover {
-    background: #2ecc71;
-    color: #0a1a2a;
-  }
-  .toolbar .actions-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex: 1;
-    min-width: 320px;
-  }
-  .toolbar .file-input {
-    display: none;
-  }
-  .toolbar .file-label {
-    background: #2a5a7a;
-    border: 1px solid #2a5a75;
-    color: #cfe3f0;
-    padding: 5px 12px;
-    border-radius: 6px;
     font-size: 12px;
+  }
+  .control-row input:focus { outline: 2px solid #4fc3f7; }
+  .hex-grid-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .hex-btn {
+    background: #0b2f4a;
+    border: 1px solid #2a5a75;
+    color: #cfe3f0;
+    padding: 6px 4px;
+    border-radius: 4px;
+    font-size: 9px;
     cursor: pointer;
-    transition: all .15s ease;
+    text-align: center;
   }
-  .toolbar .file-label:hover {
-    background: #3a6aa8;
-  }
-  .toolbar .note {
+  .hex-btn:hover { background: #1a5a7a; }
+  .hex-btn.active { background: #e6a84a; color: #0a1a2a; font-weight: 700; }
+  .hex-btn.placed { background: #1a7a3a; border-color: #2ecc71; }
+  .coord-inputs { display: flex; gap: 4px; }
+  .coord-inputs input { flex: 1; width: 40px; }
+
+  #placementInfo {
+    padding: 8px 14px;
+    background: rgba(0, 0, 0, .2);
+    border-top: 1px solid #2a5a75;
     font-size: 11px;
-    color: #6a92a8;
-    margin-left: auto;
-    white-space: nowrap;
-  }
-  .canvas-container {
-    position: absolute;
-    top: 60px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: auto;
-    padding: 10px;
-  }
-  .canvas-container svg {
-    max-width: 95vw;
-    max-height: calc(100vh - 75px);
-    border: 1px solid #2a5a75;
-    border-radius: 8px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, .4);
-  }
-  .cell-overlay {
-    fill: none;
-    stroke: rgba(255, 80, 80, .65);
-    stroke-width: 1;
-    pointer-events: none;
-  }
-  .cell-center {
-    fill: rgba(255, 226, 132, .3);
-    stroke: #fff0ad;
-    stroke-width: 2;
-  }
-  .cell-red {
-    fill: rgba(235, 95, 102, .12);
-    stroke: rgba(235, 95, 102, .6);
-  }
-  .cell-green {
-    fill: rgba(78, 190, 137, .1);
-    stroke: rgba(78, 190, 137, .6);
-  }
-  .cell-blue {
-    fill: rgba(73, 151, 235, .1);
-    stroke: rgba(73, 151, 235, .6);
-  }
-  .cell-boundary {
-    stroke-width: 1.5;
-  }
-  .center-point {
-    fill: rgba(255, 255, 0, .95);
-    stroke: #000;
-    stroke-width: 1.2;
-  }
-  .center-cross {
-    stroke: rgba(255, 255, 0, .9);
-    stroke-width: 1.5;
-    stroke-dasharray: 2 2;
-  }
-  #exportLink {
-    color: #4fc3f7;
-    font-size: 12px;
-    word-break: break-all;
-    margin-top: 4px;
-  }
-  .preview-panel {
-    margin-top: 12px;
-    padding: 10px 14px;
-    background: rgba(15, 45, 65, .5);
-    border-radius: 6px;
-    font-size: 12px;
     color: #a0c4d8;
-    max-width: 100%;
   }
-  .preview-label {
-    font-weight: 700;
-    color: #4fc3f7;
-    margin-bottom: 4px;
-    display: block;
+
+  @media (max-width: 1200px) {
+    .controls-panel { position: fixed; top: 48px; right: 0; bottom: 0; width: 280px; max-width: 80vw; }
   }
 </style>
 </head>
 <body>
   <div class="toolbar">
-    <h1>Sannin Grid Aligner — 127-cell Pointy-Top Hex Grid</h1>
-
-    <div class="actions-row">
-      <label>CX
-        <input type="number" id="cx" value="667" step="1" min="0" max="2000">
-      </label>
-      <label>CY
-        <input type="number" id="cy" value="590" step="1" min="0" max="2000">
-      </label>
-      <label>Scale
-        <input type="number" id="scale" value="1.32" step="0.01" min="0.1" max="5">
-      </label>
-      <button id="resetBtn">Reset Center</button>
+    <h1>Sannin Manual Hex Placement</h1>
+    <div class="row">
+      <button id="modeSelect">Mode: SELECT</button>
+      <select id="modeSelectDropdown">
+        <option value="select">Select (place hex)</option>
+        <option value="place">Place Current Hex Here</option>
+        <option value="pan">Pan Grid</option>
+      </select>
     </div>
-
-    <div class="actions-row">
-      <label class="file-label" for="boardImage">Upload Custom Board</label>
-      <input type="file" id="boardImage" class="file-input" accept="image/*">
-      <button id="exportBtn">Export Transform</button>
+    <div class="row">
+      <button id="snapBtn">Snap to Grid</button>
+      <button id="resetBtn">Reset All Offsets</button>
+      <button id="exportBtn">Export Positions</button>
     </div>
-
-    <span class="note">Red hexagons = 127-cell grid · Yellow dot = center · Pan by dragging grid</span>
+    <span class="info">Click on a hex cell to place it over the visible hexagon in the board image</span>
   </div>
-
-  <div id="exportLink" class="note"></div>
 
   <div class="canvas-container">
     <svg id="board" width="1334" height="1179" viewBox="0 0 1334 1179">
-      <image id="boardImg" x="0" y="0" width="1334" height="1179" preserveAspectRatio="xMinYMin meet"
+      <image id="boardImg" x="0" y="0" width="1334" height="1179"
              href="/assets/games/sannin-shogi/board.webp"
              alt="Board background" />
       <g id="gridLayer"></g>
-      <g id="centerGuide">
-        <line class="center-cross" x1="0" y1="-100" x2="0" y2="100" />
-        <line class="center-cross" x1="-100" y1="0" x2="100" y2="0" />
-      </g>
     </svg>
   </div>
 
-  <div class="preview-panel">
-    <span class="preview-label">Current transform (copy to SanninShogiApp.jsx):</span>
-    <code id="transformOutput">translate(667 590) scale(1.32 1.32)</code>
+  <div class="controls-panel">
+    <h2>Hex Placement Controls</h2>
+    <div class="controls-content">
+      <div class="control-row">
+        <label>Current Hex: <span id="currentHex">0,0</span></label>
+        <label>Status: <span id="hexStatus">Not placed</span></label>
+      </div>
+
+      <div class="control-row">
+        <label>Position Offset (relative to projected position)</label>
+        <div class="coord-inputs">
+          <input type="number" id="offsetX" value="0" step="1" placeholder="X offset">
+          <input type="number" id="offsetY" value="0" step="1" placeholder="Y offset">
+        </div>
+      </div>
+
+      <div class="control-row">
+        <label>Global Grid Offset (center)</label>
+        <div class="coord-inputs">
+          <input type="number" id="gridOffsetX" value="667" step="1" placeholder="Center X">
+          <input type="number" id="gridOffsetY" value="590" step="1" placeholder="Center Y">
+        </div>
+      </div>
+
+      <div class="control-row">
+        <label>Grid Scale</label>
+        <input type="number" id="gridScale" value="1.32" step="0.01" min="0.1" max="5">
+      </div>
+
+      <div class="control-row">
+        <label>Placed Hexes (click to select)</label>
+        <div id="hexList" class="hex-grid-list"></div>
+      </div>
+
+      <div class="control-row">
+        <label>Go to hex:</label>
+        <div class="coord-inputs">
+          <input type="number" id="gotoQ" value="0" step="1" placeholder="q" min="-6" max="6">
+          <input type="number" id="gotoR" value="0" step="1" placeholder="r" min="-6" max="6">
+          <button id="gotoBtn" style="margin-top:4px;">Go To</button>
+        </div>
+      </div>
+    </div>
+    <div id="placementInfo">
+      <div>Click on the highlighted hex outline, then click "Place" to set its position.</div>
+      <div>Red dashed hex = currently selected hex.</div>
+      <div style="margin-top:4px;">Yellow hex = placed (manually positioned).</div>
+    </div>
   </div>
 
 <script>
 const SIZE = 30;
 const RADIUS = 6;
-
-// --- Hex geometry (from hex.js) ---
-const AXIAL_DIRECTIONS = [
-  { q: 1, r: 0 }, { q: 1, r: -1 }, { q: 0, r: -1 },
-  { q: -1, r: 0 }, { q: -1, r: 1 }, { q: 0, r: 1 }
-];
 
 function cellKey(q, r) { return q + ',' + r; }
 
@@ -269,7 +276,7 @@ function pointyTopCorners(cell, size) {
   const center = projectPointyTop(cell, size);
   const halfWidth = Math.sqrt(3) * size / 2;
   const halfHeight = size / 2;
-  return [
+  const corners = [
     [center.x, center.y - size],
     [center.x + halfWidth, center.y - halfHeight],
     [center.x + halfWidth, center.y + halfHeight],
@@ -277,6 +284,17 @@ function pointyTopCorners(cell, size) {
     [center.x - halfWidth, center.y + halfHeight],
     [center.x - halfWidth, center.y - halfHeight]
   ];
+  return corners;
+}
+
+function rotateAxial(cell, steps) {
+  let q = cell.q;
+  let r = cell.r;
+  const turns = ((steps % 6) + 6) % 6;
+  for (let i = 0; i < turns; i++) {
+    [q, r] = [-r, q + r];
+  }
+  return { q, r };
 }
 
 function buildCells(radius) {
@@ -291,20 +309,8 @@ function buildCells(radius) {
   return cells;
 }
 
-function rotateAxial(cell, steps) {
-  let q = cell.q;
-  let r = cell.r;
-  const turns = ((steps % 6) + 6) % 6;
-  for (let i = 0; i < turns; i++) {
-    [q, r] = [-r, q + r];
-  }
-  return { q, r };
-}
-
-// --- Territory definitions (matching rules.js isHomeTerritory) ---
-// Red (First) territory: rotates -120° from Middle
-// Middle (Green) home territory
-const GREEN_HOME = [
+// Territory definitions (rotated from Midori green home territory)
+const GREEN_HOME_RAW = [
   [3,0],[4,0],[5,0],[6,0],
   [3,1],[4,1],[5,1],[6,1],
   [3,2],[4,2],[5,2],[6,2],
@@ -312,254 +318,351 @@ const GREEN_HOME = [
   [2,3],[2,4],[2,5],[2,6]
 ];
 
-// Rotate GREEN_HOME by 120° (steps=4) for Red
-// Rotate GREEN_HOME by -120° (steps=2) for Blue
-const RED_HOME = GREEN_HOME.map(([q, r]) => {
-  const rotated = rotateAxial({ q, r }, 4);
-  return [rotated.q, rotated.r];
+const RED_HOME = GREEN_HOME_RAW.map(([q, r]) => {
+  const rot = rotateAxial({ q, r }, 4); // +120°
+  return [rot.q, rot.r];
+});
+const GREEN_HOME = GREEN_HOME_RAW;
+const BLUE_HOME = GREEN_HOME_RAW.map(([q, r]) => {
+  const rot = rotateAxial({ q, r }, 2); // -120°
+  return [rot.q, rot.r];
 });
 
-const BLUE_HOME = GREEN_HOME.map(([q, r]) => {
-  const rotated = rotateAxial({ q, r }, 2);
-  return [rotated.q, rotated.r];
-});
-
-function isRedHome(q, r) {
-  return RED_HOME.some(([dq, dr]) => q === dq && r === dr);
-}
 function isGreenHome(q, r) {
   return GREEN_HOME.some(([dq, dr]) => q === dq && r === dr);
+}
+function isRedHome(q, r) {
+  return RED_HOME.some(([dq, dr]) => q === dq && r === dr);
 }
 function isBlueHome(q, r) {
   return BLUE_HOME.some(([dq, dr]) => q === dq && r === dr);
 }
 
-// --- State ---
+// State
 const HEX_CELLS = Object.freeze(buildCells(RADIUS));
 const IMAGE_WIDTH = 1334;
 const IMAGE_HEIGHT = 1179;
 
 let state = {
-  cx: 667,
-  cy: 590,
+  centerX: 667,
+  centerY: 590,
   scale: 1.32,
-  offsetX: 0,
-  offsetY: 0,
-  isDragging: false,
-  dragStart: { x: 0, y: 0 }
+  mode: 'select',
+  selectedHex: { q: 0, r: 0 },
+  placedHexes: {}, // cellId -> { x, y } custom offsets
+  snapToGrid: false
 };
 
-// --- Render grid overlay ---
-function render() {
-  // Update input values if called from code
-  const cxInput = document.getElementById('cx');
-  const cyInput = document.getElementById('cy');
-  const scaleInput = document.getElementById('scale');
+// Load saved positions from localStorage
+const saved = localStorage.getItem('sannin-hex-positions');
+if (saved) {
+  const parsed = JSON.parse(saved);
+  state.centerX = parsed.centerX || 667;
+  state.centerY = parsed.centerY || 590;
+  state.scale = parsed.scale || 1.32;
+  state.placedHexes = parsed.placedHexes || {};
+}
 
-  if (cxInput && !isNaN(parseFloat(cxInput.value))) state.cx = parseFloat(cxInput.value);
-  if (cyInput && !isNaN(parseFloat(cyInput.value))) state.cy = parseFloat(cyInput.value);
-  if (scaleInput && !isNaN(parseFloat(scaleInput.value))) state.scale = parseFloat(scaleInput.value);
+function projectCell(cellId) {
+  const [q, r] = cellId.split(',').map(Number);
+  const projected = projectPointyTop({ q, r }, SIZE);
+  const placed = state.placedHexes[cellId];
+
+  // If this hex has been manually placed, use custom offset
+  if (placed) {
+    const baseX = state.centerX + projected.x * state.scale;
+    const baseY = state.centerY + projected.y * state.scale;
+    return {
+      x: baseX + placed.x,
+      y: baseY + placed.y,
+      baseX,
+      baseY,
+      corners: pointyTopCorners({ q, r }, SIZE).map(p => [
+        state.centerX + p[0] * state.scale,
+        state.centerY + p[1] * state.scale
+      ])
+    };
+  }
+
+  // Otherwise use projected position
+  const x = state.centerX + projected.x * state.scale;
+  const y = state.centerY + projected.y * state.scale;
+  const corners = pointyTopCorners({ q, r }, SIZE).map(p => [
+    state.centerX + p[0] * state.scale,
+    state.centerY + p[1] * state.scale
+  ]);
+
+  return {
+    x, y, baseX: x, baseY: y,
+    corners
+  };
+}
+
+function getHexAtPoint(svgX, svgY) {
+  // Check if any hex corners contain this point
+  for (const cell of HEX_CELLS) {
+    const proj = projectCell(cell.id);
+    const corners = proj.corners;
+
+    // Ray casting algorithm
+    let inside = false;
+    for (let i = 0, j = corners.length - 1; i < corners.length; j = i++) {
+      const [xi, yi] = corners[i];
+      const [xj, yj] = corners[j];
+      const intersect = ((yi > svgY) !== (yj > svgY)) &&
+                        (svgX < (xj - xi) * (svgY - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    if (inside) return cell;
+  }
+  return null;
+}
+
+function getDistanceToPoint(cx, cy, px, py) {
+  return Math.sqrt((px - cx) * (px - cx) + (py - cy) * (py - cy));
+}
+
+function render() {
+  // Sync inputs with state
+  state.centerX = parseFloat(document.getElementById('gridOffsetX').value) || 667;
+  state.centerY = parseFloat(document.getElementById('gridOffsetY').value) || 590;
+  state.scale = parseFloat(document.getElementById('gridScale').value) || 1.32;
 
   const grid = document.getElementById('gridLayer');
   grid.innerHTML = '';
 
-  const currentTransform = `translate(${state.cx + state.offsetX},${state.cy + state.offsetY}) scale(${state.scale})`;
-  grid.setAttribute('transform', currentTransform);
-
-  // Update transform preview
-  const output = document.getElementById('transformOutput');
-  if (output) {
-    output.textContent = `translate(${Math.round(state.cx + state.offsetX)} ${Math.round(state.cy + state.offsetY)}) scale(${state.scale.toFixed(2)} ${state.scale.toFixed(2)})`;
-  }
-
-  // Center crosshair (in image coordinates, not transformed)
-  const guide = document.getElementById('centerGuide');
-  if (guide) {
-    const actualCx = state.cx + state.offsetX;
-    const actualCy = state.cy + state.offsetY;
-    guide.innerHTML = '';
-    const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line1.setAttribute('x1', actualCx - 100);
-    line1.setAttribute('y1', actualCy);
-    line1.setAttribute('x2', actualCx + 100);
-    line1.setAttribute('y2', actualCy);
-    line1.className = 'center-cross';
-    guide.appendChild(line1);
-    const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line2.setAttribute('x1', actualCx);
-    line2.setAttribute('y1', actualCy - 100);
-    line2.setAttribute('x2', actualCx);
-    line2.setAttribute('y2', actualCy + 100);
-    line2.className = 'center-cross';
-    guide.appendChild(line2);
-  }
-
-  // Center point marker
-  const center = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  center.setAttribute('cx', 0);
-  center.setAttribute('cy', 0);
-  center.setAttribute('r', 5);
-  center.className = 'center-point';
-  grid.appendChild(center);
-
-  // All 127 cells
+  // Draw all hex outlines
   HEX_CELLS.forEach((cell) => {
-    const corners = pointyTopCorners(cell, SIZE);
-    const points = corners.map(p => p.join(',')).join(' ');
+    const proj = projectCell(cell.id);
+    const points = proj.corners.map(p => p.join(',')).join(' ');
     const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
     poly.setAttribute('points', points);
 
-    // Color-code by territory
+    const isPlaced = state.placedHexes[cell.id] !== undefined;
+    const isSelected = state.selectedHex.q === cell.q && state.selectedHex.r === cell.r;
+
+    // Classification
     if (cell.q === 0 && cell.r === 0) {
-      poly.className = 'cell-center';
-    } else if (isRedHome(cell.q, cell.r)) {
-      poly.className = 'cell-red';
-    } else if (isGreenHome(cell.q, cell.r)) {
-      poly.className = 'cell-green';
-    } else if (isBlueHome(cell.q, cell.r)) {
-      poly.className = 'cell-blue';
+      poly.setAttribute('class', 'hex-outline');
+      poly.style.stroke = '#fff0ad';
+      poly.style.strokeWidth = '2';
+    } else if (isSelected) {
+      poly.setAttribute('class', 'hex-active');
+    } else if (isPlaced) {
+      poly.setAttribute('class', 'hex-placed');
     } else {
-      poly.className = 'cell-overlay';
+      poly.setAttribute('class', 'hex-outline');
+      if (isRedHome(cell.q, cell.r)) {
+        poly.style.stroke = 'rgba(235, 95, 102, .5)';
+      } else if (isGreenHome(cell.q, cell.r)) {
+        poly.style.stroke = 'rgba(78, 190, 137, .5)';
+      } else if (isBlueHome(cell.q, cell.r)) {
+        poly.style.stroke = 'rgba(73, 151, 235, .5)';
+      }
     }
-
-    // Highlight boundary cells (ring 6)
-    if (cell.ring === 6) {
-      poly.classList.add('cell-boundary');
-    }
-
     grid.appendChild(poly);
+
+    // Hex label (ring number)
+    if (cell.ring > 0) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.textContent = cell.ring;
+      label.setAttribute('x', proj.x);
+      label.setAttribute('y', proj.y);
+      label.className = 'hex-label';
+      label.style.opacity = isPlaced ? '1' : '0.4';
+      grid.appendChild(label);
+    }
+  });
+
+  // Update current hex display
+  document.getElementById('currentHex').textContent = `${state.selectedHex.q},${state.selectedHex.r}`;
+  document.getElementById('hexStatus').textContent =
+    state.placedHexes[`${state.selectedHex.q},${state.selectedHex.r}`] !== undefined ? 'Placed' : 'Not placed';
+
+  // Update offset display for current hex
+  const currentId = cellKey(state.selectedHex.q, state.selectedHex.r);
+  const placed = state.placedHexes[currentId];
+  const proj = projectCell(currentId);
+  document.getElementById('offsetX').value = placed ? placed.x : 0;
+  document.getElementById('offsetY').value = placed ? placed.y : 0;
+
+  // Update hex list
+  renderHexList();
+}
+
+function renderHexList() {
+  const list = document.getElementById('hexList');
+  list.innerHTML = '';
+
+  // Show all cells, color-coded by placement status
+  HEX_CELLS.forEach((cell) => {
+    const btn = document.createElement('button');
+    btn.className = 'hex-btn';
+    btn.textContent = cell.id;
+    btn.title = `Select ${cell.id}`;
+    const isPlaced = state.placedHexes[cell.id] !== undefined;
+    const isCurrent = state.selectedHex.q === cell.q && state.selectedHex.r === cell.r;
+
+    if (isPlaced) btn.classList.add('placed');
+    if (isCurrent) btn.classList.add('active');
+
+    btn.addEventListener('click', () => {
+      state.selectedHex = { q: cell.q, r: cell.r };
+      render();
+    });
+    list.appendChild(btn);
   });
 }
 
-// --- Drag handling ---
+// Event handlers
+document.getElementById('gridOffsetX').addEventListener('input', () => {
+  state.centerX = parseFloat(document.getElementById('gridOffsetX').value) || 667;
+  document.getElementById('gridOffsetY').dispatchEvent(new Event('input'));
+});
+
+document.getElementById('gridOffsetY').addEventListener('input', () => {
+  state.centerY = parseFloat(document.getElementById('gridOffsetY').value) || 590;
+  render();
+});
+
+document.getElementById('gridScale').addEventListener('input', () => {
+  state.scale = parseFloat(document.getElementById('gridScale').value) || 1.32;
+  render();
+});
+
+document.getElementById('offsetX').addEventListener('change', () => {
+  const currentId = cellKey(state.selectedHex.q, state.selectedHex.r);
+  const x = parseInt(document.getElementById('offsetX').value) || 0;
+  state.placedHexes[currentId] = state.placedHexes[currentId] || { x: 0, y: 0 };
+  state.placedHexes[currentId].x = x;
+  render();
+});
+
+document.getElementById('offsetY').addEventListener('change', () => {
+  const currentId = cellKey(state.selectedHex.q, state.selectedHex.r);
+  const y = parseInt(document.getElementById('offsetY').value) || 0;
+  state.placedHexes[currentId] = state.placedHexes[currentId] || { x: 0, y: 0 };
+  state.placedHexes[currentId].y = y;
+  render();
+});
+
+document.getElementById('modeSelectDropdown').addEventListener('change', (e) => {
+  state.mode = e.target.value;
+  document.getElementById('modeSelect').textContent = 'Mode: ' + state.mode.toUpperCase();
+});
+
+document.getElementById('snapBtn').addEventListener('click', () => {
+  state.snapToGrid = !state.snapToGrid;
+  document.getElementById('snapBtn').textContent = state.snapToGrid ? 'Snap: ON' : 'Snap: OFF';
+  document.getElementById('snapBtn').style.background = state.snapToGrid ? '#1a7a3a' : '#1e5a7a';
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  state.placedHexes = {};
+  state.centerX = 667;
+  state.centerY = 590;
+  state.scale = 1.32;
+  document.getElementById('gridOffsetX').value = 667;
+  document.getElementById('gridOffsetY').value = 590;
+  document.getElementById('gridScale').value = '1.32';
+  render();
+});
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const exportData = {
+    centerX: state.centerX,
+    centerY: state.centerY,
+    scale: state.scale,
+    placedHexes: state.placedHexes
+  };
+
+  // Generate the transform string
+  const transform = `translate(${state.centerX} ${state.centerY}) scale(${state.scale})`;
+
+  // Generate hex position map
+  let hexPosCode = '';
+  Object.entries(state.placedHexes).forEach(([id, pos]) => {
+    hexPosCode += `  "${id}": { x: ${pos.x}, y: ${pos.y} },\n`;
+  });
+
+  const exportDiv = document.getElementById('placementInfo');
+  exportDiv.innerHTML = `
+    <div style="color:#4fc3f7; font-weight:700; margin-bottom:4px;">Export Results:</div>
+    <code style="display:block; margin:2px 0; font-size:11px;">GRID_TRANSFORM = "translate(${state.centerX} ${state.centerY}) scale(${state.scale} ${state.scale})";</code>
+    <div style="margin-top:6px; color:#ffd27a; font-size:11px;">Per-hex custom offsets:</div>
+    <pre style="display:block; margin:4px 0; padding:6px; background:#000; border-radius:4px; font-size:10px; overflow:auto; max-height:150px; color:#a0e0ff;">${hexPosCode || '  // No custom hex offsets placed'}</pre>
+    <button id="saveBtn" style="margin-top:6px; background:#1a7a3a;">Save to localStorage</button>
+  `;
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    localStorage.setItem('sannin-hex-positions', JSON.stringify(exportData));
+    document.getElementById('saveBtn').textContent = 'Saved!';
+    setTimeout(() => { document.getElementById('saveBtn').textContent = 'Save to localStorage'; }, 2000);
+  });
+});
+
+// Click on board to place/select
 const boardSvg = document.getElementById('board');
+boardSvg.addEventListener('click', (e) => {
+  if (state.mode === 'pan') return;
 
-boardSvg.addEventListener('mousedown', (e) => {
-  if (e.button !== 0) return;
-  state.isDragging = true;
-  state.dragStart = { x: e.clientX, y: e.clientY };
-  e.preventDefault();
+  const rect = boardSvg.getBoundingClientRect();
+  const svgX = e.clientX - rect.left;
+  const svgY = e.clientY - rect.top;
+
+  // Scale to viewBox coordinates (since viewBox might be larger than the rendered SVG)
+  const viewBoxScaleX = 1334 / rect.width;
+  const viewBoxScaleY = 1179 / rect.height;
+  const vbX = svgX * viewBoxScaleX;
+  const vbY = svgY * viewBoxScaleY;
+
+  const clickedHex = getHexAtPoint(vbX, vbY);
+  if (!clickedHex) return;
+
+  state.selectedHex = { q: clickedHex.q, r: clickedHex.r };
+
+  if (state.mode === 'place') {
+    const proj = projectCell(clickedHex.id);
+    // When placing, record offset from projected position
+    const currentId = cellKey(clickedHex.q, clickedHex.r);
+    state.placedHexes[currentId] = {
+      x: vbX - proj.baseX,
+      y: vbY - proj.baseY
+    };
+    render();
+  } else {
+    render();
+  }
 });
 
-boardSvg.addEventListener('mousemove', (e) => {
-  if (!state.isDragging) return;
-  const dx = e.clientX - state.dragStart.x;
-  const dy = e.clientY - state.dragStart.y;
-  state.offsetX += dx;
-  state.offsetY += dy;
-  state.dragStart = { x: e.clientX, y: e.clientY };
-  render();
-});
-
-boardSvg.addEventListener('mouseup', () => {
-  state.isDragging = false;
-  state.cx = state.cx + state.offsetX;
-  state.cy = state.cy + state.offsetY;
-  state.offsetX = 0;
-  state.offsetY = 0;
-  document.getElementById('cx').value = Math.round(state.cx);
-  document.getElementById('cy').value = Math.round(state.cy);
-  render();
-});
-
-boardSvg.addEventListener('mouseleave', () => {
-  if (state.isDragging) {
-    state.isDragging = false;
-    state.cx = state.cx + state.offsetX;
-    state.cy = state.cy + state.offsetY;
-    state.offsetX = 0;
-    state.offsetY = 0;
-    document.getElementById('cx').value = Math.round(state.cx);
-    document.getElementById('cy').value = Math.round(state.cy);
+document.getElementById('gotoBtn').addEventListener('click', () => {
+  const q = parseInt(document.getElementById('gotoQ').value) || 0;
+  const r = parseInt(document.getElementById('gotoR').value) || 0;
+  // Validate
+  if (q >= -6 && q <= 6 && r >= -6 && r <= 6 && hexDistance({ q, r }) <= 6) {
+    state.selectedHex = { q, r };
     render();
   }
 });
 
 // Touch support
 boardSvg.addEventListener('touchstart', (e) => {
-  if (e.touches.length === 1) {
-    state.isDragging = true;
-    state.dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    e.preventDefault();
-  }
-});
-
-boardSvg.addEventListener('touchmove', (e) => {
-  if (!state.isDragging || e.touches.length !== 1) return;
-  const dx = e.touches[0].clientX - state.dragStart.x;
-  const dy = e.touches[0].clientY - state.dragStart.y;
-  state.offsetX += dx;
-  state.offsetY += dy;
-  state.dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  render();
   e.preventDefault();
-});
-
-boardSvg.addEventListener('touchend', () => {
-  state.isDragging = false;
-  state.cx = state.cx + state.offsetX;
-  state.cy = state.cy + state.offsetY;
-  state.offsetX = 0;
-  state.offsetY = 0;
-  document.getElementById('cx').value = Math.round(state.cx);
-  document.getElementById('cy').value = Math.round(state.cy);
-  render();
-});
-
-// Input event listeners
-document.getElementById('cx').addEventListener('input', () => {
-  state.cx = parseFloat(document.getElementById('cx').value) || 667;
-  render();
-});
-document.getElementById('cy').addEventListener('input', () => {
-  state.cy = parseFloat(document.getElementById('cy').value) || 590;
-  render();
-});
-document.getElementById('scale').addEventListener('input', () => {
-  state.scale = parseFloat(document.getElementById('scale').value) || 1.32;
-  render();
-});
-
-// Reset button
-document.getElementById('resetBtn').addEventListener('click', () => {
-  state.cx = 667;
-  state.cy = 590;
-  state.scale = 1.32;
-  state.offsetX = 0;
-  state.offsetY = 0;
-  document.getElementById('cx').value = 667;
-  document.getElementById('cy').value = 590;
-  document.getElementById('scale').value = '1.32';
-  render();
-});
-
-// Export button
-document.getElementById('exportBtn').addEventListener('click', () => {
-  const cx = document.getElementById('cx').value;
-  const cy = document.getElementById('cy').value;
-  const scale = document.getElementById('scale').value;
-  const exportDiv = document.getElementById('exportLink');
-  exportDiv.innerHTML = `
-    <div style="margin-bottom:4px;">Copy these values into <strong>SanninShogiApp.jsx</strong>:</div>
-    <code style="display:block;margin:2px 0;">const GRID_TRANSFORM = "translate(${cx} ${cy}) scale(${scale} ${scale})";</code>
-    <code style="display:block;margin:2px 0;">const BOARD_VIEW_SIZE = 1179;</code>
-    <code style="display:block;margin:2px 0;">const BOARD_WIDTH = 1334;</code>
-    <code style="display:block;margin:2px 0;">const BOARD_HEIGHT = 1179;</code>
-  `;
+  const touch = e.touches[0];
+  const event = new MouseEvent('click', {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+  boardSvg.dispatchEvent(event);
 });
 
 // File upload fallback
-document.getElementById('boardImage').addEventListener('change', (e) => {
+document.getElementById('boardImage').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
-  const img = document.getElementById('boardImg');
   const url = URL.createObjectURL(file);
-  img.setAttribute('href', url);
-  img.setAttribute('width', IMAGE_WIDTH);
-  img.setAttribute('height', IMAGE_HEIGHT);
+  document.getElementById('boardImg').setAttribute('href', url);
 });
-
-// Initial render
 render();
 </script>
 </body>
