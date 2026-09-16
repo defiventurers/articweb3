@@ -48,7 +48,13 @@ const ROW_SCALES = Object.freeze({ "-6": 0.972, "-5": 0.992, "-4": 0.996, "-2": 
 const ROWS = Object.freeze(Array.from({ length: 13 }, (_, index) => index - 6));
 const CELLS_BY_ROW = Object.freeze(Object.fromEntries(ROWS.map((row) => [row, Object.freeze(HEX_CELLS.filter((cell) => cell.r === row))])));
 const PIECE_SIZE = 56;
-const PIECE_OFFSET = Object.freeze({ x: 0, y: 2 });
+// Optical correction for the supplied, rotated piece art. These values are in
+// local hex coordinates and therefore scale with the board artwork.
+const PIECE_OFFSETS = Object.freeze({
+  blue: Object.freeze({ x: 3, y: -2 }),
+  red: Object.freeze({ x: -3, y: -2 }),
+  green: Object.freeze({ x: 0, y: 2 })
+});
 const ROTATION = { red: 120, green: 0, blue: -120 };
 const SHORT = { king: "K", rook: "R", bishop: "B", gold: "G", silver: "S", knight: "N", lance: "L", pawn: "P" };
 const ALLIANCE_OPTIONS = [
@@ -75,7 +81,8 @@ function rowTransform(row) {
 
 function BoardPiece({ piece, center }) {
   const halfPiece = PIECE_SIZE / 2;
-  const pieceCenter = { x: center.x + PIECE_OFFSET.x, y: center.y + PIECE_OFFSET.y };
+  const offset = PIECE_OFFSETS[piece.owner];
+  const pieceCenter = { x: center.x + offset.x, y: center.y + offset.y };
   return (
     <>
       <g className={`sannin-piece sannin-piece--${piece.owner}`} transform={`rotate(${ROTATION[piece.owner]} ${pieceCenter.x} ${pieceCenter.y})`}>
