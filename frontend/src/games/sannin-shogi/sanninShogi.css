@@ -48,8 +48,12 @@
 .sannin-turn--blue, .sannin-hand--blue .sannin-faction-dot { color: #5db5ff; background: currentColor; }
 .sannin-check { padding: .18rem .48rem; border-radius: 999px; color: #180a08; background: #ff9b7c; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; }
 .sannin-notice { max-width: 1500px; margin: 0 auto 10px; color: #ffe3a4; text-align: center; }
-.sannin-play-layout { max-width: 1500px; margin: auto; display: grid; grid-template-columns: minmax(215px, 285px) minmax(0, 1fr); gap: clamp(12px, 2vw, 26px); align-items: start; }
+.sannin-play-layout { max-width: 1500px; margin: auto; display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); gap: clamp(12px, 2vw, 26px); align-items: start; }
 .sannin-roster { display: grid; gap: 10px; position: sticky; top: 12px; }
+.sannin-match-toggle { display: none; }
+.sannin-match-summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px; border: 1px solid rgba(255,210,122,.35); border-radius: 16px; background: linear-gradient(135deg, rgba(54, 96, 112, .84), rgba(4, 24, 38, .92)); }
+.sannin-match-summary .sannin-kicker { margin-bottom: 3px; }.sannin-match-summary > span { color: var(--amber); font-size: .78rem; font-weight: 800; white-space: nowrap; }
+.sannin-match-seats { display: grid; gap: 6px; }.sannin-match-seat { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 8px 9px; border: 1px solid var(--line); border-left: 4px solid currentColor; border-radius: 12px; background: rgba(3, 22, 35, .58); }.sannin-match-seat--red { color: #ff6b68; }.sannin-match-seat--green { color: #51dfa6; }.sannin-match-seat--blue { color: #5db5ff; }.sannin-match-seat.is-turn { border-color: rgba(255,210,122,.7); box-shadow: inset 0 0 0 1px rgba(255,210,122,.18); }.sannin-match-seat > span:nth-child(2) { display: grid; gap: 1px; min-width: 0; color: var(--ink); }.sannin-match-seat small { color: var(--muted); font-size: .66rem; }.sannin-seat-count { display: grid; min-width: 27px; justify-items: center; color: var(--ink); text-align: center; line-height: 1; }.sannin-seat-count b { font-size: .92rem; }.sannin-roster-label { margin: 1px 2px -3px; color: var(--muted); font-size: .7rem; line-height: 1.35; }
 .sannin-hand, .sannin-legend { padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: 0 16px 40px rgba(0, 0, 0, .2); }
 .sannin-hand.is-active { border-color: rgba(255, 210, 122, .7); box-shadow: 0 0 0 1px rgba(255, 210, 122, .14), 0 16px 40px rgba(0, 0, 0, .24); }
 .sannin-hand header { display: flex; align-items: center; gap: .5rem; }
@@ -146,8 +150,8 @@
   .sannin-topbar { align-items: flex-start; }
   .sannin-topbar__actions { justify-content: flex-end; }
   .sannin-play-layout { grid-template-columns: 1fr; }
-  .sannin-roster { position: static; grid-template-columns: repeat(3, minmax(0, 1fr)); order: 2; }
-  .sannin-legend { grid-column: 1 / -1; }
+  .sannin-match-toggle { display: inline-flex; margin-left: auto; padding: .38rem .65rem !important; min-height: 34px !important; font-size: .72rem; }
+  .sannin-roster { display: none; position: static; order: 2; }.sannin-roster.is-open { display: grid; }
   .sannin-board-panel { order: 1; }
 }
 

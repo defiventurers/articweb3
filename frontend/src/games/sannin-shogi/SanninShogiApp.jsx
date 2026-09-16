@@ -187,6 +187,19 @@ function Hand({ state, faction, active, selected, onSelect }) {
   );
 }
 
+function MatchSeat({ state, faction, humans }) {
+  const onBoard = state.pieces.filter((piece) => piece.owner === faction && piece.status === "board").length;
+  const captured = getHand(state, faction).length;
+  const isTurn = state.turn === faction && !state.outcome;
+  const seat = humans.includes(faction) ? (humans.length === 3 ? "Local player" : faction === humans[0] ? "You" : "Player 2") : "Command bot";
+  return <div className={`sannin-match-seat sannin-match-seat--${faction} ${isTurn ? "is-turn" : ""}`}>
+    <span className="sannin-faction-dot" />
+    <span><b>{FACTION_LABELS[faction]}</b><small>{seat}</small></span>
+    <span className="sannin-seat-count"><b>{onBoard}</b><small>board</small></span>
+    <span className="sannin-seat-count"><b>{captured}</b><small>hand</small></span>
+  </div>;
+}
+
 function useModalFocus(containerRef, onClose) {
   useEffect(() => {
     const previous = document.activeElement;
@@ -306,6 +319,7 @@ export default function SanninShogiApp({ onExit }) {
   const [notice, setNotice] = useState("");
   const [rulesOpen, setRulesOpen] = useState(false);
   const [zoom, setZoom] = useState(100);
+  const [matchPanelOpen, setMatchPanelOpen] = useState(false);
   const legal = useMemo(() => state ? getLegalActions(state) : [], [state]);
   const selectedActions = useMemo(() => {
     if (!selected) return [];
@@ -327,6 +341,7 @@ export default function SanninShogiApp({ onExit }) {
     setHistory([]);
     setSelected(null);
     setNotice("");
+    setMatchPanelOpen(false);
     resetDocumentScroll();
   }
 
@@ -386,6 +401,7 @@ export default function SanninShogiApp({ onExit }) {
     setHistory([]);
     setSelected(null);
     setNotice("");
+    setMatchPanelOpen(false);
     resetDocumentScroll();
   }
 
@@ -431,11 +447,15 @@ export default function SanninShogiApp({ onExit }) {
       <div className="sannin-status" aria-live="polite">
         {state.outcome ? <strong>{state.outcome.message}</strong> : <><span className={`sannin-turn sannin-turn--${state.turn}`} /> <strong>{botThinking ? `${FACTION_LABELS[state.turn]} bot is thinking…` : `${FACTION_LABELS[state.turn]} to move`}</strong>{isInCheck(state, state.turn) && <b className="sannin-check">Answer check</b>}<span>Turn {state.ply + 1}</span></>}
         <span>{state.alliance ? `${FACTIONS.filter((faction) => state.alliance.includes(faction)).map((faction) => FACTION_LABELS[faction]).join(" + ")} allied` : "No alliance"}</span>
+        <button className="sannin-match-toggle" aria-expanded={matchPanelOpen} aria-controls="sannin-match-panel" onClick={() => setMatchPanelOpen((open) => !open)}>Match panel</button>
       </div>
       {notice && <div className="sannin-notice" role="alert">{notice}</div>}
       <div className="sannin-play-layout">
-        <aside className="sannin-roster">
-          {FACTIONS.map((faction) => <Hand key={faction} state={state} faction={faction} active={state.turn === faction && !state.outcome} selected={selected} onSelect={(id) => setSelected({ kind: "hand", id })} />)}
+        <aside className={`sannin-roster ${matchPanelOpen ? "is-open" : ""}`} id="sannin-match-panel" aria-label="Match panel">
+          <div className="sannin-match-summary"><div><p className="sannin-kicker">Match panel</p><b>Three armies · 54 pieces</b></div><span>Turn {state.ply + 1}</span></div>
+          <div className="sannin-match-seats">{FACTIONS.map((faction) => <MatchSeat key={faction} state={state} faction={faction} humans={humans} />)}</div>
+          <p className="sannin-roster-label">Captured pieces · tap an active piece to deploy it</p>
+          {FACTIONS.map((faction) => <Hand key={faction} state={state} faction={faction} active={state.turn === faction && humans.includes(faction) && !state.outcome && !botThinking} selected={selected} onSelect={(id) => setSelected({ kind: "hand", id })} />)}
           <div className="sannin-legend"><b>Pleasure Garden</b><span>The glowing central cell grants an immediate safe-King victory unless that King is allied.</span></div>
         </aside>
         <section className="sannin-board-panel">

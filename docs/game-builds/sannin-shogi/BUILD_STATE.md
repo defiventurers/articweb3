@@ -2,6 +2,18 @@
 
 - 2026-09-16: Added local 1/2/3-human match selection and legal-action command bots. Online Sannin rooms require a new server-owned Sannin rules bundle/service and websocket routes; this worker intentionally did not alter shared server files under the shared-worktree boundary.
 
+- 2026-09-16: Rebuilt the active table into a board-first match screen: persistent three-army seat rail on desktop, live board/hand counts, active-turn emphasis, bot identity, disabled bot hands, and an explicit Match panel drawer on phone-sized layouts. This uses no shared shell or global CSS.
+
+### Required lead-owned online-room integration
+
+The existing production Sanguo Qi room transport cannot host Sannin actions: it is hard-wired to Sanguo's engine, state shape, `sg_` WebSocket events, validation, bot pool, persistence, and reconnection contracts. To make the lobby's **Online rooms** mode real, the lead must add a separate authoritative Sannin service in the shared server layer, rather than exposing local state as online play:
+
+1. Bundle the pure Sannin rules engine for Node and use `createInitialState`, `getLegalActions`, and `applyAction` as the only room mutation path.
+2. Add a `sanninService` modeled on `server/sanguoService.js`, with isolated `ss_` room create/join/leave/ready/start/state/action events, seat tokens, reconnection, room snapshots, legal-action validation, and server-side bot turns.
+3. Register the new service through the shared backend bootstrap and persistence adapter; do not reuse Sanguo room IDs, tokens, or action schemas.
+4. Add a game-owned `SanninOnline.jsx`/client transport only after those event contracts exist, then replace the current local-only lobby note with room create/join and seat-ready controls.
+5. Add integration tests for three-seat readiness, token reconnect, server rejection of illegal action, bot seat turn, and spectator snapshot before deploying.
+
 - 2026-09-16: Reworked the local match lobby around the Sanguo Qi information hierarchy: play mode, player seating, game option, and three-army preview now precede the start action. Bot and online controls remain explicitly unavailable because this game currently implements neither system.
 
 - 2026-09-16: Applied the user-recorded board-art fit: centre `667,590`, global scale `1.3`, and per-row X/Y offsets plus horizontal scales. The SVG grid and `board.webp` share one viewBox, so the calibration scales together across responsive layouts.
