@@ -14,6 +14,7 @@ import {
   isInCheck
 } from "./rules.js";
 import { HEX_CELLS, neighbor, pointyTopCorners, projectPointyTop } from "./hex.js";
+import { chooseSanninBotAction } from "./bot.js";
 import "./sanninShogi.css";
 
 const SIZE = 30;
@@ -292,6 +293,12 @@ function PromotionDialog({ choices, onChoose, onClose }) {
 
 export default function SanninShogiApp({ onExit }) {
   const [allianceChoice, setAllianceChoice] = useState("none");
+  const [humanCount, setHumanCount] = useState(3);
+  const [humanFaction, setHumanFaction] = useState("red");
+  const [secondFaction, setSecondFaction] = useState("green");
+  const [difficulty, setDifficulty] = useState("medium");
+  const [humans, setHumans] = useState(FACTIONS);
+  const [botThinking, setBotThinking] = useState(false);
   const [state, setState] = useState(null);
   const [history, setHistory] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -314,12 +321,25 @@ export default function SanninShogiApp({ onExit }) {
 
   function begin() {
     const alliance = allianceChoice === "none" ? null : allianceChoice.split("-");
+    const selectedHumans = humanCount === 3 ? [...FACTIONS] : humanCount === 2 ? [humanFaction, secondFaction] : [humanFaction];
+    setHumans(selectedHumans);
     setState(createInitialState({ alliance }));
     setHistory([]);
     setSelected(null);
     setNotice("");
     resetDocumentScroll();
   }
+
+  useEffect(() => {
+    if (!state || state.outcome || humans.includes(state.turn)) { setBotThinking(false); return; }
+    const timer = window.setTimeout(() => {
+      const action = chooseSanninBotAction(state, difficulty);
+      if (action) commit(action);
+      setBotThinking(false);
+    }, 450);
+    setBotThinking(true);
+    return () => window.clearTimeout(timer);
+  }, [state, humans, difficulty]);
 
   function commit(action) {
     const result = applyAction(state, action);
@@ -335,7 +355,7 @@ export default function SanninShogiApp({ onExit }) {
   }
 
   function chooseCell(cell) {
-    if (!state || state.outcome) return;
+    if (!state || state.outcome || !humans.includes(state.turn) || botThinking) return;
     const choices = selectedActions.filter((action) => action.to === cell);
     if (choices.length === 1) return commit(choices[0]);
     if (choices.length > 1) {
@@ -376,14 +396,17 @@ export default function SanninShogiApp({ onExit }) {
         <header className="sannin-lobby-title"><p className="sannin-kicker">Arctic Dominion Heritage Table 24</p><h1>Sannin Shogi</h1><p className="sannin-subtitle">Three Homes, One Pleasure Garden</p><p>Choose your command table. Every match has three armies.</p></header>
         <div className="sannin-lobby-grid">
           <div className="sannin-lobby-controls">
-            <div className="sannin-mode-card is-selected"><b>On this device</b><span>Local three-seat table</span></div>
-            <fieldset><legend>Human players</legend><button type="button" className="sannin-seat-choice" aria-pressed="true"><b>3 players</b><small>All human · pass the device each turn</small></button></fieldset>
+            <div className="sannin-mode-card is-selected"><b>On this device</b><span>Local humans and command bots</span></div>
+            <fieldset><legend>Human players</legend><div className="sannin-choice-row">{[1, 2, 3].map((count) => <button type="button" key={count} className="sannin-seat-choice" aria-pressed={humanCount === count} onClick={() => setHumanCount(count)}><b>{count} {count === 1 ? "player" : "players"}</b><small>{count === 3 ? "All human" : `${3 - count} ${3 - count === 1 ? "bot" : "bots"}`}</small></button>)}</div></fieldset>
+            <label>Your army<select value={humanFaction} onChange={(event) => { const next = event.target.value; setHumanFaction(next); if (next === secondFaction) setSecondFaction(FACTIONS.find((faction) => faction !== next)); }}>{FACTIONS.map((faction) => <option value={faction} key={faction}>{FACTION_LABELS[faction]}</option>)}</select></label>
+            {humanCount === 2 && <label>Player 2 army<select value={secondFaction} onChange={(event) => setSecondFaction(event.target.value)}>{FACTIONS.filter((faction) => faction !== humanFaction).map((faction) => <option value={faction} key={faction}>{FACTION_LABELS[faction]}</option>)}</select></label>}
+            {humanCount < 3 && <label>Bot difficulty<select value={difficulty} onChange={(event) => setDifficulty(event.target.value)}><option value="easy">Easy · capture-first</option><option value="medium">Medium · promotes and seeks Garden</option></select></label>}
             <label>Opening pact
               <select value={allianceChoice} onChange={(event) => setAllianceChoice(event.target.value)}>{ALLIANCE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
             </label>
-            <p className="sannin-setup-note">Online rooms and command bots are not enabled for this historical table. Every move is local, visible, and reversible.</p>
+            <p className="sannin-setup-note">Bots only choose actions returned by the same legal-action engine. Online rooms require an authoritative Sannin room service and are not represented as a local-only substitute.</p>
           </div>
-          <aside className="sannin-army-preview" aria-label="Three armies"><b>Three armies · 54 pieces</b>{FACTIONS.map((faction, index) => <div className={`sannin-army-card sannin-army-card--${faction}`} key={faction}><span className="sannin-faction-dot" /><div><strong>{FACTION_LABELS[faction]}</strong><small>Player {index + 1} · 18 pieces</small></div><span className="sannin-forward" style={{ transform: `rotate(${ROTATION[faction]}deg)` }}>↑</span></div>)}</aside>
+          <aside className="sannin-army-preview" aria-label="Three armies"><b>Three armies · 54 pieces</b>{FACTIONS.map((faction, index) => <div className={`sannin-army-card sannin-army-card--${faction}`} key={faction}><span className="sannin-faction-dot" /><div><strong>{FACTION_LABELS[faction]}</strong><small>{(humanCount === 3 || faction === humanFaction || (humanCount === 2 && faction === secondFaction)) ? `Player ${index + 1}` : `${difficulty} bot`} · 18 pieces</small></div><span className="sannin-forward" style={{ transform: `rotate(${ROTATION[faction]}deg)` }}>↑</span></div>)}</aside>
         </div>
         <ol className="sannin-onboarding" aria-label="Three quick steps"><li><b>Find your seat.</b><span>Each army follows its persistent forward arrow.</span></li><li><b>Tap, then land.</b><span>Select a piece and one highlighted destination.</span></li><li><b>Capture and return.</b><span>Captured pieces join your hand; tap one to drop it.</span></li></ol>
         <div className="sannin-setup-actions"><button className="sannin-primary" onClick={begin}>Start local game</button><button onClick={() => setRulesOpen(true)}>Open rule scroll</button>{onExit && <button onClick={onExit}>Back to Arcade</button>}</div>
@@ -406,7 +429,7 @@ export default function SanninShogiApp({ onExit }) {
         </div>
       </header>
       <div className="sannin-status" aria-live="polite">
-        {state.outcome ? <strong>{state.outcome.message}</strong> : <><span className={`sannin-turn sannin-turn--${state.turn}`} /> <strong>{FACTION_LABELS[state.turn]} to move</strong>{isInCheck(state, state.turn) && <b className="sannin-check">Answer check</b>}<span>Turn {state.ply + 1}</span></>}
+        {state.outcome ? <strong>{state.outcome.message}</strong> : <><span className={`sannin-turn sannin-turn--${state.turn}`} /> <strong>{botThinking ? `${FACTION_LABELS[state.turn]} bot is thinking…` : `${FACTION_LABELS[state.turn]} to move`}</strong>{isInCheck(state, state.turn) && <b className="sannin-check">Answer check</b>}<span>Turn {state.ply + 1}</span></>}
         <span>{state.alliance ? `${FACTIONS.filter((faction) => state.alliance.includes(faction)).map((faction) => FACTION_LABELS[faction]).join(" + ")} allied` : "No alliance"}</span>
       </div>
       {notice && <div className="sannin-notice" role="alert">{notice}</div>}

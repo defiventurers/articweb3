@@ -1,5 +1,7 @@
 # Sannin Shogi build state
 
+- 2026-09-16: Added local 1/2/3-human match selection and legal-action command bots. Online Sannin rooms require a new server-owned Sannin rules bundle/service and websocket routes; this worker intentionally did not alter shared server files under the shared-worktree boundary.
+
 - 2026-09-16: Reworked the local match lobby around the Sanguo Qi information hierarchy: play mode, player seating, game option, and three-army preview now precede the start action. Bot and online controls remain explicitly unavailable because this game currently implements neither system.
 
 - 2026-09-16: Applied the user-recorded board-art fit: centre `667,590`, global scale `1.3`, and per-row X/Y offsets plus horizontal scales. The SVG grid and `board.webp` share one viewBox, so the calibration scales together across responsive layouts.
