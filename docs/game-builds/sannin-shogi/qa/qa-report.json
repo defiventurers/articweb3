@@ -1,0 +1,1348 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "expectedFileCount": 42,
+  "actualFileCount": 42,
+  "filenameOrder": [
+    "blue-king.webp",
+    "blue-rook.webp",
+    "blue-bishop.webp",
+    "blue-gold.webp",
+    "blue-silver.webp",
+    "blue-knight.webp",
+    "blue-lance.webp",
+    "blue-pawn.webp",
+    "blue-dragon.webp",
+    "blue-horse.webp",
+    "blue-promoted-silver.webp",
+    "blue-promoted-knight.webp",
+    "blue-promoted-lance.webp",
+    "blue-tokin.webp",
+    "red-king.webp",
+    "red-rook.webp",
+    "red-bishop.webp",
+    "red-gold.webp",
+    "red-silver.webp",
+    "red-knight.webp",
+    "red-lance.webp",
+    "red-pawn.webp",
+    "red-dragon.webp",
+    "red-horse.webp",
+    "red-promoted-silver.webp",
+    "red-promoted-knight.webp",
+    "red-promoted-lance.webp",
+    "red-tokin.webp",
+    "green-king.webp",
+    "green-rook.webp",
+    "green-bishop.webp",
+    "green-gold.webp",
+    "green-silver.webp",
+    "green-knight.webp",
+    "green-lance.webp",
+    "green-pawn.webp",
+    "green-dragon.webp",
+    "green-horse.webp",
+    "green-promoted-silver.webp",
+    "green-promoted-knight.webp",
+    "green-promoted-lance.webp",
+    "green-tokin.webp"
+  ],
+  "uniqueFilenameCount": 42,
+  "checks": {
+    "dimensions192Square": true,
+    "realAlpha": true,
+    "noOutputEdgeContact": true,
+    "noPixelsOutsideMask": true,
+    "opaqueSourcePixelsLossless": true,
+    "filenameCompleteness": true,
+    "oldFrozenShogunatePixelsUsed": false
+  },
+  "sourceLimitations": {
+    "sourceEdgeTruncatedCount": 0,
+    "sourceEdgeTruncatedFiles": [],
+    "sourceCanvasEdgeTouchCount": 7,
+    "sourceCanvasEdgeTouchFiles": [
+      "green-pawn.webp",
+      "green-dragon.webp",
+      "green-horse.webp",
+      "green-promoted-silver.webp",
+      "green-promoted-knight.webp",
+      "green-promoted-lance.webp",
+      "green-tokin.webp"
+    ],
+    "geometryNormalizedCount": 7,
+    "geometryNormalizedFiles": [
+      "green-pawn.webp",
+      "green-dragon.webp",
+      "green-horse.webp",
+      "green-promoted-silver.webp",
+      "green-promoted-knight.webp",
+      "green-promoted-lance.webp",
+      "green-tokin.webp"
+    ],
+    "explanation": "The green promoted row is complete but vertically compressed to the source canvas edge. Its supplied pixels are resampled vertically to restore the regular-hex proportions shared by the other rows; no pixels are invented, recolored, or borrowed."
+  },
+  "failures": [],
+  "files": [
+    {
+      "filename": "blue-king.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "45bd67e359e6a5c22318748a4457c3f344296b59425638cd4ef6262e85e25a90"
+    },
+    {
+      "filename": "blue-rook.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "7b805fdc879dd6ef7cb9cabee065beef22c8ece9b0b363560adcb07d65540ed2"
+    },
+    {
+      "filename": "blue-bishop.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "43e5808ac4cb346a4d2b2a94fb5a5dcfd8324ceca1d03d27ea0e5b9d0c75ee28"
+    },
+    {
+      "filename": "blue-gold.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "cce099501461a4ccab8c614862087f20a2aff5ccb45505d90eab500ce7bd3714"
+    },
+    {
+      "filename": "blue-silver.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "98680bad5621160a3719352da6e39fc676e31b32084dccd013f6130ee5c0d19a"
+    },
+    {
+      "filename": "blue-knight.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "a7442682aecd2cd197dcf42f5ce2987613a0a8f5bc43754a727a58adaec4431a"
+    },
+    {
+      "filename": "blue-lance.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "2f0049eeb8d6c0eaddcd91a0a72b1f0226cdd16b07ef61b70197f887beebe8a5"
+    },
+    {
+      "filename": "blue-pawn.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "e0553e13960deea195c6eb7e15168b61865e8f7b4e9a0d661e94934207a03f90"
+    },
+    {
+      "filename": "blue-dragon.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "84366a703b30f3e95447e507d5deea9c5469759580ecdb10ad5b4e03a49a5432"
+    },
+    {
+      "filename": "blue-horse.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "b835771d5e1621a546cdb8757b2b87632e33ca2906d877c02006ce5885632b1e"
+    },
+    {
+      "filename": "blue-promoted-silver.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "a6699203372deca7f429860b91cc9e5bac37a623c3828ec3300ed18af633d2c6"
+    },
+    {
+      "filename": "blue-promoted-knight.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "316197cf1d8863e57fd2a334578bcc66db881df2ac8e76360d96bc754c8d6cc9"
+    },
+    {
+      "filename": "blue-promoted-lance.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "5393a9276d5d12ec3be9a90fa8ce4845cad7184d2c32fcd92c77a474282e5eca"
+    },
+    {
+      "filename": "blue-tokin.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "d3c0e14712b8c0379e7ad9e1f3aecc93c0bcd2ac8202bb11e5c7931e52e2ee7f"
+    },
+    {
+      "filename": "red-king.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "aa17ddc4a09c93759c73475b84764fd7da96dcd638a8d667a70620e320b41d8e"
+    },
+    {
+      "filename": "red-rook.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "2c85582a600a89ccdff9ee45e0f1afa6fafe64709b31d84f6b464a84a0f09067"
+    },
+    {
+      "filename": "red-bishop.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "06491f10e421fe9f4d4e379ea7be997b8b8e8b48befa2b3d7e456df0827caf5d"
+    },
+    {
+      "filename": "red-gold.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "56d456add1e886a3e7cc23768c620cd7e0530b1e637203356529545053550f37"
+    },
+    {
+      "filename": "red-silver.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "aabcb8b7463f05f341e9cf6e8b771e6bb84acc586d65819cd6cd76b20f2ed9e9"
+    },
+    {
+      "filename": "red-knight.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "2daaffccde9122cf4ba5025f1af535b165ee9b13cb5b0206557f1c779e1a2a0e"
+    },
+    {
+      "filename": "red-lance.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "172ad64e4955fa91b47223291fef6f70fefba3355939640e77af212b550e4b4f"
+    },
+    {
+      "filename": "red-pawn.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "51ca4d81bff917689ad1a48eae5c0cdaab7bb0c25490ccbea8364077ac97dccc"
+    },
+    {
+      "filename": "red-dragon.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "1bee911f947b9a77c40310587e8a23af57fb1d643779758e507b84f9eeebaf85"
+    },
+    {
+      "filename": "red-horse.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "8e68346feb275dc666fd80a8aef22725ba8fef974d3dd4125678ca22c44e5e4c"
+    },
+    {
+      "filename": "red-promoted-silver.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "7ce2f52eb856180fb69679f19a2eaf4130dcdb7467fdb838254628775509e086"
+    },
+    {
+      "filename": "red-promoted-knight.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "b770bf45e9f6a0b242ed56a7a8bb88c665e7906363e7b454c16e784cdaa59f14"
+    },
+    {
+      "filename": "red-promoted-lance.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "e319eafb8688a3453fe4a3d8e1f4a9a364a63cb9809ed40364adca966adb53b4"
+    },
+    {
+      "filename": "red-tokin.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "58724908db07867ecd1666da376a83c93dbf982c7e6138cf76a65b1796c51aaf"
+    },
+    {
+      "filename": "green-king.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "f36e5d40fea62a67839af152395877f175b7d8cfa1777d50c357279aeadf2bb0"
+    },
+    {
+      "filename": "green-rook.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "589d12b4d86c7401f069fbc604469c6a93b8adf550a80c76be33bec8769dc76d"
+    },
+    {
+      "filename": "green-bishop.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "f77a45c43a8e38ca51683f3bc46d38b8eaaa111032ac883d09a6ebb6b3467f3e"
+    },
+    {
+      "filename": "green-gold.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "2586e8fd8197764daeea0bb7731e3b88ed814d3a7fa83b8bf1aa127b46795310"
+    },
+    {
+      "filename": "green-silver.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "58cc9ffb45b95a15684e5feb04cd160b7a07f1dcf8055a7ab39235b0745a47ef"
+    },
+    {
+      "filename": "green-knight.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "8e070f636ced6e2be33c206cc4f97332bbbad444cfbc1670ebfd2a118d4f3372"
+    },
+    {
+      "filename": "green-lance.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        186
+      ],
+      "opaquePixels": 19316,
+      "partialAlphaPixels": 1647,
+      "transparentPixels": 15901,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19316,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": false,
+      "geometryNormalized": false,
+      "sha256": "82fdefa5488e0d10305622c689a1682d4748760df0707511932211b108ad8884"
+    },
+    {
+      "filename": "green-pawn.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        188
+      ],
+      "opaquePixels": 19293,
+      "partialAlphaPixels": 2308,
+      "transparentPixels": 15263,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19293,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": true,
+      "geometryNormalized": true,
+      "sha256": "65183c752fbd6aea6868cba9c1c0692f6cbd40c344a4200dd5694af5b1bf8de7"
+    },
+    {
+      "filename": "green-dragon.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        188
+      ],
+      "opaquePixels": 19293,
+      "partialAlphaPixels": 2308,
+      "transparentPixels": 15263,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19293,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": true,
+      "geometryNormalized": true,
+      "sha256": "38308da29eba1bc5b3f183f27309db9d63615001ebdb40f16ca3ee0d8b3f0082"
+    },
+    {
+      "filename": "green-horse.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        188
+      ],
+      "opaquePixels": 19293,
+      "partialAlphaPixels": 2308,
+      "transparentPixels": 15263,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19293,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": true,
+      "geometryNormalized": true,
+      "sha256": "86d0f7620689f97e087ebcfb8f17025577d9d8a5abb79464e367598a4fc9f4ba"
+    },
+    {
+      "filename": "green-promoted-silver.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        188
+      ],
+      "opaquePixels": 19293,
+      "partialAlphaPixels": 2308,
+      "transparentPixels": 15263,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19293,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": true,
+      "geometryNormalized": true,
+      "sha256": "0c1ee6d7534f49923f60780d939dc64c8e29c8701ec0fe46ed517822bc04239b"
+    },
+    {
+      "filename": "green-promoted-knight.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        188
+      ],
+      "opaquePixels": 19293,
+      "partialAlphaPixels": 2308,
+      "transparentPixels": 15263,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19293,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": true,
+      "geometryNormalized": true,
+      "sha256": "4e9798453306f535ef1873cd088d8c7e20447f2c26e71013222d7dc487cdf6ae"
+    },
+    {
+      "filename": "green-promoted-lance.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        188
+      ],
+      "opaquePixels": 19293,
+      "partialAlphaPixels": 2308,
+      "transparentPixels": 15263,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19293,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": true,
+      "geometryNormalized": true,
+      "sha256": "14e0dafbdfa151fd49d46e8bc853bd3482c83a3f56521f7f95d0bab100bb03db"
+    },
+    {
+      "filename": "green-tokin.webp",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        17,
+        5,
+        175,
+        188
+      ],
+      "opaquePixels": 19293,
+      "partialAlphaPixels": 2308,
+      "transparentPixels": 15263,
+      "touchesOutputEdge": false,
+      "outsideMaskOpaquePixels": 0,
+      "opaqueSourcePixelsCompared": 19293,
+      "opaqueRgbMaxDelta": 0,
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "sourceTouchesCanvasEdge": true,
+      "geometryNormalized": true,
+      "sha256": "d5e70fe06bbeab4ec25e264db2f75ee9bb798460029552348fe31ffcd5d625f0"
+    }
+  ]
+}

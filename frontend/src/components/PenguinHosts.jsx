@@ -13,7 +13,7 @@ const HOST_BY_GAME = Object.freeze({
   "sky-temple-run": ["pengu", "polly"], "ice-rings": ["retsba", "abster"], "cowrie-kingdoms": ["polly", "pengu"],
   "two-stones": ["retsba", "abster"], "aurora-vulture": ["pengu", "retsba"], "khasi-fishflow": ["abster", "polly"],
   "seven-ice-rings": ["abster", "pengu"], "ruma-ice-puzzle": ["abster", "pengu"], "polar-tablan": ["pengu", "polly"],
-  sige: ["pengu", "retsba"], "aurora-ganjifa-academy": ["pengu", "polly"]
+  sige: ["pengu", "retsba"], "aurora-ganjifa-academy": ["pengu", "polly"], "sannin-shogi": ["pengu", "retsba"]
 });
 
 export function getGameHosts(gameId) {

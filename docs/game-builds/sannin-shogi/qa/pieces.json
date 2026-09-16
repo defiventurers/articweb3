@@ -1,0 +1,3627 @@
+{
+  "schemaVersion": 1,
+  "gameId": "sannin-shogi",
+  "source": {
+    "filename": "f2e774c9-a27a-468c-b7d8-33359a78db70-bd3f9270-bdbf-45a5-b520-b18cf65015c0.png",
+    "sha256": "9452eea1c7b925ad1c28abaa4c0f419f812a44d32ecfbd66c71ab41b2a2a213c",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "copyrightContext": "User-supplied artwork; extracted without repainting or generative modification."
+  },
+  "processing": {
+    "script": "docs/game-builds/sannin-shogi/tools/extract_piece_assets.py",
+    "canvas": [
+      192,
+      192
+    ],
+    "pixelMapping": "1:1 for five source rows; the source-compressed green promoted row is deterministically normalized from 160x140 to 160x184 with Lanczos resampling.",
+    "format": "lossless WebP RGBA",
+    "metadata": "stripped by deterministic Pillow re-encode",
+    "standardMaskPolygonLocal": [
+      [
+        80,
+        3
+      ],
+      [
+        156,
+        47
+      ],
+      [
+        156,
+        135
+      ],
+      [
+        80,
+        179
+      ],
+      [
+        4,
+        135
+      ],
+      [
+        4,
+        47
+      ]
+    ],
+    "greenPromotedMaskPolygonLocal": [
+      [
+        80,
+        3
+      ],
+      [
+        156,
+        37
+      ],
+      [
+        156,
+        105
+      ],
+      [
+        80,
+        139
+      ],
+      [
+        4,
+        105
+      ],
+      [
+        4,
+        37
+      ]
+    ],
+    "maskSupersample": 4,
+    "cropSize": [
+      160,
+      184
+    ]
+  },
+  "sourceLayout": {
+    "factions": [
+      "blue",
+      "red",
+      "green"
+    ],
+    "unpromotedRow": [
+      "king",
+      "rook",
+      "bishop",
+      "gold",
+      "silver",
+      "knight",
+      "lance"
+    ],
+    "promotedRow": [
+      "pawn",
+      "dragon",
+      "horse",
+      "promoted-silver",
+      "promoted-knight",
+      "promoted-lance",
+      "tokin"
+    ],
+    "manuallyInspectedColumnCenters": [
+      280,
+      459,
+      637,
+      818,
+      1001,
+      1182,
+      1361
+    ],
+    "manuallyInspectedRowTopVertices": {
+      "blue-unpromoted": 7,
+      "blue-promoted": 183,
+      "red-unpromoted": 359,
+      "red-promoted": 535,
+      "green-unpromoted": 711,
+      "green-promoted": 887
+    }
+  },
+  "legalUse": {
+    "promotedKnight": {
+      "status": "archival-unused",
+      "reason": "The selected historical Sannin Shogi edition does not promote knights."
+    },
+    "illuminatedKing": {
+      "status": "render-alias-with-semantic-overlay",
+      "assetTemplate": "{faction}-king.webp",
+      "overlay": {
+        "visibleMarker": "+K",
+        "labelTemplate": "{Faction} illuminated king",
+        "nonColorCueRequired": true,
+        "suggestedTreatment": "Aurora halo or double luminous ring plus persistent +K marker."
+      },
+      "reason": "No dedicated illuminated-king raster was supplied; the authoritative king art is preserved unchanged."
+    }
+  },
+  "entries": [
+    {
+      "faction": "blue",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 1,
+      "role": "king",
+      "filename": "blue-king.webp",
+      "sourceBox": [
+        200,
+        4,
+        360,
+        188
+      ],
+      "availableSourceBox": [
+        200,
+        4,
+        360,
+        188
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          280,
+          7
+        ],
+        [
+          356,
+          51
+        ],
+        [
+          356,
+          139
+        ],
+        [
+          280,
+          183
+        ],
+        [
+          204,
+          139
+        ],
+        [
+          204,
+          51
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 2,
+      "role": "rook",
+      "filename": "blue-rook.webp",
+      "sourceBox": [
+        379,
+        4,
+        539,
+        188
+      ],
+      "availableSourceBox": [
+        379,
+        4,
+        539,
+        188
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          459,
+          7
+        ],
+        [
+          535,
+          51
+        ],
+        [
+          535,
+          139
+        ],
+        [
+          459,
+          183
+        ],
+        [
+          383,
+          139
+        ],
+        [
+          383,
+          51
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 3,
+      "role": "bishop",
+      "filename": "blue-bishop.webp",
+      "sourceBox": [
+        557,
+        4,
+        717,
+        188
+      ],
+      "availableSourceBox": [
+        557,
+        4,
+        717,
+        188
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          637,
+          7
+        ],
+        [
+          713,
+          51
+        ],
+        [
+          713,
+          139
+        ],
+        [
+          637,
+          183
+        ],
+        [
+          561,
+          139
+        ],
+        [
+          561,
+          51
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 4,
+      "role": "gold",
+      "filename": "blue-gold.webp",
+      "sourceBox": [
+        738,
+        4,
+        898,
+        188
+      ],
+      "availableSourceBox": [
+        738,
+        4,
+        898,
+        188
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          818,
+          7
+        ],
+        [
+          894,
+          51
+        ],
+        [
+          894,
+          139
+        ],
+        [
+          818,
+          183
+        ],
+        [
+          742,
+          139
+        ],
+        [
+          742,
+          51
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 5,
+      "role": "silver",
+      "filename": "blue-silver.webp",
+      "sourceBox": [
+        921,
+        4,
+        1081,
+        188
+      ],
+      "availableSourceBox": [
+        921,
+        4,
+        1081,
+        188
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1001,
+          7
+        ],
+        [
+          1077,
+          51
+        ],
+        [
+          1077,
+          139
+        ],
+        [
+          1001,
+          183
+        ],
+        [
+          925,
+          139
+        ],
+        [
+          925,
+          51
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 6,
+      "role": "knight",
+      "filename": "blue-knight.webp",
+      "sourceBox": [
+        1102,
+        4,
+        1262,
+        188
+      ],
+      "availableSourceBox": [
+        1102,
+        4,
+        1262,
+        188
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1182,
+          7
+        ],
+        [
+          1258,
+          51
+        ],
+        [
+          1258,
+          139
+        ],
+        [
+          1182,
+          183
+        ],
+        [
+          1106,
+          139
+        ],
+        [
+          1106,
+          51
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 7,
+      "role": "lance",
+      "filename": "blue-lance.webp",
+      "sourceBox": [
+        1281,
+        4,
+        1441,
+        188
+      ],
+      "availableSourceBox": [
+        1281,
+        4,
+        1441,
+        188
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1361,
+          7
+        ],
+        [
+          1437,
+          51
+        ],
+        [
+          1437,
+          139
+        ],
+        [
+          1361,
+          183
+        ],
+        [
+          1285,
+          139
+        ],
+        [
+          1285,
+          51
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "promoted",
+      "sourceColumn": 1,
+      "role": "pawn",
+      "filename": "blue-pawn.webp",
+      "sourceBox": [
+        200,
+        180,
+        360,
+        364
+      ],
+      "availableSourceBox": [
+        200,
+        180,
+        360,
+        364
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          280,
+          183
+        ],
+        [
+          356,
+          227
+        ],
+        [
+          356,
+          315
+        ],
+        [
+          280,
+          359
+        ],
+        [
+          204,
+          315
+        ],
+        [
+          204,
+          227
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "promoted",
+      "sourceColumn": 2,
+      "role": "dragon",
+      "filename": "blue-dragon.webp",
+      "sourceBox": [
+        379,
+        180,
+        539,
+        364
+      ],
+      "availableSourceBox": [
+        379,
+        180,
+        539,
+        364
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          459,
+          183
+        ],
+        [
+          535,
+          227
+        ],
+        [
+          535,
+          315
+        ],
+        [
+          459,
+          359
+        ],
+        [
+          383,
+          315
+        ],
+        [
+          383,
+          227
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "promoted",
+      "sourceColumn": 3,
+      "role": "horse",
+      "filename": "blue-horse.webp",
+      "sourceBox": [
+        557,
+        180,
+        717,
+        364
+      ],
+      "availableSourceBox": [
+        557,
+        180,
+        717,
+        364
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          637,
+          183
+        ],
+        [
+          713,
+          227
+        ],
+        [
+          713,
+          315
+        ],
+        [
+          637,
+          359
+        ],
+        [
+          561,
+          315
+        ],
+        [
+          561,
+          227
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "promoted",
+      "sourceColumn": 4,
+      "role": "promoted-silver",
+      "filename": "blue-promoted-silver.webp",
+      "sourceBox": [
+        738,
+        180,
+        898,
+        364
+      ],
+      "availableSourceBox": [
+        738,
+        180,
+        898,
+        364
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          818,
+          183
+        ],
+        [
+          894,
+          227
+        ],
+        [
+          894,
+          315
+        ],
+        [
+          818,
+          359
+        ],
+        [
+          742,
+          315
+        ],
+        [
+          742,
+          227
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "promoted",
+      "sourceColumn": 5,
+      "role": "promoted-knight",
+      "filename": "blue-promoted-knight.webp",
+      "sourceBox": [
+        921,
+        180,
+        1081,
+        364
+      ],
+      "availableSourceBox": [
+        921,
+        180,
+        1081,
+        364
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1001,
+          183
+        ],
+        [
+          1077,
+          227
+        ],
+        [
+          1077,
+          315
+        ],
+        [
+          1001,
+          359
+        ],
+        [
+          925,
+          315
+        ],
+        [
+          925,
+          227
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "archival-unused",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": "Supplied artwork retained, but the selected historical Sannin edition does not promote knights."
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "promoted",
+      "sourceColumn": 6,
+      "role": "promoted-lance",
+      "filename": "blue-promoted-lance.webp",
+      "sourceBox": [
+        1102,
+        180,
+        1262,
+        364
+      ],
+      "availableSourceBox": [
+        1102,
+        180,
+        1262,
+        364
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1182,
+          183
+        ],
+        [
+          1258,
+          227
+        ],
+        [
+          1258,
+          315
+        ],
+        [
+          1182,
+          359
+        ],
+        [
+          1106,
+          315
+        ],
+        [
+          1106,
+          227
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "blue",
+      "sourceRow": "promoted",
+      "sourceColumn": 7,
+      "role": "tokin",
+      "filename": "blue-tokin.webp",
+      "sourceBox": [
+        1281,
+        180,
+        1441,
+        364
+      ],
+      "availableSourceBox": [
+        1281,
+        180,
+        1441,
+        364
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1361,
+          183
+        ],
+        [
+          1437,
+          227
+        ],
+        [
+          1437,
+          315
+        ],
+        [
+          1361,
+          359
+        ],
+        [
+          1285,
+          315
+        ],
+        [
+          1285,
+          227
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 1,
+      "role": "king",
+      "filename": "red-king.webp",
+      "sourceBox": [
+        200,
+        356,
+        360,
+        540
+      ],
+      "availableSourceBox": [
+        200,
+        356,
+        360,
+        540
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          280,
+          359
+        ],
+        [
+          356,
+          403
+        ],
+        [
+          356,
+          491
+        ],
+        [
+          280,
+          535
+        ],
+        [
+          204,
+          491
+        ],
+        [
+          204,
+          403
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 2,
+      "role": "rook",
+      "filename": "red-rook.webp",
+      "sourceBox": [
+        379,
+        356,
+        539,
+        540
+      ],
+      "availableSourceBox": [
+        379,
+        356,
+        539,
+        540
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          459,
+          359
+        ],
+        [
+          535,
+          403
+        ],
+        [
+          535,
+          491
+        ],
+        [
+          459,
+          535
+        ],
+        [
+          383,
+          491
+        ],
+        [
+          383,
+          403
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 3,
+      "role": "bishop",
+      "filename": "red-bishop.webp",
+      "sourceBox": [
+        557,
+        356,
+        717,
+        540
+      ],
+      "availableSourceBox": [
+        557,
+        356,
+        717,
+        540
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          637,
+          359
+        ],
+        [
+          713,
+          403
+        ],
+        [
+          713,
+          491
+        ],
+        [
+          637,
+          535
+        ],
+        [
+          561,
+          491
+        ],
+        [
+          561,
+          403
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 4,
+      "role": "gold",
+      "filename": "red-gold.webp",
+      "sourceBox": [
+        738,
+        356,
+        898,
+        540
+      ],
+      "availableSourceBox": [
+        738,
+        356,
+        898,
+        540
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          818,
+          359
+        ],
+        [
+          894,
+          403
+        ],
+        [
+          894,
+          491
+        ],
+        [
+          818,
+          535
+        ],
+        [
+          742,
+          491
+        ],
+        [
+          742,
+          403
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 5,
+      "role": "silver",
+      "filename": "red-silver.webp",
+      "sourceBox": [
+        921,
+        356,
+        1081,
+        540
+      ],
+      "availableSourceBox": [
+        921,
+        356,
+        1081,
+        540
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1001,
+          359
+        ],
+        [
+          1077,
+          403
+        ],
+        [
+          1077,
+          491
+        ],
+        [
+          1001,
+          535
+        ],
+        [
+          925,
+          491
+        ],
+        [
+          925,
+          403
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 6,
+      "role": "knight",
+      "filename": "red-knight.webp",
+      "sourceBox": [
+        1102,
+        356,
+        1262,
+        540
+      ],
+      "availableSourceBox": [
+        1102,
+        356,
+        1262,
+        540
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1182,
+          359
+        ],
+        [
+          1258,
+          403
+        ],
+        [
+          1258,
+          491
+        ],
+        [
+          1182,
+          535
+        ],
+        [
+          1106,
+          491
+        ],
+        [
+          1106,
+          403
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 7,
+      "role": "lance",
+      "filename": "red-lance.webp",
+      "sourceBox": [
+        1281,
+        356,
+        1441,
+        540
+      ],
+      "availableSourceBox": [
+        1281,
+        356,
+        1441,
+        540
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1361,
+          359
+        ],
+        [
+          1437,
+          403
+        ],
+        [
+          1437,
+          491
+        ],
+        [
+          1361,
+          535
+        ],
+        [
+          1285,
+          491
+        ],
+        [
+          1285,
+          403
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "promoted",
+      "sourceColumn": 1,
+      "role": "pawn",
+      "filename": "red-pawn.webp",
+      "sourceBox": [
+        200,
+        532,
+        360,
+        716
+      ],
+      "availableSourceBox": [
+        200,
+        532,
+        360,
+        716
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          280,
+          535
+        ],
+        [
+          356,
+          579
+        ],
+        [
+          356,
+          667
+        ],
+        [
+          280,
+          711
+        ],
+        [
+          204,
+          667
+        ],
+        [
+          204,
+          579
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "promoted",
+      "sourceColumn": 2,
+      "role": "dragon",
+      "filename": "red-dragon.webp",
+      "sourceBox": [
+        379,
+        532,
+        539,
+        716
+      ],
+      "availableSourceBox": [
+        379,
+        532,
+        539,
+        716
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          459,
+          535
+        ],
+        [
+          535,
+          579
+        ],
+        [
+          535,
+          667
+        ],
+        [
+          459,
+          711
+        ],
+        [
+          383,
+          667
+        ],
+        [
+          383,
+          579
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "promoted",
+      "sourceColumn": 3,
+      "role": "horse",
+      "filename": "red-horse.webp",
+      "sourceBox": [
+        557,
+        532,
+        717,
+        716
+      ],
+      "availableSourceBox": [
+        557,
+        532,
+        717,
+        716
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          637,
+          535
+        ],
+        [
+          713,
+          579
+        ],
+        [
+          713,
+          667
+        ],
+        [
+          637,
+          711
+        ],
+        [
+          561,
+          667
+        ],
+        [
+          561,
+          579
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "promoted",
+      "sourceColumn": 4,
+      "role": "promoted-silver",
+      "filename": "red-promoted-silver.webp",
+      "sourceBox": [
+        738,
+        532,
+        898,
+        716
+      ],
+      "availableSourceBox": [
+        738,
+        532,
+        898,
+        716
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          818,
+          535
+        ],
+        [
+          894,
+          579
+        ],
+        [
+          894,
+          667
+        ],
+        [
+          818,
+          711
+        ],
+        [
+          742,
+          667
+        ],
+        [
+          742,
+          579
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "promoted",
+      "sourceColumn": 5,
+      "role": "promoted-knight",
+      "filename": "red-promoted-knight.webp",
+      "sourceBox": [
+        921,
+        532,
+        1081,
+        716
+      ],
+      "availableSourceBox": [
+        921,
+        532,
+        1081,
+        716
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1001,
+          535
+        ],
+        [
+          1077,
+          579
+        ],
+        [
+          1077,
+          667
+        ],
+        [
+          1001,
+          711
+        ],
+        [
+          925,
+          667
+        ],
+        [
+          925,
+          579
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "archival-unused",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": "Supplied artwork retained, but the selected historical Sannin edition does not promote knights."
+    },
+    {
+      "faction": "red",
+      "sourceRow": "promoted",
+      "sourceColumn": 6,
+      "role": "promoted-lance",
+      "filename": "red-promoted-lance.webp",
+      "sourceBox": [
+        1102,
+        532,
+        1262,
+        716
+      ],
+      "availableSourceBox": [
+        1102,
+        532,
+        1262,
+        716
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1182,
+          535
+        ],
+        [
+          1258,
+          579
+        ],
+        [
+          1258,
+          667
+        ],
+        [
+          1182,
+          711
+        ],
+        [
+          1106,
+          667
+        ],
+        [
+          1106,
+          579
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "red",
+      "sourceRow": "promoted",
+      "sourceColumn": 7,
+      "role": "tokin",
+      "filename": "red-tokin.webp",
+      "sourceBox": [
+        1281,
+        532,
+        1441,
+        716
+      ],
+      "availableSourceBox": [
+        1281,
+        532,
+        1441,
+        716
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1361,
+          535
+        ],
+        [
+          1437,
+          579
+        ],
+        [
+          1437,
+          667
+        ],
+        [
+          1361,
+          711
+        ],
+        [
+          1285,
+          667
+        ],
+        [
+          1285,
+          579
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 1,
+      "role": "king",
+      "filename": "green-king.webp",
+      "sourceBox": [
+        200,
+        708,
+        360,
+        892
+      ],
+      "availableSourceBox": [
+        200,
+        708,
+        360,
+        892
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          280,
+          711
+        ],
+        [
+          356,
+          755
+        ],
+        [
+          356,
+          843
+        ],
+        [
+          280,
+          887
+        ],
+        [
+          204,
+          843
+        ],
+        [
+          204,
+          755
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 2,
+      "role": "rook",
+      "filename": "green-rook.webp",
+      "sourceBox": [
+        379,
+        708,
+        539,
+        892
+      ],
+      "availableSourceBox": [
+        379,
+        708,
+        539,
+        892
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          459,
+          711
+        ],
+        [
+          535,
+          755
+        ],
+        [
+          535,
+          843
+        ],
+        [
+          459,
+          887
+        ],
+        [
+          383,
+          843
+        ],
+        [
+          383,
+          755
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 3,
+      "role": "bishop",
+      "filename": "green-bishop.webp",
+      "sourceBox": [
+        557,
+        708,
+        717,
+        892
+      ],
+      "availableSourceBox": [
+        557,
+        708,
+        717,
+        892
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          637,
+          711
+        ],
+        [
+          713,
+          755
+        ],
+        [
+          713,
+          843
+        ],
+        [
+          637,
+          887
+        ],
+        [
+          561,
+          843
+        ],
+        [
+          561,
+          755
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 4,
+      "role": "gold",
+      "filename": "green-gold.webp",
+      "sourceBox": [
+        738,
+        708,
+        898,
+        892
+      ],
+      "availableSourceBox": [
+        738,
+        708,
+        898,
+        892
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          818,
+          711
+        ],
+        [
+          894,
+          755
+        ],
+        [
+          894,
+          843
+        ],
+        [
+          818,
+          887
+        ],
+        [
+          742,
+          843
+        ],
+        [
+          742,
+          755
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 5,
+      "role": "silver",
+      "filename": "green-silver.webp",
+      "sourceBox": [
+        921,
+        708,
+        1081,
+        892
+      ],
+      "availableSourceBox": [
+        921,
+        708,
+        1081,
+        892
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1001,
+          711
+        ],
+        [
+          1077,
+          755
+        ],
+        [
+          1077,
+          843
+        ],
+        [
+          1001,
+          887
+        ],
+        [
+          925,
+          843
+        ],
+        [
+          925,
+          755
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 6,
+      "role": "knight",
+      "filename": "green-knight.webp",
+      "sourceBox": [
+        1102,
+        708,
+        1262,
+        892
+      ],
+      "availableSourceBox": [
+        1102,
+        708,
+        1262,
+        892
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1182,
+          711
+        ],
+        [
+          1258,
+          755
+        ],
+        [
+          1258,
+          843
+        ],
+        [
+          1182,
+          887
+        ],
+        [
+          1106,
+          843
+        ],
+        [
+          1106,
+          755
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "unpromoted",
+      "sourceColumn": 7,
+      "role": "lance",
+      "filename": "green-lance.webp",
+      "sourceBox": [
+        1281,
+        708,
+        1441,
+        892
+      ],
+      "availableSourceBox": [
+        1281,
+        708,
+        1441,
+        892
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          47
+        ],
+        [
+          156,
+          135
+        ],
+        [
+          80,
+          179
+        ],
+        [
+          4,
+          135
+        ],
+        [
+          4,
+          47
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1361,
+          711
+        ],
+        [
+          1437,
+          755
+        ],
+        [
+          1437,
+          843
+        ],
+        [
+          1361,
+          887
+        ],
+        [
+          1285,
+          843
+        ],
+        [
+          1285,
+          755
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": null,
+      "sourceTouchesCanvasEdge": false,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "promoted",
+      "sourceColumn": 1,
+      "role": "pawn",
+      "filename": "green-pawn.webp",
+      "sourceBox": [
+        200,
+        884,
+        360,
+        1024
+      ],
+      "availableSourceBox": [
+        200,
+        884,
+        360,
+        1024
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          37
+        ],
+        [
+          156,
+          105
+        ],
+        [
+          80,
+          139
+        ],
+        [
+          4,
+          105
+        ],
+        [
+          4,
+          37
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          280,
+          887
+        ],
+        [
+          356,
+          921
+        ],
+        [
+          356,
+          989
+        ],
+        [
+          280,
+          1023
+        ],
+        [
+          204,
+          989
+        ],
+        [
+          204,
+          921
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": {
+        "operation": "vertical-resample",
+        "sourceSize": [
+          160,
+          140
+        ],
+        "targetSize": [
+          160,
+          184
+        ],
+        "resampling": "Lanczos",
+        "reason": "The supplied green promoted row is vertically compressed to the canvas edge; normalization restores the same regular-hex proportions as the other five rows."
+      },
+      "sourceTouchesCanvasEdge": true,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "promoted",
+      "sourceColumn": 2,
+      "role": "dragon",
+      "filename": "green-dragon.webp",
+      "sourceBox": [
+        379,
+        884,
+        539,
+        1024
+      ],
+      "availableSourceBox": [
+        379,
+        884,
+        539,
+        1024
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          37
+        ],
+        [
+          156,
+          105
+        ],
+        [
+          80,
+          139
+        ],
+        [
+          4,
+          105
+        ],
+        [
+          4,
+          37
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          459,
+          887
+        ],
+        [
+          535,
+          921
+        ],
+        [
+          535,
+          989
+        ],
+        [
+          459,
+          1023
+        ],
+        [
+          383,
+          989
+        ],
+        [
+          383,
+          921
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": {
+        "operation": "vertical-resample",
+        "sourceSize": [
+          160,
+          140
+        ],
+        "targetSize": [
+          160,
+          184
+        ],
+        "resampling": "Lanczos",
+        "reason": "The supplied green promoted row is vertically compressed to the canvas edge; normalization restores the same regular-hex proportions as the other five rows."
+      },
+      "sourceTouchesCanvasEdge": true,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "promoted",
+      "sourceColumn": 3,
+      "role": "horse",
+      "filename": "green-horse.webp",
+      "sourceBox": [
+        557,
+        884,
+        717,
+        1024
+      ],
+      "availableSourceBox": [
+        557,
+        884,
+        717,
+        1024
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          37
+        ],
+        [
+          156,
+          105
+        ],
+        [
+          80,
+          139
+        ],
+        [
+          4,
+          105
+        ],
+        [
+          4,
+          37
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          637,
+          887
+        ],
+        [
+          713,
+          921
+        ],
+        [
+          713,
+          989
+        ],
+        [
+          637,
+          1023
+        ],
+        [
+          561,
+          989
+        ],
+        [
+          561,
+          921
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": {
+        "operation": "vertical-resample",
+        "sourceSize": [
+          160,
+          140
+        ],
+        "targetSize": [
+          160,
+          184
+        ],
+        "resampling": "Lanczos",
+        "reason": "The supplied green promoted row is vertically compressed to the canvas edge; normalization restores the same regular-hex proportions as the other five rows."
+      },
+      "sourceTouchesCanvasEdge": true,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "promoted",
+      "sourceColumn": 4,
+      "role": "promoted-silver",
+      "filename": "green-promoted-silver.webp",
+      "sourceBox": [
+        738,
+        884,
+        898,
+        1024
+      ],
+      "availableSourceBox": [
+        738,
+        884,
+        898,
+        1024
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          37
+        ],
+        [
+          156,
+          105
+        ],
+        [
+          80,
+          139
+        ],
+        [
+          4,
+          105
+        ],
+        [
+          4,
+          37
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          818,
+          887
+        ],
+        [
+          894,
+          921
+        ],
+        [
+          894,
+          989
+        ],
+        [
+          818,
+          1023
+        ],
+        [
+          742,
+          989
+        ],
+        [
+          742,
+          921
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": {
+        "operation": "vertical-resample",
+        "sourceSize": [
+          160,
+          140
+        ],
+        "targetSize": [
+          160,
+          184
+        ],
+        "resampling": "Lanczos",
+        "reason": "The supplied green promoted row is vertically compressed to the canvas edge; normalization restores the same regular-hex proportions as the other five rows."
+      },
+      "sourceTouchesCanvasEdge": true,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "promoted",
+      "sourceColumn": 5,
+      "role": "promoted-knight",
+      "filename": "green-promoted-knight.webp",
+      "sourceBox": [
+        921,
+        884,
+        1081,
+        1024
+      ],
+      "availableSourceBox": [
+        921,
+        884,
+        1081,
+        1024
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          37
+        ],
+        [
+          156,
+          105
+        ],
+        [
+          80,
+          139
+        ],
+        [
+          4,
+          105
+        ],
+        [
+          4,
+          37
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1001,
+          887
+        ],
+        [
+          1077,
+          921
+        ],
+        [
+          1077,
+          989
+        ],
+        [
+          1001,
+          1023
+        ],
+        [
+          925,
+          989
+        ],
+        [
+          925,
+          921
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": {
+        "operation": "vertical-resample",
+        "sourceSize": [
+          160,
+          140
+        ],
+        "targetSize": [
+          160,
+          184
+        ],
+        "resampling": "Lanczos",
+        "reason": "The supplied green promoted row is vertically compressed to the canvas edge; normalization restores the same regular-hex proportions as the other five rows."
+      },
+      "sourceTouchesCanvasEdge": true,
+      "legalUse": "archival-unused",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": "Supplied artwork retained, but the selected historical Sannin edition does not promote knights."
+    },
+    {
+      "faction": "green",
+      "sourceRow": "promoted",
+      "sourceColumn": 6,
+      "role": "promoted-lance",
+      "filename": "green-promoted-lance.webp",
+      "sourceBox": [
+        1102,
+        884,
+        1262,
+        1024
+      ],
+      "availableSourceBox": [
+        1102,
+        884,
+        1262,
+        1024
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          37
+        ],
+        [
+          156,
+          105
+        ],
+        [
+          80,
+          139
+        ],
+        [
+          4,
+          105
+        ],
+        [
+          4,
+          37
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1182,
+          887
+        ],
+        [
+          1258,
+          921
+        ],
+        [
+          1258,
+          989
+        ],
+        [
+          1182,
+          1023
+        ],
+        [
+          1106,
+          989
+        ],
+        [
+          1106,
+          921
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": {
+        "operation": "vertical-resample",
+        "sourceSize": [
+          160,
+          140
+        ],
+        "targetSize": [
+          160,
+          184
+        ],
+        "resampling": "Lanczos",
+        "reason": "The supplied green promoted row is vertically compressed to the canvas edge; normalization restores the same regular-hex proportions as the other five rows."
+      },
+      "sourceTouchesCanvasEdge": true,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    },
+    {
+      "faction": "green",
+      "sourceRow": "promoted",
+      "sourceColumn": 7,
+      "role": "tokin",
+      "filename": "green-tokin.webp",
+      "sourceBox": [
+        1281,
+        884,
+        1441,
+        1024
+      ],
+      "availableSourceBox": [
+        1281,
+        884,
+        1441,
+        1024
+      ],
+      "maskPolygonLocal": [
+        [
+          80,
+          3
+        ],
+        [
+          156,
+          37
+        ],
+        [
+          156,
+          105
+        ],
+        [
+          80,
+          139
+        ],
+        [
+          4,
+          105
+        ],
+        [
+          4,
+          37
+        ]
+      ],
+      "maskPolygonSource": [
+        [
+          1361,
+          887
+        ],
+        [
+          1437,
+          921
+        ],
+        [
+          1437,
+          989
+        ],
+        [
+          1361,
+          1023
+        ],
+        [
+          1285,
+          989
+        ],
+        [
+          1285,
+          921
+        ]
+      ],
+      "destinationOffset": [
+        16,
+        4
+      ],
+      "geometryNormalization": {
+        "operation": "vertical-resample",
+        "sourceSize": [
+          160,
+          140
+        ],
+        "targetSize": [
+          160,
+          184
+        ],
+        "resampling": "Lanczos",
+        "reason": "The supplied green promoted row is vertically compressed to the canvas edge; normalization restores the same regular-hex proportions as the other five rows."
+      },
+      "sourceTouchesCanvasEdge": true,
+      "legalUse": "playable",
+      "sourceEdgeTruncated": false,
+      "sourceEdgeTruncatedSides": [],
+      "notes": null
+    }
+  ]
+}

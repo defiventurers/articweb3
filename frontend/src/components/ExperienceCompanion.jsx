@@ -4,6 +4,7 @@ import { RecurringCharacter } from "./RecurringCharacter.jsx";
 import { PenguinHost, PenguinHostPair, getGameHosts, HOST_META } from "./PenguinHosts.jsx";
 
 const GAME_BRIEFS = Object.freeze({
+  "sannin-shogi": { label: "Sannin Shogi", cue: "Three armies rotate around one 127-cell hex; follow the active faction and protect every line into your King.", action: "Open the rule scroll before choosing an opening alliance or beginning hot-seat play." },
   "shogi-frozen-shogunate": { label: "Frozen Shogunate", cue: "The hand beside the board is an active reserve: captured pieces can return under your banner.", action: "Watch the highlighted promotion camp and protect every line toward your king." },
   "nine-ice-forts": { label: "Nine Ice Forts", cue: "Build a line of pressure between the forts; a clear bridge is worth more than a rushed move.", action: "New here? Open How to Play, then choose a practice game." },
   "four-wing-ice-hunt": { label: "Four-Wing Ice Hunt", cue: "Read the lattice first: the colony seals paths while the leopard searches for a leap.", action: "Choose Practice to learn one legal turn before facing the full hunt." },
