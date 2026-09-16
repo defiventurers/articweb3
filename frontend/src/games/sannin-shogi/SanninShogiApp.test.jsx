@@ -56,6 +56,10 @@ describe("SanninShogiApp", () => {
     const root = createRoot(host);
     await act(async () => root.render(<SanninShogiApp />));
     await act(async () => [...host.querySelectorAll("button")].find((button) => button.textContent === "Begin match").click());
+    expect(host.querySelector(".sannin-board-art")?.getAttribute("href")).toBe("/assets/games/sannin-shogi/board.webp");
+    expect(host.querySelector(".sannin-grid-layer")?.getAttribute("transform")).toBe("translate(667 590) scale(1.3 1.3)");
+    expect(host.querySelector('.sannin-grid-row[data-row="0"]')?.getAttribute("transform")).toBe("translate(-73.07692307692308 -46.842511864032666) scale(1.02 1)");
+    expect(host.querySelector(".sannin-piece image")?.getAttribute("width")).toBe("56");
     const kingCell = [...host.querySelectorAll('[role="gridcell"]')].find((cell) => cell.getAttribute("aria-label").includes("6,-3") && cell.getAttribute("aria-label").includes("First King"));
     await act(async () => kingCell.dispatchEvent(new MouseEvent("click", { bubbles: true })));
     const destination = [...host.querySelectorAll('[role="gridcell"]')].find((cell) => cell.getAttribute("aria-label").includes("legal destination"));

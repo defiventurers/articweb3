@@ -1,5 +1,8 @@
 # Sannin Shogi build state
 
+- 2026-09-16: Applied the user-recorded board-art fit: centre `667,590`, global scale `1.3`, and per-row X/Y offsets plus horizontal scales. The SVG grid and `board.webp` share one viewBox, so the calibration scales together across responsive layouts.
+- 2026-09-16: Reduced board pieces from 63 to 56 viewBox units and nudged them 3 units upward within each fitted hex. The adjustment inherits each row and global artwork transform.
+
 Canonical decisions live in `CANONICAL_SPEC.md` and are lead-owned.
 
 ## Identity and selected edition

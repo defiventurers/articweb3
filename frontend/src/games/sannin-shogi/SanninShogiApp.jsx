@@ -24,8 +24,31 @@ const BOARD_HEIGHT = 1179;
 // New hexagonal grid background: centred at (667, 590) in the 1334×1179 image.
 // Pointy-top 127-cell radius-6 board measures 623.54×540 at size=30; scaled to
 // fit within the visible grid area (approx 800×800) centred on image centre.
-const GRID_SCALE = 1.32;
-const GRID_TRANSFORM = "translate(667 590) scale(1.32 1.32)";
+// Geometry is kept in board.webp's 1334 x 1179 SVG viewBox, so it remains
+// attached to the artwork whenever the board is resized for a phone or desktop.
+const GRID_CENTER = Object.freeze({ x: 667, y: 590 });
+const GRID_SCALE = 1.3;
+const GRID_TRANSFORM = `translate(${GRID_CENTER.x} ${GRID_CENTER.y}) scale(${GRID_SCALE} ${GRID_SCALE})`;
+const ROW_OFFSETS = Object.freeze({
+  "-6": Object.freeze({ x: -94, y: -77.81061692969872 }),
+  "-5": Object.freeze({ x: -94, y: -76.11908177905309 }),
+  "-4": Object.freeze({ x: -94, y: -74.42754662840747 }),
+  "-3": Object.freeze({ x: -94, y: -71.04447632711621 }),
+  "-2": Object.freeze({ x: -93, y: -67.66140602582497 }),
+  "-1": Object.freeze({ x: -94, y: -65.96987087517934 }),
+  "0": Object.freeze({ x: -95, y: -60.89526542324247 }),
+  "1": Object.freeze({ x: -93, y: -59.20373027259685 }),
+  "2": Object.freeze({ x: -96, y: -55.8206599713056 }),
+  "3": Object.freeze({ x: -94, y: -54.129124820659975 }),
+  "4": Object.freeze({ x: -96, y: -50.74605451936872 }),
+  "5": Object.freeze({ x: -93, y: -49.0545193687231 }),
+  "6": Object.freeze({ x: -95, y: -49.0545193687231 })
+});
+const ROW_SCALES = Object.freeze({ "-6": 0.972, "-5": 0.992, "-4": 0.996, "-2": 1.01, "-1": 1.02, "0": 1.02, "1": 1.016, "2": 1.016, "3": 1.026, "4": 1.024, "5": 1.014 });
+const ROWS = Object.freeze(Array.from({ length: 13 }, (_, index) => index - 6));
+const CELLS_BY_ROW = Object.freeze(Object.fromEntries(ROWS.map((row) => [row, Object.freeze(HEX_CELLS.filter((cell) => cell.r === row))])));
+const PIECE_SIZE = 56;
+const PIECE_OFFSET = Object.freeze({ x: 0, y: -3 });
 const ROTATION = { red: 120, green: 0, blue: -120 };
 const SHORT = { king: "K", rook: "R", bishop: "B", gold: "G", silver: "S", knight: "N", lance: "L", pawn: "P" };
 const ALLIANCE_OPTIONS = [
@@ -42,15 +65,23 @@ function pieceLabel(piece) {
   return `${FACTION_LABELS[piece.owner]} ${promoted}${TYPE_LABELS[piece.type]}`;
 }
 
+function rowTransform(row) {
+  const offset = ROW_OFFSETS[row] || { x: 0, y: 0 };
+  const horizontalScale = ROW_SCALES[row] || 1;
+  // The recorder stores offsets in artwork pixels. Dividing here lets the outer
+  // uniform SVG scale restore that exact pixel-relative correction.
+  return `translate(${offset.x / GRID_SCALE} ${offset.y / GRID_SCALE}) scale(${horizontalScale} 1)`;
+}
+
 function BoardPiece({ piece, center }) {
-  const PIECE_SIZE = 63;
   const halfPiece = PIECE_SIZE / 2;
+  const pieceCenter = { x: center.x + PIECE_OFFSET.x, y: center.y + PIECE_OFFSET.y };
   return (
     <>
-      <g className={`sannin-piece sannin-piece--${piece.owner}`} transform={`rotate(${ROTATION[piece.owner]} ${center.x} ${center.y})`}>
-        <image href={assetUrl(piece)} x={center.x - halfPiece} y={center.y - halfPiece} width={PIECE_SIZE} height={PIECE_SIZE} preserveAspectRatio="xMidYMid meet" />
+      <g className={`sannin-piece sannin-piece--${piece.owner}`} transform={`rotate(${ROTATION[piece.owner]} ${pieceCenter.x} ${pieceCenter.y})`}>
+        <image href={assetUrl(piece)} x={pieceCenter.x - halfPiece} y={pieceCenter.y - halfPiece} width={PIECE_SIZE} height={PIECE_SIZE} preserveAspectRatio="xMidYMid meet" />
       </g>
-      {piece.promoted && piece.type === "king" && <g className="sannin-piece__plus" aria-hidden="true"><circle cx={center.x + 21} cy={center.y - 19} r="13" /><text x={center.x + 21} y={center.y - 15}>+K</text></g>}
+      {piece.promoted && piece.type === "king" && <g className="sannin-piece__plus" aria-hidden="true"><circle cx={pieceCenter.x + 21} cy={pieceCenter.y - 19} r="13" /><text x={pieceCenter.x + 21} y={pieceCenter.y - 15}>+K</text></g>}
     </>
   );
 }
@@ -96,7 +127,8 @@ export function SanninBoard({ state, selected, legalActions, onCell, onCancel, z
           <filter id="sannin-glow"><feGaussianBlur stdDeviation="2.8" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
         </defs>
         <g className="sannin-grid-layer" transform={GRID_TRANSFORM}>
-        {HEX_CELLS.map((cell) => {
+        {ROWS.map((row) => <g className="sannin-grid-row" data-row={row} key={row} transform={rowTransform(row)}>
+        {CELLS_BY_ROW[row].map((cell) => {
           const center = projectPointyTop(cell, SIZE);
           const points = pointyTopCorners(cell, SIZE).map((point) => `${point.x},${point.y}`).join(" ");
           const piece = getBoardPiece(state, cell.id);
@@ -120,6 +152,7 @@ export function SanninBoard({ state, selected, legalActions, onCell, onCancel, z
             </g>
           );
         })}
+        </g>)}
         </g>
       </svg>
     </div>
