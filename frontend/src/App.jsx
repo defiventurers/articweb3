@@ -36,6 +36,7 @@ import { SevenIceRingsApp } from "./games/seven-ice-rings/SevenIceRingsApp.jsx";
 import { KhasiFishflowApp } from "./games/khasi-fishflow/KhasiFishflowApp.jsx";
 import { RumaIcePuzzleApp } from "./games/ruma-ice-puzzle/RumaIcePuzzleApp.jsx";
 import { HeritageArcadeApp } from "./games/heritage-arcade/HeritageArcadeApp.jsx";
+import SanYouQiApp from "./games/san-you-qi/SanYouQiApp.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
@@ -78,7 +79,8 @@ const PLAYABLE_GAME_IDS = new Set([
   "sannin-shogi",
   "nine-ice-forts", "four-wing-ice-hunt", "fishflow", "break-the-ice", "ice-hunters", "sixteen-ice-warriors", "glacier-trail",
   "crown-run", "forty-glacier-guards", "sky-temple-run", "ice-rings", "cowrie-kingdoms", "two-stones", "aurora-vulture",
-  "khasi-fishflow", "seven-ice-rings", "ruma-ice-puzzle", "polar-tablan", "sige", "aurora-ganjifa-academy"
+  "khasi-fishflow", "seven-ice-rings", "ruma-ice-puzzle", "polar-tablan", "sige", "aurora-ganjifa-academy",
+  "san-you-qi"
 ]);
 
 export default function App() {
@@ -145,6 +147,7 @@ export default function App() {
   if (screen === "agon-cold-throne") return withAppChrome(<AgonColdThroneApp onExitToLibrary={exitToLibrary} />, screen);
   if (screen === "shogi-frozen-shogunate") return withAppChrome(<ShogiFrozenShogunateApp onExitToLibrary={exitToLibrary} />, screen);
   if (screen === "sannin-shogi") return withAppChrome(<SanninShogiApp onExit={exitToLibrary} />, screen);
+  if (screen === "san-you-qi") return withAppChrome(<SanYouQiApp onExit={exitToLibrary} />, screen);
   if (screen === "nine-ice-forts") return withAppChrome(<NineIceFortsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
   if (screen === "four-wing-ice-hunt") return withAppChrome(<FourWingIceHuntApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
   if (screen === "fishflow") return withAppChrome(<FishflowApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);

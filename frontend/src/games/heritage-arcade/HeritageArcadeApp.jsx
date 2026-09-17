@@ -12,15 +12,16 @@ import HnefataflBoard from "./ported/components/HnefataflBoard.tsx";
 import AsaltoBoard from "./ported/components/AsaltoBoard.tsx";
 import { ShogiFrozenShogunateApp } from "../shogi-frozen-shogunate/ShogiFrozenShogunateApp.jsx";
 import SanninShogiApp from "../sannin-shogi/SanninShogiApp.jsx";
+import SanYouQiApp from "../san-you-qi/SanYouQiApp.jsx";
 import ChaturajiBoard from "./ported/components/ChaturajiBoard.tsx";
 import RyukyuSanzanBoard from "./ported/components/RyukyuSanzanBoard.tsx";
 import "./ported/styles/heritage-arcade.css";
 
 const compassMark = "/assets/heritage-arcade/board/ppba-compass-mark.png";
 const visualReference = "/assets/heritage-arcade/board/ppba-arcade-reference.png";
-const auditedTables = new Set([5, 19, 23, 24, 25, 26]);
+const auditedTables = new Set([5, 19, 23, 24, 25, 26, 27]);
 const originalComplete = new Set([6, 7, 8, 10, 11, 13, 16, 20, 22]);
-const TABLE_QUERY_BY_ID = new Map([[1, "sanguo"], [24, "sannin-shogi"], [26, "shogi"]]);
+const TABLE_QUERY_BY_ID = new Map([[1, "sanguo"], [24, "sannin-shogi"], [26, "shogi"], [27, "san-you-qi"]]);
 const TABLE_ID_BY_QUERY = new Map([...TABLE_QUERY_BY_ID].map(([id, query]) => [query, id]));
 
 // Tables intentionally separated from the primary Heritage strategy collection.
@@ -87,6 +88,7 @@ function renderBoard(modeId, roster, onBack) {
   if (modeId === 19) return <AsaltoBoard key={roster.join("-")} roster={roster} onBack={onBack} />;
   if (modeId === 26) return <ShogiFrozenShogunateApp onExitToLibrary={onBack} />;
   if (modeId === 24) return <SanninShogiApp onExit={onBack} />;
+  if (modeId === 27) return <SanYouQiApp onExit={onBack} />;
   if (modeId === 5 || modeId === 23) return <ChaturajiBoard onBack={onBack} />;
   return <CompactBoard key={`${modeId}-${roster.join("-")}`} modeId={modeId} roster={roster} onBack={onBack} />;
 }

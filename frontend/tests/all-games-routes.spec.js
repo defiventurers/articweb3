@@ -22,7 +22,8 @@ const catalogGameIds = [
   "ruma-ice-puzzle",
   "polar-tablan",
   "sige",
-  "aurora-ganjifa-academy"
+  "aurora-ganjifa-academy",
+  "san-you-qi"
 ];
 
 test.describe("full Arctic Game Kingdoms route coverage", () => {
