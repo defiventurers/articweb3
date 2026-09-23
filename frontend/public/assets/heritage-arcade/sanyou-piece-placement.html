@@ -44,6 +44,10 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
 .step-row label{font-size:11px;color:#9fb2cc}
 .step-row select{padding:6px 8px}
 .board-help{margin-top:6px;color:#8fe3ff;font-size:12px;font-weight:700}
+.group-move-wrap{margin-top:10px;border-top:1px solid #405778;padding-top:10px}
+.group-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.group-row label{font-size:11px;color:#9fb2cc}
+.group-row select{padding:6px 8px}
 .group-move-card{border:1px solid #405778;border-radius:8px;padding:10px;background:#101c2d;margin:10px 0}
 .group-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
 .group-row select{flex:1;min-width:120px}
@@ -133,6 +137,32 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
           </select>
         </div>
         <div class="board-help">Tip: select a dot, then click anywhere on the board to place it there.</div>
+      </div>
+
+      <div class="group-move-wrap">
+        <b>Move whole team</b>
+        <div class="group-row">
+          <label for="groupTeamSelect">Team</label>
+          <select id="groupTeamSelect">
+            <option value="red">Red</option>
+            <option value="green">Green</option>
+            <option value="blue">Blue</option>
+          </select>
+          <label for="groupStepSelect">Step size</label>
+          <select id="groupStepSelect">
+            <option value="0.0005">Fine</option>
+            <option value="0.001" selected>Medium</option>
+            <option value="0.002">Fast</option>
+            <option value="0.005">Very fast</option>
+          </select>
+        </div>
+        <div class="nudge-grid" aria-label="Move whole team">
+          <button id="groupUp" class="nudge-up" type="button" title="Move whole team up">↑</button>
+          <button id="groupLeft" class="nudge-left" type="button" title="Move whole team left">←</button>
+          <button id="groupDown" class="nudge-down" type="button" title="Move whole team down">↓</button>
+          <button id="groupRight" class="nudge-right" type="button" title="Move whole team right">→</button>
+        </div>
+        <div class="board-help">Moves all 45 points of the selected color together without changing their spacing.</div>
       </div>
     </div>
 
@@ -309,6 +339,21 @@ document.getElementById('nudgeUp').onclick=()=>nudgeSelected(0,-1);
 document.getElementById('nudgeDown').onclick=()=>nudgeSelected(0,1);
 document.getElementById('nudgeLeft').onclick=()=>nudgeSelected(-1,0);
 document.getElementById('nudgeRight').onclick=()=>nudgeSelected(1,0);
+
+function moveWholeTeam(team,dx,dy){
+  const step=+(document.getElementById('groupStepSelect').value||0.001);
+  positions[team]=positions[team].map(([x,y])=>[
+    clamp(x+dx*step),
+    clamp(y+dy*step)
+  ]);
+  render();
+  status.textContent=team.toUpperCase()+' whole group moved.';
+  setTimeout(()=>status.textContent='',1400);
+}
+document.getElementById('groupUp').onclick=()=>moveWholeTeam(document.getElementById('groupTeamSelect').value,0,-1);
+document.getElementById('groupDown').onclick=()=>moveWholeTeam(document.getElementById('groupTeamSelect').value,0,1);
+document.getElementById('groupLeft').onclick=()=>moveWholeTeam(document.getElementById('groupTeamSelect').value,-1,0);
+document.getElementById('groupRight').onclick=()=>moveWholeTeam(document.getElementById('groupTeamSelect').value,1,0);
 
 // Easier alternative to dragging: select a dot, then click on the board.
 board.addEventListener('click',e=>{
