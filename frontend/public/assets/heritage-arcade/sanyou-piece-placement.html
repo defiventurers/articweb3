@@ -3,42 +3,49 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sanyou Qi Group Placement</title>
+<title>Sanyou Qi Coordinate Placement</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0e1726;color:#eef5ff;font-family:Inter,Arial,sans-serif}
 header{position:sticky;top:0;z-index:20;background:#152238;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #2b3d59}
 header h1{font-size:18px;margin:0;margin-right:auto}
-button,select{font:inherit;background:#263b5a;color:white;border:1px solid #405778;border-radius:7px;padding:8px 10px;cursor:pointer}
+button,select,input{font:inherit}
+button,select{background:#263b5a;color:white;border:1px solid #405778;border-radius:7px;padding:8px 10px;cursor:pointer}
 button:hover{background:#314a6d}
 button.active{outline:2px solid #ffd75a;background:#3a5275}
-.layout{display:grid;grid-template-columns:minmax(520px,1fr) 360px;gap:12px;padding:12px}
+.layout{display:grid;grid-template-columns:minmax(520px,1fr) 380px;gap:12px;padding:12px}
 .board-wrap{position:relative;max-width:1100px;margin:auto;background:white;border-radius:8px;overflow:hidden;touch-action:none;user-select:none}
 .board-wrap>img{display:block;width:100%;height:auto;pointer-events:none}
-.node{position:absolute;width:16px;height:16px;border-radius:50%;transform:translate(-50%,-50%);z-index:5;cursor:grab;opacity:.92;box-shadow:0 0 0 2px rgba(255,255,255,.92),0 0 8px rgba(0,0,0,.55)}
+.node{position:absolute;width:16px;height:16px;border-radius:50%;transform:translate(-50%,-50%);z-index:5;cursor:grab;opacity:.93;box-shadow:0 0 0 2px rgba(255,255,255,.92),0 0 8px rgba(0,0,0,.55)}
 .node:active{cursor:grabbing}
-.node.red{background:#ff5454}
-.node.green{background:#44df74}
-.node.blue{background:#4fa3ff}
-.node.active-team{width:19px;height:19px;outline:2px solid #ffd75a;outline-offset:2px}
-.node-label{position:absolute;transform:translate(10px,-18px);padding:2px 4px;border-radius:4px;background:rgba(5,15,28,.82);color:#fff;font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;pointer-events:none}
+.node.red{background:#ff5454}.node.green{background:#44df74}.node.blue{background:#4fa3ff}
+.node.custom{background:#d981ff;width:18px;height:18px}
+.node.custom.red{background:#ff5454}.node.custom.green{background:#44df74}.node.custom.blue{background:#4fa3ff}
+.node.active-team{outline:2px solid #ffd75a;outline-offset:2px}
+.node.selected{width:22px;height:22px;outline:3px solid #ffd75a;outline-offset:2px;z-index:10}
+.node-label{position:absolute;transform:translate(10px,-18px);padding:2px 4px;border-radius:4px;background:rgba(5,15,28,.84);color:#fff;font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;pointer-events:none}
 aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px;height:max-content}
-.team-tabs{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
-.group-card{border:1px solid #405778;border-radius:8px;padding:12px;background:#101c2d;margin:10px 0}
-.nudge-grid{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:42px 42px;gap:7px;justify-content:center;margin-top:10px}
+.mode-tabs,.team-tabs{display:flex;gap:7px;margin:9px 0;flex-wrap:wrap}
+.card{border:1px solid #405778;border-radius:8px;padding:11px;background:#101c2d;margin:10px 0}
+.card h3{font-size:13px;margin:0 0 8px}
+.nudge-grid{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:42px 42px;gap:7px;justify-content:center;margin-top:9px}
 .nudge-grid button{padding:0;font-size:21px;font-weight:800}
 .nudge-up{grid-column:2;grid-row:1}.nudge-left{grid-column:1;grid-row:2}.nudge-down{grid-column:2;grid-row:2}.nudge-right{grid-column:3;grid-row:2}
-.step-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:10px}
-.hint{font-size:12px;color:#aebed4;line-height:1.5}
-.help{font-size:12px;color:#8fe3ff;line-height:1.5;margin-top:10px;font-weight:700}
+.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.row label{font-size:11px;color:#9fb2cc}
+.row select,.row input{min-width:0;flex:1;background:#0b1320;color:#fff;border:1px solid #405778;border-radius:6px;padding:7px}
+.hint{font-size:12px;color:#aebed4;line-height:1.45}
+.help{font-size:12px;color:#8fe3ff;line-height:1.45;margin-top:8px;font-weight:700}
 .status{font-size:12px;color:#ffd75a;min-height:20px;margin-top:8px}
-.export{width:100%;height:280px;background:#0b1320;color:#d9e6f7;border:1px solid #405778;border-radius:7px;padding:8px;font-family:Consolas,monospace;font-size:11px;margin-top:8px;resize:vertical}
+.export{width:100%;height:230px;background:#0b1320;color:#d9e6f7;border:1px solid #405778;border-radius:7px;padding:8px;font-family:Consolas,monospace;font-size:11px;margin-top:8px;resize:vertical}
+.count{font-weight:800;color:#ffd75a}
+.hidden{display:none!important}
 @media(max-width:900px){.layout{grid-template-columns:1fr}.board-wrap{max-width:none}aside{position:static}}
 </style>
 </head>
 <body>
 <header>
-  <h1>Sanyou Qi — Whole Group Placement</h1>
+  <h1>Sanyou Qi — Coordinate Placement</h1>
   <button id="reset" type="button">Reset</button>
   <button id="applySymmetry" type="button">Generate Green + Blue from Red</button>
   <button id="copy" type="button">Copy coordinates</button>
@@ -50,33 +57,63 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
   </div>
 
   <aside>
-    <b>Whole-group movement only</b>
-    <p class="hint">There is no single-point mode. Choose Red, Green, or Blue and every movement shifts all 45 points of that team together.</p>
-
-    <div class="team-tabs" aria-label="Choose team to move">
-      <button data-team="red" class="active" type="button">Red</button>
-      <button data-team="green" type="button">Green</button>
-      <button data-team="blue" type="button">Blue</button>
+    <b>Movement mode</b>
+    <div class="mode-tabs">
+      <button data-mode="group" class="active" type="button">Whole group</button>
+      <button data-mode="individual" type="button">Individual point</button>
+      <button data-mode="add" type="button">Add new points</button>
     </div>
+    <p class="hint" id="modeHint">Whole group: drag any point or use arrows to move all points of that team together.</p>
 
-    <div class="group-card">
-      <div><b id="activeLabel">Moving: RED group</b></div>
-      <div class="nudge-grid" aria-label="Move whole group">
-        <button id="groupUp" class="nudge-up" type="button" title="Move group up">↑</button>
-        <button id="groupLeft" class="nudge-left" type="button" title="Move group left">←</button>
-        <button id="groupDown" class="nudge-down" type="button" title="Move group down">↓</button>
-        <button id="groupRight" class="nudge-right" type="button" title="Move group right">→</button>
+    <div class="card" id="teamCard">
+      <h3>Active team</h3>
+      <div class="team-tabs">
+        <button data-team="red" class="active" type="button">Red</button>
+        <button data-team="green" type="button">Green</button>
+        <button data-team="blue" type="button">Blue</button>
       </div>
-      <div class="step-row">
-        <label for="groupStep">Step size</label>
-        <select id="groupStep">
+      <div class="nudge-grid">
+        <button id="up" class="nudge-up" type="button">↑</button>
+        <button id="left" class="nudge-left" type="button">←</button>
+        <button id="down" class="nudge-down" type="button">↓</button>
+        <button id="right" class="nudge-right" type="button">→</button>
+      </div>
+      <div class="row">
+        <label for="step">Step</label>
+        <select id="step">
           <option value="0.0005">Fine</option>
           <option value="0.001" selected>Medium</option>
           <option value="0.002">Fast</option>
           <option value="0.005">Very fast</option>
         </select>
       </div>
-      <div class="help">You can also drag ANY dot. Dragging one dot moves its entire color group while preserving spacing. Keyboard arrow keys move the active group; Shift + Arrow moves 4× faster.</div>
+    </div>
+
+    <div class="card hidden" id="individualCard">
+      <h3 id="selectedTitle">No point selected</h3>
+      <div class="help">Click any existing point first. Then drag it or use the arrow controls above.</div>
+    </div>
+
+    <div class="card hidden" id="newCard">
+      <h3>New points <span class="count" id="newCount">0 / 21</span></h3>
+      <div class="row">
+        <label for="newName">Name</label>
+        <input id="newName" value="NEW-1" maxlength="32" />
+      </div>
+      <div class="row">
+        <label for="newTeam">Group</label>
+        <select id="newTeam">
+          <option value="neutral">Neutral</option>
+          <option value="red">Red</option>
+          <option value="green">Green</option>
+          <option value="blue">Blue</option>
+        </select>
+      </div>
+      <div class="help">In Add mode, click an empty location on the board to place the next point. You can name each point anything you want. Maximum: 21 new points.</div>
+      <div class="row">
+        <button id="renameSelected" type="button">Rename selected</button>
+        <button id="deleteSelected" type="button">Delete selected new point</button>
+      </div>
     </div>
 
     <div class="status" id="status"></div>
@@ -90,111 +127,288 @@ for(let line=1;line<=9;line++)for(let depth=1;depth<=5;depth++)labels.push(`L${l
 
 const seed={"red":[[0.329114,0.755632],[0.330265,0.717023],[0.330265,0.674419],[0.332566,0.627821],[0.333717,0.579892],[0.370541,0.759626],[0.370541,0.71436],[0.370541,0.673088],[0.371692,0.625159],[0.372842,0.57723],[0.410817,0.760958],[0.410817,0.715691],[0.410817,0.673088],[0.411968,0.625159],[0.411968,0.57723],[0.455696,0.758295],[0.455696,0.71436],[0.453395,0.671756],[0.454545,0.62649],[0.454545,0.578561],[0.498274,0.758295],[0.498274,0.713029],[0.497123,0.671756],[0.498274,0.62649],[0.498274,0.579892],[0.542002,0.758295],[0.542002,0.713029],[0.540852,0.670425],[0.540852,0.627821],[0.540852,0.578561],[0.58458,0.759626],[0.583429,0.715691],[0.583429,0.673088],[0.583429,0.627821],[0.582278,0.578561],[0.627158,0.759626],[0.627158,0.715691],[0.626007,0.673088],[0.624856,0.62649],[0.622555,0.57723],[0.667434,0.760958],[0.665132,0.71436],[0.666283,0.673088],[0.663982,0.627821],[0.662831,0.578561]],"green":[[0.862061,0.416779],[0.830196,0.434106],[0.79569,0.454397],[0.756761,0.474469],[0.717347,0.496235],[0.843891,0.376694],[0.807229,0.398252],[0.773802,0.417909],[0.734389,0.439675],[0.694976,0.461441],[0.824159,0.338937],[0.787496,0.360496],[0.752991,0.380787],[0.713578,0.402553],[0.674759,0.425379],[0.798813,0.298841],[0.76323,0.319766],[0.729913,0.342177],[0.692657,0.362676],[0.653838,0.385503],[0.776814,0.259598],[0.740152,0.281156],[0.707319,0.301874],[0.670062,0.322372],[0.632321,0.344564],[0.754219,0.219294],[0.717558,0.240853],[0.683646,0.262203],[0.64914,0.282494],[0.609243,0.305955],[0.733297,0.179417],[0.698308,0.201402],[0.663803,0.221692],[0.627141,0.243251],[0.587839,0.267773],[0.711297,0.140173],[0.675714,0.161098],[0.641803,0.182449],[0.604657,0.205702],[0.56595,0.231284],[0.691566,0.102417],[0.655015,0.126731],[0.620993,0.145327],[0.585519,0.169007],[0.546217,0.193528]],"blue":[[0.314891,0.104748],[0.345762,0.123623],[0.380485,0.14329],[0.417271,0.166905],[0.455737,0.190083],[0.290154,0.140813],[0.327048,0.161709],[0.360685,0.18076],[0.399152,0.203938],[0.437619,0.227115],[0.268184,0.177055],[0.305078,0.19795],[0.339801,0.217616],[0.378267,0.240794],[0.417331,0.262919],[0.247083,0.219352],[0.282892,0.239633],[0.318808,0.257194],[0.355105,0.279141],[0.394168,0.301266],[0.225005,0.258315],[0.261898,0.27921],[0.296134,0.297209],[0.33243,0.319157],[0.370409,0.340668],[0.20233,0.29833],[0.239224,0.319225],[0.274543,0.337839],[0.309267,0.357506],[0.349415,0.380245],[0.179167,0.336678],[0.215573,0.355906],[0.250295,0.375572],[0.287189,0.396468],[0.327934,0.418153],[0.157089,0.375641],[0.192897,0.395922],[0.228217,0.414535],[0.266792,0.434991],[0.308134,0.455625],[0.135119,0.411882],[0.174291,0.431286],[0.207332,0.451391],[0.245419,0.470181],[0.286165,0.491866]]};
 let positions=JSON.parse(JSON.stringify(seed));
-let activeGroup='red';
+let customPoints=[];
+let mode='group';
+let activeTeam='red';
+let selected=null;
 let dragState=null;
 
 const board=document.getElementById('boardWrap');
 const output=document.getElementById('output');
 const status=document.getElementById('status');
-const activeLabel=document.getElementById('activeLabel');
-const groupStep=document.getElementById('groupStep');
+const stepEl=document.getElementById('step');
+const modeHint=document.getElementById('modeHint');
+const teamCard=document.getElementById('teamCard');
+const individualCard=document.getElementById('individualCard');
+const selectedTitle=document.getElementById('selectedTitle');
+const newCard=document.getElementById('newCard');
+const newCount=document.getElementById('newCount');
+const newName=document.getElementById('newName');
+const newTeam=document.getElementById('newTeam');
 
 function clamp(v){return Math.max(0,Math.min(1,v))}
+function currentStep(mult=1){return (+(stepEl.value||0.001))*mult}
+function pointKey(team,index){return team+':'+index}
+function customKey(index){return 'custom:'+index}
+
+function selectedInfo(){
+  if(!selected)return null;
+  const [kind,a,b]=selected.split(':');
+  if(kind==='base')return {kind:'base',team:a,index:+b};
+  if(kind==='custom')return {kind:'custom',index:+a};
+  return null;
+}
+
 function updateOutput(){
   const normalized={},css={};
   for(const team of ['red','green','blue']){
     normalized[team]=positions[team].map(([x,y])=>[+x.toFixed(6),+y.toFixed(6)]);
     css[team]=positions[team].map(([x,y],i)=>({label:labels[i],left:`${(x*100).toFixed(3)}%`,top:`${(y*100).toFixed(3)}%`}));
   }
-  output.value=`// Sanyou Qi normalized coordinates\nconst SANYOU_POSITIONS = ${JSON.stringify(normalized,null,2)};\n\n/* CSS percentages */\n${JSON.stringify(css,null,2)}`;
+  const custom=customPoints.map(p=>({
+    id:p.id,name:p.name,team:p.team,
+    x:+p.x.toFixed(6),y:+p.y.toFixed(6),
+    left:`${(p.x*100).toFixed(3)}%`,top:`${(p.y*100).toFixed(3)}%`
+  }));
+  output.value=`// Sanyou Qi normalized coordinates\nconst SANYOU_POSITIONS = ${JSON.stringify(normalized,null,2)};\n\n// 21 extra/custom points\nconst SANYOU_CUSTOM_POINTS = ${JSON.stringify(custom,null,2)};\n\n/* CSS percentages */\n${JSON.stringify(css,null,2)}`;
+  newCount.textContent=customPoints.length+' / 21';
 }
-function setActiveGroup(team){
-  activeGroup=team;
-  activeLabel.textContent='Moving: '+team.toUpperCase()+' group';
+
+function setMode(next){
+  mode=next;
+  dragState=null;
+  document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+  individualCard.classList.toggle('hidden',mode!=='individual');
+  newCard.classList.toggle('hidden',mode!=='add');
+  teamCard.classList.toggle('hidden',mode==='add');
+  modeHint.textContent =
+    mode==='group' ? 'Whole group: drag any point or use arrows to move all points of that team together.' :
+    mode==='individual' ? 'Individual point: select one point, then drag it or use arrows to fine-tune only that point.' :
+    'Add new points: click empty board locations to create up to 21 extra points and name them however you want.';
+  render();
+}
+
+function setActiveTeam(team){
+  activeTeam=team;
   document.querySelectorAll('[data-team]').forEach(b=>b.classList.toggle('active',b.dataset.team===team));
   render();
 }
-function moveGroup(team,dx,dy){
+
+function moveWholeTeam(team,dx,dy){
   positions[team]=positions[team].map(([x,y])=>[clamp(x+dx),clamp(y+dy)]);
+  customPoints=customPoints.map(p=>p.team===team?{...p,x:clamp(p.x+dx),y:clamp(p.y+dy)}:p);
+}
+
+function moveSelected(dx,dy){
+  const info=selectedInfo();
+  if(!info){status.textContent='Select a point first.';return;}
+  if(info.kind==='base'){
+    const [x,y]=positions[info.team][info.index];
+    positions[info.team][info.index]=[clamp(x+dx),clamp(y+dy)];
+  }else{
+    const p=customPoints[info.index];
+    if(!p)return;
+    p.x=clamp(p.x+dx);p.y=clamp(p.y+dy);
+  }
+}
+
+function nudge(dx,dy,mult=1){
+  const s=currentStep(mult);
+  if(mode==='group'){
+    moveWholeTeam(activeTeam,dx*s,dy*s);
+    status.textContent=activeTeam.toUpperCase()+' group moved.';
+  }else if(mode==='individual'){
+    moveSelected(dx*s,dy*s);
+    status.textContent='Selected point moved.';
+  }else{
+    status.textContent='Switch to Group or Individual mode to use arrows.';
+    return;
+  }
   render();
-  status.textContent=team.toUpperCase()+' group moved.';
   setTimeout(()=>status.textContent='',900);
 }
-function nudge(dx,dy,mult=1){
-  const step=(+(groupStep.value||0.001))*mult;
-  moveGroup(activeGroup,dx*step,dy*step);
+
+function addCustomAt(x,y){
+  if(customPoints.length>=21){
+    status.textContent='All 21 new points have been placed.';
+    return;
+  }
+  const raw=(newName.value||'').trim();
+  const fallback='NEW-'+(customPoints.length+1);
+  const name=raw||fallback;
+  customPoints.push({
+    id:'N'+(customPoints.length+1),
+    name,
+    team:newTeam.value,
+    x:clamp(x),
+    y:clamp(y)
+  });
+  selected='custom:'+(customPoints.length-1);
+  newName.value='NEW-'+(customPoints.length+1);
+  status.textContent=name+' added.';
+  render();
 }
+
+function updateSelectionPanel(){
+  const info=selectedInfo();
+  if(!info){
+    selectedTitle.textContent='No point selected';
+    return;
+  }
+  if(info.kind==='base'){
+    selectedTitle.textContent=info.team.toUpperCase()+' · '+labels[info.index];
+  }else{
+    const p=customPoints[info.index];
+    selectedTitle.textContent=p ? 'NEW · '+p.name : 'No point selected';
+    if(p){newName.value=p.name;newTeam.value=p.team;}
+  }
+}
+
 function render(){
   board.querySelectorAll('.node').forEach(el=>el.remove());
+
   for(const team of ['red','green','blue']){
     positions[team].forEach(([x,y],index)=>{
       const d=document.createElement('div');
-      d.className='node '+team+(team===activeGroup?' active-team':'');
-      d.style.left=(x*100)+'%';
-      d.style.top=(y*100)+'%';
-      d.dataset.team=team;
-      d.dataset.index=index;
-      d.title=team.toUpperCase()+' '+labels[index]+' — drag to move whole group';
-
+      const key='base:'+team+':'+index;
+      d.className='node '+team+(team===activeTeam&&mode==='group'?' active-team':'')+(selected===key?' selected':'');
+      d.style.left=(x*100)+'%';d.style.top=(y*100)+'%';
+      d.dataset.team=team;d.dataset.index=index;
       const label=document.createElement('span');
-      label.className='node-label';
-      label.textContent=labels[index];
+      label.className='node-label';label.textContent=labels[index];
       d.appendChild(label);
 
       d.addEventListener('pointerdown',e=>{
         e.preventDefault();
-        setActiveGroup(team);
+        selected=key;
+        if(mode==='group')setActiveTeam(team);
+        updateSelectionPanel();
+
         const rect=board.getBoundingClientRect();
         dragState={
-          team,
           pointerId:e.pointerId,
+          kind:mode==='group'?'group':'individual',
+          team,index,
           startX:(e.clientX-rect.left)/rect.width,
           startY:(e.clientY-rect.top)/rect.height,
-          original:positions[team].map(([px,py])=>[px,py])
+          originalTeam:positions[team].map(([px,py])=>[px,py]),
+          originalCustom:customPoints.map(p=>({...p}))
         };
         d.setPointerCapture(e.pointerId);
+        render();
       });
 
       d.addEventListener('pointermove',e=>{
-        if(!dragState || dragState.pointerId!==e.pointerId || !d.hasPointerCapture(e.pointerId))return;
+        if(!dragState||dragState.pointerId!==e.pointerId||!d.hasPointerCapture(e.pointerId)||mode==='add')return;
         const rect=board.getBoundingClientRect();
-        const nowX=(e.clientX-rect.left)/rect.width;
-        const nowY=(e.clientY-rect.top)/rect.height;
-        const dx=nowX-dragState.startX;
-        const dy=nowY-dragState.startY;
-        positions[team]=dragState.original.map(([px,py])=>[clamp(px+dx),clamp(py+dy)]);
-        board.querySelectorAll('.node.'+team).forEach((el,j)=>{
-          const [nx,ny]=positions[team][j];
-          el.style.left=(nx*100)+'%';
-          el.style.top=(ny*100)+'%';
-        });
-        updateOutput();
+        const nx=(e.clientX-rect.left)/rect.width;
+        const ny=(e.clientY-rect.top)/rect.height;
+        const dx=nx-dragState.startX,dy=ny-dragState.startY;
+
+        if(dragState.kind==='group'){
+          positions[team]=dragState.originalTeam.map(([px,py])=>[clamp(px+dx),clamp(py+dy)]);
+          customPoints=dragState.originalCustom.map(p=>p.team===team?{...p,x:clamp(p.x+dx),y:clamp(p.y+dy)}:p);
+        }else{
+          const [ox,oy]=dragState.originalTeam[index];
+          positions[team][index]=[clamp(ox+dx),clamp(oy+dy)];
+        }
+        renderVisualOnly();
       });
 
       const finish=e=>{
         if(d.hasPointerCapture(e.pointerId))d.releasePointerCapture(e.pointerId);
-        if(dragState){
-          status.textContent=team.toUpperCase()+' whole group moved.';
-          dragState=null;
-          updateOutput();
-          setTimeout(()=>status.textContent='',1000);
-        }
+        if(dragState){dragState=null;updateOutput();render();}
       };
       d.addEventListener('pointerup',finish);
       d.addEventListener('pointercancel',finish);
       board.appendChild(d);
     });
   }
+
+  customPoints.forEach((p,index)=>{
+    const d=document.createElement('div');
+    const key='custom:'+index;
+    d.className='node custom '+(p.team!=='neutral'?p.team:'')+(p.team===activeTeam&&mode==='group'?' active-team':'')+(selected===key?' selected':'');
+    d.style.left=(p.x*100)+'%';d.style.top=(p.y*100)+'%';
+    const label=document.createElement('span');
+    label.className='node-label';label.textContent=p.name;
+    d.appendChild(label);
+
+    d.addEventListener('pointerdown',e=>{
+      e.preventDefault();e.stopPropagation();
+      selected=key;
+      if(mode==='group'&&p.team!=='neutral')setActiveTeam(p.team);
+      updateSelectionPanel();
+
+      const rect=board.getBoundingClientRect();
+      dragState={
+        pointerId:e.pointerId,
+        kind:(mode==='group'&&p.team!=='neutral')?'group':'individual',
+        team:p.team,index,
+        startX:(e.clientX-rect.left)/rect.width,
+        startY:(e.clientY-rect.top)/rect.height,
+        originalTeams:JSON.parse(JSON.stringify(positions)),
+        originalCustom:customPoints.map(q=>({...q}))
+      };
+      d.setPointerCapture(e.pointerId);
+      render();
+    });
+
+    d.addEventListener('pointermove',e=>{
+      if(!dragState||dragState.pointerId!==e.pointerId||!d.hasPointerCapture(e.pointerId))return;
+      const rect=board.getBoundingClientRect();
+      const nx=(e.clientX-rect.left)/rect.width,ny=(e.clientY-rect.top)/rect.height;
+      const dx=nx-dragState.startX,dy=ny-dragState.startY;
+
+      if(dragState.kind==='group'&&p.team!=='neutral'){
+        positions[p.team]=dragState.originalTeams[p.team].map(([px,py])=>[clamp(px+dx),clamp(py+dy)]);
+        customPoints=dragState.originalCustom.map(q=>q.team===p.team?{...q,x:clamp(q.x+dx),y:clamp(q.y+dy)}:q);
+      }else{
+        const orig=dragState.originalCustom[index];
+        customPoints[index]={...customPoints[index],x:clamp(orig.x+dx),y:clamp(orig.y+dy)};
+      }
+      renderVisualOnly();
+    });
+
+    const finish=e=>{
+      if(d.hasPointerCapture(e.pointerId))d.releasePointerCapture(e.pointerId);
+      if(dragState){dragState=null;updateOutput();render();}
+    };
+    d.addEventListener('pointerup',finish);
+    d.addEventListener('pointercancel',finish);
+    board.appendChild(d);
+  });
+
+  updateSelectionPanel();
   updateOutput();
 }
 
-document.querySelectorAll('[data-team]').forEach(btn=>{
-  btn.addEventListener('click',()=>setActiveGroup(btn.dataset.team));
+function renderVisualOnly(){
+  const baseNodes=[...board.querySelectorAll('.node:not(.custom)')];
+  let k=0;
+  for(const team of ['red','green','blue']){
+    positions[team].forEach(([x,y])=>{
+      const el=baseNodes[k++]; if(el){el.style.left=(x*100)+'%';el.style.top=(y*100)+'%';}
+    });
+  }
+  [...board.querySelectorAll('.node.custom')].forEach((el,i)=>{
+    const p=customPoints[i];if(p){el.style.left=(p.x*100)+'%';el.style.top=(p.y*100)+'%';}
+  });
+  updateOutput();
+}
+
+board.addEventListener('click',e=>{
+  if(mode!=='add'||e.target.closest('.node'))return;
+  const rect=board.getBoundingClientRect();
+  addCustomAt((e.clientX-rect.left)/rect.width,(e.clientY-rect.top)/rect.height);
 });
-document.getElementById('groupUp').onclick=()=>nudge(0,-1);
-document.getElementById('groupDown').onclick=()=>nudge(0,1);
-document.getElementById('groupLeft').onclick=()=>nudge(-1,0);
-document.getElementById('groupRight').onclick=()=>nudge(1,0);
+
+document.querySelectorAll('[data-mode]').forEach(btn=>btn.addEventListener('click',()=>setMode(btn.dataset.mode)));
+document.querySelectorAll('[data-team]').forEach(btn=>btn.addEventListener('click',()=>setActiveTeam(btn.dataset.team)));
+document.getElementById('up').onclick=()=>nudge(0,-1);
+document.getElementById('down').onclick=()=>nudge(0,1);
+document.getElementById('left').onclick=()=>nudge(-1,0);
+document.getElementById('right').onclick=()=>nudge(1,0);
 
 window.addEventListener('keydown',e=>{
   if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
@@ -208,9 +422,32 @@ window.addEventListener('keydown',e=>{
   nudge(dx,dy,e.shiftKey?4:1);
 });
 
+document.getElementById('renameSelected').onclick=()=>{
+  const info=selectedInfo();
+  if(!info||info.kind!=='custom'){status.textContent='Select a new/custom point first.';return;}
+  const p=customPoints[info.index];
+  const name=(newName.value||'').trim();
+  if(name)p.name=name;
+  p.team=newTeam.value;
+  status.textContent='Custom point updated.';
+  render();
+};
+document.getElementById('deleteSelected').onclick=()=>{
+  const info=selectedInfo();
+  if(!info||info.kind!=='custom'){status.textContent='Select a new/custom point first.';return;}
+  customPoints.splice(info.index,1);
+  selected=null;
+  customPoints.forEach((p,i)=>p.id='N'+(i+1));
+  newName.value='NEW-'+(customPoints.length+1);
+  status.textContent='Custom point deleted.';
+  render();
+};
+
 document.getElementById('reset').onclick=()=>{
   positions=JSON.parse(JSON.stringify(seed));
-  setActiveGroup('red');
+  customPoints=[];selected=null;activeTeam='red';
+  setMode('group');setActiveTeam('red');
+  newName.value='NEW-1';
   status.textContent='Reset to saved Sanyou values.';
   setTimeout(()=>status.textContent='',1200);
 };
@@ -231,17 +468,12 @@ document.getElementById('applySymmetry').onclick=()=>{
 
 document.getElementById('copy').onclick=async()=>{
   updateOutput();
-  try{
-    await navigator.clipboard.writeText(output.value);
-    status.textContent='Coordinates copied.';
-  }catch{
-    output.select();
-    document.execCommand('copy');
-    status.textContent='Coordinates selected/copied.';
-  }
+  try{await navigator.clipboard.writeText(output.value);status.textContent='Coordinates copied.';}
+  catch{output.select();document.execCommand('copy');status.textContent='Coordinates selected/copied.';}
   setTimeout(()=>status.textContent='',1400);
 };
 
+setMode('group');
 render();
 </script>
 </body>
