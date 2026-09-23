@@ -45,9 +45,9 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
 </head>
 <body>
 <header>
-  <h1>Sanyou Qi — Coordinate Placement</h1>
+  <h1>Sanyou Qi — Final Coordinate Placement</h1>
   <button id="reset" type="button">Reset</button>
-  <button id="applySymmetry" type="button">Generate Green + Blue from Red</button>
+  <button id="restoreDefaults" type="button">Restore saved final positions</button>
   <button id="copy" type="button">Copy coordinates</button>
 </header>
 
@@ -57,7 +57,7 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
   </div>
 
   <aside>
-    <b>Movement mode</b>
+    <b>Movement mode</b><p class="hint">Default = your saved final Red, Green and Blue coordinates plus C-1 to C-12. Nothing is regenerated from symmetry.</p>
     <div class="mode-tabs">
       <button data-mode="group" class="active" type="button">Whole group</button>
       <button data-mode="individual" type="button">Individual point</button>
@@ -439,7 +439,7 @@ document.getElementById('deleteSelected').onclick=()=>{
   customPoints.splice(info.index,1);
   selected=null;
   customPoints.forEach((p,i)=>p.id='N'+(i+1));
-  newName.value='NEW-'+(customPoints.length+1);
+  newName.value='C-'+(customPoints.length+1);
   status.textContent='Custom point deleted.';
   render();
 };
@@ -453,17 +453,15 @@ document.getElementById('reset').onclick=()=>{
   setTimeout(()=>status.textContent='',1200);
 };
 
-const RED_TO_BLUE={x:[-0.51853643865423,-0.8150286959303833,1.101410418253937],y:[0.9150903555178589,-0.46160993425501207,0.15238572188960633]};
-const RED_TO_GREEN={x:[-0.5166975217466264,0.809920470185612,0.4201118264550665],y:[-0.9216881343055983,-0.47626324618061044,1.0799989212704124]};
-function transformPoint(point,T){
-  const [x,y]=point;
-  return [clamp(T.x[0]*x+T.x[1]*y+T.x[2]),clamp(T.y[0]*x+T.y[1]*y+T.y[2])];
-}
-document.getElementById('applySymmetry').onclick=()=>{
-  positions.blue=positions.red.map(p=>transformPoint(p,RED_TO_BLUE));
-  positions.green=positions.red.map(p=>transformPoint(p,RED_TO_GREEN));
-  render();
-  status.textContent='Green and Blue regenerated from Red.';
+document.getElementById('restoreDefaults').onclick=()=>{
+  positions=JSON.parse(JSON.stringify(seed));
+  customPoints=JSON.parse(JSON.stringify(customSeed));
+  selected=null;
+  activeTeam='red';
+  setMode('group');
+  setActiveTeam('red');
+  newName.value='C-13';
+  status.textContent='Restored your saved final Red, Green, Blue and C-1 to C-12 positions.';
   setTimeout(()=>status.textContent='',1800);
 };
 
