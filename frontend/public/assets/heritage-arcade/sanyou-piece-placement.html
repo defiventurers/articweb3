@@ -33,6 +33,17 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
 .export{width:100%;height:310px;background:#0b1320;color:#d9e6f7;border:1px solid #405778;border-radius:7px;padding:8px;font-family:Consolas,monospace;font-size:11px;margin-top:8px;resize:vertical}
 .status{font-size:12px;color:#ffd75a;min-height:18px}
 .small-actions{display:flex;gap:6px;flex-wrap:wrap}
+.nudge-wrap{margin-top:10px;border-top:1px solid #405778;padding-top:10px}
+.nudge-grid{display:grid;grid-template-columns:46px 46px 46px;grid-template-rows:40px 40px;gap:6px;justify-content:center;margin-top:8px}
+.nudge-grid button{padding:0;font-size:20px;font-weight:800}
+.nudge-up{grid-column:2;grid-row:1}
+.nudge-left{grid-column:1;grid-row:2}
+.nudge-down{grid-column:2;grid-row:2}
+.nudge-right{grid-column:3;grid-row:2}
+.step-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.step-row label{font-size:11px;color:#9fb2cc}
+.step-row select{padding:6px 8px}
+.board-help{margin-top:6px;color:#8fe3ff;font-size:12px;font-weight:700}
 @media(max-width:900px){.layout{grid-template-columns:1fr}.board-wrap{max-width:none}aside{position:static}}
 </style>
 </head>
@@ -70,6 +81,25 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
       <div class="small-actions" style="margin-top:8px">
         <button id="prev">Previous</button>
         <button id="next">Next</button>
+      </div>
+
+      <div class="nudge-wrap">
+        <b>Move selected point</b>
+        <div class="nudge-grid" aria-label="Move selected point">
+          <button id="nudgeUp" class="nudge-up" type="button" title="Move up">↑</button>
+          <button id="nudgeLeft" class="nudge-left" type="button" title="Move left">←</button>
+          <button id="nudgeDown" class="nudge-down" type="button" title="Move down">↓</button>
+          <button id="nudgeRight" class="nudge-right" type="button" title="Move right">→</button>
+        </div>
+        <div class="step-row">
+          <label for="stepSelect">Step size</label>
+          <select id="stepSelect">
+            <option value="0.0005">Fine</option>
+            <option value="0.001">Medium</option>
+            <option value="0.002">Fast</option>
+          </select>
+        </div>
+        <div class="board-help">Tip: select a dot, then click anywhere on the board to place it there.</div>
       </div>
     </div>
 
@@ -193,7 +223,35 @@ function setSelectedValue(axis,value,isPercent=false){
 xInput.addEventListener('change',()=>setSelectedValue(0,xInput.value));
 yInput.addEventListener('change',()=>setSelectedValue(1,yInput.value));
 xpInput.addEventListener('change',()=>setSelectedValue(0,xpInput.value,true));
+
 ypInput.addEventListener('change',()=>setSelectedValue(1,ypInput.value,true));
+
+function nudgeSelected(dx,dy){
+  if(!selected){status.textContent='Select a point first.';return;}
+  const {team,index}=parseKey(selected);
+  const step=+(document.getElementById('stepSelect').value||0.0005);
+  const [x,y]=positions[team][index];
+  positions[team][index]=[clamp(x+dx*step),clamp(y+dy*step)];
+  render();
+}
+document.getElementById('nudgeUp').onclick=()=>nudgeSelected(0,-1);
+document.getElementById('nudgeDown').onclick=()=>nudgeSelected(0,1);
+document.getElementById('nudgeLeft').onclick=()=>nudgeSelected(-1,0);
+document.getElementById('nudgeRight').onclick=()=>nudgeSelected(1,0);
+
+// Easier alternative to dragging: select a dot, then click on the board.
+board.addEventListener('click',e=>{
+  if(!selected || e.target.closest('.node')) return;
+  const rect=board.getBoundingClientRect();
+  const {team,index}=parseKey(selected);
+  positions[team][index]=[
+    clamp((e.clientX-rect.left)/rect.width),
+    clamp((e.clientY-rect.top)/rect.height)
+  ];
+  render();
+  status.textContent=team.toUpperCase()+' '+labels[index]+' placed by click.';
+  setTimeout(()=>status.textContent='',1400);
+});
 
 document.querySelectorAll('[data-team]').forEach(btn=>btn.onclick=()=>{
   filter=btn.dataset.team;
@@ -217,7 +275,7 @@ document.getElementById('next').onclick=()=>moveSelection(1);
 window.addEventListener('keydown',e=>{
   if(!selected || ['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;
   const {team,index}=parseKey(selected);
-  const step=e.shiftKey?0.002:0.0005;
+  const base=+(document.getElementById('stepSelect').value||0.0005); const step=e.shiftKey?base*4:base;
   let [x,y]=positions[team][index];
   if(e.key==='ArrowLeft')x-=step;
   else if(e.key==='ArrowRight')x+=step;
