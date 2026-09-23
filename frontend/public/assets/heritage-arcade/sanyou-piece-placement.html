@@ -44,6 +44,11 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
 .step-row label{font-size:11px;color:#9fb2cc}
 .step-row select{padding:6px 8px}
 .board-help{margin-top:6px;color:#8fe3ff;font-size:12px;font-weight:700}
+.group-move-card{border:1px solid #405778;border-radius:8px;padding:10px;background:#101c2d;margin:10px 0}
+.group-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.group-row select{flex:1;min-width:120px}
+.group-drag-active{outline:2px solid #ffd75a!important;background:#455f86!important}
+.group-hint{font-size:11px;color:#aebed4;line-height:1.45;margin-top:7px}
 @media(max-width:900px){.layout{grid-template-columns:1fr}.board-wrap{max-width:none}aside{position:static}}
 </style>
 </head>
@@ -68,6 +73,34 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
       <button data-team="red">Red</button>
       <button data-team="green">Green</button>
       <button data-team="blue">Blue</button>
+    </div>
+
+    <div class="group-move-card">
+      <b>Move a whole color group</b>
+      <div class="group-row">
+        <select id="groupTeam" aria-label="Color group">
+          <option value="red">Red group</option>
+          <option value="green">Green group</option>
+          <option value="blue">Blue group</option>
+        </select>
+        <button id="toggleGroupDrag" type="button">Group drag: OFF</button>
+      </div>
+      <div class="nudge-grid" aria-label="Move whole group">
+        <button id="groupUp" class="nudge-up" type="button">↑</button>
+        <button id="groupLeft" class="nudge-left" type="button">←</button>
+        <button id="groupDown" class="nudge-down" type="button">↓</button>
+        <button id="groupRight" class="nudge-right" type="button">→</button>
+      </div>
+      <div class="step-row">
+        <label for="groupStep">Group step</label>
+        <select id="groupStep">
+          <option value="0.0005">Fine</option>
+          <option value="0.001">Medium</option>
+          <option value="0.002">Fast</option>
+          <option value="0.005">Very fast</option>
+        </select>
+      </div>
+      <div class="group-hint">Turn Group drag ON, then drag any dot of that color. All 45 points move together while keeping their exact spacing.</div>
     </div>
 
     <div class="coord-card">
@@ -122,6 +155,8 @@ const seed={"red":[[0.329114,0.755632],[0.330265,0.717023],[0.330265,0.674419],[
 let positions=JSON.parse(JSON.stringify(seed));
 let filter='all';
 let selected=null;
+let groupDrag=false;
+let groupDragStart=null;
 
 const board=document.getElementById('boardWrap');
 const output=document.getElementById('output');
@@ -161,6 +196,19 @@ function refreshInspector(){
   xpInput.value=(x*100).toFixed(3); ypInput.value=(y*100).toFixed(3);
 }
 
+function moveWholeGroup(team,dx,dy){
+  positions[team]=positions[team].map(([x,y])=>[clamp(x+dx),clamp(y+dy)]);
+  render();
+}
+function selectedGroupStep(){
+  return +(document.getElementById('groupStep')?.value||0.0005);
+}
+function updateGroupDragButton(){
+  const b=document.getElementById('toggleGroupDrag');
+  if(!b)return;
+  b.textContent='Group drag: '+(groupDrag?'ON':'OFF');
+  b.classList.toggle('group-drag-active',groupDrag);
+}
 function render(){
   board.querySelectorAll('.node').forEach(el=>el.remove());
   for(const team of ['red','green','blue']){
@@ -182,26 +230,53 @@ function render(){
         board.querySelectorAll('.node.selected').forEach(el=>el.classList.remove('selected'));
         d.classList.add('selected');
         refreshInspector();
+        if(groupDrag){
+          document.getElementById('groupTeam').value=team;
+          const rect=board.getBoundingClientRect();
+          groupDragStart={
+            team,
+            pointerX:(e.clientX-rect.left)/rect.width,
+            pointerY:(e.clientY-rect.top)/rect.height,
+            original:positions[team].map(p=>[p[0],p[1]])
+          };
+        }
         d.setPointerCapture(e.pointerId);
       });
       d.addEventListener('pointermove',e=>{
         if(!d.hasPointerCapture(e.pointerId))return;
         const rect=board.getBoundingClientRect();
-        positions[team][index]=[
-          clamp((e.clientX-rect.left)/rect.width),
-          clamp((e.clientY-rect.top)/rect.height)
-        ];
-        d.style.left=(positions[team][index][0]*100)+'%';
-        d.style.top=(positions[team][index][1]*100)+'%';
+        const px=clamp((e.clientX-rect.left)/rect.width);
+        const py=clamp((e.clientY-rect.top)/rect.height);
+        if(groupDrag && groupDragStart && groupDragStart.team===team){
+          const dx=px-groupDragStart.pointerX;
+          const dy=py-groupDragStart.pointerY;
+          positions[team]=groupDragStart.original.map(([x,y])=>[clamp(x+dx),clamp(y+dy)]);
+          board.querySelectorAll('.node.'+team).forEach((el,j)=>{
+            const p=positions[team][j];
+            el.style.left=(p[0]*100)+'%';
+            el.style.top=(p[1]*100)+'%';
+          });
+        }else{
+          positions[team][index]=[px,py];
+          d.style.left=(positions[team][index][0]*100)+'%';
+          d.style.top=(positions[team][index][1]*100)+'%';
+        }
         refreshInspector(); updateOutput();
       });
       d.addEventListener('pointerup',e=>{
         if(d.hasPointerCapture(e.pointerId))d.releasePointerCapture(e.pointerId);
-        status.textContent=team.toUpperCase()+' '+labels[index]+' updated.';
+        if(groupDrag && groupDragStart){
+          status.textContent=team.toUpperCase()+' group moved.';
+          groupDragStart=null;
+          render();
+        }else{
+          status.textContent=team.toUpperCase()+' '+labels[index]+' updated.';
+        }
         setTimeout(()=>status.textContent='',1600);
       });
       d.addEventListener('pointercancel',e=>{
         if(d.hasPointerCapture(e.pointerId))d.releasePointerCapture(e.pointerId);
+        groupDragStart=null;
       });
       board.appendChild(d);
     });
@@ -313,6 +388,26 @@ function generateSymmetryFromRed(){
   setTimeout(()=>status.textContent='',2400);
 }
 document.getElementById('applySymmetry').onclick=generateSymmetryFromRed;
+
+
+document.getElementById('toggleGroupDrag').onclick=()=>{
+  groupDrag=!groupDrag;
+  groupDragStart=null;
+  updateGroupDragButton();
+};
+document.getElementById('groupUp').onclick=()=>{
+  const t=document.getElementById('groupTeam').value,s=selectedGroupStep(); moveWholeGroup(t,0,-s);
+};
+document.getElementById('groupDown').onclick=()=>{
+  const t=document.getElementById('groupTeam').value,s=selectedGroupStep(); moveWholeGroup(t,0,s);
+};
+document.getElementById('groupLeft').onclick=()=>{
+  const t=document.getElementById('groupTeam').value,s=selectedGroupStep(); moveWholeGroup(t,-s,0);
+};
+document.getElementById('groupRight').onclick=()=>{
+  const t=document.getElementById('groupTeam').value,s=selectedGroupStep(); moveWholeGroup(t,s,0);
+};
+updateGroupDragButton();
 
 render();
 </script>
