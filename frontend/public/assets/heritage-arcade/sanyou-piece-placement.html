@@ -152,7 +152,10 @@ function render(){
 
       d.addEventListener('pointerdown',e=>{
         e.preventDefault();
-        selected=key; refreshInspector(); render();
+        selected=key;
+        board.querySelectorAll('.node.selected').forEach(el=>el.classList.remove('selected'));
+        d.classList.add('selected');
+        refreshInspector();
         d.setPointerCapture(e.pointerId);
       });
       d.addEventListener('pointermove',e=>{
@@ -168,8 +171,11 @@ function render(){
       });
       d.addEventListener('pointerup',e=>{
         if(d.hasPointerCapture(e.pointerId))d.releasePointerCapture(e.pointerId);
-        status.textContent=`${team.toUpperCase()} ${labels[index]} saved in browser state/output.`;
+        status.textContent=team.toUpperCase()+' '+labels[index]+' updated.';
         setTimeout(()=>status.textContent='',1600);
+      });
+      d.addEventListener('pointercancel',e=>{
+        if(d.hasPointerCapture(e.pointerId))d.releasePointerCapture(e.pointerId);
       });
       board.appendChild(d);
     });
