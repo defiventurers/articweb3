@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sanyou Qi Coordinate Placement</title>
+<title>Sanyou Qi Group Placement</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0e1726;color:#eef5ff;font-family:Inter,Arial,sans-serif}
@@ -11,56 +11,37 @@ header{position:sticky;top:0;z-index:20;background:#152238;padding:12px 16px;dis
 header h1{font-size:18px;margin:0;margin-right:auto}
 button,select{font:inherit;background:#263b5a;color:white;border:1px solid #405778;border-radius:7px;padding:8px 10px;cursor:pointer}
 button:hover{background:#314a6d}
-button.active{outline:2px solid #fff}
+button.active{outline:2px solid #ffd75a;background:#3a5275}
 .layout{display:grid;grid-template-columns:minmax(520px,1fr) 360px;gap:12px;padding:12px}
 .board-wrap{position:relative;max-width:1100px;margin:auto;background:white;border-radius:8px;overflow:hidden;touch-action:none;user-select:none}
 .board-wrap>img{display:block;width:100%;height:auto;pointer-events:none}
-.node{position:absolute;width:14px;height:14px;border-radius:50%;transform:translate(-50%,-50%);z-index:5;cursor:grab;opacity:.9;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 8px rgba(0,0,0,.55)}
+.node{position:absolute;width:16px;height:16px;border-radius:50%;transform:translate(-50%,-50%);z-index:5;cursor:grab;opacity:.92;box-shadow:0 0 0 2px rgba(255,255,255,.92),0 0 8px rgba(0,0,0,.55)}
 .node:active{cursor:grabbing}
 .node.red{background:#ff5454}
 .node.green{background:#44df74}
 .node.blue{background:#4fa3ff}
-.node.hidden-team{display:none}
-.node.selected{width:20px;height:20px;outline:3px solid #ffd75a;outline-offset:2px;z-index:10}
-.node-label{position:absolute;transform:translate(9px,-18px);padding:2px 4px;border-radius:4px;background:rgba(5,15,28,.82);color:#fff;font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;pointer-events:none}
+.node.active-team{width:19px;height:19px;outline:2px solid #ffd75a;outline-offset:2px}
+.node-label{position:absolute;transform:translate(10px,-18px);padding:2px 4px;border-radius:4px;background:rgba(5,15,28,.82);color:#fff;font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;pointer-events:none}
 aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px;height:max-content}
-.team-tabs{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
-.coord-card{border:1px solid #405778;border-radius:8px;padding:10px;background:#101c2d;margin:10px 0}
-.coord-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.coord-grid label{font-size:11px;color:#9fb2cc}
-.coord-grid input{width:100%;margin-top:3px;background:#0b1320;color:#fff;border:1px solid #405778;border-radius:6px;padding:7px}
+.team-tabs{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
+.group-card{border:1px solid #405778;border-radius:8px;padding:12px;background:#101c2d;margin:10px 0}
+.nudge-grid{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:42px 42px;gap:7px;justify-content:center;margin-top:10px}
+.nudge-grid button{padding:0;font-size:21px;font-weight:800}
+.nudge-up{grid-column:2;grid-row:1}.nudge-left{grid-column:1;grid-row:2}.nudge-down{grid-column:2;grid-row:2}.nudge-right{grid-column:3;grid-row:2}
+.step-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:10px}
 .hint{font-size:12px;color:#aebed4;line-height:1.5}
-.export{width:100%;height:310px;background:#0b1320;color:#d9e6f7;border:1px solid #405778;border-radius:7px;padding:8px;font-family:Consolas,monospace;font-size:11px;margin-top:8px;resize:vertical}
-.status{font-size:12px;color:#ffd75a;min-height:18px}
-.small-actions{display:flex;gap:6px;flex-wrap:wrap}
-.nudge-wrap{margin-top:10px;border-top:1px solid #405778;padding-top:10px}
-.nudge-grid{display:grid;grid-template-columns:46px 46px 46px;grid-template-rows:40px 40px;gap:6px;justify-content:center;margin-top:8px}
-.nudge-grid button{padding:0;font-size:20px;font-weight:800}
-.nudge-up{grid-column:2;grid-row:1}
-.nudge-left{grid-column:1;grid-row:2}
-.nudge-down{grid-column:2;grid-row:2}
-.nudge-right{grid-column:3;grid-row:2}
-.step-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
-.step-row label{font-size:11px;color:#9fb2cc}
-.step-row select{padding:6px 8px}
-.board-help{margin-top:6px;color:#8fe3ff;font-size:12px;font-weight:700}
-.group-move-wrap{margin-top:10px;border-top:1px solid #405778;padding-top:10px}
-.group-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
-.group-row label{font-size:11px;color:#9fb2cc}
-.group-row select{padding:6px 8px}
-.group-move-card{border:1px solid #405778;border-radius:8px;padding:10px;background:#101c2d;margin:10px 0}
-.group-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
-.group-row select{flex:1;min-width:120px}
-.group-drag-active{outline:2px solid #ffd75a!important;background:#455f86!important}
-.group-hint{font-size:11px;color:#aebed4;line-height:1.45;margin-top:7px}
+.help{font-size:12px;color:#8fe3ff;line-height:1.5;margin-top:10px;font-weight:700}
+.status{font-size:12px;color:#ffd75a;min-height:20px;margin-top:8px}
+.export{width:100%;height:280px;background:#0b1320;color:#d9e6f7;border:1px solid #405778;border-radius:7px;padding:8px;font-family:Consolas,monospace;font-size:11px;margin-top:8px;resize:vertical}
 @media(max-width:900px){.layout{grid-template-columns:1fr}.board-wrap{max-width:none}aside{position:static}}
 </style>
 </head>
 <body>
 <header>
-  <h1>Sanyou Qi — Coordinate Placement</h1>
-  <button id="reset">Reset to current Sanguo values</button>
-  <button id="applySymmetry">Generate Green + Blue from Red</button><button id="copy">Copy coordinates</button>
+  <h1>Sanyou Qi — Whole Group Placement</h1>
+  <button id="reset" type="button">Reset</button>
+  <button id="applySymmetry" type="button">Generate Green + Blue from Red</button>
+  <button id="copy" type="button">Copy coordinates</button>
 </header>
 
 <div class="layout">
@@ -69,105 +50,36 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
   </div>
 
   <aside>
-    <b>Drag the dots onto the Sanyou intersections.</b>
-    <p class="hint">Red starts from your calibrated Sanyou values. Use “Generate Green + Blue from Red” to reproduce the other two symmetric sectors automatically. You can still fine-tune any point afterward.</p>
+    <b>Whole-group movement only</b>
+    <p class="hint">There is no single-point mode. Choose Red, Green, or Blue and every movement shifts all 45 points of that team together.</p>
 
-    <div class="team-tabs">
-      <button data-team="all" class="active">All</button>
-      <button data-team="red">Red</button>
-      <button data-team="green">Green</button>
-      <button data-team="blue">Blue</button>
+    <div class="team-tabs" aria-label="Choose team to move">
+      <button data-team="red" class="active" type="button">Red</button>
+      <button data-team="green" type="button">Green</button>
+      <button data-team="blue" type="button">Blue</button>
     </div>
 
-    <div class="group-move-card">
-      <b>Move a whole color group</b>
-      <div class="group-row">
-        <select id="groupTeam" aria-label="Color group">
-          <option value="red">Red group</option>
-          <option value="green">Green group</option>
-          <option value="blue">Blue group</option>
-        </select>
-        <button id="toggleGroupDrag" type="button">Group drag: OFF</button>
-      </div>
+    <div class="group-card">
+      <div><b id="activeLabel">Moving: RED group</b></div>
       <div class="nudge-grid" aria-label="Move whole group">
-        <button id="groupUp" class="nudge-up" type="button">↑</button>
-        <button id="groupLeft" class="nudge-left" type="button">←</button>
-        <button id="groupDown" class="nudge-down" type="button">↓</button>
-        <button id="groupRight" class="nudge-right" type="button">→</button>
+        <button id="groupUp" class="nudge-up" type="button" title="Move group up">↑</button>
+        <button id="groupLeft" class="nudge-left" type="button" title="Move group left">←</button>
+        <button id="groupDown" class="nudge-down" type="button" title="Move group down">↓</button>
+        <button id="groupRight" class="nudge-right" type="button" title="Move group right">→</button>
       </div>
       <div class="step-row">
-        <label for="groupStep">Group step</label>
+        <label for="groupStep">Step size</label>
         <select id="groupStep">
           <option value="0.0005">Fine</option>
-          <option value="0.001">Medium</option>
+          <option value="0.001" selected>Medium</option>
           <option value="0.002">Fast</option>
           <option value="0.005">Very fast</option>
         </select>
       </div>
-      <div class="group-hint">Turn Group drag ON, then drag any dot of that color. All 45 points move together while keeping their exact spacing.</div>
-    </div>
-
-    <div class="coord-card">
-      <div><b id="selectedName">No point selected</b></div>
-      <div class="coord-grid">
-        <label>X normalized<input id="xInput" type="number" min="0" max="1" step="0.000001" disabled></label>
-        <label>Y normalized<input id="yInput" type="number" min="0" max="1" step="0.000001" disabled></label>
-        <label>X percent<input id="xpInput" type="number" min="0" max="100" step="0.01" disabled></label>
-        <label>Y percent<input id="ypInput" type="number" min="0" max="100" step="0.01" disabled></label>
-      </div>
-      <div class="small-actions" style="margin-top:8px">
-        <button id="prev">Previous</button>
-        <button id="next">Next</button>
-      </div>
-
-      <div class="nudge-wrap">
-        <b>Move selected point</b>
-        <div class="nudge-grid" aria-label="Move selected point">
-          <button id="nudgeUp" class="nudge-up" type="button" title="Move up">↑</button>
-          <button id="nudgeLeft" class="nudge-left" type="button" title="Move left">←</button>
-          <button id="nudgeDown" class="nudge-down" type="button" title="Move down">↓</button>
-          <button id="nudgeRight" class="nudge-right" type="button" title="Move right">→</button>
-        </div>
-        <div class="step-row">
-          <label for="stepSelect">Step size</label>
-          <select id="stepSelect">
-            <option value="0.0005">Fine</option>
-            <option value="0.001">Medium</option>
-            <option value="0.002">Fast</option>
-          </select>
-        </div>
-        <div class="board-help">Tip: select a dot, then click anywhere on the board to place it there.</div>
-      </div>
-
-      <div class="group-move-wrap">
-        <b>Move whole team</b>
-        <div class="group-row">
-          <label for="groupTeamSelect">Team</label>
-          <select id="groupTeamSelect">
-            <option value="red">Red</option>
-            <option value="green">Green</option>
-            <option value="blue">Blue</option>
-          </select>
-          <label for="groupStepSelect">Step size</label>
-          <select id="groupStepSelect">
-            <option value="0.0005">Fine</option>
-            <option value="0.001" selected>Medium</option>
-            <option value="0.002">Fast</option>
-            <option value="0.005">Very fast</option>
-          </select>
-        </div>
-        <div class="nudge-grid" aria-label="Move whole team">
-          <button id="groupUp" class="nudge-up" type="button" title="Move whole team up">↑</button>
-          <button id="groupLeft" class="nudge-left" type="button" title="Move whole team left">←</button>
-          <button id="groupDown" class="nudge-down" type="button" title="Move whole team down">↓</button>
-          <button id="groupRight" class="nudge-right" type="button" title="Move whole team right">→</button>
-        </div>
-        <div class="board-help">Moves all 45 points of the selected color together without changing their spacing.</div>
-      </div>
+      <div class="help">You can also drag ANY dot. Dragging one dot moves its entire color group while preserving spacing. Keyboard arrow keys move the active group; Shift + Arrow moves 4× faster.</div>
     </div>
 
     <div class="status" id="status"></div>
-    <p class="hint">Labels are L1-1 through L9-5, matching the San Guo Qi calibration convention. The export preserves all 135 coordinates.</p>
     <textarea class="export" id="output" readonly></textarea>
   </aside>
 </div>
@@ -176,283 +88,159 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
 const labels=[];
 for(let line=1;line<=9;line++)for(let depth=1;depth<=5;depth++)labels.push(`L${line}-${depth}`);
 
-/*
-  Seeded from the CURRENT production San Guo Qi APPROVED_POSITIONS in:
-  frontend/src/games/heritage-arcade/ported/game/sanguoArcticBoardGraph.ts
-*/
 const seed={"red":[[0.329114,0.755632],[0.330265,0.717023],[0.330265,0.674419],[0.332566,0.627821],[0.333717,0.579892],[0.370541,0.759626],[0.370541,0.71436],[0.370541,0.673088],[0.371692,0.625159],[0.372842,0.57723],[0.410817,0.760958],[0.410817,0.715691],[0.410817,0.673088],[0.411968,0.625159],[0.411968,0.57723],[0.455696,0.758295],[0.455696,0.71436],[0.453395,0.671756],[0.454545,0.62649],[0.454545,0.578561],[0.498274,0.758295],[0.498274,0.713029],[0.497123,0.671756],[0.498274,0.62649],[0.498274,0.579892],[0.542002,0.758295],[0.542002,0.713029],[0.540852,0.670425],[0.540852,0.627821],[0.540852,0.578561],[0.58458,0.759626],[0.583429,0.715691],[0.583429,0.673088],[0.583429,0.627821],[0.582278,0.578561],[0.627158,0.759626],[0.627158,0.715691],[0.626007,0.673088],[0.624856,0.62649],[0.622555,0.57723],[0.667434,0.760958],[0.665132,0.71436],[0.666283,0.673088],[0.663982,0.627821],[0.662831,0.578561]],"green":[[0.862061,0.416779],[0.830196,0.434106],[0.79569,0.454397],[0.756761,0.474469],[0.717347,0.496235],[0.843891,0.376694],[0.807229,0.398252],[0.773802,0.417909],[0.734389,0.439675],[0.694976,0.461441],[0.824159,0.338937],[0.787496,0.360496],[0.752991,0.380787],[0.713578,0.402553],[0.674759,0.425379],[0.798813,0.298841],[0.76323,0.319766],[0.729913,0.342177],[0.692657,0.362676],[0.653838,0.385503],[0.776814,0.259598],[0.740152,0.281156],[0.707319,0.301874],[0.670062,0.322372],[0.632321,0.344564],[0.754219,0.219294],[0.717558,0.240853],[0.683646,0.262203],[0.64914,0.282494],[0.609243,0.305955],[0.733297,0.179417],[0.698308,0.201402],[0.663803,0.221692],[0.627141,0.243251],[0.587839,0.267773],[0.711297,0.140173],[0.675714,0.161098],[0.641803,0.182449],[0.604657,0.205702],[0.56595,0.231284],[0.691566,0.102417],[0.655015,0.126731],[0.620993,0.145327],[0.585519,0.169007],[0.546217,0.193528]],"blue":[[0.314891,0.104748],[0.345762,0.123623],[0.380485,0.14329],[0.417271,0.166905],[0.455737,0.190083],[0.290154,0.140813],[0.327048,0.161709],[0.360685,0.18076],[0.399152,0.203938],[0.437619,0.227115],[0.268184,0.177055],[0.305078,0.19795],[0.339801,0.217616],[0.378267,0.240794],[0.417331,0.262919],[0.247083,0.219352],[0.282892,0.239633],[0.318808,0.257194],[0.355105,0.279141],[0.394168,0.301266],[0.225005,0.258315],[0.261898,0.27921],[0.296134,0.297209],[0.33243,0.319157],[0.370409,0.340668],[0.20233,0.29833],[0.239224,0.319225],[0.274543,0.337839],[0.309267,0.357506],[0.349415,0.380245],[0.179167,0.336678],[0.215573,0.355906],[0.250295,0.375572],[0.287189,0.396468],[0.327934,0.418153],[0.157089,0.375641],[0.192897,0.395922],[0.228217,0.414535],[0.266792,0.434991],[0.308134,0.455625],[0.135119,0.411882],[0.174291,0.431286],[0.207332,0.451391],[0.245419,0.470181],[0.286165,0.491866]]};
-
 let positions=JSON.parse(JSON.stringify(seed));
-let filter='all';
-let selected=null;
-let groupDrag=false;
-let groupDragStart=null;
+let activeGroup='red';
+let dragState=null;
 
 const board=document.getElementById('boardWrap');
 const output=document.getElementById('output');
-const selectedName=document.getElementById('selectedName');
-const xInput=document.getElementById('xInput');
-const yInput=document.getElementById('yInput');
-const xpInput=document.getElementById('xpInput');
-const ypInput=document.getElementById('ypInput');
 const status=document.getElementById('status');
+const activeLabel=document.getElementById('activeLabel');
+const groupStep=document.getElementById('groupStep');
 
 function clamp(v){return Math.max(0,Math.min(1,v))}
-function pointKey(team,index){return `${team}:${index}`}
-function parseKey(key){const [team,index]=key.split(':');return {team,index:+index}}
-
 function updateOutput(){
-  const normalized={};
-  const css={};
+  const normalized={},css={};
   for(const team of ['red','green','blue']){
     normalized[team]=positions[team].map(([x,y])=>[+x.toFixed(6),+y.toFixed(6)]);
     css[team]=positions[team].map(([x,y],i)=>({label:labels[i],left:`${(x*100).toFixed(3)}%`,top:`${(y*100).toFixed(3)}%`}));
   }
-  output.value=
-`// Sanyou Qi normalized coordinates\nconst SANYOU_POSITIONS = ${JSON.stringify(normalized,null,2)};\n\n/* CSS percentages */\n${JSON.stringify(css,null,2)}`;
+  output.value=`// Sanyou Qi normalized coordinates\nconst SANYOU_POSITIONS = ${JSON.stringify(normalized,null,2)};\n\n/* CSS percentages */\n${JSON.stringify(css,null,2)}`;
 }
-
-function refreshInspector(){
-  if(!selected){
-    selectedName.textContent='No point selected';
-    [xInput,yInput,xpInput,ypInput].forEach(el=>{el.disabled=true;el.value=''});
-    return;
-  }
-  const {team,index}=parseKey(selected);
-  const [x,y]=positions[team][index];
-  selectedName.textContent=`${team.toUpperCase()} · ${labels[index]}`;
-  xInput.disabled=yInput.disabled=xpInput.disabled=ypInput.disabled=false;
-  xInput.value=x.toFixed(6); yInput.value=y.toFixed(6);
-  xpInput.value=(x*100).toFixed(3); ypInput.value=(y*100).toFixed(3);
-}
-
-function moveWholeGroup(team,dx,dy){
-  positions[team]=positions[team].map(([x,y])=>[clamp(x+dx),clamp(y+dy)]);
+function setActiveGroup(team){
+  activeGroup=team;
+  activeLabel.textContent='Moving: '+team.toUpperCase()+' group';
+  document.querySelectorAll('[data-team]').forEach(b=>b.classList.toggle('active',b.dataset.team===team));
   render();
 }
-function selectedGroupStep(){
-  return +(document.getElementById('groupStep')?.value||0.0005);
+function moveGroup(team,dx,dy){
+  positions[team]=positions[team].map(([x,y])=>[clamp(x+dx),clamp(y+dy)]);
+  render();
+  status.textContent=team.toUpperCase()+' group moved.';
+  setTimeout(()=>status.textContent='',900);
 }
-function updateGroupDragButton(){
-  const b=document.getElementById('toggleGroupDrag');
-  if(!b)return;
-  b.textContent='Group drag: '+(groupDrag?'ON':'OFF');
-  b.classList.toggle('group-drag-active',groupDrag);
+function nudge(dx,dy,mult=1){
+  const step=(+(groupStep.value||0.001))*mult;
+  moveGroup(activeGroup,dx*step,dy*step);
 }
 function render(){
   board.querySelectorAll('.node').forEach(el=>el.remove());
   for(const team of ['red','green','blue']){
     positions[team].forEach(([x,y],index)=>{
       const d=document.createElement('div');
-      const key=pointKey(team,index);
-      d.className=`node ${team}${filter!=='all'&&filter!==team?' hidden-team':''}${selected===key?' selected':''}`;
+      d.className='node '+team+(team===activeGroup?' active-team':'');
       d.style.left=(x*100)+'%';
       d.style.top=(y*100)+'%';
-      d.dataset.team=team; d.dataset.index=index;
-      d.title=`${team.toUpperCase()} ${labels[index]} · x=${x.toFixed(6)}, y=${y.toFixed(6)}`;
+      d.dataset.team=team;
+      d.dataset.index=index;
+      d.title=team.toUpperCase()+' '+labels[index]+' — drag to move whole group';
+
       const label=document.createElement('span');
-      label.className='node-label'; label.textContent=labels[index];
+      label.className='node-label';
+      label.textContent=labels[index];
       d.appendChild(label);
 
       d.addEventListener('pointerdown',e=>{
         e.preventDefault();
-        selected=key;
-        board.querySelectorAll('.node.selected').forEach(el=>el.classList.remove('selected'));
-        d.classList.add('selected');
-        refreshInspector();
-        if(groupDrag){
-          document.getElementById('groupTeam').value=team;
-          const rect=board.getBoundingClientRect();
-          groupDragStart={
-            team,
-            pointerX:(e.clientX-rect.left)/rect.width,
-            pointerY:(e.clientY-rect.top)/rect.height,
-            original:positions[team].map(p=>[p[0],p[1]])
-          };
-        }
+        setActiveGroup(team);
+        const rect=board.getBoundingClientRect();
+        dragState={
+          team,
+          pointerId:e.pointerId,
+          startX:(e.clientX-rect.left)/rect.width,
+          startY:(e.clientY-rect.top)/rect.height,
+          original:positions[team].map(([px,py])=>[px,py])
+        };
         d.setPointerCapture(e.pointerId);
       });
+
       d.addEventListener('pointermove',e=>{
-        if(!d.hasPointerCapture(e.pointerId))return;
+        if(!dragState || dragState.pointerId!==e.pointerId || !d.hasPointerCapture(e.pointerId))return;
         const rect=board.getBoundingClientRect();
-        const px=clamp((e.clientX-rect.left)/rect.width);
-        const py=clamp((e.clientY-rect.top)/rect.height);
-        if(groupDrag && groupDragStart && groupDragStart.team===team){
-          const dx=px-groupDragStart.pointerX;
-          const dy=py-groupDragStart.pointerY;
-          positions[team]=groupDragStart.original.map(([x,y])=>[clamp(x+dx),clamp(y+dy)]);
-          board.querySelectorAll('.node.'+team).forEach((el,j)=>{
-            const p=positions[team][j];
-            el.style.left=(p[0]*100)+'%';
-            el.style.top=(p[1]*100)+'%';
-          });
-        }else{
-          positions[team][index]=[px,py];
-          d.style.left=(positions[team][index][0]*100)+'%';
-          d.style.top=(positions[team][index][1]*100)+'%';
-        }
-        refreshInspector(); updateOutput();
+        const nowX=(e.clientX-rect.left)/rect.width;
+        const nowY=(e.clientY-rect.top)/rect.height;
+        const dx=nowX-dragState.startX;
+        const dy=nowY-dragState.startY;
+        positions[team]=dragState.original.map(([px,py])=>[clamp(px+dx),clamp(py+dy)]);
+        board.querySelectorAll('.node.'+team).forEach((el,j)=>{
+          const [nx,ny]=positions[team][j];
+          el.style.left=(nx*100)+'%';
+          el.style.top=(ny*100)+'%';
+        });
+        updateOutput();
       });
-      d.addEventListener('pointerup',e=>{
+
+      const finish=e=>{
         if(d.hasPointerCapture(e.pointerId))d.releasePointerCapture(e.pointerId);
-        if(groupDrag && groupDragStart){
-          status.textContent=team.toUpperCase()+' group moved.';
-          groupDragStart=null;
-          render();
-        }else{
-          status.textContent=team.toUpperCase()+' '+labels[index]+' updated.';
+        if(dragState){
+          status.textContent=team.toUpperCase()+' whole group moved.';
+          dragState=null;
+          updateOutput();
+          setTimeout(()=>status.textContent='',1000);
         }
-        setTimeout(()=>status.textContent='',1600);
-      });
-      d.addEventListener('pointercancel',e=>{
-        if(d.hasPointerCapture(e.pointerId))d.releasePointerCapture(e.pointerId);
-        groupDragStart=null;
-      });
+      };
+      d.addEventListener('pointerup',finish);
+      d.addEventListener('pointercancel',finish);
       board.appendChild(d);
     });
   }
-  refreshInspector(); updateOutput();
+  updateOutput();
 }
 
-function setSelectedValue(axis,value,isPercent=false){
-  if(!selected)return;
-  const {team,index}=parseKey(selected);
-  const v=clamp((+value||0)/(isPercent?100:1));
-  positions[team][index][axis]=v;
-  render();
-}
-xInput.addEventListener('change',()=>setSelectedValue(0,xInput.value));
-yInput.addEventListener('change',()=>setSelectedValue(1,yInput.value));
-xpInput.addEventListener('change',()=>setSelectedValue(0,xpInput.value,true));
-
-ypInput.addEventListener('change',()=>setSelectedValue(1,ypInput.value,true));
-
-function nudgeSelected(dx,dy){
-  if(!selected){status.textContent='Select a point first.';return;}
-  const {team,index}=parseKey(selected);
-  const step=+(document.getElementById('stepSelect').value||0.0005);
-  const [x,y]=positions[team][index];
-  positions[team][index]=[clamp(x+dx*step),clamp(y+dy*step)];
-  render();
-}
-document.getElementById('nudgeUp').onclick=()=>nudgeSelected(0,-1);
-document.getElementById('nudgeDown').onclick=()=>nudgeSelected(0,1);
-document.getElementById('nudgeLeft').onclick=()=>nudgeSelected(-1,0);
-document.getElementById('nudgeRight').onclick=()=>nudgeSelected(1,0);
-
-function moveWholeTeam(team,dx,dy){
-  const step=+(document.getElementById('groupStepSelect').value||0.001);
-  positions[team]=positions[team].map(([x,y])=>[
-    clamp(x+dx*step),
-    clamp(y+dy*step)
-  ]);
-  render();
-  status.textContent=team.toUpperCase()+' whole group moved.';
-  setTimeout(()=>status.textContent='',1400);
-}
-document.getElementById('groupUp').onclick=()=>moveWholeTeam(document.getElementById('groupTeamSelect').value,0,-1);
-document.getElementById('groupDown').onclick=()=>moveWholeTeam(document.getElementById('groupTeamSelect').value,0,1);
-document.getElementById('groupLeft').onclick=()=>moveWholeTeam(document.getElementById('groupTeamSelect').value,-1,0);
-document.getElementById('groupRight').onclick=()=>moveWholeTeam(document.getElementById('groupTeamSelect').value,1,0);
-
-// Easier alternative to dragging: select a dot, then click on the board.
-board.addEventListener('click',e=>{
-  if(!selected || e.target.closest('.node')) return;
-  const rect=board.getBoundingClientRect();
-  const {team,index}=parseKey(selected);
-  positions[team][index]=[
-    clamp((e.clientX-rect.left)/rect.width),
-    clamp((e.clientY-rect.top)/rect.height)
-  ];
-  render();
-  status.textContent=team.toUpperCase()+' '+labels[index]+' placed by click.';
-  setTimeout(()=>status.textContent='',1400);
+document.querySelectorAll('[data-team]').forEach(btn=>{
+  btn.addEventListener('click',()=>setActiveGroup(btn.dataset.team));
 });
-
-document.querySelectorAll('[data-team]').forEach(btn=>btn.onclick=()=>{
-  filter=btn.dataset.team;
-  document.querySelectorAll('[data-team]').forEach(b=>b.classList.toggle('active',b===btn));
-  render();
-});
-
-function moveSelection(delta){
-  const keys=[];
-  for(const team of ['red','green','blue'])for(let i=0;i<labels.length;i++)keys.push(pointKey(team,i));
-  let idx=Math.max(0,keys.indexOf(selected));
-  idx=(idx+delta+keys.length)%keys.length;
-  selected=keys[idx];
-  const team=parseKey(selected).team;
-  if(filter!=='all'&&filter!==team)filter='all';
-  render();
-}
-document.getElementById('prev').onclick=()=>moveSelection(-1);
-document.getElementById('next').onclick=()=>moveSelection(1);
+document.getElementById('groupUp').onclick=()=>nudge(0,-1);
+document.getElementById('groupDown').onclick=()=>nudge(0,1);
+document.getElementById('groupLeft').onclick=()=>nudge(-1,0);
+document.getElementById('groupRight').onclick=()=>nudge(1,0);
 
 window.addEventListener('keydown',e=>{
-  if(!selected || ['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;
-  const {team,index}=parseKey(selected);
-  const base=+(document.getElementById('stepSelect').value||0.0005); const step=e.shiftKey?base*4:base;
-  let [x,y]=positions[team][index];
-  if(e.key==='ArrowLeft')x-=step;
-  else if(e.key==='ArrowRight')x+=step;
-  else if(e.key==='ArrowUp')y-=step;
-  else if(e.key==='ArrowDown')y+=step;
+  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
+  let dx=0,dy=0;
+  if(e.key==='ArrowLeft')dx=-1;
+  else if(e.key==='ArrowRight')dx=1;
+  else if(e.key==='ArrowUp')dy=-1;
+  else if(e.key==='ArrowDown')dy=1;
   else return;
   e.preventDefault();
-  positions[team][index]=[clamp(x),clamp(y)];
-  render();
+  nudge(dx,dy,e.shiftKey?4:1);
 });
 
 document.getElementById('reset').onclick=()=>{
-  positions=JSON.parse(JSON.stringify(seed)); selected=null; filter='all';
-  document.querySelectorAll('[data-team]').forEach(b=>b.classList.toggle('active',b.dataset.team==='all'));
-  render();
+  positions=JSON.parse(JSON.stringify(seed));
+  setActiveGroup('red');
+  status.textContent='Reset to saved Sanyou values.';
+  setTimeout(()=>status.textContent='',1200);
 };
-document.getElementById('copy').onclick=async()=>{
-  updateOutput();
-  try{await navigator.clipboard.writeText(output.value);status.textContent='Coordinates copied.'}
-  catch{output.select();document.execCommand('copy');status.textContent='Coordinates copied.'}
-  setTimeout(()=>status.textContent='',1600);
-};
-
 
 const RED_TO_BLUE={x:[-0.51853643865423,-0.8150286959303833,1.101410418253937],y:[0.9150903555178589,-0.46160993425501207,0.15238572188960633]};
 const RED_TO_GREEN={x:[-0.5166975217466264,0.809920470185612,0.4201118264550665],y:[-0.9216881343055983,-0.47626324618061044,1.0799989212704124]};
 function transformPoint(point,T){
   const [x,y]=point;
-  return [
-    clamp(T.x[0]*x+T.x[1]*y+T.x[2]),
-    clamp(T.y[0]*x+T.y[1]*y+T.y[2])
-  ];
+  return [clamp(T.x[0]*x+T.x[1]*y+T.x[2]),clamp(T.y[0]*x+T.y[1]*y+T.y[2])];
 }
-function generateSymmetryFromRed(){
+document.getElementById('applySymmetry').onclick=()=>{
   positions.blue=positions.red.map(p=>transformPoint(p,RED_TO_BLUE));
   positions.green=positions.red.map(p=>transformPoint(p,RED_TO_GREEN));
   render();
-  status.textContent='Green and Blue generated from the current Red coordinates.';
-  setTimeout(()=>status.textContent='',2400);
-}
-document.getElementById('applySymmetry').onclick=generateSymmetryFromRed;
+  status.textContent='Green and Blue regenerated from Red.';
+  setTimeout(()=>status.textContent='',1800);
+};
 
-
-document.getElementById('toggleGroupDrag').onclick=()=>{
-  groupDrag=!groupDrag;
-  groupDragStart=null;
-  updateGroupDragButton();
+document.getElementById('copy').onclick=async()=>{
+  updateOutput();
+  try{
+    await navigator.clipboard.writeText(output.value);
+    status.textContent='Coordinates copied.';
+  }catch{
+    output.select();
+    document.execCommand('copy');
+    status.textContent='Coordinates selected/copied.';
+  }
+  setTimeout(()=>status.textContent='',1400);
 };
-document.getElementById('groupUp').onclick=()=>{
-  const t=document.getElementById('groupTeam').value,s=selectedGroupStep(); moveWholeGroup(t,0,-s);
-};
-document.getElementById('groupDown').onclick=()=>{
-  const t=document.getElementById('groupTeam').value,s=selectedGroupStep(); moveWholeGroup(t,0,s);
-};
-document.getElementById('groupLeft').onclick=()=>{
-  const t=document.getElementById('groupTeam').value,s=selectedGroupStep(); moveWholeGroup(t,-s,0);
-};
-document.getElementById('groupRight').onclick=()=>{
-  const t=document.getElementById('groupTeam').value,s=selectedGroupStep(); moveWholeGroup(t,s,0);
-};
-updateGroupDragButton();
 
 render();
 </script>
