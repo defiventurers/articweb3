@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sanyou Qi Coordinate Placement</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0e1726;color:#eef5ff;font-family:Inter,Arial,sans-serif}
+header{position:sticky;top:0;z-index:20;background:#152238;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #2b3d59}
+header h1{font-size:18px;margin:0;margin-right:auto}
+button,select{font:inherit;background:#263b5a;color:white;border:1px solid #405778;border-radius:7px;padding:8px 10px;cursor:pointer}
+button:hover{background:#314a6d}
+button.active{outline:2px solid #fff}
+.layout{display:grid;grid-template-columns:minmax(520px,1fr) 360px;gap:12px;padding:12px}
+.board-wrap{position:relative;max-width:1100px;margin:auto;background:white;border-radius:8px;overflow:hidden;touch-action:none;user-select:none}
+.board-wrap>img{display:block;width:100%;height:auto;pointer-events:none}
+.node{position:absolute;width:14px;height:14px;border-radius:50%;transform:translate(-50%,-50%);z-index:5;cursor:grab;opacity:.9;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 8px rgba(0,0,0,.55)}
+.node:active{cursor:grabbing}
+.node.red{background:#ff5454}
+.node.green{background:#44df74}
+.node.blue{background:#4fa3ff}
+.node.hidden-team{display:none}
+.node.selected{width:20px;height:20px;outline:3px solid #ffd75a;outline-offset:2px;z-index:10}
+.node-label{position:absolute;transform:translate(9px,-18px);padding:2px 4px;border-radius:4px;background:rgba(5,15,28,.82);color:#fff;font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;pointer-events:none}
+aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px;height:max-content}
+.team-tabs{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+.coord-card{border:1px solid #405778;border-radius:8px;padding:10px;background:#101c2d;margin:10px 0}
+.coord-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.coord-grid label{font-size:11px;color:#9fb2cc}
+.coord-grid input{width:100%;margin-top:3px;background:#0b1320;color:#fff;border:1px solid #405778;border-radius:6px;padding:7px}
+.hint{font-size:12px;color:#aebed4;line-height:1.5}
+.export{width:100%;height:310px;background:#0b1320;color:#d9e6f7;border:1px solid #405778;border-radius:7px;padding:8px;font-family:Consolas,monospace;font-size:11px;margin-top:8px;resize:vertical}
+.status{font-size:12px;color:#ffd75a;min-height:18px}
+.small-actions{display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.board-wrap{max-width:none}aside{position:static}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Sanyou Qi — Coordinate Placement</h1>
+  <button id="reset">Reset to current Sanguo values</button>
+  <button id="copy">Copy coordinates</button>
+</header>
+
+<div class="layout">
+  <div class="board-wrap" id="boardWrap">
+    <img src="/assets/heritage-arcade/board/sanyou-arctic-board.png" alt="Sanyou Qi Arctic board" />
+  </div>
+
+  <aside>
+    <b>Drag the dots onto the Sanyou intersections.</b>
+    <p class="hint">Starting positions are the current production San Guo Qi values. Drag a point, or select it and use arrow keys. Shift + arrow moves faster.</p>
+
+    <div class="team-tabs">
+      <button data-team="all" class="active">All</button>
+      <button data-team="red">Red</button>
+      <button data-team="green">Green</button>
+      <button data-team="blue">Blue</button>
+    </div>
+
+    <div class="coord-card">
+      <div><b id="selectedName">No point selected</b></div>
+      <div class="coord-grid">
+        <label>X normalized<input id="xInput" type="number" min="0" max="1" step="0.000001" disabled></label>
+        <label>Y normalized<input id="yInput" type="number" min="0" max="1" step="0.000001" disabled></label>
+        <label>X percent<input id="xpInput" type="number" min="0" max="100" step="0.01" disabled></label>
+        <label>Y percent<input id="ypInput" type="number" min="0" max="100" step="0.01" disabled></label>
+      </div>
+      <div class="small-actions" style="margin-top:8px">
+        <button id="prev">Previous</button>
+        <button id="next">Next</button>
+      </div>
+    </div>
+
+    <div class="status" id="status"></div>
+    <p class="hint">Labels are L1-1 through L9-5, matching the San Guo Qi calibration convention. The export preserves all 135 coordinates.</p>
+    <textarea class="export" id="output" readonly></textarea>
+  </aside>
+</div>
+
+<script>
+const labels=[];
+for(let line=1;line<=9;line++)for(let depth=1;depth<=5;depth++)labels.push(`L${line}-${depth}`);
+
+/*
+  Seeded from the CURRENT production San Guo Qi APPROVED_POSITIONS in:
+  frontend/src/games/heritage-arcade/ported/game/sanguoArcticBoardGraph.ts
+*/
+const seed={
+red:[[0.297273,0.806000],[0.270364,0.758727],[0.250000,0.719455],[0.231091,0.679455],[0.215818,0.648909],[0.354000,0.805273],[0.336545,0.736182],[0.324909,0.686000],[0.313273,0.636545],[0.302364,0.592909],[0.407818,0.804545],[0.391091,0.720182],[0.382364,0.661273],[0.372182,0.605273],[0.362000,0.553000],[0.455091,0.805273],[0.447818,0.707091],[0.443455,0.635818],[0.438364,0.572545],[0.432000,0.508000],[0.500909,0.806727],[0.500909,0.696909],[0.499455,0.612545],[0.499455,0.541273],[0.501636,0.461273],[0.545273,0.805273],[0.553273,0.706364],[0.558364,0.635818],[0.564182,0.568909],[0.571000,0.507000],[0.594000,0.804545],[0.608545,0.718727],[0.618727,0.660545],[0.628182,0.604546],[0.640000,0.552000],[0.645636,0.805273],[0.662364,0.736182],[0.676182,0.682364],[0.687818,0.634364],[0.698000,0.592182],[0.698000,0.806000],[0.727818,0.757273],[0.751091,0.717273],[0.767091,0.679455],[0.780909,0.649636]],
+green:[[0.916909,0.416909],[0.892909,0.465636],[0.865273,0.510000],[0.839091,0.552909],[0.818727,0.591455],[0.890000,0.364546],[0.848545,0.414727],[0.810000,0.455455],[0.773636,0.499091],[0.742364,0.535455],[0.866727,0.319455],[0.807818,0.367455],[0.759818,0.406727],[0.713273,0.449636],[0.674727,0.485273],[0.840545,0.280909],[0.772182,0.324546],[0.714000,0.362364],[0.658000,0.403091],[0.607818,0.442364],[0.813636,0.232909],[0.733636,0.280182],[0.668909,0.317273],[0.602000,0.355818],[0.538727,0.390000],[0.786000,0.187818],[0.716182,0.225636],[0.655818,0.253273],[0.592545,0.284545],[0.535818,0.310000],[0.761273,0.148545],[0.697273,0.171091],[0.641273,0.193636],[0.584444,0.212114],[0.533535,0.231153],[0.732909,0.102000],[0.675455,0.116545],[0.628909,0.129636],[0.576545,0.142000],[0.532909,0.152909],[0.710364,0.061273],[0.653939,0.058889],[0.610303,0.059795],[0.566667,0.059795],[0.523838,0.059795]],
+blue:[[0.288384,0.061169],[0.342364,0.062727],[0.389636,0.062727],[0.431091,0.062000],[0.471091,0.061273],[0.264545,0.106364],[0.324182,0.119455],[0.373636,0.130364],[0.424545,0.141273],[0.468182,0.152909],[0.236182,0.152909],[0.301636,0.175455],[0.357636,0.195091],[0.416545,0.213273],[0.468182,0.231455],[0.216545,0.193636],[0.284909,0.223455],[0.343818,0.250364],[0.408545,0.283818],[0.468182,0.312909],[0.190364,0.236545],[0.266000,0.278000],[0.331455,0.315818],[0.397636,0.356545],[0.465273,0.395091],[0.164182,0.284545],[0.228182,0.323091],[0.284909,0.360182],[0.342364,0.403818],[0.395455,0.441636],[0.138727,0.323091],[0.191818,0.366000],[0.239091,0.407455],[0.285636,0.448909],[0.325636,0.486000],[0.112545,0.365273],[0.153273,0.411091],[0.188182,0.456909],[0.225273,0.500545],[0.255091,0.534727],[0.084909,0.418364],[0.108909,0.466364],[0.135091,0.508545],[0.160545,0.554364],[0.178000,0.591455]]
+};
+
+let positions=JSON.parse(JSON.stringify(seed));
+let filter='all';
+let selected=null;
+
+const board=document.getElementById('boardWrap');
+const output=document.getElementById('output');
+const selectedName=document.getElementById('selectedName');
+const xInput=document.getElementById('xInput');
+const yInput=document.getElementById('yInput');
+const xpInput=document.getElementById('xpInput');
+const ypInput=document.getElementById('ypInput');
+const status=document.getElementById('status');
+
+function clamp(v){return Math.max(0,Math.min(1,v))}
+function pointKey(team,index){return `${team}:${index}`}
+function parseKey(key){const [team,index]=key.split(':');return {team,index:+index}}
+
+function updateOutput(){
+  const normalized={};
+  const css={};
+  for(const team of ['red','green','blue']){
+    normalized[team]=positions[team].map(([x,y])=>[+x.toFixed(6),+y.toFixed(6)]);
+    css[team]=positions[team].map(([x,y],i)=>({label:labels[i],left:`${(x*100).toFixed(3)}%`,top:`${(y*100).toFixed(3)}%`}));
+  }
+  output.value=
+`// Sanyou Qi normalized coordinates\nconst SANYOU_POSITIONS = ${JSON.stringify(normalized,null,2)};\n\n/* CSS percentages */\n${JSON.stringify(css,null,2)}`;
+}
+
+function refreshInspector(){
+  if(!selected){
+    selectedName.textContent='No point selected';
+    [xInput,yInput,xpInput,ypInput].forEach(el=>{el.disabled=true;el.value=''});
+    return;
+  }
+  const {team,index}=parseKey(selected);
+  const [x,y]=positions[team][index];
+  selectedName.textContent=`${team.toUpperCase()} · ${labels[index]}`;
+  xInput.disabled=yInput.disabled=xpInput.disabled=ypInput.disabled=false;
+  xInput.value=x.toFixed(6); yInput.value=y.toFixed(6);
+  xpInput.value=(x*100).toFixed(3); ypInput.value=(y*100).toFixed(3);
+}
+
+function render(){
+  board.querySelectorAll('.node').forEach(el=>el.remove());
+  for(const team of ['red','green','blue']){
+    positions[team].forEach(([x,y],index)=>{
+      const d=document.createElement('div');
+      const key=pointKey(team,index);
+      d.className=`node ${team}${filter!=='all'&&filter!==team?' hidden-team':''}${selected===key?' selected':''}`;
+      d.style.left=(x*100)+'%';
+      d.style.top=(y*100)+'%';
+      d.dataset.team=team; d.dataset.index=index;
+      d.title=`${team.toUpperCase()} ${labels[index]} · x=${x.toFixed(6)}, y=${y.toFixed(6)}`;
+      const label=document.createElement('span');
+      label.className='node-label'; label.textContent=labels[index];
+      d.appendChild(label);
+
+      d.addEventListener('pointerdown',e=>{
+        e.preventDefault();
+        selected=key; refreshInspector(); render();
+        d.setPointerCapture(e.pointerId);
+      });
+      d.addEventListener('pointermove',e=>{
+        if(!d.hasPointerCapture(e.pointerId))return;
+        const rect=board.getBoundingClientRect();
+        positions[team][index]=[
+          clamp((e.clientX-rect.left)/rect.width),
+          clamp((e.clientY-rect.top)/rect.height)
+        ];
+        d.style.left=(positions[team][index][0]*100)+'%';
+        d.style.top=(positions[team][index][1]*100)+'%';
+        refreshInspector(); updateOutput();
+      });
+      d.addEventListener('pointerup',e=>{
+        if(d.hasPointerCapture(e.pointerId))d.releasePointerCapture(e.pointerId);
+        status.textContent=`${team.toUpperCase()} ${labels[index]} saved in browser state/output.`;
+        setTimeout(()=>status.textContent='',1600);
+      });
+      board.appendChild(d);
+    });
+  }
+  refreshInspector(); updateOutput();
+}
+
+function setSelectedValue(axis,value,isPercent=false){
+  if(!selected)return;
+  const {team,index}=parseKey(selected);
+  const v=clamp((+value||0)/(isPercent?100:1));
+  positions[team][index][axis]=v;
+  render();
+}
+xInput.addEventListener('change',()=>setSelectedValue(0,xInput.value));
+yInput.addEventListener('change',()=>setSelectedValue(1,yInput.value));
+xpInput.addEventListener('change',()=>setSelectedValue(0,xpInput.value,true));
+ypInput.addEventListener('change',()=>setSelectedValue(1,ypInput.value,true));
+
+document.querySelectorAll('[data-team]').forEach(btn=>btn.onclick=()=>{
+  filter=btn.dataset.team;
+  document.querySelectorAll('[data-team]').forEach(b=>b.classList.toggle('active',b===btn));
+  render();
+});
+
+function moveSelection(delta){
+  const keys=[];
+  for(const team of ['red','green','blue'])for(let i=0;i<labels.length;i++)keys.push(pointKey(team,i));
+  let idx=Math.max(0,keys.indexOf(selected));
+  idx=(idx+delta+keys.length)%keys.length;
+  selected=keys[idx];
+  const team=parseKey(selected).team;
+  if(filter!=='all'&&filter!==team)filter='all';
+  render();
+}
+document.getElementById('prev').onclick=()=>moveSelection(-1);
+document.getElementById('next').onclick=()=>moveSelection(1);
+
+window.addEventListener('keydown',e=>{
+  if(!selected || ['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;
+  const {team,index}=parseKey(selected);
+  const step=e.shiftKey?0.002:0.0005;
+  let [x,y]=positions[team][index];
+  if(e.key==='ArrowLeft')x-=step;
+  else if(e.key==='ArrowRight')x+=step;
+  else if(e.key==='ArrowUp')y-=step;
+  else if(e.key==='ArrowDown')y+=step;
+  else return;
+  e.preventDefault();
+  positions[team][index]=[clamp(x),clamp(y)];
+  render();
+});
+
+document.getElementById('reset').onclick=()=>{
+  positions=JSON.parse(JSON.stringify(seed)); selected=null; filter='all';
+  document.querySelectorAll('[data-team]').forEach(b=>b.classList.toggle('active',b.dataset.team==='all'));
+  render();
+};
+document.getElementById('copy').onclick=async()=>{
+  updateOutput();
+  try{await navigator.clipboard.writeText(output.value);status.textContent='Coordinates copied.'}
+  catch{output.select();document.execCommand('copy');status.textContent='Coordinates copied.'}
+  setTimeout(()=>status.textContent='',1600);
+};
+
+render();
+</script>
+</body>
+</html>
