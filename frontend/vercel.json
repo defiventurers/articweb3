@@ -16,6 +16,15 @@
       ]
     },
     {
+      "source": "/assets/heritage-arcade/sanyou-piece-placement.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/(.*)\\.(js|css|woff2|webp|png|jpg|jpeg|svg)",
       "headers": [
         {
