@@ -95,7 +95,7 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
     </div>
 
     <div class="card hidden" id="newCard">
-      <h3>New points <span class="count" id="newCount">0 / 21</span></h3>
+      <h3>New points <span class="count" id="newCount">0 / 24</span></h3>
       <div class="row">
         <label for="newName">Name</label>
         <input id="newName" value="C-13" maxlength="32" />
@@ -109,7 +109,7 @@ aside{background:#152238;border-radius:8px;padding:14px;position:sticky;top:74px
           <option value="blue">Blue</option>
         </select>
       </div>
-      <div class="help">In Add mode, click an empty location on the board to place the next point. You can name each point anything you want. Maximum: 21 new points.</div>
+      <div class="help">In Add mode, click an empty location on the board to place the next point. You can name each point anything you want. Maximum: 24 new points.</div>
       <div class="row">
         <button id="renameSelected" type="button">Rename selected</button>
         <button id="deleteSelected" type="button">Delete selected new point</button>
@@ -171,8 +171,8 @@ function updateOutput(){
     x:+p.x.toFixed(6),y:+p.y.toFixed(6),
     left:`${(p.x*100).toFixed(3)}%`,top:`${(p.y*100).toFixed(3)}%`
   }));
-  output.value=`// Sanyou Qi normalized coordinates\nconst SANYOU_POSITIONS = ${JSON.stringify(normalized,null,2)};\n\n// 21 extra/custom points\nconst SANYOU_CUSTOM_POINTS = ${JSON.stringify(custom,null,2)};\n\n/* CSS percentages */\n${JSON.stringify(css,null,2)}`;
-  newCount.textContent=customPoints.length+' / 21';
+  output.value=`// Sanyou Qi normalized coordinates\nconst SANYOU_POSITIONS = ${JSON.stringify(normalized,null,2)};\n\n// 24 extra/custom points\nconst SANYOU_CUSTOM_POINTS = ${JSON.stringify(custom,null,2)};\n\n/* CSS percentages */\n${JSON.stringify(css,null,2)}`;
+  newCount.textContent=customPoints.length+' / 24';
 }
 
 function setMode(next){
@@ -230,8 +230,8 @@ function nudge(dx,dy,mult=1){
 }
 
 function addCustomAt(x,y){
-  if(customPoints.length>=21){
-    status.textContent='All 21 new points have been placed.';
+  if(customPoints.length>=24){
+    status.textContent='All 24 new points have been placed.';
     return;
   }
   const raw=(newName.value||'').trim();
