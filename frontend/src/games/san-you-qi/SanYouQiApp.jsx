@@ -15,7 +15,7 @@ import { ALL_NODE_IDS, parseArmNode } from "./topology.js";
 import "./sanYouQi.css";
 
 const BOARD_IMAGE = "/assets/heritage-arcade/board/sanyou-arctic-board.png";
-const TOKEN_ROOT = "/assets/heritage-arcade/tokens";
+const TOKEN_ROOT = "/assets/heritage-arcade/tokens/sanyou";
 
 const ROLE_FILE = Object.freeze({
   general: "general",
