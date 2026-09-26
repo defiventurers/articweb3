@@ -1,338 +1,359 @@
 import { describe, expect, it } from "vitest";
 import {
-  FACTIONS, ROLE_LABELS, RULESET_VERSION, TERRAIN, terrainAt,
-  applyAction, createInitialState, getLegalActions,
-  getPseudoTargets, isHome, isRiverEndpoint, logicalNode,
-  riverExits, sameNode, squareKey, validateAction,
+  FACTIONS,
+  RULESET_VERSION,
+  applyAction,
+  createInitialState,
+  getLegalActions,
+  getPseudoTargets,
+  squareKey,
+  territoryOf,
+  validateAction,
   __testing,
 } from "./rules.js";
+import {
+  ALL_NODE_IDS,
+  CENTER_HORIZONTAL_LINES,
+  CONTINUATION_LINES,
+  armNodeId,
+  boardPoint,
+} from "./topology.js";
 
-const { RANK_COUNT, FILE_COUNT, RIVER_RANK, HOME_RANK, CENTRAL_FILE,
-  PALACE_FRONT, PALACE_LEFT, PALACE_RIGHT, TURN_ORDER } = __testing;
-
-function sparseState(spec, turn = "red") {
+function sparseState(spec, turn = "red", activeFactions = [turn]) {
   const state = createInitialState();
+
   for (const piece of state.pieces) {
-    piece.status = "eliminated";
+    piece.status = "captured";
     piece.node = null;
+    piece.promoted = false;
+    piece.leftHome = false;
+    piece.owner = piece.faction;
   }
-  for (const [owner, role, rank, file] of spec) {
-    const piece = state.pieces.find((c) => c.owner === owner && c.role === role && c.status === "eliminated");
-    if (!piece) continue;
-    piece.owner = owner;
-    piece.role = role;
-    piece.node = { sector: owner, rank, file };
+
+  for (const faction of activeFactions) {
+    const general = state.pieces.find(
+      (piece) => piece.faction === faction && piece.role === "general",
+    );
+    general.status = "board";
+    general.node = armNodeId(faction, 5, 1);
+    general.owner = faction;
+  }
+
+  for (const item of spec) {
+    const {
+      faction,
+      role,
+      node,
+      owner = faction,
+      promoted = false,
+      leftHome = !node.startsWith(`${faction}:`),
+      index = 0,
+    } = item;
+
+    const candidates = state.pieces.filter(
+      (piece) => piece.faction === faction && piece.role === role,
+    );
+    const piece = candidates[index];
     piece.status = "board";
-    piece.hasMoved = false;
+    piece.node = node;
+    piece.owner = owner;
+    piece.promoted = promoted;
+    piece.leftHome = leftHome;
   }
+
   state.turn = turn;
+  state.activeFactions = [...activeFactions];
   state.repetition = {};
-  state.lastAction = null;
   state.outcome = null;
   state.phase = "play";
-  state.activeFactions = [...FACTIONS];
-  state.pending = null;
+  state.lastAction = null;
+  state.ply = 0;
   return state;
 }
 
-describe("San You Qi canonical state", () => {
-  it("creates the exact 54-piece, three-faction setup", () => {
+describe("San You Qi finalized setup", () => {
+  it("creates 54 pieces with the documented 18-piece army per faction", () => {
     const state = createInitialState();
     expect(state.gameId).toBe("san-you-qi");
     expect(state.rulesetVersion).toBe(RULESET_VERSION);
     expect(state.pieces).toHaveLength(54);
-    expect(new Set(state.pieces.map((p) => squareKey(p.node))).size).toBe(54);
+    expect(new Set(state.pieces.map((piece) => squareKey(piece.node))).size).toBe(54);
+
     for (const faction of FACTIONS) {
-      const army = state.pieces.filter((p) => p.owner === faction);
+      const army = state.pieces.filter((piece) => piece.faction === faction);
       expect(army).toHaveLength(18);
-      expect(army.filter((p) => p.role === "general")).toHaveLength(1);
-      expect(army.filter((p) => p.role === "chariot")).toHaveLength(2);
-      expect(army.filter((p) => p.role === "horse")).toHaveLength(2);
-      expect(army.filter((p) => p.role === "elephant")).toHaveLength(2);
-      expect(army.filter((p) => p.role === "advisor")).toHaveLength(2);
-      expect(army.filter((p) => p.role === "cannon")).toHaveLength(2);
-      expect(army.filter((p) => p.role === "soldier")).toHaveLength(3);
-      expect(army.filter((p) => p.role === "fire")).toHaveLength(2);
-      expect(army.filter((p) => p.role === "flag")).toHaveLength(2);
+      expect(army.filter((piece) => piece.role === "general")).toHaveLength(1);
+      expect(army.filter((piece) => piece.role === "advisor")).toHaveLength(2);
+      expect(army.filter((piece) => piece.role === "elephant")).toHaveLength(2);
+      expect(army.filter((piece) => piece.role === "horse")).toHaveLength(2);
+      expect(army.filter((piece) => piece.role === "chariot")).toHaveLength(2);
+      expect(army.filter((piece) => piece.role === "cannon")).toHaveLength(2);
+      expect(army.filter((piece) => piece.role === "soldier")).toHaveLength(3);
+      expect(army.filter((piece) => piece.role === "fire")).toHaveLength(2);
+      expect(army.filter((piece) => piece.role === "flag")).toHaveLength(2);
     }
   });
 
-  it("places each General at the back palace and Flags at front palace corners", () => {
+  it("places the exact Sanyou opening formation", () => {
     const state = createInitialState();
-    for (const faction of FACTIONS) {
-      const general = state.pieces.find((p) => p.owner === faction && p.role === "general");
-      expect(general.node).toEqual({ sector: faction, rank: HOME_RANK, file: CENTRAL_FILE });
-      const flags = state.pieces.filter((p) => p.owner === faction && p.role === "flag");
-      expect(flags).toHaveLength(2);
-      const flagNodes = flags.map((p) => `${p.node.rank}-${p.node.file}`).sort();
-      expect(flagNodes).toEqual([`${PALACE_FRONT}-${PALACE_LEFT}`, `${PALACE_FRONT}-${PALACE_RIGHT}`]);
-    }
+    const red = state.pieces.filter((piece) => piece.faction === "red");
+
+    const at = (node) => red.find((piece) => piece.node === node)?.role;
+
+    expect([
+      at("red:L1-1"), at("red:L2-1"), at("red:L3-1"),
+      at("red:L4-1"), at("red:L5-1"), at("red:L6-1"),
+      at("red:L7-1"), at("red:L8-1"), at("red:L9-1"),
+    ]).toEqual([
+      "chariot", "horse", "elephant", "advisor", "general",
+      "advisor", "elephant", "horse", "chariot",
+    ]);
+
+    expect(at("red:L2-3")).toBe("cannon");
+    expect(at("red:L4-3")).toBe("flag");
+    expect(at("red:L6-3")).toBe("flag");
+    expect(at("red:L8-3")).toBe("cannon");
+
+    expect([
+      at("red:L1-4"), at("red:L3-4"), at("red:L5-4"),
+      at("red:L7-4"), at("red:L9-4"),
+    ]).toEqual(["soldier", "fire", "soldier", "fire", "soldier"]);
   });
 
-  it("is fully JSON serializable and deterministic", () => {
+  it("is deterministic and JSON serializable", () => {
     const a = createInitialState();
     const b = JSON.parse(JSON.stringify(a));
     expect(getLegalActions(b)).toEqual(getLegalActions(a));
   });
+});
 
-  it("rejects mismatched rulesets and malformed state at the public boundary", () => {
-    const wrongVersion = createInitialState();
-    wrongVersion.rulesetVersion = "future";
-    expect(getLegalActions(wrongVersion)).toEqual([]);
-    expect(validateAction(wrongVersion, {}).error.code).toBe("RULESET_MISMATCH");
-
-    const duplicate = createInitialState();
-    duplicate.pieces[1].node = { ...duplicate.pieces[0].node };
-    expect(getLegalActions(duplicate)).toEqual([]);
-    expect(validateAction(duplicate, {}).error.code).toBe("INVALID_STATE");
+describe("finalized 159-point board graph", () => {
+  it("contains 135 arm nodes plus C1-C24", () => {
+    expect(ALL_NODE_IDS).toHaveLength(159);
+    expect(new Set(ALL_NODE_IDS).size).toBe(159);
+    expect(boardPoint("red:L1-1")).toEqual([0.329114, 0.755632]);
+    expect(boardPoint("C24")).toEqual([0.471424, 0.431472]);
   });
 
-  it("uses Red-first counterclockwise turn order", () => {
-    expect(TURN_ORDER).toEqual(["red", "green", "blue"]);
+  it("records the user-approved continuation paths", () => {
+    const byId = Object.fromEntries(CONTINUATION_LINES.map((entry) => [entry.id, entry.nodes]));
+
+    expect(byId["RB-1"].slice(-6)).toEqual([
+      "red:L1-5", "blue:L9-5", "blue:L9-4", "blue:L9-3", "blue:L9-2", "blue:L9-1",
+    ]);
+
+    expect(byId["RB-2"].slice(4, 7)).toEqual(["red:L2-5", "C1", "blue:L8-5"]);
+    expect(byId["RB-3"].slice(4, 8)).toEqual(["red:L3-5", "C2", "C18", "blue:L7-5"]);
+
+    expect(byId["RB-4A"].slice(4, 8)).toEqual(["red:L4-5", "C3", "C17", "blue:L6-5"]);
+    expect(byId["RB-4B"].slice(4, 9)).toEqual(["red:L4-5", "C3", "C19", "C17", "blue:L6-5"]);
+
+    expect(byId["RB-5"].slice(4, 10)).toEqual([
+      "red:L5-5", "C4", "C20", "C24", "C16", "blue:L5-5",
+    ]);
+    expect(byId["RG-5"].slice(4, 10)).toEqual([
+      "red:L5-5", "C4", "C20", "C22", "C10", "green:L5-5",
+    ]);
+
+    expect(byId["RG-6A"].slice(4, 8)).toEqual(["red:L6-5", "C5", "C9", "green:L4-5"]);
+    expect(byId["RG-6B"].slice(4, 9)).toEqual(["red:L6-5", "C5", "C21", "C9", "green:L4-5"]);
+    expect(byId["RG-7"].slice(4, 8)).toEqual(["red:L7-5", "C6", "C8", "green:L3-5"]);
+    expect(byId["RG-8"].slice(4, 7)).toEqual(["red:L8-5", "C7", "green:L2-5"]);
+
+    expect(byId["BG-5"].slice(4, 10)).toEqual([
+      "blue:L5-5", "C16", "C24", "C22", "C10", "green:L5-5",
+    ]);
+    expect(byId["BG-4A"].slice(4, 9)).toEqual([
+      "blue:L4-5", "C15", "C23", "C11", "green:L6-5",
+    ]);
+    expect(byId["BG-4B"].slice(4, 8)).toEqual([
+      "blue:L4-5", "C15", "C11", "green:L6-5",
+    ]);
+    expect(byId["BG-3"].slice(4, 8)).toEqual(["blue:L3-5", "C14", "C12", "green:L7-5"]);
+    expect(byId["BG-2"].slice(4, 7)).toEqual(["blue:L2-5", "C13", "green:L8-5"]);
+  });
+
+  it("contains exactly the six added central horizontal lines", () => {
+    expect(CENTER_HORIZONTAL_LINES.map((entry) => entry.nodes)).toEqual([
+      ["C1","C2","C3","C4","C5","C6","C7"],
+      ["C13","C14","C15","C16","C17","C18","C1"],
+      ["C7","C8","C9","C10","C11","C12","C13"],
+      ["C19","C20","C21"],
+      ["C23","C24","C19"],
+      ["C21","C22","C23"],
+    ]);
   });
 });
 
-describe("board graph and river crossing", () => {
-  it("exposes 135 nodes (3 × 9×5 sectors)", () => {
-    expect(FACTIONS.length * RANK_COUNT * FILE_COUNT).toBe(135);
+describe("faction-specific enemy territory and Soldier promotion", () => {
+  it("uses the exact Red C-point enemy set", () => {
+    const enemy = [8,9,10,11,12,13,14,15,16,17,18,22,23,24];
+    const safe = [1,2,3,4,5,6,7,19,20,21];
+    for (const number of enemy) expect(territoryOf(`C${number}`, "red")).toBe("enemy");
+    for (const number of safe) expect(territoryOf(`C${number}`, "red")).not.toBe("enemy");
   });
 
-  it("central junction branches into both other kingdoms", () => {
-    const exits = riverExits(logicalNode("red", 0, CENTRAL_FILE));
-    expect(exits).toHaveLength(2);
-    expect(exits.map((n) => n.sector).sort()).toEqual(["blue", "green"]);
+  it("uses the exact Blue C-point enemy set", () => {
+    const safe = [1,13,14,15,16,17,18,19,23,24];
+    const enemy = [2,3,4,5,6,7,8,9,10,11,12,20,21,22];
+    for (const number of enemy) expect(territoryOf(`C${number}`, "blue")).toBe("enemy");
+    for (const number of safe) expect(territoryOf(`C${number}`, "blue")).not.toBe("enemy");
   });
 
-  it("non-central river exits split left and right into different neighboring kingdoms", () => {
-    const left = riverExits(logicalNode("red", 0, 0));
-    const right = riverExits(logicalNode("red", 0, 8));
-    expect(left).toEqual([logicalNode("blue", 0, 8)]);
-    expect(right).toEqual([logicalNode("green", 0, 0)]);
-
-    expect(riverExits(logicalNode("green", 0, 1))).toEqual([logicalNode("red", 0, 7)]);
-    expect(riverExits(logicalNode("green", 0, 7))).toEqual([logicalNode("blue", 0, 1)]);
-    expect(riverExits(logicalNode("blue", 0, 1))).toEqual([logicalNode("green", 0, 7)]);
-    expect(riverExits(logicalNode("blue", 0, 7))).toEqual([logicalNode("red", 0, 1)]);
+  it("uses the exact Green C-point enemy set", () => {
+    const safe = [7,8,9,10,11,12,13,21,22,23];
+    const enemy = [1,2,3,4,5,6,14,15,16,17,18,19,20,24];
+    for (const number of enemy) expect(territoryOf(`C${number}`, "green")).toBe("enemy");
+    for (const number of safe) expect(territoryOf(`C${number}`, "green")).not.toBe("enemy");
   });
 
-  it("marks central terrain in code rather than deriving it from artwork", () => {
-    expect(TERRAIN.sea).toHaveLength(3);
-    expect(terrainAt(logicalNode("red", 0, 4))).toBe("sea");
-    expect(terrainAt(logicalNode("red", 0, 2))).toBe("mountain");
-    expect(terrainAt(logicalNode("red", 0, 8))).toBe("city");
-    expect(terrainAt(logicalNode("red", 1, 4))).toBeNull();
+  it("restricts an unpromoted Red Soldier on C19 to C17", () => {
+    const state = sparseState([
+      { faction: "red", role: "soldier", node: "C19" },
+    ]);
+    const soldier = state.pieces.find(
+      (piece) => piece.faction === "red" && piece.role === "soldier" && piece.status === "board",
+    );
+    expect(getPseudoTargets(state, soldier.id)).toEqual(["C17"]);
   });
 
-  it("identifies river endpoints and home territory", () => {
-    expect(isRiverEndpoint(logicalNode("red", 0, 0))).toBe(true);
-    expect(isRiverEndpoint(logicalNode("red", 1, 0))).toBe(false);
-    expect(isHome(logicalNode("red", 4, 4), "red")).toBe(true);
-    expect(isHome(logicalNode("green", 4, 4), "red")).toBe(false);
+  it("restricts an unpromoted Blue Soldier on C24 to C20 or C22", () => {
+    const state = sparseState([
+      { faction: "blue", role: "soldier", node: "C24" },
+    ], "blue", ["blue"]);
+    const soldier = state.pieces.find(
+      (piece) => piece.faction === "blue" && piece.role === "soldier" && piece.status === "board",
+    );
+    expect(new Set(getPseudoTargets(state, soldier.id))).toEqual(new Set(["C20", "C22"]));
+  });
+
+  it("promotes Red when moving C20 → C24 and then enables lateral C-line movement", () => {
+    const state = sparseState([
+      { faction: "red", role: "soldier", node: "C20", leftHome: true },
+    ]);
+    const soldier = state.pieces.find(
+      (piece) => piece.faction === "red" && piece.role === "soldier" && piece.status === "board",
+    );
+
+    const action = getLegalActions(state).find(
+      (candidate) => candidate.pieceId === soldier.id && candidate.to === "C24",
+    );
+    expect(action).toBeTruthy();
+
+    const result = applyAction(state, action);
+    expect(result.error).toBeNull();
+
+    const moved = result.state.pieces.find((piece) => piece.id === soldier.id);
+    expect(moved.promoted).toBe(true);
+    expect(moved.node).toBe("C24");
+
+    result.state.turn = "red";
+    result.state.activeFactions = ["red"];
+    result.state.repetition = {};
+    const promotedTargets = getPseudoTargets(result.state, moved.id);
+    expect(promotedTargets).toContain("C19");
+    expect(promotedTargets).toContain("C23");
   });
 });
 
-describe("standard Xiangqi pieces", () => {
-  it("Chariot slides orthogonally including river crossings", () => {
+describe("terrain and special movement", () => {
+  it("blocks Chariot and Horse across Sea edges", () => {
     const state = sparseState([
-      ["red", "chariot", 3, 4],
-      ["green", "soldier", 2, 4],
+      { faction: "red", role: "chariot", node: "C20" },
     ]);
-    const targets = getPseudoTargets(state, state.pieces.find((p) => p.role === "chariot").id);
-    // Along rank 3 in red sector.
-    expect(targets.some((t) => t.sector === "red" && t.rank === 3 && t.file === 0)).toBe(true);
-    expect(targets.some((t) => t.sector === "red" && t.rank === 3 && t.file === 8)).toBe(true);
-    // File 4 is a sea corridor, so Chariots cannot enter or pass through it.
-    expect(targets.some((t) => t.sector === "red" && t.rank === 0 && t.file === 4)).toBe(false);
-    expect(targets.some((t) => t.sector === "green" && t.rank === 0 && t.file === 4)).toBe(false);
-    // The green soldier at rank 2 file 4 is a capture target (not a pass-through).
-    expect(targets.some((t) => t.sector === "green" && t.rank === 2 && t.file === 4)).toBe(false);
-    // Beyond the soldier is blocked.
-    expect(targets.some((t) => t.sector === "green" && t.rank === 3 && t.file === 4)).toBe(false);
+    const chariot = state.pieces.find(
+      (piece) => piece.role === "chariot" && piece.status === "board",
+    );
+    const targets = getPseudoTargets(state, chariot.id);
+    expect(targets).not.toContain("C24");
+    expect(targets).not.toContain("C22");
+    expect(targets).toContain("C19");
+    expect(targets).toContain("C21");
   });
 
-  it("Cannon captures by jumping exactly one screen", () => {
-    const state = sparseState([
-      ["red", "cannon", 2, 4],
-      ["green", "soldier", 0, 4],   // screen (at the river junction)
-      ["green", "chariot", 1, 4],   // capture target beyond the screen
+  it("marks direct Mountain crossings as Cannon-blocked while alternate edges remain open", () => {
+    expect(__testing.pathEdgeAllowedForRole("cannon", "C3", "C17")).toBe(false);
+    expect(__testing.pathEdgeAllowedForRole("cannon", "C3", "C19")).toBe(true);
+    expect(__testing.pathEdgeAllowedForRole("chariot", "C3", "C17")).toBe(true);
+  });
+
+  it("blocks Cannon but not Chariot through a City connection", () => {
+    const cannonState = sparseState([
+      { faction: "red", role: "cannon", node: "red:L1-5" },
     ]);
-    const targets = getPseudoTargets(state, state.pieces.find((p) => p.role === "cannon").id);
-    // Going down file 4: green rank 0 (soldier = screen), green rank 1 (chariot = capture).
-    expect(targets.some((t) => t.sector === "green" && t.rank === 1 && t.file === 4)).toBe(true);
-    // Cannot move to empty squares past the screen (cannon only captures past screen).
-    expect(targets.some((t) => t.sector === "red" && t.rank === 2 && t.file === 6)).toBe(true);
-    expect(targets.some((t) => t.sector === "red" && t.rank === 2 && t.file === 8)).toBe(true);
-    // Cannot capture the screen itself — it is the first piece, no screen before it.
-    expect(targets.some((t) => t.sector === "green" && t.rank === 0 && t.file === 4)).toBe(false);
-  });
+    const cannon = cannonState.pieces.find(
+      (piece) => piece.role === "cannon" && piece.status === "board",
+    );
+    expect(getPseudoTargets(cannonState, cannon.id)).not.toContain("blue:L9-5");
 
-  it("applies terrain restrictions to Chariot/Horse and Cannon corridors", () => {
-    const chariotState = sparseState([["red", "chariot", 1, 4]]);
-    const chariot = chariotState.pieces.find((p) => p.role === "chariot");
-    expect(getPseudoTargets(chariotState, chariot.id).some((t) => t.rank === 0 && t.file === 4)).toBe(false);
-
-    const horseState = sparseState([["red", "horse", 2, 3]]);
-    const horse = horseState.pieces.find((p) => p.role === "horse");
-    expect(getPseudoTargets(horseState, horse.id).some((t) => t.rank === 0 && t.file === 4)).toBe(false);
-
-    const cannonState = sparseState([["red", "cannon", 1, 2]]);
-    const cannon = cannonState.pieces.find((p) => p.role === "cannon");
-    expect(getPseudoTargets(cannonState, cannon.id).some((t) => t.rank === 0 && t.file === 2)).toBe(false);
-  });
-
-  it("General moves one orthogonal inside the palace only", () => {
-    const state = sparseState([["red", "general", HOME_RANK, CENTRAL_FILE]]);
-    const targets = getPseudoTargets(state, state.pieces.find((p) => p.role === "general").id);
-    const keys = new Set(targets.map(squareKey));
-    expect(keys.has(squareKey(logicalNode("red", HOME_RANK - 1, CENTRAL_FILE)))).toBe(true);
-    expect(keys.has(squareKey(logicalNode("red", HOME_RANK, CENTRAL_FILE - 1)))).toBe(true);
-    expect(keys.has(squareKey(logicalNode("red", HOME_RANK, CENTRAL_FILE + 1)))).toBe(true);
-    expect(keys.has(squareKey(logicalNode("red", HOME_RANK - 1, PALACE_LEFT)))).toBe(false);
-  });
-
-  it("Advisor stays on the palace diagonal", () => {
-    const state = sparseState([["red", "advisor", HOME_RANK, PALACE_LEFT]]);
-    const targets = getPseudoTargets(state, state.pieces.find((p) => p.role === "advisor").id);
-    expect(targets).toHaveLength(1);
-    expect(targets[0]).toEqual(logicalNode("red", PALACE_FRONT + 1, CENTRAL_FILE));
-  });
-
-  it("Elephant moves two diagonal with blockable eye and stays in-sector", () => {
-    const state = sparseState([
-      ["red", "elephant", 4, 2],
-      ["red", "soldier", 3, 1], // blocks the eye on the (-2,-2) delta
+    const chariotState = sparseState([
+      { faction: "red", role: "chariot", node: "red:L1-5" },
     ]);
-    const targets = getPseudoTargets(state, state.pieces.find((p) => p.role === "elephant").id);
-    expect(targets.some((t) => t.rank === 2 && t.file === 0)).toBe(false); // blocked by eye
-    expect(targets.some((t) => t.rank === 2 && t.file === 4)).toBe(true);
+    const chariot = chariotState.pieces.find(
+      (piece) => piece.role === "chariot" && piece.status === "board",
+    );
+    expect(getPseudoTargets(chariotState, chariot.id)).toContain("blue:L9-5");
   });
 
-  it("Horse uses the blockable Xiangqi L-move", () => {
-    const state = sparseState([
-      ["red", "horse", 3, 4],
-      ["red", "soldier", 2, 4], // blocks the up-leg (rank 2, file 4)
+  it("Fire advances diagonally and Flag moves exactly two forward points before leaving home", () => {
+    const fireState = sparseState([
+      { faction: "red", role: "fire", node: "red:L5-3" },
     ]);
-    const targets = getPseudoTargets(state, state.pieces.find((p) => p.role === "horse").id);
-    // Delta (-2,-1): leg at (2,4) — blocked by soldier → destination (1,3) unreachable.
-    expect(targets.some((t) => t.rank === 1 && t.file === 3)).toBe(false);
-    // Delta (-2,1): leg at (2,4) — blocked by soldier → destination (1,5) unreachable.
-    expect(targets.some((t) => t.rank === 1 && t.file === 5)).toBe(false);
-    // Delta (-1,-2): leg at (3,3) — clear → destination (2,2) reachable.
-    expect(targets.some((t) => t.rank === 2 && t.file === 2)).toBe(true);
-    // Delta (-1,2): leg at (3,5) — clear → destination (2,6) reachable.
-    expect(targets.some((t) => t.rank === 2 && t.file === 6)).toBe(true);
-    // Delta (1,-2): leg at (3,3) — clear → destination (4,2) reachable.
-    expect(targets.some((t) => t.rank === 4 && t.file === 2)).toBe(true);
-    // Delta (1,2): leg at (3,5) — clear → destination (4,6) reachable.
-    expect(targets.some((t) => t.rank === 4 && t.file === 6)).toBe(true);
-  });
+    const fire = fireState.pieces.find(
+      (piece) => piece.role === "fire" && piece.status === "board",
+    );
+    expect(new Set(getPseudoTargets(fireState, fire.id))).toEqual(
+      new Set(["red:L4-4", "red:L6-4"]),
+    );
 
-  it("Soldier moves forward before crossing, sideways after", () => {
-    const state = sparseState([["red", "soldier", 3, 4]]);
-    const targets = getPseudoTargets(state, state.pieces.find((p) => p.role === "soldier").id);
-    expect(targets).toHaveLength(1);
-    expect(targets[0].rank).toBe(2);
-
-    // After crossing into green.
-    const crossed = sparseState([["red", "soldier", 4, 4]]);
-    crossed.pieces.find((p) => p.role === "soldier").node = { sector: "green", rank: 4, file: 4 };
-    const ct = getPseudoTargets(crossed, crossed.pieces.find((p) => p.role === "soldier").id);
-    expect(ct.some((t) => t.rank === 4 && t.file === 3)).toBe(true);
-    expect(ct.some((t) => t.rank === 4 && t.file === 5)).toBe(true);
-    expect(ct.some((t) => t.rank === 3 && t.file === 4)).toBe(false); // no backward
+    const flagState = sparseState([
+      { faction: "red", role: "flag", node: "red:L5-1", leftHome: false },
+    ]);
+    const flag = flagState.pieces.find(
+      (piece) => piece.role === "flag" && piece.status === "board",
+    );
+    expect(getPseudoTargets(flagState, flag.id)).toContain("red:L5-3");
+    expect(getPseudoTargets(flagState, flag.id)).not.toContain("red:L5-2");
   });
 });
 
-describe("Three Friends special pieces", () => {
-  it("Fire moves one diagonal forward and never retreats", () => {
-    const state = sparseState([["red", "fire", 2, 4]]);
-    const targets = getPseudoTargets(state, state.pieces.find((p) => p.role === "fire").id);
-    expect(targets).toHaveLength(2);
-    expect(targets.some((t) => t.rank === 1 && t.file === 3)).toBe(true);
-    expect(targets.some((t) => t.rank === 1 && t.file === 5)).toBe(true);
-    expect(targets.some((t) => t.rank >= 3)).toBe(false);
-  });
-
-  it("Flag moves two straight forward inside territory", () => {
-    const state = sparseState([["red", "flag", 4, 4]]);
-    const targets = getPseudoTargets(state, state.pieces.find((p) => p.role === "flag").id);
-    expect(targets.some((t) => t.rank === 2 && t.file === 4)).toBe(true);
-    expect(targets.some((t) => t.rank === 3 && t.file === 4)).toBe(false); // never 1 step
-    expect(targets.some((t) => t.rank === 3 && (t.file === 3 || t.file === 5))).toBe(false); // never sideways
-  });
-
-  it("Flag path must be clear for the two-step advance", () => {
-    const state = sparseState([
-      ["red", "flag", 4, 4],
-      ["red", "soldier", 3, 4],
-    ]);
-    const targets = getPseudoTargets(state, state.pieces.find((p) => p.role === "flag").id);
-    expect(targets.some((t) => t.rank === 2 && t.file === 4)).toBe(false);
-  });
-
-  it("Flag cannot cross the river in two steps from rank 1", () => {
-    const state = sparseState([["red", "flag", 1, 4]]);
-    const targets = getPseudoTargets(state, state.pieces.find((p) => p.role === "flag").id);
-    expect(targets).toHaveLength(0);
-  });
-
-  it("Flag moves exactly two orthogonal steps after leaving its own territory", () => {
-    const state = sparseState([
-      ["red", "flag", 4, 4],
-      ["blue", "general", 4, 4],
-    ]);
-    // Move the flag to the green sector to simulate crossing.
-    const flag = state.pieces.find((p) => p.role === "flag" && p.owner === "red" && p.status === "board");
-    flag.node = { sector: "green", rank: 3, file: 4 };
-    const targets = getPseudoTargets(state, flag.id);
-    expect(targets.some((t) => t.sector === "green" && t.rank === 3 && t.file === 2)).toBe(true);
-    expect(targets.some((t) => t.sector === "green" && t.rank === 3 && t.file === 0)).toBe(false);
-    expect(targets.some((t) => t.sector === "green" && t.rank === 1 && t.file === 4)).toBe(true);
-    expect(targets.some((t) => t.sector === "green" && t.rank === 0 && t.file === 4)).toBe(false);
-  });
-
-  it("Flag outside home cannot return to its original kingdom", () => {
-    const state = sparseState([["red", "flag", 2, 4]]);
-    const flag = state.pieces.find((p) => p.role === "flag");
-    flag.node = { sector: "green", rank: 0, file: 4 };
-    const targets = getPseudoTargets(state, flag.id);
-    expect(targets.some((t) => t.sector === "red")).toBe(false);
-  });
-});
-
-describe("legality and victory", () => {
-  it("generates legal first move for Red", () => {
+describe("legality and turn flow", () => {
+  it("generates legal Red opening actions", () => {
     const state = createInitialState();
     const actions = getLegalActions(state);
     expect(actions.length).toBeGreaterThan(0);
-    expect(actions.every((a) => a.type === "move")).toBe(true);
+    expect(actions.every((action) => state.pieces.find((piece) => piece.id === action.pieceId)?.owner === "red")).toBe(true);
   });
 
-  it("does not allow moving an opponent's piece", () => {
+  it("applies Red Soldier L1-4 → L1-5 and advances to Green", () => {
     const state = createInitialState();
-    const actions = getLegalActions(state);
-    expect(actions.every((a) => state.pieces.find((p) => p.id === a.pieceId).owner === state.turn)).toBe(true);
-  });
+    const action = getLegalActions(state).find(
+      (candidate) =>
+        candidate.pieceId === "red-soldier-1" &&
+        candidate.to === "red:L1-5",
+    );
 
-  it("rejects illegal actions without changing the state object", () => {
-    const state = createInitialState();
-    const general = state.pieces.find((p) => p.role === "general" && p.owner === "red");
-    const result = applyAction(state, {
-      type: "move", pieceId: general.id,
-      from: general.node,
-      to: { sector: "red", rank: 0, file: 0 },
-    });
-    expect(result.state).toBe(state);
-    expect(result.error.code).toBe("ILLEGAL_ACTION");
-  });
-
-  it("applies a legal move and advances the turn", () => {
-    const state = createInitialState();
-    const actions = getLegalActions(state);
-    const action = actions[0];
+    expect(action).toBeTruthy();
     const result = applyAction(state, action);
     expect(result.error).toBeNull();
     expect(result.state.turn).toBe("green");
     expect(result.state.ply).toBe(1);
+  });
+
+  it("rejects malformed or illegal actions without mutating the source state", () => {
+    const state = createInitialState();
+    const result = applyAction(state, {
+      type: "move",
+      pieceId: "red-general-1",
+      from: "red:L5-1",
+      to: "C24",
+    });
+
+    expect(result.state).toBe(state);
+    expect(result.error.code).toBe("ILLEGAL_ACTION");
+
+    const wrongVersion = createInitialState();
+    wrongVersion.rulesetVersion = "future";
+    expect(validateAction(wrongVersion, {}).error.code).toBe("RULESET_MISMATCH");
   });
 });
