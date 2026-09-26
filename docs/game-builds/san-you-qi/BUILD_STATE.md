@@ -1,72 +1,95 @@
 # San You Qi Build State
 
-## Current Checkpoint
+## Current checkpoint
 
-Lead session resumed direct implementation on 2026-09-17 after the user chose to close the worker sessions and continue with Codex. The previous worker record claimed completion, but lead review found stale documentation, a left/right river-crossing defect, empty terrain legality, and a disputed Flag rule implemented against the weaker source.
+San You Qi has been rebuilt around the finalized Arctic Dominion Sanyou board rather than the earlier simplified 135-node logical model.
 
-Current status: rules engine repaired and focused engine tests passing. UI, shared catalog text, route smoke tests, build, and browser QA remain in progress.
+Current ruleset:
 
-## Ownership
+`arctic-final-159-node-2.0.0`
 
-- Game ID: `san-you-qi`
-- Original worker: Game Session 28 (`3fe5fc06-fcfa-40fa-8353-db0ca532e85a`)
-- Temporary implementer: Lead session (`b9e86533-06a6-4856-8d95-7b809f58a428`)
-- Game-owned paths:
-  - `frontend/src/games/san-you-qi/`
-  - `docs/game-builds/san-you-qi/`
-  - `frontend/tests/san-you-qi-smoke.spec.js`
+## Completed in this build
 
-## Source Evidence
+- Replaced the old generated Y-board geometry with the production `sanyou-arctic-board.png`.
+- Added the exact 135 normalized coloured-arm coordinates.
+- Added C1-C24 as real playable nodes, for 159 total intersections.
+- Added every user-approved continuation route, including alternate routes.
+- Added all six user-approved central horizontal lines.
+- Added faction-specific C-point enemy-territory maps.
+- Added persistent Soldier promotion on first enemy-territory entry.
+- Verified the key Red C19 → C17 and Blue C24 → C20/C22 Soldier directions.
+- Replaced placeholder SVG pieces with the uploaded 45 production WebP assets.
+- Added the three Red directional artwork sets and the Blue/Green fixed directional sets.
+- Rebuilt Chariot/Cannon rays on the explicit line graph.
+- Rebuilt Fire, Flag, Horse, Elephant, Guard, General and Soldier movement around the finalized graph.
+- Preserved check, checkmate, army appropriation, original-faction identity and current-controller identity.
+- Updated focused rules tests and browser smoke tests.
+- Updated the Heritage Arcade catalogue to classify the exact graph as a partial reconstruction.
 
-- English Wikipedia: Qing Kangxi / Zheng Jinde attribution, three-player Xiangqi variant, 18 pieces per player, checkmate appropriation, last General victory.
-- Chinese Wikipedia variant page: left/right/center river crossing, terrain restrictions, Fire/Flag setup, no return for Flag after leaving original territory.
-- Wikimedia Commons `SanYouQi_Board.svg`: public board/setup visual reference.
-- Xiao-en Chinese article PDF: 18-piece army, Fire movement, Flag movement, and terrain restrictions.
-- World Xiangqi Federation PDF: secondary historical/context support.
+## Opening formation
 
-## Decisions Made
+Per faction:
 
-- Selected Chinese-source Flag rule: in home territory the Flag moves exactly two clear steps forward; after leaving home, it moves exactly two clear orthogonal steps in any direction and cannot return to its original sector.
-- Rejected the English secondary "Flag becomes Chariot" rule for this build.
-- Implemented left/right/center river crossings:
-  - center file branches to both other sectors;
-  - left files cross one neighbor;
-  - right files cross the other neighbor.
-- Added code-owned terrain markers:
-  - Sea: center file rank 0;
-  - Mountain: files 2 and 6 rank 0;
-  - City: files 0 and 8 rank 0.
-- Classified exact terrain-to-file mapping as likely reconstruction.
+- Back: Chariot, Horse, Elephant, Guard, General, Guard, Elephant, Horse, Chariot.
+- Middle: Cannon, Flag, Flag, Cannon.
+- Front: Soldier, Fire, Soldier, Fire, Soldier.
 
-## Files Modified In This Resume
+Total: 18 per army / 54 pieces.
 
-- `frontend/src/games/san-you-qi/rules.js`
-- `frontend/src/games/san-you-qi/rules.test.js`
-- `frontend/src/games/san-you-qi/SanYouQiApp.jsx`
-- `docs/game-builds/san-you-qi/CANONICAL_SPEC.md`
-- `docs/game-builds/san-you-qi/BUILD_STATE.md`
+## Production assets
 
-## Test Commands And Results
+Board:
 
-- `./node_modules/.bin/vitest.cmd run src/games/san-you-qi/rules.test.js`
-  - Result: PASS, 28 tests passing.
+`frontend/public/assets/heritage-arcade/board/sanyou-arctic-board.png`
 
-## Known Defects / Remaining Work
+Pieces:
 
-- San You Qi rulebook text must be updated to remove "Flag becomes Chariot."
-- Catalog summary/engine text must be updated to match the corrected Flag rule.
-- Smoke test should be made deterministic enough to verify direct route, board render, reset/replay/rules controls if present, and mobile-safe layout.
-- Browser QA has not yet been rerun after the rule correction.
-- Production build and affected route regression have not yet been rerun.
+`frontend/public/assets/heritage-arcade/tokens/`
 
-## Shared Integration Requests For Lead
+Expected Sanyou artwork count: 45 WebPs.
 
-Lead must review and serialize any remaining shared edits:
+- Red NW-facing: 9
+- Red back-facing: 9
+- Red NE-facing: 9
+- Green SW-facing: 9
+- Blue SE-facing: 9
 
-- `frontend/src/App.jsx`
-- `frontend/src/data/gameCatalog.js`
-- `frontend/tests/all-games-routes.spec.js`
+## Graph source of truth
 
-## Next Action
+`frontend/src/games/san-you-qi/topology.js`
 
-Repair San You Qi UI/rulebook and shared catalog copy to match `RULESET_VERSION` `zheng-jinde-qing-kangxi-1.1.0`, run component/smoke/build checks, perform desktop and mobile browser QA, implement any QA improvements, then update this record again.
+Detailed human-readable graph:
+
+`docs/game-builds/san-you-qi/FINAL_MOVEMENT_GRAPH.md`
+
+## Historical / reconstruction boundary
+
+The historical core supports the Three Friends Chess armies, special Fire/Flag roles, Xiangqi ancestry, terrain restrictions and army appropriation.
+
+The exact C1-C24 topology, exact coordinates, six added horizontal lines, faction-specific central promotion boundaries and exact terrain-edge encoding are the finalized Arctic Dominion reconstruction and must not be described as verbatim historical source text.
+
+## Verification
+
+The GitHub/Vercel deployment status for commit `b55a68a21a4af17928cbbebd0a9c75e25149a4ee` reported success before the documentation/catalogue follow-up commits.
+
+Focused unit and smoke specifications now cover:
+
+- 54-piece setup;
+- exact opening positions;
+- 159 unique playable nodes;
+- all named continuation families;
+- all six central horizontals;
+- all three faction-specific enemy C-point sets;
+- Red C19 Soldier direction;
+- Blue C24 Soldier branching direction;
+- Red C20 → C24 promotion;
+- terrain restrictions;
+- Fire and Flag examples;
+- opening turn flow;
+- correct WebP asset families in browser smoke checks.
+
+## Remaining QA
+
+- Confirm the newest production deployment after the documentation/catalogue commits.
+- Run the focused Vitest suite and Playwright smoke suite in CI/local checkout when available.
+- Perform visual desktop/mobile QA on the live board and tune piece scale only if necessary; do not change coordinates to solve a purely visual sizing issue.
