@@ -25,7 +25,8 @@
     "build:sanguo-engine": "node scripts/build-sanguo-engine.mjs",
     "check:sanguo-engine": "node scripts/build-sanguo-engine.mjs --check",
     "build:sanyou-engine": "node scripts/build-sanyou-engine.mjs",
-    "check:sanyou-engine": "node scripts/build-sanyou-engine.mjs --check"
+    "check:sanyou-engine": "node scripts/build-sanyou-engine.mjs --check",
+    "test:sanyou": "vitest run --config vitest.sanyou.config.ts"
   },
   "dependencies": {
     "@abstract-foundation/agw-client": "1.12.3",
