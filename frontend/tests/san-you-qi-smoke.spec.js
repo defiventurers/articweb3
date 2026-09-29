@@ -5,7 +5,7 @@ test("San You Qi opens on the finalized Arctic board with all 54 WebP pieces", a
 
   await expect(page.getByRole("heading", { name: /SAN YOU QI/i })).toBeVisible();
   await expect(page.getByText("THREE FRIENDS CHESS", { exact: true })).toBeVisible();
-  await expect(page.getByText("135 + C1–C24", { exact: true })).toBeVisible();
+  await expect(page.getByText("135 + 21 central", { exact: true })).toBeVisible();
   await expect(page.getByText("18 each / 54 total", { exact: true })).toBeVisible();
 
   const board = page.locator(".san-you-qi-board-svg");
