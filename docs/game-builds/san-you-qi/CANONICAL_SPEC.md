@@ -10,229 +10,131 @@ San You Qi (三友棋), also called Three Friends Chess.
 
 ## CURRENT RULESET
 
-`arctic-final-159-node-2.0.0`
+`arctic-final-156-node-3.0.0`
 
-This release combines the historically supported Zheng Jinde / Qing-era Three Friends Chess core with the finalized Arctic Dominion board reconstruction supplied and approved during the Sanyou board-mapping session.
+This release combines the historically supported Zheng Jinde / Qing-era Three Friends Chess core with the current Arctic Dominion board reconstruction.
 
 ## SOURCE BOUNDARY
 
-Historically supported core:
+Historically supported core includes the three-player / three-kingdom structure, 18 pieces per army, Xiangqi-derived ordinary pieces, special Fire and Flag roles, central Sea/Mountain/City terrain, army appropriation after defeat, and last-surviving-General victory.
 
-- three players / three kingdoms;
-- 18 pieces per army;
-- 1 General, 2 Guards/Advisors, 2 Elephants, 2 Horses, 2 Chariots, 2 Cannons, 3 Soldiers, 2 Fire, 2 Flag;
-- standard Xiangqi movement for the ordinary pieces;
-- Fire advances one diagonal step forward and does not retreat;
-- Flag has special movement rather than being an ordinary Xiangqi piece;
-- central Sea / Mountain / City terrain affects passage;
-- checkmate can lead to appropriation of the defeated army;
-- last surviving General wins.
+Arctic Dominion reconstruction / implementation data includes the exact 156-node digital graph, exact supplied coordinates, continuation routes, H1-H3, faction-specific promotion boundaries, and exact Fort/Mountain/Sea crossing behavior.
 
-Arctic Dominion reconstruction / implementation data:
-
-- the exact 159-node digital graph;
-- exact C1-C24 labels and coordinates;
-- all explicit continuation routes through C1-C24;
-- the six added C-network horizontal lines;
-- the faction-specific C-point enemy-territory boundaries used for Soldier promotion;
-- exact terrain-to-edge mapping;
-- fixed Red → Green → Blue turn order and digital repetition policy.
-
-Do not present the exact C-point graph as a verbatim Qing rule text.
-
-## PRIMARY / SECONDARY REFERENCES USED BY THE PROJECT
-
-- Zheng Jinde, `三友棋譜` (Kangxi-era source, surviving in later collected editions).
-- Cui Lequan, `圖說中國古代遊藝`, Sanyou Qi section.
-- World Xiangqi Federation paper discussing the surviving Sanyou board and corrected 18-piece setup.
-- Chinese variant summaries and the public Sanyou board reproduction used for cross-checking the historical core.
+Do not present the exact C-point graph as verbatim Qing rule text.
 
 ## BOARD
 
-The final game board contains **159 playable intersections**:
+The current game board contains **156 playable intersections**:
 
-- Red arm: 45 points (`L1-1` through `L9-5`)
-- Blue arm: 45 points
-- Green arm: 45 points
-- Central graph: `C1` through `C24`
+- Red arm: 45
+- Blue arm: 45
+- Green arm: 45
+- Central graph: 21 — `C1-C18, C20, C22, C24`
 
-The exact normalized coordinates live in:
+Deleted central points: `C19`, `C21`, `C23`.
+
+Exact normalized coordinates live in:
 
 `frontend/src/games/san-you-qi/topology.js`
 
-The production board artwork is:
+## CENTRAL GRAPH
 
-`frontend/public/assets/heritage-arcade/board/sanyou-arctic-board.png`
+Only these horizontal C-lines remain:
+
+- H1: C1-C2-C3-C4-C5-C6-C7
+- H2: C13-C14-C15-C16-C17-C18-C1
+- H3: C7-C8-C9-C10-C11-C12-C13
+
+H4/H5/H6 are deleted.
+
+C20, C22 and C24 are each alone in their horizontal row. Explicit continuation connections:
+
+- C4-C20
+- C20-C22
+- C20-C24
+- C24-C22
+
+The full route graph is documented in `FINAL_MOVEMENT_GRAPH.md`.
+
+## TERRAIN
+
+### Sea
+
+Extended-river crossings:
+
+- C3-C17
+- C5-C9
+- C15-C11
+
+Cannon may cross. Chariot and Horse may not cross those Sea edges.
+
+C20, C22 and C24 remain legal continuation-network stopping points. Cannon may use C4-C20-C22, C4-C20-C24 and C24-C22.
+
+### Mountain
+
+Cannon is blocked across:
+
+- C2-C18
+- C6-C8
+- C14-C12
+
+### Fort / City
+
+Fort RB: Red L1-5, Red L2-5, C1, Blue L8-5, Blue L9-5.
+
+Fort BG: Blue L1-5, Blue L2-5, C13, Green L8-5, Green L9-5.
+
+Fort RG: Red L8-5, Red L9-5, C7, Green L1-5, Green L2-5.
+
+A Cannon may enter and stop on C1/C7/C13 from its own side but may not continue through that Fort into the opposite kingdom. The three direct outer Fort links are also Cannon-blocked.
+
+## SOLDIER ENEMY TERRITORY
+
+The extended river does not change enemy status of surviving nodes.
+
+Red enemy: `C8 C9 C10 C11 C12 C13 C14 C15 C16 C17 C18 C22 C24`
+
+Blue enemy: `C2 C3 C4 C5 C6 C7 C8 C9 C10 C11 C12 C20 C22`
+
+Green enemy: `C1 C2 C3 C4 C5 C6 C14 C15 C16 C17 C18 C20 C24`
+
+A Soldier promotes permanently on first landing in enemy territory and gains sideways movement only where a horizontal movement line exists.
+
+Blue Soldier on C24 keeps the approved forward choices C20 and C22.
 
 ## STARTING CONFIGURATION
 
 Each army has 18 pieces.
 
-Back row, from L1-1 through L9-1:
-
+Back row:
 `Chariot, Horse, Elephant, Guard, General, Guard, Elephant, Horse, Chariot`
 
-Middle line:
+Middle:
+- Cannon L2-3
+- Flag L4-3
+- Flag L6-3
+- Cannon L8-3
 
-- Cannon at L2-3
-- Flag at L4-3
-- Flag at L6-3
-- Cannon at L8-3
-
-Front line:
-
-- Soldier at L1-4
-- Fire at L3-4
-- Soldier at L5-4
-- Fire at L7-4
-- Soldier at L9-4
-
-## PIECE ART
-
-Production assets are under:
-
-`frontend/public/assets/heritage-arcade/tokens/`
-
-Blue uses the 9 `blue_team_SEfacing_*.webp` assets.
-
-Green uses the 9 `green_team_SWfacing_*.webp` assets.
-
-Red has three 9-piece directional sets:
-
-- L1-L4: `red_team_NWfacing_*.webp`
-- L5: `red_team_backfacing_*.webp`
-- L6-L9: `red_team_NEfacing_*.webp`
-
-Red pieces keep their original directional artwork identity when controlled after army appropriation; on central/opposing nodes the renderer chooses the matching directional Red set from the piece location.
-
-## CONTINUATION GRAPH
-
-The authoritative movement graph is documented in:
-
-`docs/game-builds/san-you-qi/FINAL_MOVEMENT_GRAPH.md`
-
-Unlike the Sanguo Qi implementation, Sanyou does not treat the three arms as being connected only by direct mirrored river-file exits. The intervening C-points are playable nodes.
-
-## SIX CENTRAL HORIZONTAL LINES
-
-- H1: C1-C2-C3-C4-C5-C6-C7
-- H2: C13-C14-C15-C16-C17-C18-C1
-- H3: C7-C8-C9-C10-C11-C12-C13
-- H4: C19-C20-C21
-- H5: C23-C24-C19
-- H6: C21-C22-C23
-
-Each adjacent pair in a sequence is connected. A sliding piece stays on the chosen movement line for the duration of a move; it does not turn at a junction.
-
-## SOLDIER ENEMY-TERRITORY / PROMOTION MAP
-
-The user-approved C-point boundary is faction-specific.
-
-Red enemy C-points:
-
-`C8 C9 C10 C11 C12 C13 C14 C15 C16 C17 C18 C22 C23 C24`
-
-Blue enemy C-points:
-
-`C2 C3 C4 C5 C6 C7 C8 C9 C10 C11 C12 C20 C21 C22`
-
-Green enemy C-points:
-
-`C1 C2 C3 C4 C5 C6 C14 C15 C16 C17 C18 C19 C20 C24`
-
-Any point on another kingdom's coloured arm is enemy territory.
-
-A Soldier promotes on first landing in enemy territory. The implementation stores that state permanently and adds sideways movement after promotion.
-
-Two key directional checks from the approved graph:
-
-- Red Soldier on C19: forward only to C17.
-- Blue Soldier on C24: forward to C20 or C22.
-
-## MOVEMENT
-
-### General
-
-One orthogonal point inside its original palace. Flying-General attack geometry is enforced along clear straight routes.
-
-### Guard / Advisor
-
-One palace-diagonal step on the palace X.
-
-### Elephant
-
-Standard blockable two-point diagonal movement in its original arm.
-
-### Horse
-
-Blockable Xiangqi L movement, resolved against the final graph. It cannot cross Sea.
-
-### Chariot
-
-Slides along a single explicit straight movement line until blocked. It cannot cross Sea.
-
-### Cannon
-
-Slides along a single explicit straight movement line. Captures the first enemy beyond exactly one screen. It cannot cross Mountain or City.
-
-### Soldier
-
-Before promotion: one point forward using its faction-oriented continuation graph.
-
-After first entry into enemy territory: retains forward movement and gains sideways movement along the horizontal movement graph. It never moves backward.
-
-### Fire
-
-One diagonal-forward step. It never retreats.
-
-### Flag
-
-Before leaving its original territory: exactly two clear forward points.
-
-After leaving its original territory: exactly two clear orthogonal points, with a clear intermediate point, and it may not return to its original kingdom.
-
-## TERRAIN
-
-Terrain is implemented on crossings/edges rather than by pretending a decorative terrain picture is itself a playable square.
-
-Current final reconstruction:
-
-- Sea crossings block Horse and Chariot.
-- Mountain crossings block Cannon.
-- City crossings block Cannon.
-- Soldier, Fire, and Flag are not given a special terrain prohibition beyond their own movement geometry.
+Front:
+- Soldier L1-4
+- Fire L3-4
+- Soldier L5-4
+- Fire L7-4
+- Soldier L9-4
 
 ## APPROPRIATION
 
-Each piece stores both:
-
-- `faction`: original kingdom / artwork / movement orientation
-- `owner`: current controller
-
-After checkmate, the defeated General is eliminated and surviving pieces of that original army are transferred to the mating player's control. Their original faction and orientation are retained.
-
-## TURN / VICTORY
-
-Red opens. Digital order is:
-
-`Red → Green → Blue`
-
-Eliminated kingdoms are skipped. The last surviving General wins.
+Each piece stores both `faction` (original kingdom/artwork/orientation) and `owner` (current controller). After checkmate, the defeated General is eliminated and surviving pieces transfer control while retaining original faction identity.
 
 ## IMPLEMENTATION FILES
 
 - `frontend/src/games/san-you-qi/topology.js`
 - `frontend/src/games/san-you-qi/rules.js`
 - `frontend/src/games/san-you-qi/SanYouQiApp.jsx`
-- `frontend/src/games/san-you-qi/sanYouQi.css`
 - `frontend/src/games/san-you-qi/rules.test.js`
 - `frontend/tests/san-you-qi-smoke.spec.js`
 
 ## DEPLOYMENT
 
-The game is integrated at:
-
-- direct route: `?game=san-you-qi`
-- Heritage Arcade route: `?game=heritage-arcade&table=san-you-qi`
-
-Vercel production build status should be checked after every topology/rule change.
+- `?game=san-you-qi`
+- `?game=heritage-arcade&table=san-you-qi`
