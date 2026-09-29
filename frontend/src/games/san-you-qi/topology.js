@@ -1,11 +1,11 @@
 // Sanyou Qi board topology.
-// The 135 coloured arm points come from the finalized placement export.
-// C1-C24 and all continuation/horizontal lines are the user-approved final graph.
+// The 135 coloured arm points come from the latest placement export.
+// The central graph has 21 surviving C-points: C1-C18, C20, C22 and C24.
 
 export const SANYOU_FACTIONS = Object.freeze(["red", "green", "blue"]);
 
-export const ARM_COORDS = Object.freeze({"red":[[0.329114,0.755632],[0.330265,0.717023],[0.330265,0.674419],[0.332566,0.627821],[0.333717,0.579892],[0.370541,0.759626],[0.370541,0.71436],[0.370541,0.673088],[0.371692,0.625159],[0.372842,0.57723],[0.410817,0.760958],[0.410817,0.715691],[0.410817,0.673088],[0.411968,0.625159],[0.411968,0.57723],[0.455696,0.758295],[0.455696,0.71436],[0.453395,0.671756],[0.454545,0.62649],[0.454545,0.578561],[0.498274,0.758295],[0.498274,0.713029],[0.497123,0.671756],[0.498274,0.62649],[0.498274,0.579892],[0.542002,0.758295],[0.542002,0.713029],[0.540852,0.670425],[0.540852,0.627821],[0.540852,0.578561],[0.58458,0.759626],[0.583429,0.715691],[0.583429,0.673088],[0.583429,0.627821],[0.582278,0.578561],[0.627158,0.759626],[0.627158,0.715691],[0.626007,0.673088],[0.624856,0.62649],[0.622555,0.57723],[0.667434,0.760958],[0.665132,0.71436],[0.666283,0.673088],[0.663982,0.627821],[0.662831,0.578561]],"green":[[0.850061,0.433779],[0.818196,0.455106],[0.77769,0.483397],[0.735761,0.512469],[0.696347,0.537235],[0.831891,0.393694],[0.797229,0.415252],[0.755802,0.444909],[0.716389,0.470675],[0.674976,0.496441],[0.810159,0.353937],[0.775496,0.375496],[0.734991,0.403787],[0.693578,0.429553],[0.652759,0.458379],[0.788813,0.315841],[0.75323,0.336766],[0.713913,0.361177],[0.672657,0.387676],[0.631838,0.416503],[0.766814,0.270598],[0.728152,0.294156],[0.693319,0.318874],[0.656062,0.353372],[0.618321,0.375564],[0.748219,0.236294],[0.709558,0.257853],[0.671646,0.281203],[0.63114,0.309494],[0.595243,0.336955],[0.723297,0.192417],[0.688308,0.216402],[0.647803,0.242692],[0.607141,0.268251],[0.567839,0.294773],[0.701297,0.153173],[0.665714,0.176098],[0.627803,0.203449],[0.586657,0.228702],[0.54795,0.256284],[0.677566,0.117417],[0.645015,0.141731],[0.606993,0.168327],[0.567519,0.196007],[0.532217,0.220528]],"blue":[[0.320891,0.118748],[0.355762,0.141623],[0.394485,0.16929],[0.433271,0.194905],[0.471737,0.222083],[0.300154,0.154813],[0.335048,0.177709],[0.372685,0.20276],[0.413152,0.229938],[0.451619,0.257115],[0.278184,0.193055],[0.313078,0.21595],[0.351801,0.241616],[0.390267,0.268794],[0.431331,0.292919],[0.253083,0.237352],[0.290892,0.259633],[0.326808,0.281194],[0.369105,0.309141],[0.410168,0.335266],[0.235005,0.272315],[0.271898,0.29321],[0.306134,0.321209],[0.34843,0.347157],[0.388409,0.374668],[0.21433,0.31033],[0.249224,0.335225],[0.284543,0.359839],[0.325267,0.387506],[0.367415,0.416245],[0.193167,0.354678],[0.225573,0.375906],[0.264295,0.401572],[0.303189,0.430468],[0.345934,0.458153],[0.173089,0.393641],[0.202897,0.415922],[0.242217,0.444535],[0.280792,0.472991],[0.324134,0.497625],[0.151119,0.427882],[0.184291,0.451286],[0.221332,0.481391],[0.261419,0.510181],[0.302165,0.539866]]});
-export const CENTER_COORDS = Object.freeze({"C1":[0.372515,0.528993],"C2":[0.413515,0.529941],"C3":[0.454667,0.528696],"C4":[0.497485,0.528593],"C5":[0.540303,0.527696],"C6":[0.583515,0.528941],"C7":[0.623424,0.529096],"C8":[0.611212,0.485573],"C9":[0.589303,0.443553],"C10":[0.566485,0.403534],"C11":[0.548303,0.362514],"C12":[0.527576,0.319391],"C13":[0.498212,0.278372],"C14":[0.470121,0.320443],"C15":[0.449212,0.362514],"C16":[0.427394,0.40143],"C17":[0.40797,0.443046],"C18":[0.384242,0.483117],"C19":[0.455152,0.475507],"C20":[0.49897,0.478048],"C21":[0.540788,0.47585],"C22":[0.525061,0.431617],"C23":[0.499879,0.388158],"C24":[0.471424,0.431472]});
+export const ARM_COORDS = Object.freeze({"red":[[0.325114,0.754632],[0.326265,0.716023],[0.326265,0.673419],[0.328566,0.626821],[0.329717,0.578892],[0.366541,0.758626],[0.366541,0.71336],[0.366541,0.672088],[0.367692,0.624159],[0.368842,0.57623],[0.406817,0.759958],[0.406817,0.714691],[0.406817,0.672088],[0.407968,0.624159],[0.407968,0.57623],[0.451696,0.757295],[0.451696,0.71336],[0.449395,0.670756],[0.450545,0.62549],[0.450545,0.577561],[0.493274,0.757295],[0.494274,0.712029],[0.493123,0.670756],[0.494274,0.62549],[0.494274,0.578892],[0.536002,0.756295],[0.538002,0.712029],[0.536852,0.669425],[0.536852,0.626821],[0.536852,0.577561],[0.58058,0.758626],[0.578429,0.714691],[0.579429,0.672088],[0.579429,0.626821],[0.578278,0.577561],[0.621158,0.757626],[0.621158,0.713691],[0.620007,0.672088],[0.620856,0.62549],[0.618555,0.57623],[0.663434,0.759958],[0.661132,0.71336],[0.662283,0.672088],[0.659982,0.626821],[0.658831,0.577561]],"green":[[0.850061,0.426779],[0.810196,0.453106],[0.77069,0.481397],[0.729761,0.512469],[0.688347,0.540235],[0.829891,0.388694],[0.790229,0.412252],[0.749802,0.442909],[0.709389,0.470675],[0.668976,0.498441],[0.805159,0.350937],[0.768496,0.373496],[0.728991,0.400787],[0.687578,0.428553],[0.646759,0.457379],[0.782813,0.309841],[0.74823,0.334766],[0.705913,0.358177],[0.666657,0.386676],[0.625838,0.413503],[0.763814,0.270598],[0.721152,0.294156],[0.688319,0.315874],[0.645062,0.346372],[0.605321,0.373564],[0.748219,0.236294],[0.709558,0.257853],[0.671646,0.281203],[0.62414,0.307494],[0.584243,0.334955],[0.720297,0.189417],[0.688308,0.216402],[0.647803,0.242692],[0.602141,0.267251],[0.562839,0.294773],[0.699297,0.150173],[0.665714,0.176098],[0.627803,0.203449],[0.581657,0.230702],[0.54395,0.257284],[0.677566,0.117417],[0.641015,0.141731],[0.601993,0.167327],[0.564519,0.194007],[0.525217,0.220528]],"blue":[[0.316891,0.117748],[0.351762,0.140623],[0.390485,0.16829],[0.429271,0.193905],[0.467737,0.221083],[0.296154,0.153813],[0.331048,0.176709],[0.368685,0.20176],[0.409152,0.228938],[0.447619,0.256115],[0.274184,0.192055],[0.309078,0.21495],[0.347801,0.240616],[0.386267,0.267794],[0.427331,0.291919],[0.249083,0.236352],[0.286892,0.258633],[0.322808,0.280194],[0.365105,0.308141],[0.406168,0.334266],[0.231005,0.271315],[0.267898,0.29221],[0.302134,0.320209],[0.34443,0.346157],[0.384409,0.373668],[0.21033,0.30933],[0.245224,0.334225],[0.280543,0.358839],[0.321267,0.386506],[0.363415,0.415245],[0.189167,0.353678],[0.221573,0.374906],[0.260295,0.400572],[0.299189,0.429468],[0.341934,0.457153],[0.169089,0.392641],[0.198897,0.414922],[0.238217,0.443535],[0.276792,0.471991],[0.320134,0.496625],[0.147119,0.426882],[0.180291,0.450286],[0.217332,0.480391],[0.257419,0.509181],[0.298165,0.538866]]});
+export const CENTER_COORDS = Object.freeze({"C1":[0.367515,0.525993],"C2":[0.411515,0.529941],"C3":[0.451667,0.528696],"C4":[0.494485,0.527593],"C5":[0.536303,0.528696],"C6":[0.579515,0.528941],"C7":[0.621424,0.527096],"C8":[0.611212,0.485573],"C9":[0.589303,0.443553],"C10":[0.566485,0.403534],"C11":[0.548303,0.362514],"C12":[0.527576,0.319391],"C13":[0.496212,0.276372],"C14":[0.470121,0.320443],"C15":[0.449212,0.362514],"C16":[0.427394,0.40143],"C17":[0.40797,0.443046],"C18":[0.384242,0.483117],"C20":[0.49397,0.479048],"C22":[0.525061,0.428617],"C24":[0.463424,0.428472]});
 
 export const armNodeId = (faction, lane, rank) => `${faction}:L${lane}-${rank}`;
 export const centerNodeId = (number) => `C${number}`;
@@ -17,7 +17,7 @@ export function parseArmNode(id) {
 }
 
 export function isCenterNode(id) {
-  return /^C(?:[1-9]|1[0-9]|2[0-4])$/.test(id);
+  return Object.prototype.hasOwnProperty.call(CENTER_COORDS, id);
 }
 
 export function boardPoint(id) {
@@ -37,7 +37,7 @@ export const ALL_NODE_IDS = Object.freeze([
       Array.from({ length: 5 }, (_, rankIndex) => armNodeId(faction, laneIndex + 1, rankIndex + 1)),
     ).flat(),
   ),
-  ...Array.from({ length: 24 }, (_, index) => centerNodeId(index + 1)),
+  ...Object.keys(CENTER_COORDS),
 ]);
 
 export const armPath = (faction, lane) =>
@@ -53,31 +53,25 @@ export const CONTINUATION_LINES = Object.freeze([
   line("RB-1", [...armPath("red", 1), ...reverseArmPath("blue", 9)]),
   line("RB-2", [...armPath("red", 2), "C1", ...reverseArmPath("blue", 8)]),
   line("RB-3", [...armPath("red", 3), "C2", "C18", ...reverseArmPath("blue", 7)]),
-  line("RB-4A", [...armPath("red", 4), "C3", "C17", ...reverseArmPath("blue", 6)]),
-  line("RB-4B", [...armPath("red", 4), "C3", "C19", "C17", ...reverseArmPath("blue", 6)]),
+  line("RB-4", [...armPath("red", 4), "C3", "C17", ...reverseArmPath("blue", 6)]),
   line("RB-5", [...armPath("red", 5), "C4", "C20", "C24", "C16", ...reverseArmPath("blue", 5)]),
   line("RG-5", [...armPath("red", 5), "C4", "C20", "C22", "C10", ...reverseArmPath("green", 5)]),
-  line("RG-6A", [...armPath("red", 6), "C5", "C9", ...reverseArmPath("green", 4)]),
-  line("RG-6B", [...armPath("red", 6), "C5", "C21", "C9", ...reverseArmPath("green", 4)]),
+  line("RG-6", [...armPath("red", 6), "C5", "C9", ...reverseArmPath("green", 4)]),
   line("RG-7", [...armPath("red", 7), "C6", "C8", ...reverseArmPath("green", 3)]),
   line("RG-8", [...armPath("red", 8), "C7", ...reverseArmPath("green", 2)]),
   line("RG-9", [...armPath("red", 9), ...reverseArmPath("green", 1)]),
   line("BG-5", [...armPath("blue", 5), "C16", "C24", "C22", "C10", ...reverseArmPath("green", 5)]),
-  line("BG-4A", [...armPath("blue", 4), "C15", "C23", "C11", ...reverseArmPath("green", 6)]),
-  line("BG-4B", [...armPath("blue", 4), "C15", "C11", ...reverseArmPath("green", 6)]),
+  line("BG-4", [...armPath("blue", 4), "C15", "C11", ...reverseArmPath("green", 6)]),
   line("BG-3", [...armPath("blue", 3), "C14", "C12", ...reverseArmPath("green", 7)]),
   line("BG-2", [...armPath("blue", 2), "C13", ...reverseArmPath("green", 8)]),
   line("BG-1", [...armPath("blue", 1), ...reverseArmPath("green", 9)]),
 ]);
 
-// Six additional horizontal lines defined after the continuation network.
+// Only H1-H3 remain. C20, C22 and C24 are each alone in their horizontal row.
 export const CENTER_HORIZONTAL_LINES = Object.freeze([
   line("H1", ["C1","C2","C3","C4","C5","C6","C7"], "horizontal"),
   line("H2", ["C13","C14","C15","C16","C17","C18","C1"], "horizontal"),
   line("H3", ["C7","C8","C9","C10","C11","C12","C13"], "horizontal"),
-  line("H4", ["C19","C20","C21"], "horizontal"),
-  line("H5", ["C23","C24","C19"], "horizontal"),
-  line("H6", ["C21","C22","C23"], "horizontal"),
 ]);
 
 export const ARM_FILE_LINES = Object.freeze(
@@ -113,24 +107,62 @@ export const SIDEWAYS_LINES = Object.freeze([
 ]);
 
 const edgeKey = (a, b) => [a, b].sort().join("|");
+const directedEdgeKey = (a, b) => `${a}>${b}`;
 
 const SEA_EDGES = new Set([
+  edgeKey("C3", "C17"),
+  edgeKey("C5", "C9"),
+  edgeKey("C15", "C11"),
+  edgeKey("C4", "C20"),
+  edgeKey("C20", "C22"),
   edgeKey("C20", "C24"),
   edgeKey("C24", "C22"),
-  edgeKey("C22", "C20"),
 ]);
 
-const MOUNTAIN_EDGES = new Set([
+const SEA_HORSE_CHARIOT_BLOCKS = new Set([
   edgeKey("C3", "C17"),
   edgeKey("C5", "C9"),
   edgeKey("C15", "C11"),
 ]);
 
+const MOUNTAIN_EDGES = new Set([
+  edgeKey("C2", "C18"),
+  edgeKey("C6", "C8"),
+  edgeKey("C14", "C12"),
+]);
+
 const CITY_EDGES = new Set([
+  edgeKey(armNodeId("red", 1, 5), armNodeId("blue", 9, 5)),
+  edgeKey(armNodeId("red", 2, 5), "C1"),
+  edgeKey("C1", armNodeId("blue", 8, 5)),
+  edgeKey(armNodeId("red", 8, 5), "C7"),
+  edgeKey("C7", armNodeId("green", 2, 5)),
+  edgeKey(armNodeId("red", 9, 5), armNodeId("green", 1, 5)),
+  edgeKey(armNodeId("blue", 2, 5), "C13"),
+  edgeKey("C13", armNodeId("green", 8, 5)),
+  edgeKey(armNodeId("blue", 1, 5), armNodeId("green", 9, 5)),
+]);
+
+const FORT_DIRECT_CANNON_BLOCKS = new Set([
   edgeKey(armNodeId("red", 1, 5), armNodeId("blue", 9, 5)),
   edgeKey(armNodeId("red", 9, 5), armNodeId("green", 1, 5)),
   edgeKey(armNodeId("blue", 1, 5), armNodeId("green", 9, 5)),
 ]);
+
+const FORT_CANNON_EXIT_BLOCKS = Object.freeze({
+  red: new Set([
+    directedEdgeKey("C1", armNodeId("blue", 8, 5)),
+    directedEdgeKey("C7", armNodeId("green", 2, 5)),
+  ]),
+  blue: new Set([
+    directedEdgeKey("C1", armNodeId("red", 2, 5)),
+    directedEdgeKey("C13", armNodeId("green", 8, 5)),
+  ]),
+  green: new Set([
+    directedEdgeKey("C7", armNodeId("red", 8, 5)),
+    directedEdgeKey("C13", armNodeId("blue", 2, 5)),
+  ]),
+});
 
 export function terrainBetween(a, b) {
   const key = edgeKey(a, b);
@@ -233,9 +265,9 @@ export function backwardNeighbors(faction, node) {
 }
 
 export const ENEMY_CENTER_POINTS = Object.freeze({
-  red: new Set([8,9,10,11,12,13,14,15,16,17,18,22,23,24].map(centerNodeId)),
-  blue: new Set([2,3,4,5,6,7,8,9,10,11,12,20,21,22].map(centerNodeId)),
-  green: new Set([1,2,3,4,5,6,14,15,16,17,18,19,20,24].map(centerNodeId)),
+  red: new Set([8,9,10,11,12,13,14,15,16,17,18,22,24].map(centerNodeId)),
+  blue: new Set([2,3,4,5,6,7,8,9,10,11,12,20,22].map(centerNodeId)),
+  green: new Set([1,2,3,4,5,6,14,15,16,17,18,20,24].map(centerNodeId)),
 });
 
 export function isEnemyTerritory(faction, node) {
@@ -252,16 +284,29 @@ export function isArmNode(node) {
   return Boolean(parseArmNode(node));
 }
 
-export function pathEdgeAllowedForRole(role, from, to) {
-  const terrain = terrainBetween(from, to);
-  if (!terrain) return true;
-  if (terrain === "sea" && (role === "chariot" || role === "horse")) return false;
-  if ((terrain === "mountain" || terrain === "city") && role === "cannon") return false;
+export function pathEdgeAllowedForRole(role, from, to, faction = null) {
+  const key = edgeKey(from, to);
+
+  if ((role === "chariot" || role === "horse") && SEA_HORSE_CHARIOT_BLOCKS.has(key)) {
+    return false;
+  }
+
+  if (role === "cannon") {
+    if (MOUNTAIN_EDGES.has(key)) return false;
+    if (FORT_DIRECT_CANNON_BLOCKS.has(key)) return false;
+    if (faction && FORT_CANNON_EXIT_BLOCKS[faction]?.has(directedEdgeKey(from, to))) {
+      return false;
+    }
+  }
+
   return true;
 }
 
 export const SANYOU_TOPOLOGY_DEBUG = Object.freeze({
   SEA_EDGES,
+  SEA_HORSE_CHARIOT_BLOCKS,
   MOUNTAIN_EDGES,
   CITY_EDGES,
+  FORT_DIRECT_CANNON_BLOCKS,
+  FORT_CANNON_EXIT_BLOCKS,
 });
