@@ -618,3 +618,373 @@
     transition: none;
   }
 }
+
+
+/* Local / bot / online setup */
+.san-you-qi-setup-page {
+  display: grid;
+  place-items: start center;
+  padding-top: clamp(18px, 5vh, 54px);
+}
+
+.san-you-qi-setup-card {
+  width: min(920px, 100%);
+  padding: clamp(18px, 3vw, 30px);
+  border: 1px solid rgba(133, 193, 236, 0.22);
+  border-radius: 22px;
+  background:
+    linear-gradient(155deg, rgba(12, 23, 41, 0.98), rgba(5, 11, 21, 0.98));
+  box-shadow: 0 22px 68px rgba(0, 0, 0, 0.42);
+}
+
+.san-you-qi-setup-heading {
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.san-you-qi-setup-heading > span {
+  color: #88b8d8;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+}
+
+.san-you-qi-setup-heading h1 {
+  margin: 7px 0 5px;
+  color: #f6fbff;
+  font-size: clamp(28px, 5vw, 46px);
+  letter-spacing: 0.08em;
+}
+
+.san-you-qi-setup-heading p {
+  margin: 0;
+  color: #9fb2c7;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.san-you-qi-mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.san-you-qi-mode-tabs button,
+.san-you-qi-choice-row button,
+.san-you-qi-difficulty-grid button,
+.san-you-qi-setup-actions button,
+.san-you-qi-join-row button,
+.san-you-qi-invite button,
+.san-you-qi-public-rooms button,
+.san-you-qi-empty-room button,
+.san-you-qi-message button {
+  border: 1px solid rgba(151, 193, 222, 0.22);
+  border-radius: 11px;
+  background: rgba(16, 30, 50, 0.78);
+  color: #edf7ff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.san-you-qi-mode-tabs button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.san-you-qi-mode-tabs button.selected,
+.san-you-qi-choice-row button.selected,
+.san-you-qi-difficulty-grid button.selected {
+  border-color: rgba(217, 184, 93, 0.75);
+  background: rgba(217, 184, 93, 0.11);
+  box-shadow: inset 0 0 0 1px rgba(217, 184, 93, 0.14);
+}
+
+.san-you-qi-fieldset {
+  margin: 0 0 16px;
+  padding: 13px;
+  border: 1px solid rgba(127, 176, 210, 0.18);
+  border-radius: 14px;
+  background: rgba(9, 19, 34, 0.56);
+}
+
+.san-you-qi-fieldset legend {
+  padding: 0 7px;
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.san-you-qi-choice-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.san-you-qi-choice-row button {
+  min-height: 68px;
+  padding: 10px;
+  display: grid;
+  gap: 3px;
+}
+
+.san-you-qi-choice-row button strong {
+  font-size: 13px;
+}
+
+.san-you-qi-choice-row button small {
+  color: #8fa8bf;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.san-you-qi-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.san-you-qi-form-grid label,
+.san-you-qi-invite label {
+  display: grid;
+  gap: 6px;
+  color: #a8bbcf;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.san-you-qi-form-grid select,
+.san-you-qi-form-grid input,
+.san-you-qi-join-row input,
+.san-you-qi-invite input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(151, 193, 222, 0.22);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(3, 10, 19, 0.9);
+  color: #eef8ff;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.san-you-qi-form-grid select:focus,
+.san-you-qi-form-grid input:focus,
+.san-you-qi-join-row input:focus,
+.san-you-qi-invite input:focus {
+  border-color: rgba(217, 184, 93, 0.72);
+}
+
+.san-you-qi-difficulty-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.san-you-qi-difficulty-grid button {
+  min-height: 112px;
+  padding: 11px;
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 5px;
+  text-align: left;
+}
+
+.san-you-qi-difficulty-grid button strong {
+  font-size: 13px;
+}
+
+.san-you-qi-difficulty-grid button span {
+  color: #91a7bd;
+  font-size: 10px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.san-you-qi-difficulty-grid button:disabled,
+.san-you-qi-setup-actions button:disabled,
+.san-you-qi-join-row button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.san-you-qi-setup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.san-you-qi-setup-actions button,
+.san-you-qi-join-row button,
+.san-you-qi-invite button,
+.san-you-qi-empty-room button {
+  min-height: 42px;
+  padding: 8px 14px;
+}
+
+.san-you-qi-setup-actions button.primary {
+  border-color: rgba(217, 184, 93, 0.78);
+  background: linear-gradient(180deg, rgba(217, 184, 93, 0.22), rgba(217, 184, 93, 0.1));
+  color: #fff5d5;
+}
+
+.san-you-qi-join-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) auto auto;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.san-you-qi-join-row input {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 900;
+}
+
+.san-you-qi-public-rooms {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.san-you-qi-public-rooms button {
+  min-height: 56px;
+  padding: 9px 11px;
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+
+.san-you-qi-public-rooms button b {
+  color: var(--gold);
+  letter-spacing: 0.12em;
+}
+
+.san-you-qi-public-rooms button span,
+.san-you-qi-public-rooms button small {
+  color: #a9bfd3;
+}
+
+.san-you-qi-setup-note {
+  margin: 14px 0 0;
+  color: #8097ad;
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.san-you-qi-room-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.san-you-qi-room-meta > * {
+  padding: 6px 9px;
+  border: 1px solid rgba(141, 183, 213, 0.18);
+  border-radius: 999px;
+  background: rgba(12, 26, 45, 0.72);
+  color: #b9cad9;
+  font-size: 10px;
+}
+
+.san-you-qi-room-seats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+}
+
+.san-you-qi-room-seats article {
+  min-height: 126px;
+  padding: 13px;
+  border: 1px solid color-mix(in srgb, var(--seat-color) 45%, transparent);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--seat-color) 7%, rgba(9, 19, 34, 0.86));
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+
+.san-you-qi-seat-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--seat-color);
+  box-shadow: 0 0 12px var(--seat-color);
+}
+
+.san-you-qi-room-seats h3 {
+  margin: 3px 0;
+  color: #f1f8ff;
+  font-size: 12px;
+}
+
+.san-you-qi-room-seats b {
+  color: #c9d9e7;
+  font-size: 11px;
+}
+
+.san-you-qi-room-seats small {
+  color: #8197ac;
+  font-size: 9.5px;
+}
+
+.san-you-qi-invite {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.san-you-qi-invite label {
+  grid-column: 1 / -1;
+}
+
+.san-you-qi-invite button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.san-you-qi-error {
+  border-color: rgba(255, 104, 104, 0.38);
+  background: rgba(255, 72, 72, 0.08);
+  color: #ffd0d0;
+}
+
+.san-you-qi-message button {
+  margin-left: 10px;
+  padding: 4px 8px;
+  color: inherit;
+}
+
+@media (max-width: 720px) {
+  .san-you-qi-choice-row,
+  .san-you-qi-difficulty-grid,
+  .san-you-qi-room-seats,
+  .san-you-qi-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .san-you-qi-join-row {
+    grid-template-columns: 1fr;
+  }
+
+  .san-you-qi-public-rooms button {
+    grid-template-columns: 1fr;
+  }
+}
