@@ -2,10 +2,10 @@
  * San You Qi — Three Friends Chess
  *
  * This engine uses the finalized Arctic Dominion board: 135 coloured arm
- * intersections plus C1-C24 in the central terrain. Unlike Sanguo Qi, river
- * continuations are not direct mirrored file jumps; every approved C-point is
- * a real playable node and the six central horizontal lines are part of the
- * movement graph.
+ * intersections plus 21 surviving central C-points (C1-C18, C20, C22, C24).
+ * Unlike Sanguo Qi, river continuations are not direct mirrored file jumps;
+ * every approved C-point is a real playable node and the three long central
+ * horizontal lines are part of the movement graph.
  */
 
 import {
@@ -31,7 +31,7 @@ import {
 } from "./topology.js";
 
 export const GAME_ID = "san-you-qi";
-export const RULESET_VERSION = "arctic-final-159-node-2.0.0";
+export const RULESET_VERSION = "arctic-final-156-node-3.0.0";
 
 export const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 export const FACTION_LABELS = Object.freeze({
@@ -184,7 +184,7 @@ function rayTargets(piece, pieces, mode) {
     let screened = false;
 
     for (const node of ray.nodes) {
-      if (!pathEdgeAllowedForRole(piece.role, previous, node)) break;
+      if (!pathEdgeAllowedForRole(piece.role, previous, node, piece.faction)) break;
 
       const hit = pieceAtUnchecked(pieces, node);
 
@@ -307,8 +307,8 @@ function horseTargets(piece, pieces) {
     const second = ray.nodes[1];
 
     if (pieceAtUnchecked(pieces, leg)) continue;
-    if (!pathEdgeAllowedForRole("horse", piece.node, leg)) continue;
-    if (!pathEdgeAllowedForRole("horse", leg, second)) continue;
+    if (!pathEdgeAllowedForRole("horse", piece.node, leg, piece.faction)) continue;
+    if (!pathEdgeAllowedForRole("horse", leg, second, piece.faction)) continue;
 
     for (const turnLine of linesThrough(second)) {
       for (const direction of [-1, 1]) {
@@ -317,7 +317,7 @@ function horseTargets(piece, pieces) {
         const target = turnLine.nodes[index + direction];
         if (!target || target === leg || target === piece.node) continue;
         if (!roughlyPerpendicular(leg, second, target)) continue;
-        if (!pathEdgeAllowedForRole("horse", second, target)) continue;
+        if (!pathEdgeAllowedForRole("horse", second, target, piece.faction)) continue;
         if (destinationOpenFor(piece, pieces, target)) out.add(target);
       }
     }
