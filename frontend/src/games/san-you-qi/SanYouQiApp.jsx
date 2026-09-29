@@ -214,12 +214,12 @@ function Rulebook({ state, selectedPiece, selectedTargets }) {
       </div>
       <h2 className="scroll-title">SAN YOU QI — THREE FRIENDS CHESS</h2>
       <p className="scroll-subtitle">
-        Zheng Jinde tradition · 3 kingdoms · 159 playable intersections
+        Zheng Jinde tradition · 3 kingdoms · 156 playable intersections
       </p>
 
       <div className="info-boxes">
         <div className="info-box"><span className="info-label">PLAYERS</span><span className="info-value">3</span></div>
-        <div className="info-box"><span className="info-label">BOARD</span><span className="info-value">135 + C1–C24</span></div>
+        <div className="info-box"><span className="info-label">BOARD</span><span className="info-value">135 + 21 central</span></div>
         <div className="info-box"><span className="info-label">FORCE</span><span className="info-value">18 each / 54 total</span></div>
         <div className="info-box"><span className="info-label">TURN</span><span className="info-value">Red → Green → Blue</span></div>
       </div>
@@ -258,8 +258,8 @@ function Rulebook({ state, selectedPiece, selectedTargets }) {
           <h3>SANYOU VS SANGUO</h3>
           <ul>
             <li>Sanguo uses direct file-to-file river continuations.</li>
-            <li>Sanyou inserts C1–C24 as real playable central intersections.</li>
-            <li>Six additional C-network horizontals create lateral central movement.</li>
+            <li>Sanyou uses 21 surviving central intersections: C1–C18, C20, C22 and C24.</li>
+            <li>Only H1, H2 and H3 remain as central horizontal lines; C20, C22 and C24 are continuation-only row points.</li>
             <li>Sanyou adds Fire and Flag and uses Sea, Mountain and City crossings.</li>
           </ul>
         </div>
@@ -267,9 +267,10 @@ function Rulebook({ state, selectedPiece, selectedTargets }) {
         <div className="rules-column">
           <h3>TERRAIN</h3>
           <ul>
-            <li>Sea crossings block Chariot and Horse.</li>
-            <li>Mountain and City crossings block Cannon.</li>
-            <li>Soldier, Fire and Flag may use those crossings when their movement otherwise permits it.</li>
+            <li>Extended-river crossings C3↔C17, C5↔C9 and C15↔C11 block Chariot and Horse; Cannon may cross.</li>
+            <li>Mountain crossings C2↔C18, C6↔C8 and C14↔C12 block Cannon.</li>
+            <li>At Forts, Cannon may stop on C1/C7/C13 from its own side but may not continue through into the opposite kingdom; the three outer Fort crossings are also Cannon-blocked.</li>
+            <li>C20, C22 and C24 are legal central stopping points linked by continuation routes, not horizontal H-lines.</li>
           </ul>
 
           <h3>SPECIAL UNITS</h3>
