@@ -31,7 +31,7 @@ import {
 } from "./topology.js";
 
 export const GAME_ID = "san-you-qi";
-export const RULESET_VERSION = "arctic-final-156-node-3.0.0";
+export const RULESET_VERSION = "arctic-final-156-node-3.1.0";
 
 export const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 export const FACTION_LABELS = Object.freeze({
@@ -307,8 +307,12 @@ function horseTargets(piece, pieces) {
     const second = ray.nodes[1];
 
     if (pieceAtUnchecked(pieces, leg)) continue;
+
+    // The Sea restriction applies to the Horse's first orthogonal leg only.
+    // A Sea edge used as the second straight unit or the final turning unit
+    // does not "block the horse leg". This matters at the three extended-river
+    // links such as Red L4-5 -> C3 -> C17 -> C18.
     if (!pathEdgeAllowedForRole("horse", piece.node, leg, piece.faction)) continue;
-    if (!pathEdgeAllowedForRole("horse", leg, second, piece.faction)) continue;
 
     for (const turnLine of linesThrough(second)) {
       for (const direction of [-1, 1]) {
@@ -317,7 +321,6 @@ function horseTargets(piece, pieces) {
         const target = turnLine.nodes[index + direction];
         if (!target || target === leg || target === piece.node) continue;
         if (!roughlyPerpendicular(leg, second, target)) continue;
-        if (!pathEdgeAllowedForRole("horse", second, target, piece.faction)) continue;
         if (destinationOpenFor(piece, pieces, target)) out.add(target);
       }
     }
@@ -385,16 +388,25 @@ function twoStepForwardTargets(piece, pieces) {
   return [...out];
 }
 
-function twoStepOrthogonalTargets(piece, pieces) {
+function foreignFlagTargets(piece, pieces) {
   const out = new Set();
 
+  // Zheng Jinde's Flag becomes Chariot-like after leaving its own territory:
+  // any distance orthogonally on one approved line, without re-entering the
+  // original kingdom. It still cannot jump occupied points.
   for (const ray of lineRaysFrom(piece.node)) {
-    if (ray.nodes.length < 2) continue;
-    const middle = ray.nodes[0];
-    const target = ray.nodes[1];
-    if (pieceAtUnchecked(pieces, middle)) continue;
-    if (isOwnArm(piece.faction, target)) continue; // no return to original kingdom
-    if (destinationOpenFor(piece, pieces, target)) out.add(target);
+    for (const node of ray.nodes) {
+      if (isOwnArm(piece.faction, node)) break;
+
+      const hit = pieceAtUnchecked(pieces, node);
+      if (!hit) {
+        out.add(node);
+        continue;
+      }
+
+      if (hit.owner !== piece.owner) out.add(node);
+      break;
+    }
   }
 
   return [...out];
@@ -402,7 +414,7 @@ function twoStepOrthogonalTargets(piece, pieces) {
 
 function flagTargets(piece, pieces) {
   return piece.leftHome
-    ? twoStepOrthogonalTargets(piece, pieces)
+    ? foreignFlagTargets(piece, pieces)
     : twoStepForwardTargets(piece, pieces);
 }
 
@@ -456,12 +468,16 @@ function isGeometricallyAttacked(state, node, byFaction) {
   );
 }
 
-export function isInCheck(state, faction) {
+function checkingFactions(state, faction) {
   const general = generalOf(state, faction);
-  if (!general) return false;
-  return activeOpponents(state, faction).some((opponent) =>
+  if (!general) return [];
+  return activeOpponents(state, faction).filter((opponent) =>
     isGeometricallyAttacked(state, general.node, opponent),
   );
+}
+
+export function isInCheck(state, faction) {
+  return checkingFactions(state, faction).length > 0;
 }
 
 function previewMove(state, piece, target) {
@@ -535,7 +551,12 @@ function positionKey(state) {
     ])
     .sort((a, b) => a[0].localeCompare(b[0]));
 
-  return JSON.stringify([state.turn, [...state.activeFactions].sort(), pieces]);
+  return JSON.stringify([
+    state.turn,
+    state.resumeTurn || "",
+    [...state.activeFactions].sort(),
+    pieces,
+  ]);
 }
 
 function generateFor(state, faction, options = {}) {
@@ -589,6 +610,12 @@ function stateInvariantError(state) {
   }
   if (!Array.isArray(state.pieces) || !state.repetition) {
     return { code: "INVALID_STATE", message: "The match state is incomplete." };
+  }
+  if (
+    state.resumeTurn != null &&
+    (!FACTIONS.includes(state.resumeTurn) || !state.activeFactions.includes(state.resumeTurn))
+  ) {
+    return { code: "INVALID_STATE", message: "The interrupted turn state is malformed." };
   }
 
   const pieceIds = new Set();
@@ -652,12 +679,23 @@ export function applyAction(state, proposed) {
   next.ply += 1;
   next.lastAction = { ...action, actor, ply: next.ply };
 
-  const mated = activeOpponents(next, actor).filter(
-    (faction) => isInCheck(next, faction) && !hasLegalMove(next, faction),
+  const checked = next.activeFactions.filter(
+    (faction) => faction !== actor && isInCheck(next, faction),
   );
+  const mated = checked.filter((faction) => !hasLegalMove(next, faction));
 
   if (mated.length) {
+    const mateWinners = new Map();
+
     for (const defeated of mated) {
+      const checkers = checkingFactions(next, defeated);
+      // Credit the army to the faction whose piece actually gives mate.
+      // If the mover is one of the checking factions, it keeps precedence.
+      // This also handles a third-party discovered check: e.g. Blue uncovers
+      // a Red Cannon attack on Green, so Red — not Blue — is the mating side.
+      const victor = checkers.includes(actor) ? actor : (checkers[0] || actor);
+      mateWinners.set(defeated, victor);
+
       const general = generalOf(next, defeated);
       if (general) {
         general.status = "eliminated";
@@ -670,15 +708,17 @@ export function applyAction(state, proposed) {
           piece.status === "board" &&
           piece.role !== "general"
         ) {
-          piece.owner = actor;
+          piece.owner = victor;
         }
       }
 
       next.activeFactions = next.activeFactions.filter((faction) => faction !== defeated);
     }
 
+    next.resumeTurn = null;
+
     if (next.activeFactions.length <= 1) {
-      const winner = next.activeFactions[0] || actor;
+      const winner = next.activeFactions[0] || mateWinners.values().next().value || actor;
       next.outcome = {
         type: "mate",
         winner,
@@ -687,11 +727,46 @@ export function applyAction(state, proposed) {
       };
       next.phase = "complete";
     } else {
-      next.turn = actor;
-      next.note = `${FACTION_LABELS[actor]} checkmates ${mated.map((f) => FACTION_LABELS[f]).join(", ")} and takes control of the surviving army.`;
+      const victors = [...new Set(mated.map((faction) => mateWinners.get(faction)))];
+      next.turn = victors.find((faction) => next.activeFactions.includes(faction))
+        || nextFaction(next, actor);
+      next.note = mated
+        .map((faction) => `${FACTION_LABELS[mateWinners.get(faction)]} checkmates ${FACTION_LABELS[faction]}`)
+        .join(" · ");
     }
+  } else if (checked.length) {
+    // Check interrupts the ordinary three-player cycle. The checked kingdom
+    // must answer immediately; the turn that would normally have followed is
+    // remembered and resumes after the check is resolved.
+    const ordinaryNext = state.resumeTurn && next.activeFactions.includes(state.resumeTurn)
+      ? state.resumeTurn
+      : nextFaction(next, actor);
+
+    const checkedSet = new Set(checked);
+    let responder = ordinaryNext;
+    if (!checkedSet.has(responder)) {
+      const start = TURN_ORDER.indexOf(actor);
+      responder = null;
+      for (let offset = 1; offset <= TURN_ORDER.length; offset += 1) {
+        const candidate = TURN_ORDER[(start + offset) % TURN_ORDER.length];
+        if (checkedSet.has(candidate)) {
+          responder = candidate;
+          break;
+        }
+      }
+      responder ||= checked[0];
+    }
+
+    next.turn = responder;
+    next.resumeTurn = responder === ordinaryNext ? null : ordinaryNext;
+    const checkers = checkingFactions(next, responder);
+    next.note = `${FACTION_LABELS[responder]} is in check${checkers.length ? ` by ${checkers.map((faction) => FACTION_LABELS[faction]).join(" and ")}` : ""} — respond immediately.`;
   } else {
-    next.turn = nextFaction(next, actor);
+    const resumed = state.resumeTurn && next.activeFactions.includes(state.resumeTurn)
+      ? state.resumeTurn
+      : null;
+    next.turn = resumed || nextFaction(next, actor);
+    next.resumeTurn = null;
     next.note = `${FACTION_LABELS[next.turn]} to move.`;
   }
 
@@ -736,6 +811,7 @@ export function createInitialState() {
     lastAction: null,
     note: "Shu / Red opens. Turns proceed Red → Green → Blue.",
     ply: 0,
+    resumeTurn: null,
     repetition: {},
   };
 
@@ -778,6 +854,7 @@ export const __testing = Object.freeze({
   sidewaysNeighbors,
   terrainBetween,
   pathEdgeAllowedForRole,
+  checkingFactions,
   isEnemyTerritory,
   isCenterNode,
   isArmNode,
