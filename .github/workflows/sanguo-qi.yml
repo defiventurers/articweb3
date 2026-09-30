@@ -28,6 +28,13 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
         working-directory: frontend
+      - name: Emit generated Sanguo engine
+        run: |
+          npm run build:sanguo-engine
+          printf 'SANGUO_ENGINE_B64_BEGIN'
+          base64 -w0 ../server/sanguoEngine.cjs
+          printf 'SANGUO_ENGINE_B64_END\n'
+        working-directory: frontend
       - run: npm run test:sanguo
         working-directory: frontend
       - run: npm run check:sanguo-engine
