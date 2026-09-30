@@ -486,14 +486,23 @@ describe("terrain and special movement", () => {
     expect(getPseudoTargets(chariotState, chariot.id)).toContain("blue:L9-5");
   });
 
-  it("lets Fire cross all six Fort seams on the forward diagonal", () => {
+  it("lets Fire use all twelve compressed forward diagonals around the Fort seams", () => {
     const cases = [
+      // Outer Fort-seam diagonals from rank-five arm points.
       ["red", "red:L2-5", "blue:L9-5"],
       ["red", "red:L8-5", "green:L1-5"],
       ["green", "green:L2-5", "red:L9-5"],
       ["green", "green:L8-5", "blue:L1-5"],
       ["blue", "blue:L2-5", "green:L9-5"],
       ["blue", "blue:L8-5", "red:L1-5"],
+
+      // Inner Fort-seam diagonals from the adjacent central territory point.
+      ["red", "C2", "blue:L8-5"],
+      ["red", "C6", "green:L2-5"],
+      ["green", "C8", "red:L8-5"],
+      ["green", "C12", "blue:L2-5"],
+      ["blue", "C14", "green:L8-5"],
+      ["blue", "C18", "red:L2-5"],
     ];
 
     for (const [faction, node, target] of cases) {
@@ -509,6 +518,17 @@ describe("terrain and special movement", () => {
 
       expect(getPseudoTargets(state, fire.id)).toContain(target);
     }
+  });
+
+  it("does not give another faction a Fire seam move just because it occupies the same node", () => {
+    const state = sparseState([
+      { faction: "blue", role: "fire", node: "C6", leftHome: true },
+    ], "blue", ["blue"]);
+    const fire = state.pieces.find(
+      (piece) => piece.faction === "blue" && piece.role === "fire" && piece.status === "board",
+    );
+
+    expect(getPseudoTargets(state, fire.id)).not.toContain("green:L2-5");
   });
 
   it("Fire advances diagonally and Flag moves exactly two forward points before leaving home", () => {
