@@ -10,7 +10,7 @@ San You Qi (三友棋), also called Three Friends Chess.
 
 ## CURRENT RULESET
 
-`arctic-final-156-node-3.2.0`
+`arctic-final-156-node-3.2.1`
 
 This release combines the historically supported Zheng Jinde / Qing-era Three Friends Chess core with the current Arctic Dominion board reconstruction.
 
@@ -129,9 +129,13 @@ Front:
 - Fire L7-4
 - Soldier L9-4
 
-## GENERAL FACING CONVENTION
+## FLYING GENERAL
 
-Do not project Xiangqi's two-player flying-General rule through the multi-kingdom central continuation graph. Generals attack only through their actual palace movement geometry. This prevents false cross-board pins such as a Red Cannon on Blue L5 being forced to remain on the Red-Blue continuation solely because the two Generals would otherwise be considered to face through the entire central network.
+The Xiangqi flying-General rule remains active on approved straight continuation lines. Opposing Generals may not face one another with no intervening piece.
+
+Therefore a piece that is currently shielding its own General may be geometrically capable of moving sideways or onto another continuation branch but still be **legally pinned** if that move exposes the two Generals.
+
+Example: a Red Cannon on Blue L5-4 can have normal Cannon pseudo-moves toward Blue's rank and toward the Green L5 branch, yet those moves are illegal if that Cannon is the only blocker between the Red and Blue Generals.
 
 ## CHECK RESPONSE AND APPROPRIATION
 
