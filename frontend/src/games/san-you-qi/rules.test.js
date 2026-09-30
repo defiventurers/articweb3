@@ -47,7 +47,7 @@ function sparseState(spec, turn = "red", activeFactions = [turn]) {
       node,
       owner = faction,
       promoted = false,
-      leftHome = !node.startsWith(`${faction}:`),
+      leftHome = !__testing.isOwnTerritory(faction, node),
       index = 0,
     } = item;
 
@@ -180,6 +180,58 @@ describe("finalized 156-point board graph", () => {
 });
 
 describe("faction-specific enemy territory and Soldier promotion", () => {
+  it("assigns every central point to the canonical camp territory", () => {
+    const exclusive = {
+      red: ["C2","C3","C4","C5","C6","C20"],
+      green: ["C8","C9","C10","C11","C12","C22"],
+      blue: ["C14","C15","C16","C17","C18","C24"],
+    };
+
+    for (const [faction, nodes] of Object.entries(exclusive)) {
+      for (const node of nodes) {
+        expect(__testing.territoryCamps(node)).toEqual([faction]);
+        expect(territoryOf(node, faction)).toBe("own");
+      }
+    }
+
+    expect(__testing.territoryCamps("C1")).toEqual(["red", "blue"]);
+    expect(__testing.territoryCamps("C7")).toEqual(["red", "green"]);
+    expect(__testing.territoryCamps("C13")).toEqual(["green", "blue"]);
+
+    expect(territoryOf("C1", "red")).toBe("shared-own");
+    expect(territoryOf("C1", "blue")).toBe("shared-own");
+    expect(territoryOf("C1", "green")).toBe("enemy");
+
+    expect(territoryOf("C7", "red")).toBe("shared-own");
+    expect(territoryOf("C7", "green")).toBe("shared-own");
+    expect(territoryOf("C7", "blue")).toBe("enemy");
+
+    expect(territoryOf("C13", "green")).toBe("shared-own");
+    expect(territoryOf("C13", "blue")).toBe("shared-own");
+    expect(territoryOf("C13", "red")).toBe("enemy");
+  });
+
+  it("does not promote or mark a Flag as having left home when it lands on its shared gate", () => {
+    const state = sparseState([
+      { faction: "red", role: "flag", node: "red:L2-4", leftHome: false },
+    ], "red", ["red"]);
+
+    const flag = state.pieces.find(
+      (piece) => piece.faction === "red" && piece.role === "flag" && piece.status === "board",
+    );
+    const action = getLegalActions(state).find(
+      (candidate) => candidate.pieceId === flag.id && candidate.to === "C1",
+    );
+    expect(action).toBeTruthy();
+
+    const result = applyAction(state, action);
+    expect(result.error).toBeNull();
+    const moved = result.state.pieces.find((piece) => piece.id === flag.id);
+    expect(moved.node).toBe("C1");
+    expect(moved.leftHome).toBe(false);
+  });
+
+
   it("preserves the Red enemy status of all surviving C-points", () => {
     const enemy = [8,9,10,11,12,13,14,15,16,17,18,22,24];
     const safe = [1,2,3,4,5,6,7,20];
@@ -426,6 +478,29 @@ describe("terrain and special movement", () => {
     );
     expect(getPseudoTargets(flagState, flag.id)).toContain("red:L5-3");
     expect(getPseudoTargets(flagState, flag.id)).not.toContain("red:L5-2");
+  });
+
+  it("lets a crossed Flag return to its own shared gate but not pass into exclusive home territory", () => {
+    const cases = [
+      ["red", "C18", "C1", "C2"],
+      ["red", "C8", "C7", "C6"],
+      ["green", "C6", "C7", "C8"],
+      ["green", "C14", "C13", "C12"],
+      ["blue", "C2", "C1", "C18"],
+      ["blue", "C12", "C13", "C14"],
+    ];
+
+    for (const [faction, node, sharedGate, exclusiveHome] of cases) {
+      const state = sparseState([
+        { faction, role: "flag", node, leftHome: true },
+      ], faction, [faction]);
+      const flag = state.pieces.find(
+        (piece) => piece.faction === faction && piece.role === "flag" && piece.status === "board",
+      );
+      const targets = new Set(getPseudoTargets(state, flag.id));
+      expect(targets).toContain(sharedGate);
+      expect(targets).not.toContain(exclusiveHome);
+    }
   });
 
   it("makes Flag Chariot-like after leaving home and prevents return to its original kingdom", () => {
