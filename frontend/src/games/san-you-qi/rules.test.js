@@ -319,6 +319,46 @@ describe("terrain and special movement", () => {
     expect(getPseudoTargets(state, horse.id)).toContain("C18");
   });
 
+  it("supports the six compressed center Horse jumps at the three kingdom tips", () => {
+    const cases = [
+      ["red", "red:L4-5", "C20"],
+      ["red", "red:L6-5", "C20"],
+      ["green", "green:L4-5", "C22"],
+      ["green", "green:L6-5", "C22"],
+      ["blue", "blue:L4-5", "C24"],
+      ["blue", "blue:L6-5", "C24"],
+    ];
+
+    for (const [faction, node, target] of cases) {
+      const state = sparseState([
+        { faction, role: "horse", node },
+      ], faction, [faction]);
+      const horse = state.pieces.find(
+        (piece) => piece.faction === faction && piece.role === "horse" && piece.status === "board",
+      );
+      expect(getPseudoTargets(state, horse.id)).toContain(target);
+    }
+  });
+
+  it("supports the reverse Horse jumps from C20/C22/C24 back to the flanking rank-five points", () => {
+    const cases = [
+      ["red", "C20", ["red:L4-5", "red:L6-5"]],
+      ["green", "C22", ["green:L4-5", "green:L6-5"]],
+      ["blue", "C24", ["blue:L4-5", "blue:L6-5"]],
+    ];
+
+    for (const [faction, node, targets] of cases) {
+      const state = sparseState([
+        { faction, role: "horse", node, leftHome: true },
+      ], faction, [faction]);
+      const horse = state.pieces.find(
+        (piece) => piece.faction === faction && piece.role === "horse" && piece.status === "board",
+      );
+      const legal = new Set(getPseudoTargets(state, horse.id));
+      for (const target of targets) expect(legal).toContain(target);
+    }
+  });
+
   it("blocks Cannon through the three direct Mountain crossings", () => {
     for (const [a, b] of [["C2","C18"], ["C6","C8"], ["C14","C12"]]) {
       expect(__testing.terrainBetween(a, b)).toBe("mountain");
@@ -431,6 +471,37 @@ describe("legality and turn flow", () => {
     expect(result.error).toBeNull();
     expect(result.state.turn).toBe("green");
     expect(result.state.ply).toBe(1);
+  });
+
+  it("does not pin a Red Cannon on Blue L5-4 with a cross-kingdom flying-General line", () => {
+    const state = sparseState([
+      { faction: "red", role: "cannon", node: "blue:L5-4", leftHome: true },
+    ], "red", ["red", "green", "blue"]);
+
+    expect(isInCheck(state, "red")).toBe(false);
+
+    const cannon = state.pieces.find(
+      (piece) =>
+        piece.faction === "red" &&
+        piece.role === "cannon" &&
+        piece.status === "board" &&
+        piece.node === "blue:L5-4",
+    );
+    const targets = new Set(
+      getLegalActions(state)
+        .filter((action) => action.pieceId === cannon.id)
+        .map((action) => action.to),
+    );
+
+    // Same-rank sideways movement inside Blue.
+    expect(targets).toContain("blue:L4-4");
+    expect(targets).toContain("blue:L6-4");
+
+    // The Blue-to-Green L5 continuation must remain visibly/legal reachable.
+    expect(targets).toContain("C24");
+    expect(targets).toContain("C22");
+    expect(targets).toContain("C10");
+    expect(targets).toContain("green:L5-5");
   });
 
   it("interrupts the cycle for a third-party discovered check, then resumes the skipped turn", () => {
