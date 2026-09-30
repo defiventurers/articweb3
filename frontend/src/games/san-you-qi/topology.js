@@ -264,16 +264,77 @@ export function backwardNeighbors(faction, node) {
   return [...result];
 }
 
-export const ENEMY_CENTER_POINTS = Object.freeze({
-  red: new Set([8,9,10,11,12,13,14,15,16,17,18,22,24].map(centerNodeId)),
-  blue: new Set([2,3,4,5,6,7,8,9,10,11,12,20,22].map(centerNodeId)),
-  green: new Set([1,2,3,4,5,6,14,15,16,17,18,20,24].map(centerNodeId)),
+// Canonical camp ownership for every surviving central point.
+//
+// Exclusive Red:   C2-C6, C20
+// Exclusive Green: C8-C12, C22
+// Exclusive Blue:  C14-C18, C24
+//
+// Shared gates:
+// C1  = Red + Blue
+// C7  = Red + Green
+// C13 = Green + Blue
+//
+// These memberships drive promotion and "cannot return home" mechanics.
+// Shared gates count as home territory for either owning camp, so they do not
+// trigger promotion for those camps and remain legal return boundary points.
+export const CENTER_TERRITORY_CAMPS = Object.freeze({
+  C1: Object.freeze(["red", "blue"]),
+  C2: Object.freeze(["red"]),
+  C3: Object.freeze(["red"]),
+  C4: Object.freeze(["red"]),
+  C5: Object.freeze(["red"]),
+  C6: Object.freeze(["red"]),
+  C7: Object.freeze(["red", "green"]),
+
+  C8: Object.freeze(["green"]),
+  C9: Object.freeze(["green"]),
+  C10: Object.freeze(["green"]),
+  C11: Object.freeze(["green"]),
+  C12: Object.freeze(["green"]),
+  C13: Object.freeze(["green", "blue"]),
+
+  C14: Object.freeze(["blue"]),
+  C15: Object.freeze(["blue"]),
+  C16: Object.freeze(["blue"]),
+  C17: Object.freeze(["blue"]),
+  C18: Object.freeze(["blue"]),
+
+  C20: Object.freeze(["red"]),
+  C22: Object.freeze(["green"]),
+  C24: Object.freeze(["blue"]),
 });
 
-export function isEnemyTerritory(faction, node) {
+export function territoryCamps(node) {
   const arm = parseArmNode(node);
-  if (arm) return arm.faction !== faction;
-  return ENEMY_CENTER_POINTS[faction]?.has(node) || false;
+  if (arm) return [arm.faction];
+  return CENTER_TERRITORY_CAMPS[node] || [];
+}
+
+export function isOwnTerritory(faction, node) {
+  return territoryCamps(node).includes(faction);
+}
+
+export function isSharedTerritory(node) {
+  return territoryCamps(node).length > 1;
+}
+
+export const ENEMY_CENTER_POINTS = Object.freeze(
+  Object.fromEntries(
+    SANYOU_FACTIONS.map((faction) => [
+      faction,
+      new Set(
+        Object.entries(CENTER_TERRITORY_CAMPS)
+          .filter(([, camps]) => !camps.includes(faction))
+          .map(([node]) => node),
+      ),
+    ]),
+  ),
+);
+
+export function isEnemyTerritory(faction, node) {
+  const camps = territoryCamps(node);
+  return camps.length > 0 && !camps.includes(faction);
 }
 
 export function isOwnArm(faction, node) {
@@ -303,6 +364,7 @@ export function pathEdgeAllowedForRole(role, from, to, faction = null) {
 }
 
 export const SANYOU_TOPOLOGY_DEBUG = Object.freeze({
+  CENTER_TERRITORY_CAMPS,
   SEA_EDGES,
   SEA_HORSE_CHARIOT_BLOCKS,
   MOUNTAIN_EDGES,
