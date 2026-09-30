@@ -210,6 +210,26 @@ describe("faction-specific enemy territory and Soldier promotion", () => {
     expect(new Set(getPseudoTargets(state, soldier.id))).toEqual(new Set(["C20", "C22"]));
   });
 
+  it("keeps forward movement after Soldier promotion and adds sideways movement", () => {
+    const state = sparseState([
+      {
+        faction: "red",
+        role: "soldier",
+        node: "blue:L5-4",
+        promoted: true,
+        leftHome: true,
+      },
+    ]);
+    const soldier = state.pieces.find(
+      (piece) => piece.faction === "red" && piece.role === "soldier" && piece.status === "board",
+    );
+    const targets = new Set(getPseudoTargets(state, soldier.id));
+
+    expect(targets).toContain("blue:L5-3");
+    expect(targets).toContain("blue:L4-4");
+    expect(targets).toContain("blue:L6-4");
+  });
+
   it("still promotes Red when moving C20 to C24 without recreating deleted horizontal nodes", () => {
     const state = sparseState([
       { faction: "red", role: "soldier", node: "C20", leftHome: true },
@@ -256,6 +276,46 @@ describe("terrain and special movement", () => {
     expect(targets).toContain("C20");
     expect(targets).toContain("C22");
     expect(targets).toContain("C24");
+  });
+
+  it("keeps Cannon sideways movement on a clear rank", () => {
+    const state = sparseState([
+      { faction: "red", role: "cannon", node: "blue:L5-4", leftHome: true },
+    ]);
+    const cannon = state.pieces.find(
+      (piece) => piece.role === "cannon" && piece.status === "board",
+    );
+    const targets = new Set(getPseudoTargets(state, cannon.id));
+
+    expect(targets).toContain("blue:L4-4");
+    expect(targets).toContain("blue:L6-4");
+  });
+
+  it("lets a Cannon on Blue L5-4 use both central branches through C24", () => {
+    const state = sparseState([
+      { faction: "red", role: "cannon", node: "blue:L5-4", leftHome: true },
+    ]);
+    const cannon = state.pieces.find(
+      (piece) => piece.role === "cannon" && piece.status === "board",
+    );
+    const targets = new Set(getPseudoTargets(state, cannon.id));
+
+    expect(targets).toContain("C24");
+    expect(targets).toContain("C20");
+    expect(targets).toContain("C22");
+    expect(targets).toContain("C10");
+    expect(targets).toContain("green:L5-5");
+  });
+
+  it("allows Red Horse L4-5 to reach C18 when the Sea edge is not its first leg", () => {
+    const state = sparseState([
+      { faction: "red", role: "horse", node: "red:L4-5" },
+    ]);
+    const horse = state.pieces.find(
+      (piece) => piece.role === "horse" && piece.status === "board",
+    );
+
+    expect(getPseudoTargets(state, horse.id)).toContain("C18");
   });
 
   it("blocks Cannon through the three direct Mountain crossings", () => {
@@ -326,6 +386,27 @@ describe("terrain and special movement", () => {
     expect(getPseudoTargets(flagState, flag.id)).toContain("red:L5-3");
     expect(getPseudoTargets(flagState, flag.id)).not.toContain("red:L5-2");
   });
+
+  it("makes Flag Chariot-like after leaving home and prevents return to its original kingdom", () => {
+    const state = sparseState([
+      {
+        faction: "red",
+        role: "flag",
+        node: "blue:L5-4",
+        leftHome: true,
+      },
+    ]);
+    const flag = state.pieces.find(
+      (piece) => piece.role === "flag" && piece.status === "board",
+    );
+    const targets = new Set(getPseudoTargets(state, flag.id));
+
+    expect(targets).toContain("blue:L5-3");
+    expect(targets).toContain("blue:L5-2");
+    expect(targets).toContain("blue:L5-1");
+    expect(targets).toContain("blue:L1-4");
+    expect(targets).not.toContain("red:L5-5");
+  });
 });
 
 describe("legality and turn flow", () => {
@@ -349,6 +430,52 @@ describe("legality and turn flow", () => {
     expect(result.error).toBeNull();
     expect(result.state.turn).toBe("green");
     expect(result.state.ply).toBe(1);
+  });
+
+  it("interrupts the cycle for a third-party discovered check, then resumes the skipped turn", () => {
+    const state = sparseState([
+      { faction: "red", role: "cannon", node: "C10", leftHome: true },
+      { faction: "green", role: "soldier", node: "green:L5-3" },
+      {
+        faction: "blue",
+        role: "soldier",
+        node: "green:L5-4",
+        promoted: true,
+        leftHome: true,
+      },
+    ], "blue", ["red", "green", "blue"]);
+
+    const blueSoldier = state.pieces.find(
+      (piece) =>
+        piece.faction === "blue" &&
+        piece.role === "soldier" &&
+        piece.status === "board" &&
+        piece.node === "green:L5-4",
+    );
+
+    const uncover = getLegalActions(state).find(
+      (action) => action.pieceId === blueSoldier.id && action.to === "green:L4-4",
+    );
+    expect(uncover).toBeTruthy();
+
+    const checked = applyAction(state, uncover);
+    expect(checked.error).toBeNull();
+    expect(checked.state.turn).toBe("green");
+    expect(checked.state.resumeTurn).toBe("red");
+    expect(isInCheck(checked.state, "green")).toBe(true);
+    expect(__testing.checkingFactions(checked.state, "green")).toContain("red");
+
+    const reply = getLegalActions(checked.state).find(
+      (action) =>
+        checked.state.pieces.find((piece) => piece.id === action.pieceId)?.role === "general" &&
+        action.to === "green:L4-1",
+    );
+    expect(reply).toBeTruthy();
+
+    const resumed = applyAction(checked.state, reply);
+    expect(resumed.error).toBeNull();
+    expect(resumed.state.turn).toBe("red");
+    expect(resumed.state.resumeTurn).toBeNull();
   });
 
   it("rejects malformed or illegal actions without mutating the source state", () => {
