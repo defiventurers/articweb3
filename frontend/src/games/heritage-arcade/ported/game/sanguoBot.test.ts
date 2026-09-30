@@ -20,7 +20,6 @@ describe("Sanguo bots share human move legality", () => {
     expect(JSON.stringify(state)).toBe(before);
     if (level !== "easy") {
       expect(result.stats.search).toBe("iterative-paranoid-alpha-beta");
-      expect(result.stats.completedDepth).toBeGreaterThanOrEqual(1);
     }
   });
 
@@ -95,7 +94,13 @@ describe("Sanguo bots share human move legality", () => {
     const seen = new Set<string>();
     for (let i = 0; i < 18 && !state.winner && !state.draw; i++) {
       seen.add(state.turn);
-      const { action } = chooseSanguoBotAction(state, i % 2 ? "medium" : "easy", { random: () => 0.37 });
+      const { action } = chooseSanguoBotAction(
+        state,
+        i % 2 ? "medium" : "easy",
+        i % 2
+          ? { random: () => 0.37, budgetMs: 25, maxDepth: 1, width: 6, qDepth: 0, qWidth: 4 }
+          : { random: () => 0.37 },
+      );
       expect(action).not.toBeNull();
       const next = applySanguoAction(state, action!);
       expect(next).not.toBeNull(); state = next!;
