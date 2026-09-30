@@ -69,6 +69,58 @@ test("San You Qi battle screen uses the optimized tactical layout", async ({ pag
   await expect(page.locator(".san-you-qi-match-panel")).toBeVisible();
 });
 
+test("San You Qi pieces stay locked to image coordinates across viewport and zoom changes", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await startLocal(page, 3);
+
+  const board = page.locator(".san-you-qi-board-stage");
+  await expect(board).toHaveAttribute("data-board-fitted", "true");
+
+  const readGeometry = async () => page.evaluate(() => {
+    const stage = document.querySelector(".san-you-qi-board-stage");
+    const image = document.querySelector(".san-you-qi-board-image");
+    const piece = document.querySelector('[data-testid="piece-red-general-1"]');
+    if (!(stage instanceof HTMLElement) || !(image instanceof HTMLImageElement) || !(piece instanceof HTMLElement)) {
+      throw new Error("San You Qi board geometry is unavailable");
+    }
+
+    const stageRect = stage.getBoundingClientRect();
+    const pieceRect = piece.getBoundingClientRect();
+    return {
+      ratio: stageRect.width / stageRect.height,
+      naturalRatio: image.naturalWidth / image.naturalHeight,
+      x: ((pieceRect.left + pieceRect.width / 2) - stageRect.left) / stageRect.width,
+      y: ((pieceRect.top + pieceRect.height / 2) - stageRect.top) / stageRect.height,
+      relativePieceWidth: pieceRect.width / stageRect.width,
+    };
+  });
+
+  const first = await readGeometry();
+  expect(first.ratio).toBeCloseTo(first.naturalRatio, 3);
+  expect(first.x).toBeCloseTo(0.493274, 3);
+  expect(first.y).toBeCloseTo(0.757295, 3);
+  expect(first.relativePieceWidth).toBeCloseTo(0.038625, 3);
+
+  await page.setViewportSize({ width: 1024, height: 720 });
+  await page.waitForTimeout(100);
+  const resized = await readGeometry();
+  expect(resized.ratio).toBeCloseTo(resized.naturalRatio, 3);
+  expect(resized.x).toBeCloseTo(first.x, 3);
+  expect(resized.y).toBeCloseTo(first.y, 3);
+  expect(resized.relativePieceWidth).toBeCloseTo(first.relativePieceWidth, 3);
+
+  await page.evaluate(() => {
+    document.documentElement.style.zoom = "125%";
+    window.dispatchEvent(new Event("resize"));
+  });
+  await page.waitForTimeout(100);
+  const zoomed = await readGeometry();
+  expect(zoomed.ratio).toBeCloseTo(zoomed.naturalRatio, 3);
+  expect(zoomed.x).toBeCloseTo(first.x, 3);
+  expect(zoomed.y).toBeCloseTo(first.y, 3);
+  expect(zoomed.relativePieceWidth).toBeCloseTo(first.relativePieceWidth, 3);
+});
+
 test("San You Qi local three-human mode advances Red to Green", async ({ page }) => {
   await startLocal(page, 3);
 
