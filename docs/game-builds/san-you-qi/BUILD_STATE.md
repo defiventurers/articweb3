@@ -61,6 +61,35 @@ Fort boundary stopping points:
 
 Cannon may stop on the boundary point from its own side but may not continue through into the opposite kingdom. The three direct outer Fort crossings are Cannon-blocked.
 
+## AI strength checkpoint
+
+Medium and Hard were rebuilt after the original shallow MaxN implementation proved too easy.
+
+Medium now uses deterministic iterative paranoid alpha-beta with:
+- depth 4 target;
+- 20-move selective beam that always retains forcing moves;
+- quiescence depth 2;
+- ~1.6 s move budget;
+- transposition table, killer moves and history ordering;
+- no random top-three mistakes.
+
+Hard now uses:
+- depth 7 target;
+- 34-move selective beam with forcing moves always retained;
+- quiescence depth 4;
+- ~6.5 s move budget;
+- a much larger transposition table;
+- deeper two-player search after one kingdom is eliminated;
+- no deliberate mistakes.
+
+The evaluator now includes appropriation-aware material, strongest-rival pressure, mobility, defended/hanging pieces, checks, promotion, post-crossing Flag value, central control, Fort-gate control, inner-Sea control and enemy-territory development.
+
+Offline self-play weight tuning is available through:
+- `npm run tune:sanyou-bot`
+- `npm run benchmark:sanyou-bot`
+
+Research and next-strength work are documented in `AI_STRENGTH_PLAN.md`.
+
 ## Current gameplay phase
 
 Local 1/2/3-player modes, Easy/Medium/Hard bots, online rooms, reconnect/bot coverage, and the Sanguo-style tactical battle screen are implemented.
