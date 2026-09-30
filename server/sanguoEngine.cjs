@@ -324,10 +324,10 @@ function fileRays(node) {
 //#endregion
 //#region src/games/heritage-arcade/ported/game/sanguoHorseMoves.ts
 const sameNode$7 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
-const occupant$8 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$7(piece.node, node));
+const occupant$9 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$7(piece.node, node));
 const unique$2 = (nodes) => [...new Map(nodes.map((node) => [`${node.sector}-${node.rank}-${node.file}`, node])).values()];
 const landable$2 = (piece, pieces, node) => {
-	const hit = occupant$8(pieces, node);
+	const hit = occupant$9(pieces, node);
 	return !hit || hit.controller !== piece.controller;
 };
 const insideFile$2 = (file) => file >= 0 && file <= 8;
@@ -349,7 +349,7 @@ function appendLocalHorseTargets(piece, pieces, output) {
 		const destinationRank = rank + rankDelta;
 		const destinationFile = file + fileDelta;
 		if (!insideRank(destinationRank) || !insideFile$2(destinationFile)) continue;
-		if (occupant$8(pieces, Math.abs(rankDelta) === 2 ? {
+		if (occupant$9(pieces, Math.abs(rankDelta) === 2 ? {
 			sector,
 			rank: rank + Math.sign(rankDelta),
 			file
@@ -376,7 +376,7 @@ function sanguoHorseTargets(piece, pieces) {
 		if (ray.length < 2) continue;
 		const leg = ray[0];
 		const second = ray[1];
-		if (occupant$8(pieces, leg)) continue;
+		if (occupant$9(pieces, leg)) continue;
 		if (second.sector === piece.node.sector) continue;
 		for (const side of [-1, 1]) {
 			const destinationFile = second.file + side;
@@ -389,7 +389,7 @@ function sanguoHorseTargets(piece, pieces) {
 		if (ray.length < 2) continue;
 		const leg = ray[0];
 		const second = ray[1];
-		if (occupant$8(pieces, leg)) continue;
+		if (occupant$9(pieces, leg)) continue;
 		for (const perpendicular of fileRays(second)) {
 			const destination = perpendicular[0];
 			if (!destination || destination.sector === piece.node.sector) continue;
@@ -401,7 +401,7 @@ function sanguoHorseTargets(piece, pieces) {
 //#endregion
 //#region src/games/heritage-arcade/ported/game/sanguoElephantMoves.ts
 const sameNode$6 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
-const occupant$7 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$6(piece.node, node));
+const occupant$8 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$6(piece.node, node));
 const insideHalfBoard = (rank, file) => rank >= 0 && rank <= 4 && file >= 0 && file <= 8;
 const ELEPHANT_DELTAS = [
 	[-2, -2],
@@ -426,7 +426,7 @@ function sanguoElephantTargets(piece, pieces) {
 		const destinationRank = rank + rankDelta;
 		const destinationFile = file + fileDelta;
 		if (!insideHalfBoard(destinationRank, destinationFile)) continue;
-		if (occupant$7(pieces, {
+		if (occupant$8(pieces, {
 			sector,
 			rank: rank + rankDelta / 2,
 			file: file + fileDelta / 2
@@ -436,7 +436,7 @@ function sanguoElephantTargets(piece, pieces) {
 			rank: destinationRank,
 			file: destinationFile
 		};
-		const hit = occupant$7(pieces, destination);
+		const hit = occupant$8(pieces, destination);
 		if (!hit || hit.controller !== piece.controller) output.push(destination);
 	}
 	return output;
@@ -445,7 +445,7 @@ function sanguoElephantTargets(piece, pieces) {
 //#region src/games/heritage-arcade/ported/game/sanguoAdvisorMoves.ts
 const key$1 = (node) => `${node.sector}-${node.rank}-${node.file}`;
 const sameNode$5 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
-const occupant$6 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$5(piece.node, node));
+const occupant$7 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$5(piece.node, node));
 const PALACE_CORNERS = [
 	{
 		rank: 2,
@@ -500,14 +500,14 @@ function sanguoAdvisorTargets(piece, pieces) {
 	}];
 	else return [];
 	return [...new Map(candidates.map((node) => [key$1(node), node])).values()].filter((node) => {
-		const hit = occupant$6(pieces, node);
+		const hit = occupant$7(pieces, node);
 		return !hit || hit.controller !== piece.controller;
 	});
 }
 //#endregion
 //#region src/games/heritage-arcade/ported/game/sanguoGeneralMoves.ts
 const sameNode$4 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
-const occupant$5 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$4(piece.node, node));
+const occupant$6 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$4(piece.node, node));
 const insidePalace = (piece, node) => node.sector === piece.sector && node.rank >= 2 && node.rank <= 4 && node.file >= 3 && node.file <= 5;
 const ORTHOGONAL_STEPS = [
 	[-1, 0],
@@ -535,17 +535,17 @@ function sanguoGeneralTargets(piece, pieces) {
 		rank: piece.node.rank + rankDelta,
 		file: piece.node.file + fileDelta
 	})).filter((node) => insidePalace(piece, node)).filter((node) => {
-		const hit = occupant$5(pieces, node);
+		const hit = occupant$6(pieces, node);
 		return !hit || hit.controller !== piece.controller;
 	});
 }
 //#endregion
 //#region src/games/heritage-arcade/ported/game/sanguoSoldierMoves.ts
 const sameNode$3 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
-const occupant$4 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$3(piece.node, node));
+const occupant$5 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$3(piece.node, node));
 const insideFile$1 = (file) => file >= 0 && file <= 8;
 const landable$1 = (piece, pieces, node) => {
-	const hit = occupant$4(pieces, node);
+	const hit = occupant$5(pieces, node);
 	return !hit || hit.controller !== piece.controller;
 };
 /**
@@ -580,10 +580,10 @@ function sanguoSoldierTargets(piece, pieces) {
 //#endregion
 //#region src/games/heritage-arcade/ported/game/sanguoBannermanMoves.ts
 const sameNode$2 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
-const occupant$3 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$2(piece.node, node));
+const occupant$4 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$2(piece.node, node));
 const unique$1 = (nodes) => [...new Map(nodes.map((node) => [`${node.sector}-${node.rank}-${node.file}`, node])).values()];
 const landable = (piece, pieces, node) => {
-	const hit = occupant$3(pieces, node);
+	const hit = occupant$4(pieces, node);
 	return !hit || hit.controller !== piece.controller;
 };
 const insideFile = (file) => file >= 0 && file <= 8;
@@ -601,7 +601,7 @@ function sanguoBannermanTargets(piece, pieces) {
 		const first = ray[0];
 		const second = ray[1];
 		const longEndpoint = ray[2];
-		if (occupant$3(pieces, first) || occupant$3(pieces, second)) continue;
+		if (occupant$4(pieces, first) || occupant$4(pieces, second)) continue;
 		for (const side of [-1, 1]) {
 			const destinationFile = longEndpoint.file + side;
 			if (!insideFile(destinationFile)) continue;
@@ -614,7 +614,7 @@ function sanguoBannermanTargets(piece, pieces) {
 		const first = ray[0];
 		const second = ray[1];
 		const longEndpoint = ray[2];
-		if (occupant$3(pieces, first) || occupant$3(pieces, second)) continue;
+		if (occupant$4(pieces, first) || occupant$4(pieces, second)) continue;
 		for (const perpendicular of fileRays(longEndpoint)) {
 			const destination = perpendicular[0];
 			if (destination && landable(piece, pieces, destination)) output.push(destination);
@@ -626,11 +626,11 @@ function sanguoBannermanTargets(piece, pieces) {
 //#region src/games/heritage-arcade/ported/game/sanguoGraphMoves.ts
 const key = (node) => `${node.sector}-${node.rank}-${node.file}`;
 const same = (left, right) => key(left) === key(right);
-const occupant$2 = (pieces, node) => pieces.find((piece) => !piece.captured && same(piece.node, node));
+const occupant$3 = (pieces, node) => pieces.find((piece) => !piece.captured && same(piece.node, node));
 const unique = (nodes) => [...new Map(nodes.map((node) => [key(node), node])).values()];
 function appendChariotRay(piece, pieces, ray, output) {
 	for (const node of ray) {
-		const hit = occupant$2(pieces, node);
+		const hit = occupant$3(pieces, node);
 		if (!hit) {
 			output.push(node);
 			continue;
@@ -648,7 +648,7 @@ function chariotTargets(piece, pieces) {
 function appendCannonRay(piece, pieces, ray, output) {
 	let screened = false;
 	for (const node of ray) {
-		const hit = occupant$2(pieces, node);
+		const hit = occupant$3(pieces, node);
 		if (!screened) {
 			if (!hit) {
 				output.push(node);
@@ -683,7 +683,7 @@ function logicalPseudoTargets(piece, pieces) {
 //#endregion
 //#region src/games/heritage-arcade/ported/game/sanguoSpecialRules.ts
 const sameNode$1 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
-const occupant$1 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$1(piece.node, node));
+const occupant$2 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$1(piece.node, node));
 /**
 * Xiangqi flying-General prohibition on logical straight files.
 *
@@ -695,7 +695,7 @@ const occupant$1 = (pieces, node) => pieces.find((piece) => !piece.captured && s
 function generalsFacingOnLogicalFiles(pieces) {
 	const generals = pieces.filter((piece) => !piece.captured && piece.role === "king");
 	for (const general of generals) for (const ray of fileRays(general.node)) for (const node of ray) {
-		const hit = occupant$1(pieces, node);
+		const hit = occupant$2(pieces, node);
 		if (!hit) continue;
 		if (hit.role === "king" && hit.id !== general.id) return true;
 		break;
@@ -731,7 +731,7 @@ const railNodeIds = new Set(sanguoNodeIds());
 const graphHasOnlyKnownNodes = () => SOURCE_RAIL_EDGES.every(([from, to]) => railNodeIds.has(from) && railNodeIds.has(to));
 const optionalBannermenCount = (enabled) => enabled ? 54 : 48;
 const otherFactions = (faction) => sanguoFactions.filter((candidate) => candidate !== faction);
-const occupant = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode(piece.node, node));
+const occupant$1 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode(piece.node, node));
 /** Public pseudo-target resolver: logical Xiangqi geometry + explicit Sanguo boundary rules. */
 const pseudoSanguoTargets = (piece, pieces) => logicalPseudoTargets(piece, pieces);
 /** Xiangqi flying-General rule on logical files, including explicit L5 branching. */
@@ -748,7 +748,7 @@ const checkingPiecesAgainst = (defeated, victor, pieces) => {
 	return pieces.filter((piece) => !piece.captured && piece.controller === victor && pseudoSanguoTargets(piece, pieces).some((target) => sameNode(target, general.node)));
 };
 const relocate = (pieces, piece, destination) => {
-	const victim = occupant(pieces, destination);
+	const victim = occupant$1(pieces, destination);
 	return pieces.map((candidate) => candidate.id === piece.id ? {
 		...candidate,
 		node: destination
@@ -763,7 +763,7 @@ const relocate = (pieces, piece, destination) => {
 * documented separate appropriation turn.
 */
 const legalSanguoTargets = (piece, pieces) => pseudoSanguoTargets(piece, pieces).filter((target) => {
-	if (occupant(pieces, target)?.role === "king") return false;
+	if (occupant$1(pieces, target)?.role === "king") return false;
 	const next = relocate(pieces, piece, target);
 	return !generalsFacing(next) && !generalIsAttacked(piece.controller, next);
 });
@@ -846,7 +846,7 @@ function applySanguoMove(state, pieceId, destination) {
 	if (state.winner || state.draw || state.pending) return null;
 	const piece = state.pieces.find((candidate) => candidate.id === pieceId);
 	if (!piece || piece.captured || piece.controller !== state.turn || !legalSanguoTargets(piece, state.pieces).some((target) => sameNode(target, destination))) return null;
-	const victim = occupant(state.pieces, destination);
+	const victim = occupant$1(state.pieces, destination);
 	const pieces = relocate(state.pieces, piece, destination);
 	const nextTurn = nextSanguoTurn(state.turn, state.defeated);
 	const lastMove = {
@@ -1016,169 +1016,572 @@ const BOT_LEVELS = {
 	easy: {
 		label: "Easy",
 		description: "Plays legal moves with a little capture preference.",
+		search: "random",
 		depth: 1,
 		width: 6,
-		budget: 150
+		qDepth: 0,
+		qWidth: 0,
+		budget: 150,
+		tableSize: 0
 	},
 	medium: {
 		label: "Medium",
-		description: "Weighs captures, development and threatened pieces.",
-		depth: 1,
-		width: 60,
-		budget: 600
+		description: "Tactical three-player search with Xiangqi development, king safety and forcing-line analysis.",
+		search: "paranoid",
+		depth: 4,
+		width: 20,
+		qDepth: 2,
+		qWidth: 14,
+		budget: 1600,
+		tableSize: 5e4
 	},
 	hard: {
 		label: "Hard",
-		description: "Searches both rivals’ replies and protects its army.",
-		depth: 3,
-		width: 3,
-		budget: 1800
+		description: "Deep iterative three-player search with transpositions, quiescence and aggressive reply analysis.",
+		search: "paranoid",
+		depth: 7,
+		width: 34,
+		qDepth: 4,
+		qWidth: 24,
+		budget: 6500,
+		tableSize: 2e5
 	}
 };
-const VALUE = {
-	king: 2e4,
-	icebreaker: 900,
-	cannon: 450,
-	rider: 400,
-	runner: 450,
-	guard: 180,
-	seer: 180,
-	scout: 100
+const SANGUO_EVAL_WEIGHTS = {
+	strongestRival: .55,
+	secondRival: .18,
+	mobility: 1.25,
+	attackedPiece: .28,
+	doubleAttackedPiece: .12,
+	check: 900,
+	sideToMoveInCheck: 320,
+	checkPressure: 150,
+	soldierProgress: 15,
+	crossedSoldier: 95,
+	majorPieceProgress: 5,
+	centralFile: 20,
+	riverControl: 8,
+	enemySector: 18,
+	eliminatedOpponent: 5200
 };
+const VALUE = {
+	king: 3e4,
+	icebreaker: 1e3,
+	cannon: 460,
+	rider: 440,
+	runner: 430,
+	guard: 210,
+	seer: 210,
+	scout: 125
+};
+const MOBILITY_FACTOR = {
+	king: .18,
+	guard: .28,
+	seer: .3,
+	rider: 1,
+	runner: .75,
+	icebreaker: .9,
+	cannon: .95,
+	scout: .5
+};
+const MATE_SCORE = 1e7;
+const INF = 1e8;
+const HOME_RANK = 4;
+const CENTRAL_FILE = 4;
+const nowMs = () => typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+const actionKey = (action) => !action ? "" : action.type === "resolve" ? "resolve" : `${action.pieceId}|${nodeId(action.to)}`;
+const occupant = (state, node) => state.pieces.find((piece) => !piece.captured && nodeId(piece.node) === nodeId(node));
+const pieceValue = (piece) => VALUE[piece.role] || 0;
+const boardPieces = (state, controller) => state.pieces.filter((piece) => !piece.captured && (controller == null || piece.controller === controller));
+function pieceProgress(piece) {
+	return piece.node.sector === piece.sector ? HOME_RANK - piece.node.rank : 5 + piece.node.rank;
+}
+function terminalValue(state, faction) {
+	if (state.draw) return 0;
+	if (state.winner) return state.winner === faction ? MATE_SCORE : -1e7;
+	if (state.defeated.includes(faction)) return -1e7;
+	return null;
+}
+function buildThreatMaps(state) {
+	const threats = {
+		red: /* @__PURE__ */ new Map(),
+		green: /* @__PURE__ */ new Map(),
+		blue: /* @__PURE__ */ new Map()
+	};
+	for (const piece of boardPieces(state)) {
+		const map = threats[piece.controller];
+		for (const target of pseudoSanguoTargets(piece, state.pieces)) {
+			const key = nodeId(target);
+			map.set(key, (map.get(key) || 0) + 1);
+		}
+	}
+	return threats;
+}
+function factionInCheckFromThreats(state, faction, threats) {
+	const general = state.pieces.find((piece) => !piece.captured && piece.sector === faction && piece.role === "king");
+	if (!general) return false;
+	const square = nodeId(general.node);
+	return sanguoFactions.some((enemy) => enemy !== faction && !state.defeated.includes(enemy) && (threats[enemy].get(square) || 0) > 0);
+}
+function rawFactionScore(state, faction, threats, checks, weights) {
+	if (state.defeated.includes(faction)) return -1e7;
+	let score = 0;
+	for (const piece of boardPieces(state, faction)) {
+		const value = pieceValue(piece);
+		const targets = pseudoSanguoTargets(piece, state.pieces);
+		const progress = pieceProgress(piece);
+		score += value;
+		score += targets.length * weights.mobility * MOBILITY_FACTOR[piece.role];
+		if (piece.role === "scout") {
+			score += progress * weights.soldierProgress;
+			if (piece.node.sector !== piece.sector) score += weights.crossedSoldier;
+		} else if ([
+			"rider",
+			"cannon",
+			"icebreaker",
+			"runner"
+		].includes(piece.role)) score += progress * weights.majorPieceProgress;
+		if ([
+			"icebreaker",
+			"cannon",
+			"rider"
+		].includes(piece.role) && piece.node.file === CENTRAL_FILE) score += weights.centralFile;
+		if (piece.node.rank === 0) score += weights.riverControl;
+		if (piece.node.sector !== piece.sector) score += weights.enemySector;
+		const attackers = sanguoFactions.filter((enemy) => enemy !== faction && !state.defeated.includes(enemy)).reduce((sum, enemy) => sum + (threats[enemy].get(nodeId(piece.node)) || 0), 0);
+		if (piece.role !== "king" && attackers > 0) {
+			score -= value * weights.attackedPiece;
+			if (attackers > 1) score -= value * weights.doubleAttackedPiece * (attackers - 1);
+		}
+	}
+	if (checks[faction]) {
+		score -= weights.check;
+		if (state.turn === faction) score -= weights.sideToMoveInCheck;
+	}
+	for (const rival of sanguoFactions) if (rival !== faction && !state.defeated.includes(rival) && checks[rival]) score += weights.checkPressure;
+	score += state.defeated.filter((rival) => rival !== faction).length * weights.eliminatedOpponent;
+	return score;
+}
+/**
+* Xiangqi-informed, controller-aware evaluation.
+*
+* Captured armies that were appropriated are naturally counted for their new
+* controller because material, mobility and threats are all keyed by
+* piece.controller rather than original sector.
+*/
+function evaluateSanguo(state, weights = SANGUO_EVAL_WEIGHTS) {
+	const terminal = {
+		red: terminalValue(state, "red"),
+		green: terminalValue(state, "green"),
+		blue: terminalValue(state, "blue")
+	};
+	if (state.draw || state.winner) return {
+		red: terminal.red ?? 0,
+		green: terminal.green ?? 0,
+		blue: terminal.blue ?? 0
+	};
+	const threats = buildThreatMaps(state);
+	const checks = Object.fromEntries(sanguoFactions.map((faction) => [faction, factionInCheckFromThreats(state, faction, threats)]));
+	const raw = Object.fromEntries(sanguoFactions.map((faction) => [faction, terminal[faction] ?? rawFactionScore(state, faction, threats, checks, weights)]));
+	const scores = { ...raw };
+	for (const faction of sanguoFactions) {
+		if (state.defeated.includes(faction)) {
+			scores[faction] = -1e7;
+			continue;
+		}
+		const rivals = sanguoFactions.filter((candidate) => candidate !== faction && !state.defeated.includes(candidate)).map((candidate) => raw[candidate]).sort((a, b) => b - a);
+		if (rivals[0] != null) scores[faction] -= rivals[0] * weights.strongestRival;
+		if (rivals[1] != null) scores[faction] -= rivals[1] * weights.secondRival;
+	}
+	return scores;
+}
 function sanguoActions(state) {
 	if (state.winner || state.draw) return [];
 	if (state.pending) return [{ type: "resolve" }];
-	return state.pieces.filter((p) => !p.captured && p.controller === state.turn).flatMap((p) => legalSanguoTargets(p, state.pieces).map((to) => ({
+	return state.pieces.filter((piece) => !piece.captured && piece.controller === state.turn).flatMap((piece) => legalSanguoTargets(piece, state.pieces).map((to) => ({
 		type: "move",
-		pieceId: p.id,
+		pieceId: piece.id,
 		to
 	})));
 }
 function applySanguoAction(state, action) {
 	return action.type === "resolve" ? resolveSanguoAppropriation(state) : applySanguoMove(state, action.pieceId, action.to);
 }
-/** One utility per kingdom: each opponent optimizes its own position (MaxN). */
-function evaluateSanguo(state) {
-	const scores = {
-		red: 0,
-		green: 0,
-		blue: 0
-	};
-	if (state.draw) return scores;
-	if (state.winner) return Object.fromEntries(sanguoFactions.map((f) => [f, f === state.winner ? 1e6 : -1e6]));
-	const threats = {
-		red: /* @__PURE__ */ new Set(),
-		green: /* @__PURE__ */ new Set(),
-		blue: /* @__PURE__ */ new Set()
-	};
-	for (const p of state.pieces) if (!p.captured) for (const target of pseudoSanguoTargets(p, state.pieces)) threats[p.controller].add(nodeId(target));
-	for (const p of state.pieces) if (!p.captured) {
-		let worth = VALUE[p.role];
-		const progress = p.node.sector === p.sector ? 4 - p.node.rank : 5 + p.node.rank;
-		if (p.role === "scout") worth += progress * 12;
-		if ([
-			"rider",
-			"cannon",
-			"icebreaker"
-		].includes(p.role)) worth += progress * 4;
-		if (sanguoFactions.some((f) => f !== p.controller && threats[f].has(nodeId(p.node))) && p.role !== "king") worth -= VALUE[p.role] * (threats[p.controller].has(nodeId(p.node)) ? .22 : .7);
-		scores[p.controller] += worth;
+/** Collapse only the deterministic appropriation action while searching. */
+function settleForcedResolution(state) {
+	let current = state;
+	let guard = 0;
+	while (current.pending && !current.winner && !current.draw && guard < 3) {
+		const next = resolveSanguoAppropriation(current);
+		if (!next) break;
+		current = next;
+		guard += 1;
 	}
-	for (const f of sanguoFactions) if (state.defeated.includes(f)) scores[f] = -1e6;
-	else if (generalIsAttacked(f, state.pieces)) scores[f] -= 120;
-	const own = { ...scores };
-	for (const f of sanguoFactions) if (!state.defeated.includes(f)) scores[f] -= sanguoFactions.filter((g) => g !== f && !state.defeated.includes(g)).reduce((sum, g) => sum + own[g] * .4, 0);
-	return scores;
+	return current;
 }
-function chooseSanguoBotAction(state, difficulty = "medium", options = {}) {
-	const level = BOT_LEVELS[difficulty] || BOT_LEVELS.medium;
-	const started = performance.now();
-	const deadline = started + (options.budgetMs ?? level.budget);
-	const random = options.random ?? Math.random;
+function searchChild(state, action) {
+	const next = applySanguoAction(state, action);
+	return next ? settleForcedResolution(next) : null;
+}
+function stateKey(state) {
+	const pieces = state.pieces.map((piece) => [
+		piece.id,
+		piece.controller,
+		piece.captured ? 1 : 0,
+		nodeId(piece.node)
+	]).sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+	const positions = state.positions || [];
+	const repetitionContext = new Set(positions).size === positions.length ? [] : positions;
+	return JSON.stringify([
+		state.turn,
+		[...state.defeated].sort(),
+		state.winner || "",
+		state.pending ? [
+			state.pending.defeated,
+			state.pending.victor,
+			state.pending.reason,
+			state.pending.matingPieceId || ""
+		] : null,
+		state.draw || "",
+		state.quietMoves || 0,
+		repetitionContext,
+		pieces
+	]);
+}
+function captureValue(action, state) {
+	if (action.type === "resolve") return 1e5;
+	const victim = occupant(state, action.to);
+	return victim ? pieceValue(victim) : 0;
+}
+function crossesRiver(state, action) {
+	if (action.type !== "move") return false;
+	const piece = state.pieces.find((candidate) => candidate.id === action.pieceId);
+	return Boolean(piece && piece.role === "scout" && piece.node.sector === piece.sector && action.to.sector !== piece.sector);
+}
+function fastMovePriority(state, action, context, ply, ttMoveKey = "") {
+	const key = actionKey(action);
+	let score = 0;
+	if (key === ttMoveKey) score += 5e6;
+	if (action.type === "resolve") return score + 2e7;
+	const moving = state.pieces.find((piece) => piece.id === action.pieceId);
+	const victim = occupant(state, action.to);
+	if (victim) score += 1e6 + pieceValue(victim) * 90 - pieceValue(moving) * 7;
+	if (crossesRiver(state, action)) score += 18e4;
+	if (action.to.file === CENTRAL_FILE) score += 3500;
+	if (action.to.rank === 0) score += 2200;
+	if (context.killers.get(ply)?.includes(key)) score += 6e5;
+	score += context.history.get(key) || 0;
+	return score;
+}
+function preparedChildren(state, context, ply, limit, ttMoveKey = "") {
 	const actions = sanguoActions(state);
-	let nodes = 0, completedDepth = 0;
-	const result = (action) => ({
-		action,
-		stats: {
-			nodes,
-			completedDepth,
-			elapsedMs: Math.round(performance.now() - started)
-		}
-	});
-	if (!actions.length) return result(null);
-	if (state.pending) return result(actions[0]);
-	const captureValue = (action, position) => action.type === "move" ? VALUE[position.pieces.find((p) => !p.captured && nodeId(p.node) === nodeId(action.to))?.role] || 0 : 5e4;
-	if (difficulty === "easy") {
-		const captures = actions.filter((a) => captureValue(a, state) > 0);
-		const pool = captures.length && random() < .4 ? captures : actions;
-		nodes = 1;
-		completedDepth = 1;
-		return result(pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))]);
-	}
-	const ordered = [...actions].sort((a, b) => captureValue(b, state) - captureValue(a, state));
-	const positions = [];
-	for (const action of ordered) {
-		const next = applySanguoAction(state, action);
-		if (!next) continue;
-		const resolved = next.pending ? resolveSanguoAppropriation(next) : next;
-		nodes++;
-		positions.push({
+	const prepared = [];
+	for (const action of actions) {
+		context.checkDeadline();
+		const beforeDefeated = state.defeated.length;
+		const victim = action.type === "move" ? occupant(state, action.to) : null;
+		const crossed = crossesRiver(state, action);
+		const child = searchChild(state, action);
+		if (!child) continue;
+		const checkCount = sanguoFactions.filter((faction) => faction !== state.turn && !child.defeated.includes(faction) && generalIsAttacked(faction, child.pieces)).length;
+		const eliminated = child.defeated.length - beforeDefeated;
+		const winning = child.winner === context.rootFaction;
+		const forcing = Boolean(victim) || crossed || checkCount > 0 || eliminated > 0 || Boolean(child.winner) || generalIsAttacked(state.turn, state.pieces);
+		let priority = fastMovePriority(state, action, context, ply, ttMoveKey);
+		if (winning) priority += 3e7;
+		if (eliminated) priority += 6e6 * eliminated;
+		if (checkCount) priority += 26e4 * checkCount;
+		prepared.push({
 			action,
-			state: resolved,
-			score: evaluateSanguo(resolved)[state.turn]
+			child,
+			priority,
+			forcing,
+			quiet: !victim && !crossed && !checkCount && !eliminated
 		});
 	}
-	positions.sort((a, b) => b.score - a.score);
-	if (!positions.length) return result(actions[0]);
-	let best = positions[0].action;
-	completedDepth = 1;
-	if (difficulty === "medium") return result(best);
-	const TIMEOUT = Symbol("search deadline");
-	const search = (position, depth) => {
-		if (performance.now() > deadline) throw TIMEOUT;
-		nodes++;
-		if (!depth || position.winner || position.draw) return evaluateSanguo(position);
-		const danger = new Set(position.pieces.filter((p) => !p.captured && p.controller !== position.turn).flatMap((p) => pseudoSanguoTargets(p, position.pieces).map(nodeId)));
-		const priority = (action) => {
-			if (action.type === "resolve") return 1e5;
-			const piece = position.pieces.find((p) => p.id === action.pieceId);
-			return captureValue(action, position) * 2 - (danger.has(nodeId(action.to)) ? VALUE[piece.role] : 0) + (action.to.sector === piece.sector ? 4 - action.to.rank : 5 + action.to.rank);
-		};
-		const candidates = sanguoActions(position).sort((a, b) => priority(b) - priority(a)).slice(0, level.width).map((action) => {
-			if (performance.now() > deadline) throw TIMEOUT;
-			const next = applySanguoAction(position, action);
-			const child = next.pending ? resolveSanguoAppropriation(next) : next;
-			return {
-				child,
-				score: evaluateSanguo(child)[position.turn]
-			};
-		}).sort((a, b) => b.score - a.score).slice(0, level.width);
-		let utility = null;
-		for (const { child } of candidates) {
-			const score = search(child, depth - 1);
-			if (!utility || score[position.turn] > utility[position.turn]) utility = score;
-		}
-		return utility ?? evaluateSanguo(position);
-	};
-	for (let depth = 2; depth <= level.depth; depth++) try {
-		let iterationBest = best, bestScore = -Infinity;
-		for (const candidate of positions.slice(0, level.width)) {
-			const score = search(candidate.state, depth - 1)[state.turn];
-			if (score > bestScore) {
-				bestScore = score;
-				iterationBest = candidate.action;
-			}
-		}
-		best = iterationBest;
-		completedDepth = depth;
-	} catch (error) {
-		if (error !== TIMEOUT) throw error;
-		break;
+	prepared.sort((a, b) => b.priority - a.priority || actionKey(a.action).localeCompare(actionKey(b.action)));
+	if (!Number.isFinite(limit) || prepared.length <= limit) return prepared;
+	const forcing = prepared.filter((entry) => entry.forcing);
+	const quiet = prepared.filter((entry) => !entry.forcing);
+	return [...forcing, ...quiet.slice(0, Math.max(0, limit - forcing.length))];
+}
+function recordCutoff(context, action, ply, depth, quiet) {
+	if (!quiet) return;
+	const key = actionKey(action);
+	const killers = context.killers.get(ply) || [];
+	if (!killers.includes(key)) {
+		killers.unshift(key);
+		if (killers.length > 2) killers.pop();
+		context.killers.set(ply, killers);
 	}
-	return result(best);
+	context.history.set(key, Math.min(2e6, (context.history.get(key) || 0) + depth * depth * 500));
+}
+function transpositionLookup(context, key, depth, alpha, beta) {
+	const entry = context.table.get(key);
+	if (!entry || entry.depth < depth) return null;
+	context.ttHits += 1;
+	if (entry.flag === "exact") return {
+		value: entry.value,
+		moveKey: entry.moveKey,
+		cutoff: true
+	};
+	if (entry.flag === "lower" && entry.value >= beta) return {
+		value: entry.value,
+		moveKey: entry.moveKey,
+		cutoff: true
+	};
+	if (entry.flag === "upper" && entry.value <= alpha) return {
+		value: entry.value,
+		moveKey: entry.moveKey,
+		cutoff: true
+	};
+	return {
+		value: entry.value,
+		moveKey: entry.moveKey,
+		cutoff: false
+	};
+}
+function transpositionStore(context, key, entry) {
+	if (!context.level.tableSize) return;
+	if (context.table.size >= context.level.tableSize) {
+		const remove = Math.max(1, Math.floor(context.level.tableSize * .08));
+		const iterator = context.table.keys();
+		for (let index = 0; index < remove; index += 1) {
+			const next = iterator.next();
+			if (next.done) break;
+			context.table.delete(next.value);
+		}
+	}
+	context.table.set(key, entry);
+}
+function rootScore(state, context) {
+	return evaluateSanguo(state, context.weights)[context.rootFaction];
+}
+function quiescence(state, alpha, beta, qDepth, context, ply) {
+	context.checkDeadline();
+	context.nodes += 1;
+	context.qNodes += 1;
+	const terminal = terminalValue(state, context.rootFaction);
+	if (terminal != null && (state.winner || state.draw || state.defeated.includes(context.rootFaction))) return terminal;
+	const maximizing = state.turn === context.rootFaction;
+	const checked = generalIsAttacked(state.turn, state.pieces);
+	const standPat = rootScore(state, context);
+	if (qDepth <= 0 && !checked) return standPat;
+	if (!checked) if (maximizing) {
+		if (standPat >= beta) return standPat;
+		alpha = Math.max(alpha, standPat);
+	} else {
+		if (standPat <= alpha) return standPat;
+		beta = Math.min(beta, standPat);
+	}
+	let children = preparedChildren(state, context, ply, context.level.qWidth);
+	if (!checked) children = children.filter((entry) => entry.forcing).slice(0, context.level.qWidth);
+	if (!children.length) return standPat;
+	let best = checked ? maximizing ? -1e8 : INF : standPat;
+	for (const entry of children) {
+		const score = quiescence(entry.child, alpha, beta, Math.max(0, qDepth - 1), context, ply + 1);
+		if (maximizing) {
+			if (score > best) best = score;
+			alpha = Math.max(alpha, best);
+		} else {
+			if (score < best) best = score;
+			beta = Math.min(beta, best);
+		}
+		if (alpha >= beta) {
+			context.cutoffs += 1;
+			break;
+		}
+	}
+	return best;
+}
+/**
+* Root-centric paranoid search.
+*
+* Red/Green/Blue still take turns exactly according to the authoritative rule
+* engine. The search assumption is simply that every non-root faction chooses
+* the reply that minimizes the root faction's score, which makes alpha-beta
+* pruning available for this three-player game.
+*/
+function paranoidSearch(state, depth, alpha, beta, context, ply) {
+	context.checkDeadline();
+	context.nodes += 1;
+	const terminal = terminalValue(state, context.rootFaction);
+	if (terminal != null && (state.winner || state.draw || state.defeated.includes(context.rootFaction))) return terminal;
+	if (depth <= 0) return quiescence(state, alpha, beta, context.level.qDepth, context, ply);
+	const key = `${context.rootFaction}|${stateKey(state)}`;
+	const originalAlpha = alpha;
+	const originalBeta = beta;
+	const tt = transpositionLookup(context, key, depth, alpha, beta);
+	if (tt?.cutoff) return tt.value;
+	const maximizing = state.turn === context.rootFaction;
+	const children = preparedChildren(state, context, ply, context.level.width, tt?.moveKey || "");
+	if (!children.length) return rootScore(state, context);
+	let best = maximizing ? -1e8 : INF;
+	let bestMoveKey = "";
+	for (const entry of children) {
+		const score = paranoidSearch(entry.child, depth - 1, alpha, beta, context, ply + 1);
+		if (maximizing && score > best || !maximizing && score < best) {
+			best = score;
+			bestMoveKey = actionKey(entry.action);
+		}
+		if (maximizing) alpha = Math.max(alpha, best);
+		else beta = Math.min(beta, best);
+		if (alpha >= beta) {
+			context.cutoffs += 1;
+			recordCutoff(context, entry.action, ply, depth, entry.quiet);
+			break;
+		}
+	}
+	let flag = "exact";
+	if (best <= originalAlpha) flag = "upper";
+	else if (best >= originalBeta) flag = "lower";
+	transpositionStore(context, key, {
+		depth,
+		value: best,
+		flag,
+		moveKey: bestMoveKey
+	});
+	return best;
+}
+function easyBotAction(state, options) {
+	const started = nowMs();
+	const actions = sanguoActions(state);
+	if (!actions.length) return {
+		action: null,
+		stats: {
+			nodes: 0,
+			qNodes: 0,
+			cutoffs: 0,
+			ttHits: 0,
+			completedDepth: 0,
+			elapsedMs: Math.round(nowMs() - started),
+			search: "capture-biased-random"
+		}
+	};
+	if (state.pending) return {
+		action: actions[0],
+		stats: {
+			nodes: 1,
+			qNodes: 0,
+			cutoffs: 0,
+			ttHits: 0,
+			completedDepth: 1,
+			elapsedMs: Math.round(nowMs() - started),
+			search: "forced-resolution"
+		}
+	};
+	const random = options.random ?? Math.random;
+	const captures = actions.filter((action) => captureValue(action, state) > 0);
+	const pool = captures.length && random() < .4 ? captures : actions;
+	return {
+		action: pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))] || pool[0],
+		stats: {
+			nodes: 1,
+			qNodes: 0,
+			cutoffs: 0,
+			ttHits: 0,
+			completedDepth: 1,
+			elapsedMs: Math.round(nowMs() - started),
+			search: "capture-biased-random"
+		}
+	};
+}
+function searchBotAction(state, difficulty, options) {
+	const configured = BOT_LEVELS[difficulty];
+	const level = {
+		depth: options.maxDepth ?? configured.depth,
+		width: options.width ?? configured.width,
+		qDepth: options.qDepth ?? configured.qDepth,
+		qWidth: options.qWidth ?? configured.qWidth,
+		budget: options.budgetMs ?? configured.budget,
+		tableSize: configured.tableSize
+	};
+	if (state.defeated.length === 1 && difficulty === "hard") {
+		level.depth += 2;
+		level.width = Math.max(level.width, 42);
+		level.qWidth = Math.max(level.qWidth, 28);
+	}
+	const started = nowMs();
+	const timeoutSignal = Symbol("sanguo-search-timeout");
+	const deadline = started + level.budget;
+	const context = {
+		rootFaction: state.turn,
+		level,
+		weights: options.evalWeights ?? SANGUO_EVAL_WEIGHTS,
+		deadline,
+		timeoutSignal,
+		table: /* @__PURE__ */ new Map(),
+		killers: /* @__PURE__ */ new Map(),
+		history: /* @__PURE__ */ new Map(),
+		nodes: 0,
+		qNodes: 0,
+		cutoffs: 0,
+		ttHits: 0,
+		checkDeadline() {
+			if (nowMs() >= deadline) throw timeoutSignal;
+		}
+	};
+	const actions = sanguoActions(state);
+	const result = (action, score, completedDepth) => ({
+		action,
+		score,
+		stats: {
+			nodes: context.nodes,
+			qNodes: context.qNodes,
+			cutoffs: context.cutoffs,
+			ttHits: context.ttHits,
+			completedDepth,
+			elapsedMs: Math.round(nowMs() - started),
+			tableSize: context.table.size,
+			search: "iterative-paranoid-alpha-beta"
+		}
+	});
+	if (!actions.length) return result(null, null, 0);
+	if (state.pending) return result(actions[0], null, 1);
+	let bestAction = [...actions].sort((a, b) => fastMovePriority(state, b, context, 0) - fastMovePriority(state, a, context, 0) || actionKey(a).localeCompare(actionKey(b)))[0] || actions[0];
+	let bestScore = -1e8;
+	let completedDepth = 0;
+	let principalKey = actionKey(bestAction);
+	try {
+		const initial = preparedChildren(state, context, 0, Number.POSITIVE_INFINITY);
+		if (initial.length) {
+			bestAction = initial[0].action;
+			bestScore = rootScore(initial[0].child, context);
+			completedDepth = 1;
+			principalKey = actionKey(bestAction);
+		}
+		for (let depth = 2; depth <= level.depth; depth += 1) {
+			context.checkDeadline();
+			const rootChildren = preparedChildren(state, context, 0, level.width, principalKey);
+			let iterationAction = bestAction;
+			let iterationScore = -1e8;
+			let alpha = -1e8;
+			for (const entry of rootChildren) {
+				context.checkDeadline();
+				const score = paranoidSearch(entry.child, depth - 1, alpha, INF, context, 1);
+				if (score > iterationScore || score === iterationScore && actionKey(entry.action).localeCompare(actionKey(iterationAction)) < 0) {
+					iterationScore = score;
+					iterationAction = entry.action;
+				}
+				alpha = Math.max(alpha, iterationScore);
+			}
+			bestAction = iterationAction;
+			bestScore = iterationScore;
+			principalKey = actionKey(bestAction);
+			completedDepth = depth;
+		}
+	} catch (error) {
+		if (error !== timeoutSignal) throw error;
+	}
+	return result(bestAction, bestScore, completedDepth);
+}
+function chooseSanguoBotAction(state, difficulty = "medium", options = {}) {
+	if (difficulty === "easy") return easyBotAction(state, options);
+	return searchBotAction(state, difficulty, options);
 }
 //#endregion
 exports.BOT_LEVELS = BOT_LEVELS;
+exports.SANGUO_EVAL_WEIGHTS = SANGUO_EVAL_WEIGHTS;
 exports.applySanguoAction = applySanguoAction;
 exports.applySanguoMove = applySanguoMove;
 exports.appropriateArmy = appropriateArmy;
