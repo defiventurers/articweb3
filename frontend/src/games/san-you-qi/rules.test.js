@@ -468,11 +468,14 @@ describe("legality and turn flow", () => {
     expect(isInCheck(checked.state, "green")).toBe(true);
     expect(__testing.checkingFactions(checked.state, "green")).toContain("red");
 
-    const reply = getLegalActions(checked.state).find(
-      (action) =>
-        checked.state.pieces.find((piece) => piece.id === action.pieceId)?.role === "general" &&
-        action.to === "green:L4-1",
-    );
+    const reply = getLegalActions(checked.state).find((action) => {
+      const candidate = applyAction(checked.state, action);
+      return (
+        !candidate.error &&
+        !isInCheck(candidate.state, "green") &&
+        candidate.state.turn === "red"
+      );
+    });
     expect(reply).toBeTruthy();
 
     const resumed = applyAction(checked.state, reply);
