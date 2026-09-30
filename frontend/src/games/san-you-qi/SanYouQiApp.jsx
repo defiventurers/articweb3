@@ -1297,7 +1297,7 @@ export default function SanYouQiApp({ onExit }) {
     );
   }
 
-  if (seat) {  if (seat) {
+  if (seat) {
     return (
       <main className="san-you-qi-app san-you-qi-setup-page">
         <section className="san-you-qi-setup-card">
