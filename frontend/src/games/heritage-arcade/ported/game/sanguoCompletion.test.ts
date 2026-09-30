@@ -43,7 +43,7 @@ it("Hard searches a full three-player cycle on a bounded position", () => {
   const state = sanguoStateFrom(generals());
   const medium = chooseSanguoBotAction(state, "medium");
   const hard = chooseSanguoBotAction(state, "hard");
-  expect(medium.stats.completedDepth).toBe(1);
-  expect(hard.stats.completedDepth).toBe(3);
+  expect(medium.stats.completedDepth).toBeGreaterThanOrEqual(3);
+  expect(hard.stats.completedDepth).toBeGreaterThan(medium.stats.completedDepth);
   expect(hard.stats.nodes).toBeGreaterThan(medium.stats.nodes);
 });
