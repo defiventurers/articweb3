@@ -327,7 +327,7 @@ const SANYOU_TOPOLOGY_DEBUG = Object.freeze({
  */
 
 const GAME_ID = "san-you-qi";
-const RULESET_VERSION = "arctic-final-156-node-3.1.0";
+const RULESET_VERSION = "arctic-final-156-node-3.2.0";
 
 const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 const FACTION_LABELS = Object.freeze({
@@ -529,19 +529,12 @@ function generalTargets(piece, pieces) {
     if (destinationOpenFor(piece, pieces, target)) out.push(target);
   }
 
-  // Flying-General attack geometry. The direct capture is filtered from legal
-  // moves later, but including it here makes self-check and face-to-face checks
-  // work on any approved straight continuation line.
-  for (const ray of lineRaysFrom(piece.node)) {
-    if (ray.kind === "horizontal") continue;
-    for (const node of ray.nodes) {
-      const hit = pieceAtUnchecked(pieces, node);
-      if (!hit) continue;
-      if (hit.role === "general" && hit.owner !== piece.owner) out.push(node);
-      break;
-    }
-  }
-
+  // Do not project Xiangqi's two-player "flying General" rule through the
+  // three-kingdom continuation graph. On this board that created artificial
+  // pins across the central Sea (for example a Red Cannon on Blue L5-4 could
+  // not leave RB-5 because the Red and Blue Generals were treated as facing
+  // through the entire multi-kingdom route). General attacks are therefore
+  // limited to the General's actual palace move geometry.
   return dedupeNodes(out);
 }
 
@@ -592,6 +585,29 @@ function roughlyPerpendicular(a, b, c) {
   return Math.abs(first[0] * second[0] + first[1] * second[1]) < 0.58;
 }
 
+const HORSE_CENTER_JUMPS = Object.freeze({
+  [armNodeId("red", 4, 5)]: Object.freeze([{ target: "C20", leg: "C3" }]),
+  [armNodeId("red", 6, 5)]: Object.freeze([{ target: "C20", leg: "C5" }]),
+  C20: Object.freeze([
+    { target: armNodeId("red", 4, 5), leg: "C4" },
+    { target: armNodeId("red", 6, 5), leg: "C4" },
+  ]),
+
+  [armNodeId("green", 4, 5)]: Object.freeze([{ target: "C22", leg: "C9" }]),
+  [armNodeId("green", 6, 5)]: Object.freeze([{ target: "C22", leg: "C11" }]),
+  C22: Object.freeze([
+    { target: armNodeId("green", 4, 5), leg: "C10" },
+    { target: armNodeId("green", 6, 5), leg: "C10" },
+  ]),
+
+  [armNodeId("blue", 4, 5)]: Object.freeze([{ target: "C24", leg: "C15" }]),
+  [armNodeId("blue", 6, 5)]: Object.freeze([{ target: "C24", leg: "C17" }]),
+  C24: Object.freeze([
+    { target: armNodeId("blue", 4, 5), leg: "C16" },
+    { target: armNodeId("blue", 6, 5), leg: "C16" },
+  ]),
+});
+
 function horseTargets(piece, pieces) {
   const out = new Set();
 
@@ -620,6 +636,15 @@ function horseTargets(piece, pieces) {
         if (destinationOpenFor(piece, pieces, target)) out.add(target);
       }
     }
+  }
+
+  // The triangular center has three compressed Horse destinations that are
+  // not representable as a simple 2+1 walk over SLIDING_LINES. They are still
+  // ordinary blocked Horse jumps: the listed first leg must be clear.
+  for (const jump of HORSE_CENTER_JUMPS[piece.node] || []) {
+    if (pieceAtUnchecked(pieces, jump.leg)) continue;
+    if (!pathEdgeAllowedForRole("horse", piece.node, jump.leg, piece.faction)) continue;
+    if (destinationOpenFor(piece, pieces, jump.target)) out.add(jump.target);
   }
 
   return [...out];
