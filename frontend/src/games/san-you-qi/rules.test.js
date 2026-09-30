@@ -622,6 +622,9 @@ describe("legality and turn flow", () => {
   it("keeps Cannon geometry but pins Blue L5-4 moves that expose the Red General", () => {
     const state = sparseState([
       { faction: "red", role: "cannon", node: "blue:L5-4", leftHome: true },
+      // Block the separate Red-Green flying-General line so this regression
+      // isolates the Red-Blue pin created by the Cannon on RB-5.
+      { faction: "red", role: "soldier", node: "green:L5-3", leftHome: true },
     ], "red", ["red", "green", "blue"]);
 
     // The Cannon currently blocks the Red/Blue flying-General line.
