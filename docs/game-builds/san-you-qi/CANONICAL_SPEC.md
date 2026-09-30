@@ -10,13 +10,13 @@ San You Qi (三友棋), also called Three Friends Chess.
 
 ## CURRENT RULESET
 
-`arctic-final-156-node-3.0.0`
+`arctic-final-156-node-3.1.0`
 
 This release combines the historically supported Zheng Jinde / Qing-era Three Friends Chess core with the current Arctic Dominion board reconstruction.
 
 ## SOURCE BOUNDARY
 
-Historically supported core includes the three-player / three-kingdom structure, 18 pieces per army, Xiangqi-derived ordinary pieces, special Fire and Flag roles, central Sea/Mountain/City terrain, army appropriation after defeat, and last-surviving-General victory.
+Historically supported core includes the three-player / three-kingdom structure, 18 pieces per army, Xiangqi-derived ordinary pieces, special Fire and Flag roles, central Sea/Mountain/City terrain, army appropriation after defeat, and last-surviving-General victory. The Flag moves exactly two points straight forward before leaving home and becomes Chariot-like after crossing out of its own territory.
 
 Arctic Dominion reconstruction / implementation data includes the exact 156-node digital graph, exact supplied coordinates, continuation routes, H1-H3, faction-specific promotion boundaries, and exact Fort/Mountain/Sea crossing behavior.
 
@@ -66,7 +66,7 @@ Extended-river crossings:
 - C5-C9
 - C15-C11
 
-Cannon may cross. Chariot and Horse may not cross those Sea edges.
+Cannon may cross. Chariot may not cross those Sea edges. For Horse movement, a Sea edge blocks only when it is the Horse's first orthogonal leg; the second straight unit or final turning unit may use that edge.
 
 C20, C22 and C24 remain legal continuation-network stopping points. Cannon may use C4-C20-C22, C4-C20-C24 and C24-C22.
 
@@ -98,7 +98,7 @@ Blue enemy: `C2 C3 C4 C5 C6 C7 C8 C9 C10 C11 C12 C20 C22`
 
 Green enemy: `C1 C2 C3 C4 C5 C6 C14 C15 C16 C17 C18 C20 C24`
 
-A Soldier promotes permanently on first landing in enemy territory and gains sideways movement only where a horizontal movement line exists.
+A Soldier promotes permanently on first landing in enemy territory. Promotion adds sideways movement where a horizontal movement line exists; the Soldier keeps its original one-step forward movement.
 
 Blue Soldier on C24 keeps the approved forward choices C20 and C22.
 
@@ -122,9 +122,21 @@ Front:
 - Fire L7-4
 - Soldier L9-4
 
-## APPROPRIATION
+## CHECK RESPONSE AND APPROPRIATION
+
+A check interrupts the ordinary three-player cycle: the checked kingdom must answer immediately. If that response displaced the player who would normally have moved next, that skipped turn resumes once the check is cleared.
+
+This is an implementation convention for the three-player ambiguity; the surviving primary verse establishes cyclic play but does not spell out this exact third-party discovered-check edge case.
+
+If a third player's move uncovers a check from another faction's piece, the checking piece's controller receives mate credit if the checked kingdom has no legal reply.
 
 Each piece stores both `faction` (original kingdom/artwork/orientation) and `owner` (current controller). After checkmate, the defeated General is eliminated and surviving pieces transfer control while retaining original faction identity.
+
+## FLAG AFTER LEAVING HOME
+
+Before leaving its original territory, Flag moves exactly two clear points straight forward.
+
+After leaving, Flag moves like a Chariot: any clear distance orthogonally along one approved movement line. It may not re-enter its original kingdom.
 
 ## IMPLEMENTATION FILES
 
