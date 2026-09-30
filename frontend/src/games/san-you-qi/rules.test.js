@@ -473,11 +473,12 @@ describe("legality and turn flow", () => {
     expect(result.state.ply).toBe(1);
   });
 
-  it("does not pin a Red Cannon on Blue L5-4 with a cross-kingdom flying-General line", () => {
+  it("keeps Cannon geometry but pins Blue L5-4 moves that expose the Red General", () => {
     const state = sparseState([
       { faction: "red", role: "cannon", node: "blue:L5-4", leftHome: true },
     ], "red", ["red", "green", "blue"]);
 
+    // The Cannon currently blocks the Red/Blue flying-General line.
     expect(isInCheck(state, "red")).toBe(false);
 
     const cannon = state.pieces.find(
@@ -487,21 +488,32 @@ describe("legality and turn flow", () => {
         piece.status === "board" &&
         piece.node === "blue:L5-4",
     );
-    const targets = new Set(
+
+    // Geometrically the Cannon still has its normal sideways and Green-branch
+    // routes. The flying-General rule is a legality filter, not a Cannon
+    // movement restriction.
+    const pseudo = new Set(getPseudoTargets(state, cannon.id));
+    expect(pseudo).toContain("blue:L4-4");
+    expect(pseudo).toContain("blue:L6-4");
+    expect(pseudo).toContain("C24");
+    expect(pseudo).toContain("C22");
+    expect(pseudo).toContain("C10");
+    expect(pseudo).toContain("green:L5-5");
+
+    const legal = new Set(
       getLegalActions(state)
         .filter((action) => action.pieceId === cannon.id)
         .map((action) => action.to),
     );
 
-    // Same-rank sideways movement inside Blue.
-    expect(targets).toContain("blue:L4-4");
-    expect(targets).toContain("blue:L6-4");
-
-    // The Blue-to-Green L5 continuation must remain visibly/legal reachable.
-    expect(targets).toContain("C24");
-    expect(targets).toContain("C22");
-    expect(targets).toContain("C10");
-    expect(targets).toContain("green:L5-5");
+    // In this exact position those moves are illegal because moving the Cannon
+    // off RB-5 exposes Red's General to Blue's General.
+    expect(legal).not.toContain("blue:L4-4");
+    expect(legal).not.toContain("blue:L6-4");
+    expect(legal).not.toContain("C24");
+    expect(legal).not.toContain("C22");
+    expect(legal).not.toContain("C10");
+    expect(legal).not.toContain("green:L5-5");
   });
 
   it("interrupts the cycle for a third-party discovered check, then resumes the skipped turn", () => {
