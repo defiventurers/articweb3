@@ -6,6 +6,7 @@ import {
   createInitialState,
   getLegalActions,
   getPseudoTargets,
+  isInCheck,
   squareKey,
   territoryOf,
   validateAction,
