@@ -4,7 +4,7 @@
 
 Current ruleset:
 
-`arctic-final-156-node-3.0.0`
+`arctic-final-156-node-3.1.0`
 
 The board now uses the latest user-supplied coordinates and the revised 21-point central topology.
 
@@ -24,11 +24,17 @@ The board now uses the latest user-supplied coordinates and the revised 21-point
 - Removed the obsolete Red Soldier-on-C19 case.
 - Kept Blue Soldier C24 → C20/C22.
 - Applied revised Fort, Mountain and extended-Sea movement restrictions.
+- Corrected Horse Sea logic: only the first orthogonal leg is blocked by the extended river; Red L4-5 → C18 is therefore legal when its horse leg is clear.
+- Locked promoted Soldier behavior to forward + sideways, never sideways-only.
+- Locked Cannon rank movement and both Blue L5 central branches in regression tests.
+- Corrected Flag after leaving home to Chariot-like unlimited orthogonal movement with no return to its original kingdom.
+- Added check interruption: a checked kingdom responds immediately, then the interrupted normal turn resumes.
+- Third-party discovered mate is credited to the faction whose piece actually gives the check, not automatically to the player whose move uncovered it.
 - Updated unit tests, smoke text, rulebook copy, catalogue text and placement-tool defaults.
 
 ## Terrain checkpoint
 
-Sea edges that block Chariot/Horse and allow Cannon:
+Extended-Sea edges that block Chariot, allow Cannon, and block Horse only when used as its first orthogonal leg:
 
 - C3-C17
 - C5-C9
@@ -48,12 +54,8 @@ Fort boundary stopping points:
 
 Cannon may stop on the boundary point from its own side but may not continue through into the opposite kingdom. The three direct outer Fort crossings are Cannon-blocked.
 
-## Next phase
+## Current gameplay phase
 
-After this topology checkpoint is stable:
+Local 1/2/3-player modes, Easy/Medium/Hard bots, online rooms, reconnect/bot coverage, and the Sanguo-style tactical battle screen are implemented.
 
-- local player-count modes;
-- bot difficulty levels;
-- online rooms, following the Sanguo Qi architecture.
-
-Run focused Vitest and Playwright smoke checks in CI after deployment, then visual-QA the production board.
+The current QA focus is movement correctness, check interruption, terrain edge cases, bot regression and online server-engine parity.
