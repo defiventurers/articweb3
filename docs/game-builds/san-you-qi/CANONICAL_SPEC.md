@@ -10,7 +10,7 @@ San You Qi (三友棋), also called Three Friends Chess.
 
 ## CURRENT RULESET
 
-`arctic-final-156-node-3.3.3`
+`arctic-final-156-node-3.3.4`
 
 This release combines the historically supported Zheng Jinde / Qing-era Three Friends Chess core with the current Arctic Dominion board reconstruction.
 
