@@ -10,7 +10,7 @@ San You Qi (三友棋), also called Three Friends Chess.
 
 ## CURRENT RULESET
 
-`arctic-final-156-node-3.1.0`
+`arctic-final-156-node-3.2.0`
 
 This release combines the historically supported Zheng Jinde / Qing-era Three Friends Chess core with the current Arctic Dominion board reconstruction.
 
@@ -70,6 +70,13 @@ Cannon may cross. Chariot may not cross those Sea edges. For Horse movement, a S
 
 C20, C22 and C24 remain legal continuation-network stopping points. Cannon may use C4-C20-C22, C4-C20-C24 and C24-C22.
 
+The compressed center also has six explicit Horse tip jumps:
+- Red L4-5 / L6-5 ↔ C20
+- Green L4-5 / L6-5 ↔ C22
+- Blue L4-5 / L6-5 ↔ C24
+
+They remain blocked-Horse moves: the appropriate first leg must be clear.
+
 ### Mountain
 
 Cannon is blocked across:
@@ -121,6 +128,10 @@ Front:
 - Soldier L5-4
 - Fire L7-4
 - Soldier L9-4
+
+## GENERAL FACING CONVENTION
+
+Do not project Xiangqi's two-player flying-General rule through the multi-kingdom central continuation graph. Generals attack only through their actual palace movement geometry. This prevents false cross-board pins such as a Red Cannon on Blue L5 being forced to remain on the Red-Blue continuation solely because the two Generals would otherwise be considered to face through the entire central network.
 
 ## CHECK RESPONSE AND APPROPRIATION
 
