@@ -642,7 +642,10 @@ function quiescence(
   const checked = generalIsAttacked(state.turn, state.pieces);
   const standPat = rootScore(state, context);
 
-  if (qDepth <= 0) return standPat;
+  // Never stop a tactical leaf while the side to move is still in check.
+  // Search one full legal response layer even when the nominal q-depth is
+  // exhausted, then allow the resulting stable position to stand pat.
+  if (qDepth <= 0 && !checked) return standPat;
 
   if (!checked) {
     if (maximizing) {
@@ -676,7 +679,7 @@ function quiescence(
       entry.child,
       alpha,
       beta,
-      qDepth - 1,
+      Math.max(0, qDepth - 1),
       context,
       ply + 1,
     );
