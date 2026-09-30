@@ -361,6 +361,10 @@ function stateKey(state: SanguoState) {
     ])
     .sort((a, b) => String(a[0]).localeCompare(String(b[0])));
 
+  const positions = state.positions || [];
+  const repetitionContext =
+    new Set(positions).size === positions.length ? [] : positions;
+
   return JSON.stringify([
     state.turn,
     [...state.defeated].sort(),
@@ -375,7 +379,7 @@ function stateKey(state: SanguoState) {
       : null,
     state.draw || "",
     state.quietMoves || 0,
-    state.positions || [],
+    repetitionContext,
     pieces,
   ]);
 }
