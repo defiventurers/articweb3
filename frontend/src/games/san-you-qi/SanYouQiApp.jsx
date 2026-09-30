@@ -224,7 +224,7 @@ const ROLE_MOVEMENT = Object.freeze({
   elephant: "Two-point diagonal movement in its original arm; the eye must be clear.",
   horse: "Blocked Xiangqi L move. Only its first orthogonal leg is stopped by an extended-Sea crossing. The three central tips also support the paired L4-5/L6-5 Horse jumps into C20/C22/C24.",
   chariot: "Slides along one explicit line until blocked. It cannot cross the extended Sea passages.",
-  cannon: "Slides horizontally or vertically along one clear line. The first occupied point is a screen; captures only the next occupied enemy beyond exactly one screen. Fort and Mountain restrictions apply.",
+  cannon: "Slides horizontally or vertically along one clear line. The first occupied point is a screen; captures only the next occupied enemy beyond exactly one screen. A Cannon may also be pinned if moving it exposes its General under the flying-General rule.",
   soldier: "One point forward at all times. After first entering enemy territory it also gains sideways movement where a horizontal line exists.",
   fire: "One diagonal-forward step and never retreats.",
   flag: "Exactly two clear points straight forward before leaving home; once outside its original kingdom it moves any distance orthogonally like a Chariot and may not return home.",
