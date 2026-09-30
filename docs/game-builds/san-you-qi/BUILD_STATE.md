@@ -35,6 +35,7 @@ The board now uses the latest user-supplied coordinates and the revised 21-point
 - Added canonical central camp territory: Red C2-C6/C20; Green C8-C12/C22; Blue C14-C18/C24; shared gates C1 Red+Blue, C7 Red+Green, C13 Green+Blue.
 - Shared gates do not trigger promotion/Flag departure for an owning camp.
 - A crossed Flag may return to its own shared gate, but cannot continue from that gate into exclusive home territory.
+- Added all six symmetric Fire forward-diagonals across Fort seams, including Red L8-5 → Green L1-5 and Red L2-5 → Blue L9-5.
 - Added the six Fire Fort-seam diagonals so Fire can cross from L2-5/L8-5 into the neighbouring kingdom's outer L9-5/L1-5 point.
 - Updated unit tests, smoke text, rulebook copy, catalogue text and placement-tool defaults.
 
