@@ -439,23 +439,22 @@ describe("legality and turn flow", () => {
       { faction: "green", role: "soldier", node: "green:L5-3" },
       {
         faction: "blue",
-        role: "soldier",
+        role: "chariot",
         node: "green:L5-4",
-        promoted: true,
         leftHome: true,
       },
     ], "blue", ["red", "green", "blue"]);
 
-    const blueSoldier = state.pieces.find(
+    const blueBlocker = state.pieces.find(
       (piece) =>
         piece.faction === "blue" &&
-        piece.role === "soldier" &&
+        piece.role === "chariot" &&
         piece.status === "board" &&
         piece.node === "green:L5-4",
     );
 
     const uncover = getLegalActions(state).find(
-      (action) => action.pieceId === blueSoldier.id && action.to === "green:L4-4",
+      (action) => action.pieceId === blueBlocker.id && action.to === "green:L4-4",
     );
     expect(uncover).toBeTruthy();
 
