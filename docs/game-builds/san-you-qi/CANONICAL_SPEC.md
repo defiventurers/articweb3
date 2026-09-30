@@ -10,7 +10,7 @@ San You Qi (三友棋), also called Three Friends Chess.
 
 ## CURRENT RULESET
 
-`arctic-final-156-node-3.3.0`
+`arctic-final-156-node-3.3.1`
 
 This release combines the historically supported Zheng Jinde / Qing-era Three Friends Chess core with the current Arctic Dominion board reconstruction.
 
@@ -132,6 +132,20 @@ Green enemy: `C1 C2 C3 C4 C5 C6 C14 C15 C16 C17 C18 C20 C24`
 A Soldier promotes permanently on first landing in enemy territory. Promotion adds sideways movement where a horizontal movement line exists; the Soldier keeps its original one-step forward movement.
 
 Blue Soldier on C24 keeps the approved forward choices C20 and C22.
+
+## FIRE AT FORT SEAMS
+
+Fire keeps its one-step forward-diagonal movement at the three Fort seams.
+
+The six explicit cross-camp diagonals are:
+- Red L2-5 → Blue L9-5
+- Red L8-5 → Green L1-5
+- Green L2-5 → Red L9-5
+- Green L8-5 → Blue L1-5
+- Blue L2-5 → Green L9-5
+- Blue L8-5 → Red L1-5
+
+These are explicit geometry corrections for the compressed three-kingdom board. They are not retreats; each is forward relative to the Fire's original faction.
 
 ## STARTING CONFIGURATION
 
