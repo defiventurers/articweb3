@@ -389,7 +389,7 @@ const SANYOU_TOPOLOGY_DEBUG = Object.freeze({
  */
 
 const GAME_ID = "san-you-qi";
-const RULESET_VERSION = "arctic-final-156-node-3.3.1";
+const RULESET_VERSION = "arctic-final-156-node-3.3.2";
 
 const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 const FACTION_LABELS = Object.freeze({
@@ -745,26 +745,38 @@ function diagonalForwardTargets(piece, pieces) {
   return candidates.filter((target) => destinationOpenFor(piece, pieces, target));
 }
 
-// At the three Fort seams the visual diagonal does not always have a unique
-// "forward then sideways" graph decomposition. In particular, an L2-5/L8-5
-// Fire has a valid forward-diagonal directly onto the neighbouring kingdom's
-// outer L9-5/L1-5 point. The generic intersection heuristic misses that move,
-// so these six symmetric seam diagonals are explicit board geometry.
+// Around each Fort the triangular junction compresses some forward-diagonal
+// Fire moves so they cannot be reconstructed reliably from the generic
+// forward/side graph intersection. Keep those seam diagonals explicit and
+// faction-oriented so appropriated Fires still move according to their
+// original army orientation.
 const FIRE_FORT_DIAGONALS = Object.freeze({
-  [armNodeId("red", 2, 5)]: Object.freeze([armNodeId("blue", 9, 5)]),
-  [armNodeId("red", 8, 5)]: Object.freeze([armNodeId("green", 1, 5)]),
+  red: Object.freeze({
+    [armNodeId("red", 2, 5)]: Object.freeze([armNodeId("blue", 9, 5)]),
+    [armNodeId("red", 8, 5)]: Object.freeze([armNodeId("green", 1, 5)]),
+    C2: Object.freeze([armNodeId("blue", 8, 5)]),
+    C6: Object.freeze([armNodeId("green", 2, 5)]),
+  }),
 
-  [armNodeId("green", 2, 5)]: Object.freeze([armNodeId("red", 9, 5)]),
-  [armNodeId("green", 8, 5)]: Object.freeze([armNodeId("blue", 1, 5)]),
+  green: Object.freeze({
+    [armNodeId("green", 2, 5)]: Object.freeze([armNodeId("red", 9, 5)]),
+    [armNodeId("green", 8, 5)]: Object.freeze([armNodeId("blue", 1, 5)]),
+    C8: Object.freeze([armNodeId("red", 8, 5)]),
+    C12: Object.freeze([armNodeId("blue", 2, 5)]),
+  }),
 
-  [armNodeId("blue", 2, 5)]: Object.freeze([armNodeId("green", 9, 5)]),
-  [armNodeId("blue", 8, 5)]: Object.freeze([armNodeId("red", 1, 5)]),
+  blue: Object.freeze({
+    [armNodeId("blue", 2, 5)]: Object.freeze([armNodeId("green", 9, 5)]),
+    [armNodeId("blue", 8, 5)]: Object.freeze([armNodeId("red", 1, 5)]),
+    C14: Object.freeze([armNodeId("green", 8, 5)]),
+    C18: Object.freeze([armNodeId("red", 2, 5)]),
+  }),
 });
 
 function fireTargets(piece, pieces) {
   const out = new Set(diagonalForwardTargets(piece, pieces));
 
-  for (const target of FIRE_FORT_DIAGONALS[piece.node] || []) {
+  for (const target of FIRE_FORT_DIAGONALS[piece.faction]?.[piece.node] || []) {
     if (destinationOpenFor(piece, pieces, target)) out.add(target);
   }
 
