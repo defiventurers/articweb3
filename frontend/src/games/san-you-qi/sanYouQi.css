@@ -217,7 +217,7 @@
 
 .san-you-qi-piece-button {
   z-index: 5;
-  width: clamp(30px, 5.15%, 68px);
+  width: clamp(23px, 3.8625%, 51px);
   aspect-ratio: 1;
   margin: 0;
   padding: 0;
@@ -601,7 +601,7 @@
   }
 
   .san-you-qi-piece-button {
-    width: clamp(24px, 5.8%, 38px);
+    width: clamp(18px, 4.35%, 29px);
   }
 
   .san-you-qi-node {
@@ -986,5 +986,905 @@
 
   .san-you-qi-public-rooms button {
     grid-template-columns: 1fr;
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* Match-screen optimization — mirrors the Sanguo Qi tactical battle layout.  */
+/* -------------------------------------------------------------------------- */
+
+.san-you-qi-match {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  background: #071821;
+}
+
+.san-you-qi-match > .san-you-qi-message {
+  flex: none;
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+  padding: 7px 14px;
+}
+
+.san-you-qi-match .san-you-qi-toolbar {
+  flex: none;
+  width: 100%;
+  min-height: 64px;
+  margin: 0;
+  padding: 0 14px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  border: 0;
+  border-bottom: 1px solid #283d48;
+  border-radius: 0;
+  background: #0b202a;
+  box-shadow: none;
+  gap: 16px;
+}
+
+.san-you-qi-match .san-you-qi-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.san-you-qi-match .san-you-qi-brand > div {
+  min-width: 0;
+}
+
+.san-you-qi-match .san-you-qi-brand h1 {
+  margin: 0;
+  font: 500 22px/1 Georgia, serif;
+  letter-spacing: -0.01em;
+  color: #edf7f9;
+}
+
+.san-you-qi-match .san-you-qi-brand span {
+  display: block;
+  margin-top: 4px;
+  color: #91abb8;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+.san-you-qi-match button,
+.san-you-qi-match summary {
+  font: inherit;
+}
+
+.san-you-qi-icon-button,
+.san-you-qi-match .san-you-qi-toolbar-button,
+.san-you-qi-table-menu summary,
+.san-you-qi-table-menu > div button,
+.san-you-qi-mobile-drawer > header button,
+.san-you-qi-guide-dialog > header button,
+.san-you-qi-phone-players button {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #bed0d8;
+  cursor: pointer;
+}
+
+.san-you-qi-icon-button,
+.san-you-qi-match .san-you-qi-toolbar-button,
+.san-you-qi-table-menu summary {
+  min-height: 38px;
+  padding: 7px 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.san-you-qi-icon-button:hover,
+.san-you-qi-match .san-you-qi-toolbar-button:hover:not(:disabled),
+.san-you-qi-table-menu summary:hover,
+.san-you-qi-table-menu > div button:hover {
+  border-color: #45606c;
+  background: #1c3540;
+  color: #ecf6f8;
+}
+
+.san-you-qi-icon-button:focus-visible,
+.san-you-qi-match .san-you-qi-toolbar-button:focus-visible,
+.san-you-qi-table-menu summary:focus-visible,
+.san-you-qi-table-menu > div button:focus-visible,
+.san-you-qi-phone-players button:focus-visible {
+  outline: 2px solid #c7e7f2;
+  outline-offset: 2px;
+}
+
+.san-you-qi-match .san-you-qi-turn-chip {
+  justify-self: center;
+  min-height: 42px;
+  max-width: 700px;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: 7px;
+  border: 1px solid #344b56;
+  border-left: 3px solid var(--turn-color);
+  background: #102731;
+  box-shadow: none;
+}
+
+.san-you-qi-match .san-you-qi-turn-chip > small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #9fb5c0;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.san-you-qi-match .san-you-qi-turn-chip > small b {
+  color: #e1edef;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.san-you-qi-match .san-you-qi-turn-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--turn-color);
+  box-shadow: none;
+}
+
+.san-you-qi-match .san-you-qi-turn-chip > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.san-you-qi-match .san-you-qi-turn-chip strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #eaf5f5;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.san-you-qi-match .san-you-qi-turn-chip em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #98b0bc;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.san-you-qi-match .san-you-qi-toolbar-actions {
+  justify-self: end;
+  align-items: center;
+  gap: 3px;
+}
+
+.san-you-qi-match .san-you-qi-toolbar-button {
+  min-width: 38px;
+}
+
+.san-you-qi-table-menu {
+  position: relative;
+}
+
+.san-you-qi-table-menu summary {
+  list-style: none;
+}
+
+.san-you-qi-table-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.san-you-qi-table-menu > div {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 60;
+  width: 220px;
+  padding: 9px;
+  display: grid;
+  gap: 5px;
+  border: 1px solid #39525f;
+  border-radius: 9px;
+  background: #112b36;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+}
+
+.san-you-qi-table-menu > div button {
+  min-height: 38px;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  text-align: left;
+}
+
+.san-you-qi-table-menu > div button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.san-you-qi-table-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  overflow: hidden;
+  background: #071821;
+}
+
+.san-you-qi-focus .san-you-qi-table-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.san-you-qi-battlefield-column {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 9px 0;
+}
+
+.san-you-qi-battlefield-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.san-you-qi-match .san-you-qi-board-wrapper {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 2px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.san-you-qi-match .san-you-qi-board-stage {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  aspect-ratio: 1;
+  border-radius: 0;
+  background: transparent;
+}
+
+.san-you-qi-match .san-you-qi-board-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.san-you-qi-board-footer {
+  flex: none;
+  min-height: 42px;
+  padding: 4px 5px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid #1c3541;
+  color: #abc3ce;
+}
+
+.san-you-qi-selection-feedback {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #dbe8ec;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.san-you-qi-selection-feedback > img {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  object-fit: contain;
+}
+
+.san-you-qi-selection-feedback > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.san-you-qi-crosshair {
+  width: 25px;
+  height: 25px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: #7fa0ad;
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.san-you-qi-last-move-copy {
+  flex: none;
+  max-width: 38%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8daab9;
+  font-size: 11px;
+}
+
+.san-you-qi-match-panel {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 18px 15px 14px;
+  border-left: 1px solid #283d48;
+  background: #0b202a;
+  color: #e3eef2;
+  scrollbar-width: thin;
+  scrollbar-color: #456573 #0b202a;
+}
+
+.san-you-qi-panel-heading {
+  display: grid;
+  gap: 5px;
+}
+
+.san-you-qi-panel-heading > span {
+  color: #e0ebef;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.san-you-qi-panel-heading small {
+  color: #94acb8;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.san-you-qi-kingdom-order {
+  padding: 13px 0 10px;
+  color: #91acb9;
+  font-size: 11px;
+}
+
+.san-you-qi-player-list {
+  display: grid;
+  gap: 6px;
+}
+
+.san-you-qi-player-card {
+  margin: 0;
+  border: 1px solid #293f4a;
+  border-left: 2px solid #3c5260;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.san-you-qi-player-card.active {
+  border-color: #39505b;
+  border-left-color: var(--seat-color);
+  background: color-mix(in srgb, var(--seat-color) 7%, #0b202a);
+}
+
+.san-you-qi-player-card.defeated {
+  opacity: 0.55;
+}
+
+.san-you-qi-player-card > summary {
+  min-height: 56px;
+  padding: 9px;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.san-you-qi-player-card > summary::-webkit-details-marker {
+  display: none;
+}
+
+.san-you-qi-player-card summary > div {
+  min-width: 0;
+}
+
+.san-you-qi-player-card b,
+.san-you-qi-player-card summary span,
+.san-you-qi-player-detail span,
+.san-you-qi-player-detail small {
+  display: block;
+}
+
+.san-you-qi-player-card b {
+  color: #e5eff3;
+  font-size: 11px;
+}
+
+.san-you-qi-player-card summary div > span {
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #9fb9c7;
+  font-size: 10px;
+}
+
+.san-you-qi-player-card summary > strong {
+  color: #deeaf0;
+  font: 500 19px/1 Georgia, serif;
+}
+
+.san-you-qi-player-card summary > svg {
+  color: #8aa5b3;
+  transition: transform 120ms ease;
+}
+
+.san-you-qi-player-card[open] summary > svg {
+  transform: rotate(180deg);
+}
+
+.san-you-qi-player-detail {
+  padding: 8px 11px 11px 29px;
+  border-top: 1px solid #2c444f;
+}
+
+.san-you-qi-player-detail span {
+  color: #c9d9df;
+  font-size: 10px;
+}
+
+.san-you-qi-player-detail small {
+  margin-top: 3px;
+  color: #89a4b1;
+  font-size: 9px;
+}
+
+.san-you-qi-piece-inspector,
+.san-you-qi-position-summary {
+  margin-top: 16px;
+  padding: 16px 0;
+  border-top: 1px solid #2b404a;
+}
+
+.san-you-qi-position-summary {
+  border-bottom: 1px solid #2b404a;
+}
+
+.san-you-qi-piece-inspector h2,
+.san-you-qi-position-summary h2 {
+  margin: 0 0 10px;
+  color: #e7f1f4;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.san-you-qi-inspector-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.san-you-qi-inspector-title img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.san-you-qi-inspector-title strong {
+  display: block;
+  color: #f4fbfc;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.san-you-qi-inspector-title span {
+  color: #9fb6c1;
+  font-size: 11px;
+}
+
+.san-you-qi-piece-inspector p,
+.san-you-qi-position-summary p {
+  margin: 9px 0;
+  color: #adc3ce;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.san-you-qi-piece-inspector small,
+.san-you-qi-position-summary small {
+  color: #94adba;
+  font-size: 10px;
+}
+
+.san-you-qi-last-action {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.san-you-qi-last-action span {
+  color: #839eab;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.san-you-qi-last-action b {
+  color: #dbe9ed;
+  font-size: 11px;
+}
+
+.san-you-qi-panel-legend {
+  padding-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  color: #9cb5c0;
+  font-size: 10px;
+}
+
+.san-you-qi-panel-legend span:first-child {
+  color: #c5ebd9;
+}
+
+.san-you-qi-panel-legend span:nth-child(2) {
+  color: #f5d08b;
+}
+
+.san-you-qi-phone-players {
+  flex: none;
+  display: flex;
+  gap: 5px;
+  padding: 2px 4px max(6px, env(safe-area-inset-bottom));
+}
+
+.san-you-qi-phone-players button {
+  flex: 1;
+  min-height: 44px;
+  padding: 5px 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #2c4451;
+  background: #102731;
+}
+
+.san-you-qi-phone-players button.active {
+  border-color: color-mix(in srgb, var(--seat-color) 65%, #2c4451);
+  background: color-mix(in srgb, var(--seat-color) 7%, #102731);
+  box-shadow: inset 0 -2px var(--seat-color);
+}
+
+.san-you-qi-phone-players span {
+  color: #a8bec8;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.san-you-qi-phone-players strong {
+  color: #e3eff3;
+  font-size: 14px;
+}
+
+.san-you-qi-mobile-backdrop,
+.san-you-qi-guide-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 12, 20, 0.8);
+}
+
+.san-you-qi-mobile-backdrop {
+  display: flex;
+  align-items: flex-end;
+}
+
+.san-you-qi-mobile-drawer {
+  width: 100%;
+  max-height: 82dvh;
+  overflow: auto;
+  border: 1px solid #4b6c7a;
+  border-radius: 18px 18px 0 0;
+  background: #0a2734;
+  color: #e7f6fa;
+}
+
+.san-you-qi-mobile-drawer > header,
+.san-you-qi-guide-dialog > header {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #345665;
+  background: #0c2938;
+}
+
+.san-you-qi-mobile-drawer > header h2,
+.san-you-qi-guide-dialog > header h2 {
+  margin: 0;
+  color: #ecf7f8;
+  font: 500 20px Georgia, serif;
+}
+
+.san-you-qi-mobile-drawer > header button,
+.san-you-qi-guide-dialog > header button {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+}
+
+.san-you-qi-mobile-drawer .san-you-qi-match-panel {
+  border-left: 0;
+  overflow: visible;
+}
+
+.san-you-qi-guide-backdrop {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.san-you-qi-guide-dialog {
+  width: min(860px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+  border: 1px solid #557989;
+  border-radius: 13px;
+  background: #0b2938;
+  color: #e5f6f9;
+}
+
+.san-you-qi-guide-dialog > header small {
+  display: block;
+  margin-bottom: 3px;
+  color: #86a9b7;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.san-you-qi-guide-scroll {
+  max-height: calc(100dvh - 100px);
+  overflow: auto;
+  padding: 14px;
+}
+
+.san-you-qi-guide-scroll .san-you-qi-rulebook {
+  border: 0;
+  box-shadow: none;
+}
+
+body:has(.san-you-qi-match) .network-badge {
+  display: none !important;
+}
+
+@media (max-width: 1200px) and (min-width: 901px) {
+  .san-you-qi-table-body {
+    grid-template-columns: minmax(0, 1fr) 248px;
+  }
+
+  .san-you-qi-match .san-you-qi-toolbar {
+    gap: 9px;
+    padding-inline: 9px;
+  }
+
+  .san-you-qi-match .san-you-qi-brand h1 {
+    font-size: 19px;
+  }
+
+  .san-you-qi-match .san-you-qi-turn-chip {
+    padding-inline: 9px;
+  }
+
+  .san-you-qi-match .san-you-qi-turn-chip em {
+    max-width: 240px;
+  }
+}
+
+@media (max-width: 900px) {
+  .san-you-qi-match {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .san-you-qi-match .san-you-qi-toolbar {
+    min-height: auto;
+    padding: max(6px, env(safe-area-inset-top)) 8px 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 8px;
+    justify-content: space-between;
+  }
+
+  .san-you-qi-match .san-you-qi-brand h1 {
+    font-size: 18px;
+  }
+
+  .san-you-qi-match .san-you-qi-brand span {
+    display: none;
+  }
+
+  .san-you-qi-match .san-you-qi-turn-chip {
+    order: 3;
+    width: 100%;
+    max-width: none;
+    justify-self: stretch;
+    min-height: 38px;
+    padding: 6px 9px;
+  }
+
+  .san-you-qi-match .san-you-qi-turn-chip strong {
+    font-size: 12px;
+  }
+
+  .san-you-qi-match .san-you-qi-turn-chip em {
+    font-size: 9px;
+  }
+
+  .san-you-qi-match .san-you-qi-toolbar-button {
+    width: 40px;
+    height: 42px;
+    min-width: 40px;
+    min-height: 42px;
+    padding: 6px;
+  }
+
+  .san-you-qi-match .san-you-qi-toolbar-button > span {
+    display: none;
+  }
+
+  .san-you-qi-table-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .san-you-qi-battlefield-column {
+    flex: 1;
+    min-height: 0;
+    padding: 2px max(5px, env(safe-area-inset-right)) 0 max(5px, env(safe-area-inset-left));
+  }
+
+  .san-you-qi-battlefield-stage {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .san-you-qi-board-footer {
+    min-height: 38px;
+    padding: 3px 5px;
+    gap: 4px;
+  }
+
+  .san-you-qi-selection-feedback {
+    flex: 1;
+    min-width: 0;
+    font-size: 11px;
+  }
+
+  .san-you-qi-last-move-copy {
+    display: none;
+  }
+
+  .san-you-qi-mobile-drawer .san-you-qi-match-panel {
+    padding: 17px 16px 20px;
+  }
+}
+
+@media (max-width: 500px) {
+  .san-you-qi-match .san-you-qi-toolbar {
+    gap: 4px;
+    padding-inline: 5px;
+  }
+
+  .san-you-qi-match .san-you-qi-brand h1 {
+    font-size: 16px;
+  }
+
+  .san-you-qi-icon-button {
+    min-width: 36px;
+    width: 36px;
+  }
+
+  .san-you-qi-match .san-you-qi-toolbar-actions {
+    gap: 0;
+  }
+
+  .san-you-qi-match .san-you-qi-toolbar-button,
+  .san-you-qi-table-menu summary {
+    width: 38px;
+    min-width: 38px;
+  }
+
+  .san-you-qi-match .san-you-qi-turn-chip > small {
+    display: none;
+  }
+
+  .san-you-qi-match .san-you-qi-turn-dot {
+    display: none;
+  }
+
+  .san-you-qi-match .san-you-qi-board-stage {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+  }
+
+  .san-you-qi-selection-feedback > img {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 520px) {
+  .san-you-qi-match .san-you-qi-toolbar {
+    flex-wrap: nowrap;
+    padding: 3px 7px;
+  }
+
+  .san-you-qi-match .san-you-qi-turn-chip {
+    order: 0;
+    flex: 1;
+    width: auto;
+  }
+
+  .san-you-qi-match .san-you-qi-turn-chip em,
+  .san-you-qi-match .san-you-qi-turn-chip > small {
+    display: none;
+  }
+
+  .san-you-qi-phone-players {
+    position: absolute;
+    left: 7px;
+    bottom: 44px;
+    width: 96px;
+    display: grid;
+    z-index: 7;
+    padding: 0;
+  }
+
+  .san-you-qi-phone-players button {
+    min-height: 34px;
+    padding: 3px;
+  }
+}
+
+@media (pointer: coarse) {
+  .san-you-qi-match .san-you-qi-toolbar-button,
+  .san-you-qi-icon-button,
+  .san-you-qi-table-menu summary,
+  .san-you-qi-phone-players button {
+    min-width: 44px;
+    min-height: 44px;
   }
 }
