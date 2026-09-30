@@ -34,7 +34,7 @@ import {
 } from "./topology.js";
 
 export const GAME_ID = "san-you-qi";
-export const RULESET_VERSION = "arctic-final-156-node-3.3.0";
+export const RULESET_VERSION = "arctic-final-156-node-3.3.1";
 
 export const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 export const FACTION_LABELS = Object.freeze({
@@ -390,8 +390,30 @@ function diagonalForwardTargets(piece, pieces) {
   return candidates.filter((target) => destinationOpenFor(piece, pieces, target));
 }
 
+// At the three Fort seams the visual diagonal does not always have a unique
+// "forward then sideways" graph decomposition. In particular, an L2-5/L8-5
+// Fire has a valid forward-diagonal directly onto the neighbouring kingdom's
+// outer L9-5/L1-5 point. The generic intersection heuristic misses that move,
+// so these six symmetric seam diagonals are explicit board geometry.
+const FIRE_FORT_DIAGONALS = Object.freeze({
+  [armNodeId("red", 2, 5)]: Object.freeze([armNodeId("blue", 9, 5)]),
+  [armNodeId("red", 8, 5)]: Object.freeze([armNodeId("green", 1, 5)]),
+
+  [armNodeId("green", 2, 5)]: Object.freeze([armNodeId("red", 9, 5)]),
+  [armNodeId("green", 8, 5)]: Object.freeze([armNodeId("blue", 1, 5)]),
+
+  [armNodeId("blue", 2, 5)]: Object.freeze([armNodeId("green", 9, 5)]),
+  [armNodeId("blue", 8, 5)]: Object.freeze([armNodeId("red", 1, 5)]),
+});
+
 function fireTargets(piece, pieces) {
-  return diagonalForwardTargets(piece, pieces);
+  const out = new Set(diagonalForwardTargets(piece, pieces));
+
+  for (const target of FIRE_FORT_DIAGONALS[piece.node] || []) {
+    if (destinationOpenFor(piece, pieces, target)) out.add(target);
+  }
+
+  return [...out];
 }
 
 function soldierTargets(piece, pieces) {
@@ -908,6 +930,7 @@ export const __testing = Object.freeze({
   isOwnTerritory,
   isSharedTerritory,
   territoryCamps,
+  FIRE_FORT_DIAGONALS,
   isCenterNode,
   isArmNode,
 });
