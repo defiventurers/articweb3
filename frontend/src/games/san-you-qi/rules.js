@@ -21,6 +21,9 @@ import {
   isCenterNode,
   isEnemyTerritory,
   isOwnArm,
+  isOwnTerritory,
+  isSharedTerritory,
+  territoryCamps,
   lineRaysFrom,
   linesThrough,
   nodeLabel,
@@ -31,7 +34,7 @@ import {
 } from "./topology.js";
 
 export const GAME_ID = "san-you-qi";
-export const RULESET_VERSION = "arctic-final-156-node-3.2.1";
+export const RULESET_VERSION = "arctic-final-156-node-3.3.0";
 
 export const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 export const FACTION_LABELS = Object.freeze({
@@ -125,7 +128,7 @@ export function insideSector(node) {
 }
 
 export function isHome(node, faction) {
-  return isOwnArm(faction, node);
+  return isOwnTerritory(faction, node);
 }
 
 export function isRiverEndpoint(node) {
@@ -133,8 +136,10 @@ export function isRiverEndpoint(node) {
 }
 
 export function territoryOf(node, faction) {
+  if (isOwnTerritory(faction, node)) {
+    return isSharedTerritory(node) ? "shared-own" : "own";
+  }
   if (isEnemyTerritory(faction, node)) return "enemy";
-  if (isOwnArm(faction, node)) return "own";
   return "neutral";
 }
 
@@ -423,21 +428,27 @@ function twoStepForwardTargets(piece, pieces) {
 function foreignFlagTargets(piece, pieces) {
   const out = new Set();
 
-  // Zheng Jinde's Flag becomes Chariot-like after leaving its own territory:
-  // any distance orthogonally on one approved line, without re-entering the
-  // original kingdom. It still cannot jump occupied points.
+  // After crossing into enemy territory the Flag becomes Chariot-like, but it
+  // may not re-enter its own exclusive territory. The three shared Fort gates
+  // are a deliberate exception: a Flag may return to C1/C7/C13 when that gate
+  // belongs to its original camp, but the gate is a stopping boundary and the
+  // Flag may not continue beyond it into exclusive home territory.
   for (const ray of lineRaysFrom(piece.node)) {
     for (const node of ray.nodes) {
-      if (isOwnArm(piece.faction, node)) break;
+      const ownTerritory = isOwnTerritory(piece.faction, node);
+      const sharedHomeGate = ownTerritory && isSharedTerritory(node);
+
+      if (ownTerritory && !sharedHomeGate) break;
 
       const hit = pieceAtUnchecked(pieces, node);
       if (!hit) {
         out.add(node);
-        continue;
+      } else {
+        if (hit.owner !== piece.owner) out.add(node);
+        break;
       }
 
-      if (hit.owner !== piece.owner) out.add(node);
-      break;
+      if (sharedHomeGate) break;
     }
   }
 
@@ -526,7 +537,13 @@ function previewMove(state, piece, target) {
 
   moving.node = target;
   moving.hasMoved = true;
-  if (!isOwnArm(moving.faction, target)) moving.leftHome = true;
+
+  // Crossing a central point owned by the piece's own camp does not count as
+  // leaving home. C1/C7/C13 likewise remain home for their two owning camps.
+  // The state becomes permanent only after the piece actually enters enemy
+  // territory.
+  if (isEnemyTerritory(moving.faction, target)) moving.leftHome = true;
+
   if (moving.role === "soldier" && isEnemyTerritory(moving.faction, target)) {
     moving.promoted = true;
   }
@@ -888,6 +905,9 @@ export const __testing = Object.freeze({
   pathEdgeAllowedForRole,
   checkingFactions,
   isEnemyTerritory,
+  isOwnTerritory,
+  isSharedTerritory,
+  territoryCamps,
   isCenterNode,
   isArmNode,
 });
