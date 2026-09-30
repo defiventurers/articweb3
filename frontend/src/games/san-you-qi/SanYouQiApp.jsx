@@ -101,16 +101,93 @@ function Board({
   const targetSet = useMemo(() => new Set(targetIds), [targetIds]);
   const selectedPiece = state.pieces.find((piece) => piece.id === selectedPieceId) || null;
   const audit = new URLSearchParams(window.location.search).has("audit");
+  const boardFrameRef = useRef(null);
+  const boardImageRef = useRef(null);
+  const [boardBox, setBoardBox] = useState(null);
+
+  useEffect(() => {
+    const frame = boardFrameRef.current;
+    const image = boardImageRef.current;
+    if (!frame || !image) return undefined;
+
+    let frameId = 0;
+
+    const fitBoardToFrame = () => {
+      const naturalWidth = image.naturalWidth;
+      const naturalHeight = image.naturalHeight;
+      if (!naturalWidth || !naturalHeight) return;
+
+      const styles = window.getComputedStyle(frame);
+      const horizontalPadding =
+        Number.parseFloat(styles.paddingLeft || "0") +
+        Number.parseFloat(styles.paddingRight || "0");
+      const verticalPadding =
+        Number.parseFloat(styles.paddingTop || "0") +
+        Number.parseFloat(styles.paddingBottom || "0");
+
+      const availableWidth = Math.max(0, frame.clientWidth - horizontalPadding);
+      const availableHeight = Math.max(0, frame.clientHeight - verticalPadding);
+      if (!availableWidth || !availableHeight) return;
+
+      const ratio = naturalWidth / naturalHeight;
+      let width = availableWidth;
+      let height = width / ratio;
+
+      if (height > availableHeight) {
+        height = availableHeight;
+        width = height * ratio;
+      }
+
+      setBoardBox((previous) => {
+        if (
+          previous &&
+          Math.abs(previous.width - width) < 0.25 &&
+          Math.abs(previous.height - height) < 0.25
+        ) {
+          return previous;
+        }
+        return { width, height, ratio };
+      });
+    };
+
+    const scheduleFit = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(fitBoardToFrame);
+    };
+
+    const observer = new ResizeObserver(scheduleFit);
+    observer.observe(frame);
+    image.addEventListener("load", scheduleFit);
+    window.addEventListener("resize", scheduleFit);
+    window.visualViewport?.addEventListener("resize", scheduleFit);
+
+    if (image.complete) scheduleFit();
+
+    return () => {
+      observer.disconnect();
+      image.removeEventListener("load", scheduleFit);
+      window.removeEventListener("resize", scheduleFit);
+      window.visualViewport?.removeEventListener("resize", scheduleFit);
+      window.cancelAnimationFrame(frameId);
+    };
+  }, []);
 
   return (
-    <div className="san-you-qi-board-wrapper">
+    <div ref={boardFrameRef} className="san-you-qi-board-wrapper">
       <div
         className="san-you-qi-board-stage san-you-qi-board-svg"
+        data-board-fitted={boardBox ? "true" : "false"}
+        style={boardBox ? {
+          width: `${boardBox.width}px`,
+          height: `${boardBox.height}px`,
+          aspectRatio: String(boardBox.ratio),
+        } : undefined}
         onClick={(event) => {
           if (event.target === event.currentTarget) onClearSelection();
         }}
       >
         <img
+          ref={boardImageRef}
           className="san-you-qi-board-image"
           src={BOARD_IMAGE}
           alt="Arctic Dominion San You Qi board"
