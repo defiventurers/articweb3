@@ -486,6 +486,31 @@ describe("terrain and special movement", () => {
     expect(getPseudoTargets(chariotState, chariot.id)).toContain("blue:L9-5");
   });
 
+  it("lets Fire cross all six Fort seams on the forward diagonal", () => {
+    const cases = [
+      ["red", "red:L2-5", "blue:L9-5"],
+      ["red", "red:L8-5", "green:L1-5"],
+      ["green", "green:L2-5", "red:L9-5"],
+      ["green", "green:L8-5", "blue:L1-5"],
+      ["blue", "blue:L2-5", "green:L9-5"],
+      ["blue", "blue:L8-5", "red:L1-5"],
+    ];
+
+    for (const [faction, node, target] of cases) {
+      const state = sparseState([
+        { faction, role: "fire", node },
+      ], faction, [faction]);
+      const fire = state.pieces.find(
+        (piece) =>
+          piece.faction === faction &&
+          piece.role === "fire" &&
+          piece.status === "board",
+      );
+
+      expect(getPseudoTargets(state, fire.id)).toContain(target);
+    }
+  });
+
   it("Fire advances diagonally and Flag moves exactly two forward points before leaving home", () => {
     const fireState = sparseState([
       { faction: "red", role: "fire", node: "red:L5-3" },
