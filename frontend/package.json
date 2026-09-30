@@ -26,7 +26,9 @@
     "check:sanguo-engine": "node scripts/build-sanguo-engine.mjs --check",
     "build:sanyou-engine": "node scripts/build-sanyou-engine.mjs",
     "check:sanyou-engine": "node scripts/build-sanyou-engine.mjs --check",
-    "test:sanyou": "vitest run --config vitest.sanyou.config.ts"
+    "test:sanyou": "vitest run --config vitest.sanyou.config.ts",
+    "tune:sanyou-bot": "node scripts/tune-sanyou-bot.mjs",
+    "benchmark:sanyou-bot": "SANYOU_TUNE_GENERATIONS=1 SANYOU_TUNE_CANDIDATES=1 SANYOU_TUNE_GAMES=1 node scripts/tune-sanyou-bot.mjs"
   },
   "dependencies": {
     "@abstract-foundation/agw-client": "1.12.3",
