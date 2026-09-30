@@ -51,6 +51,24 @@ test("San You Qi starts a three-human local match on the finalized Arctic board"
   );
 });
 
+test("San You Qi battle screen uses the optimized tactical layout", async ({ page }) => {
+  await startLocal(page, 3);
+
+  await expect(page.locator(".san-you-qi-match")).toBeVisible();
+  await expect(page.locator(".san-you-qi-table-body")).toBeVisible();
+  await expect(page.locator(".san-you-qi-match-panel")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Guide" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Guide" }).click();
+  await expect(page.getByRole("dialog", { name: "San You Qi" })).toBeVisible();
+  await page.getByRole("button", { name: "Close guide" }).click();
+
+  await page.getByRole("button", { name: "Focus view" }).click();
+  await expect(page.locator(".san-you-qi-match-panel")).toHaveCount(0);
+  await page.getByRole("button", { name: "Show match panel" }).click();
+  await expect(page.locator(".san-you-qi-match-panel")).toBeVisible();
+});
+
 test("San You Qi local three-human mode advances Red to Green", async ({ page }) => {
   await startLocal(page, 3);
 
