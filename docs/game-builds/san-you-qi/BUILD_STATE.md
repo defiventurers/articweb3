@@ -4,7 +4,7 @@
 
 Current ruleset:
 
-`arctic-final-156-node-3.1.0`
+`arctic-final-156-node-3.2.0`
 
 The board now uses the latest user-supplied coordinates and the revised 21-point central topology.
 
@@ -30,6 +30,8 @@ The board now uses the latest user-supplied coordinates and the revised 21-point
 - Corrected Flag after leaving home to Chariot-like unlimited orthogonal movement with no return to its original kingdom.
 - Added check interruption: a checked kingdom responds immediately, then the interrupted normal turn resumes.
 - Third-party discovered mate is credited to the faction whose piece actually gives the check, not automatically to the player whose move uncovered it.
+- Added the six compressed central Horse jumps: Red L4-5/L6-5 ↔ C20; Green L4-5/L6-5 ↔ C22; Blue L4-5/L6-5 ↔ C24.
+- Removed cross-kingdom flying-General projections through the central continuation graph; these were falsely pinning Cannons and hiding otherwise legal sideways/branch moves.
 - Updated unit tests, smoke text, rulebook copy, catalogue text and placement-tool defaults.
 
 ## Terrain checkpoint
