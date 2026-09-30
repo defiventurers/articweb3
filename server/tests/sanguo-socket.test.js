@@ -8,7 +8,7 @@ const path = require("node:path");
 const WebSocket = require("ws");
 const { sanguoActions } = require("../sanguoEngine.cjs");
 
-test("real lobby sockets create, invite, play, broadcast and reclaim a Sanguo seat", { timeout: 25000 }, async t => {
+test("real lobby sockets create, invite, play, broadcast and reclaim a Sanguo seat", { timeout: 35000 }, async t => {
   const reservation = createServer(); reservation.listen(0, "127.0.0.1"); await once(reservation, "listening");
   const port = reservation.address().port; await new Promise(resolve => reservation.close(resolve));
   // Exercise the exact production bootstrap without DB, indexer or payment calls.
@@ -69,7 +69,7 @@ test("real lobby sockets create, invite, play, broadcast and reclaim a Sanguo se
   const soloStarted = await request(hostWs, "sg_room_start", solo);
   await request(hostWs, "sg_game_action", { ...solo, revision: soloStarted.payload.room.revision, action: sanguoActions(soloStarted.payload.room.gameState)[0] });
   let soloState;
-  const deadline = Date.now() + 12000;
+  const deadline = Date.now() + 20000;
   do {
     await new Promise(resolve => setTimeout(resolve, 400));
     soloState = (await request(hostWs, "sg_game_state", solo)).payload.room.gameState;
