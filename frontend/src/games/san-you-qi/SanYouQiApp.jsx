@@ -304,7 +304,7 @@ const ROLE_MOVEMENT = Object.freeze({
   cannon: "Slides horizontally or vertically along one clear line. The first occupied point is a screen; captures only the next occupied enemy beyond exactly one screen. A Cannon may also be pinned if moving it exposes its General under the flying-General rule.",
   soldier: "One point forward at all times. After first entering enemy territory it also gains sideways movement where a horizontal line exists.",
   fire: "One diagonal-forward step and never retreats.",
-  flag: "Exactly two clear points straight forward before leaving home; once outside its original kingdom it moves any distance orthogonally like a Chariot and may not return home.",
+  flag: "Exactly two clear points straight forward while still in its own territory. After entering enemy territory it moves any distance orthogonally like a Chariot and may not re-enter exclusive home territory; its own shared Fort gates remain legal return points.",
 });
 
 function MatchPanel({
@@ -485,12 +485,13 @@ function Rulebook({ state, selectedPiece, selectedTargets, seatLabels = {}, noti
             <li>Mountain crossings C2↔C18, C6↔C8 and C14↔C12 block Cannon.</li>
             <li>At Forts, Cannon may stop on C1/C7/C13 from its own side but may not continue through into the opposite kingdom.</li>
             <li>C20, C22 and C24 are legal central stopping points linked by continuation routes, not horizontal H-lines.</li>
+            <li><strong>Camp territory:</strong> Red owns C2–C6 + C20; Green owns C8–C12 + C22; Blue owns C14–C18 + C24. C1 is Red/Blue, C7 is Red/Green and C13 is Green/Blue. A shared gate is home for either owning camp and does not trigger promotion.</li>
           </ul>
 
           <h3>SPECIAL UNITS</h3>
           <ul>
             <li><strong>Fire:</strong> one diagonal step forward; never retreats.</li>
-            <li><strong>Flag:</strong> exactly two clear forward steps before leaving home; after leaving, it moves any distance orthogonally like a Chariot and cannot return to its original kingdom.</li>
+            <li><strong>Flag:</strong> exactly two clear forward steps while still in its own camp territory. After entering enemy territory it moves any distance orthogonally like a Chariot. It cannot re-enter exclusive home territory, but may return to C1/C7/C13 when that shared gate belongs to its original camp.</li>
             <li><strong>Soldier:</strong> always keeps its one-step forward move. On first entry into enemy territory it promotes and additionally gains sideways movement.</li>
           </ul>
         </div>
