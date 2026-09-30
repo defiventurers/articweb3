@@ -21,7 +21,7 @@ function stripExports(source) {
 
 const topology = stripExports(fs.readFileSync(path.join(sourceDir, "topology.js"), "utf8"));
 const rules = stripExports(stripImports(fs.readFileSync(path.join(sourceDir, "rules.js"), "utf8")));
-const bot = stripExports(stripImports(fs.readFileSync(path.join(sourceDir, "bot.js"), "utf8"));
+const bot = stripExports(stripImports(fs.readFileSync(path.join(sourceDir, "bot.js"), "utf8")));
 
 const output = `// GENERATED FILE. Do not edit directly.
 // Source: frontend/src/games/san-you-qi/{topology.js,rules.js,bot.js}
