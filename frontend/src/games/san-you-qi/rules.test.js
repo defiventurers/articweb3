@@ -711,11 +711,12 @@ describe("legality and turn flow", () => {
         .map((action) => action.to),
     );
 
-    // In this exact position those moves are illegal because moving the Cannon
-    // off RB-5 exposes Red's General to Blue's General.
+    // Sideways moves and the Green branch leave the Red-Blue flying-General
+    // shield and are illegal. C24 itself remains on the RB-5 continuation, so
+    // the Cannon may move there while still shielding Red's General.
     expect(legal).not.toContain("blue:L4-4");
     expect(legal).not.toContain("blue:L6-4");
-    expect(legal).not.toContain("C24");
+    expect(legal).toContain("C24");
     expect(legal).not.toContain("C22");
     expect(legal).not.toContain("C10");
     expect(legal).not.toContain("green:L5-5");
