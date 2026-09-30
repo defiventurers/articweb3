@@ -327,7 +327,7 @@ const SANYOU_TOPOLOGY_DEBUG = Object.freeze({
  */
 
 const GAME_ID = "san-you-qi";
-const RULESET_VERSION = "arctic-final-156-node-3.2.0";
+const RULESET_VERSION = "arctic-final-156-node-3.2.1";
 
 const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 const FACTION_LABELS = Object.freeze({
@@ -529,12 +529,19 @@ function generalTargets(piece, pieces) {
     if (destinationOpenFor(piece, pieces, target)) out.push(target);
   }
 
-  // Do not project Xiangqi's two-player "flying General" rule through the
-  // three-kingdom continuation graph. On this board that created artificial
-  // pins across the central Sea (for example a Red Cannon on Blue L5-4 could
-  // not leave RB-5 because the Red and Blue Generals were treated as facing
-  // through the entire multi-kingdom route). General attacks are therefore
-  // limited to the General's actual palace move geometry.
+  // Flying-General attack geometry. On any approved straight continuation
+  // line, two opposing Generals may not face each other with no intervening
+  // piece. A pinned blocker therefore cannot legally leave that line.
+  for (const ray of lineRaysFrom(piece.node)) {
+    if (ray.kind === "horizontal") continue;
+    for (const node of ray.nodes) {
+      const hit = pieceAtUnchecked(pieces, node);
+      if (!hit) continue;
+      if (hit.role === "general" && hit.owner !== piece.owner) out.push(node);
+      break;
+    }
+  }
+
   return dedupeNodes(out);
 }
 
