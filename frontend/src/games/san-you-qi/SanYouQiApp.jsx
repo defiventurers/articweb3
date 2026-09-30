@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Bot, Copy, Globe2, Users } from "lucide-react";
+import { ArrowLeft, BookOpen, Bot, ChevronDown, Copy, Globe2, Maximize, Minimize, MoreHorizontal, PanelRightClose, PanelRightOpen, RotateCcw, Undo2, Users, X } from "lucide-react";
 import {
   FACTION_COLORS,
   FACTION_LABELS,
@@ -218,6 +218,127 @@ function Board({
   );
 }
 
+const ROLE_MOVEMENT = Object.freeze({
+  general: "One orthogonal point inside the original palace.",
+  advisor: "One palace-diagonal step.",
+  elephant: "Two-point diagonal movement in its original arm; the eye must be clear.",
+  horse: "Blocked Xiangqi L move. It cannot use the extended Sea crossing as its first orthogonal step.",
+  chariot: "Slides along one explicit line until blocked. It cannot cross the extended Sea passages.",
+  cannon: "Slides along one explicit line; captures beyond exactly one screen. Fort and Mountain restrictions apply.",
+  soldier: "One point forward. After first entering enemy territory it also gains sideways movement where a horizontal line exists.",
+  fire: "One diagonal-forward step and never retreats.",
+  flag: "Two clear forward points before leaving home; then exactly two clear orthogonal points and no return home.",
+});
+
+function MatchPanel({
+  state,
+  selectedPiece,
+  selectedTargets,
+  seatLabels = {},
+  notice = "",
+  online = false,
+  roomCode = "",
+  connectionStatus = "",
+}) {
+  const active = state.turn;
+  const last = state.lastAction;
+  return (
+    <aside className="san-you-qi-match-panel" aria-label="Match details">
+      <div className="san-you-qi-panel-heading">
+        <span>MATCH DETAILS</span>
+        <small>{online ? `Room ${roomCode} · ${connectionStatus}` : "Local table"}</small>
+      </div>
+
+      <div className="san-you-qi-kingdom-order">Red → Green → Blue</div>
+
+      <div className="san-you-qi-player-list">
+        {FACTIONS.map((candidate) => {
+          const count = state.pieces.filter(
+            (piece) => piece.status === "board" && piece.owner === candidate,
+          ).length;
+          const inherited = state.pieces.filter(
+            (piece) =>
+              piece.status === "board" &&
+              piece.owner === candidate &&
+              piece.faction !== candidate,
+          ).length;
+          const activeFaction = state.activeFactions.includes(candidate);
+          return (
+            <details
+              key={candidate}
+              className={`san-you-qi-player-card ${active === candidate && !state.outcome ? "active" : ""} ${!activeFaction ? "defeated" : ""}`}
+              style={{ "--seat-color": FACTION_COLORS[candidate] }}
+            >
+              <summary>
+                <span className="san-you-qi-seat-dot" />
+                <div>
+                  <b>{FACTION_LABELS[candidate]}</b>
+                  <span>
+                    {!activeFaction
+                      ? "Eliminated"
+                      : active === candidate && !state.outcome
+                        ? "To move"
+                        : seatLabels[candidate] || "Ready"}
+                  </span>
+                </div>
+                <strong aria-label={`${count} pieces`}>{count}</strong>
+                <ChevronDown size={14} />
+              </summary>
+              <div className="san-you-qi-player-detail">
+                <span>{seatLabels[candidate] || (online ? "Online seat" : "Local seat")}</span>
+                <small>{inherited ? `${inherited} inherited pieces` : "Original army"}</small>
+              </div>
+            </details>
+          );
+        })}
+      </div>
+
+      <section className="san-you-qi-piece-inspector" aria-label="Piece inspector">
+        <h2>{selectedPiece ? "Selected piece" : "Piece guide"}</h2>
+        {selectedPiece ? (
+          <>
+            <div className="san-you-qi-inspector-title">
+              <img src={pieceAsset(selectedPiece)} alt="" />
+              <div>
+                <strong>{ROLE_LABELS[selectedPiece.role]}</strong>
+                <span>{getNodeLabel(selectedPiece.node)}</span>
+              </div>
+            </div>
+            <p>{ROLE_MOVEMENT[selectedPiece.role]}</p>
+            <small>
+              {selectedTargets.length} legal {selectedTargets.length === 1 ? "move" : "moves"}
+              {selectedPiece.owner !== selectedPiece.faction
+                ? ` · controlled by ${FACTION_LABELS[selectedPiece.owner]}`
+                : ""}
+            </small>
+          </>
+        ) : (
+          <p>Select a piece to inspect its movement and see all legal destinations.</p>
+        )}
+      </section>
+
+      <section className="san-you-qi-position-summary">
+        <h2>Position</h2>
+        <p>{notice}</p>
+        {last ? (
+          <div className="san-you-qi-last-action">
+            <span>Last move</span>
+            <b>{getNodeLabel(last.from)} → {getNodeLabel(last.to)}</b>
+          </div>
+        ) : (
+          <small>Red opens. The latest move will appear here.</small>
+        )}
+      </section>
+
+      <div className="san-you-qi-panel-legend">
+        <span>● Legal move</span>
+        <span>◎ Capture</span>
+        <span>□ Last move</span>
+      </div>
+    </aside>
+  );
+}
+
 function Rulebook({ state, selectedPiece, selectedTargets, seatLabels = {}, notice = "" }) {
   const currentPlayer = FACTION_LABELS[state.turn];
 
@@ -430,6 +551,12 @@ export default function SanYouQiApp({ onExit }) {
   const [synced, setSynced] = useState(false);
   const [busy, setBusy] = useState(false);
   const [showRoom, setShowRoom] = useState(Boolean(initialRoomCode));
+  const [compactMatch, setCompactMatch] = useState(() => window.matchMedia("(max-width: 900px)").matches);
+  const [matchPanelOpen, setMatchPanelOpen] = useState(false);
+  const [focusView, setFocusView] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [fullScreen, setFullScreen] = useState(false);
+  const matchRef = useRef(null);
 
   const [client] = useState(() => new SanYouClient());
   const mounted = useRef(true);
@@ -476,6 +603,32 @@ export default function SanYouQiApp({ onExit }) {
       client.close();
     };
   }, [client]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 900px)");
+    const update = () => {
+      setCompactMatch(media.matches);
+      setMatchPanelOpen(false);
+      if (media.matches) setFocusView(false);
+    };
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    const update = () => setFullScreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", update);
+    return () => document.removeEventListener("fullscreenchange", update);
+  }, []);
+
+  const toggleFullScreen = async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await matchRef.current?.requestFullscreen?.();
+    } catch {
+      setMessage("Fullscreen is unavailable here. Use your browser fullscreen command.");
+    }
+  };
 
   useEffect(() => {
     if (!seat) return undefined;
@@ -865,12 +1018,31 @@ export default function SanYouQiApp({ onExit }) {
         : state.note;
 
     return (
-      <main className="san-you-qi-app">
+      <main
+        ref={matchRef}
+        className={`san-you-qi-app san-you-qi-match ${focusView ? "san-you-qi-focus" : ""}`}
+      >
         <header className="san-you-qi-toolbar">
           <div className="san-you-qi-brand">
-            <span>HERITAGE ARCADE</span>
-            <h1>SAN YOU QI</h1>
-            <small>THREE FRIENDS CHESS</small>
+            <button
+              type="button"
+              className="san-you-qi-icon-button"
+              aria-label={onlineGame ? "Room details" : "Return to setup"}
+              title={onlineGame ? "Room details" : "Setup"}
+              onClick={() => {
+                if (onlineGame) setShowRoom(true);
+                else {
+                  setLocal(null);
+                  setSelectedPieceId(null);
+                }
+              }}
+            >
+              <ArrowLeft size={17} />
+            </button>
+            <div>
+              <h1>SAN YOU QI</h1>
+              <span>ARCTIC DOMINION</span>
+            </div>
           </div>
 
           <div
@@ -879,51 +1051,86 @@ export default function SanYouQiApp({ onExit }) {
             role="status"
             aria-live="polite"
           >
-            <span />
-            {state.outcome ? state.outcome.message : `${FACTION_LABELS[state.turn]} to move`}
+            <small>TURN <b>{state.ply + 1}</b></small>
+            <span className="san-you-qi-turn-dot" />
+            <div>
+              <strong>{state.outcome ? state.outcome.message : `${FACTION_LABELS[state.turn]} to move`}</strong>
+              <em>{notice}</em>
+            </div>
           </div>
 
-          <div className="san-you-qi-toolbar-actions">
-            {!onlineGame && (
-              <>
-                <button
-                  type="button"
-                  className="san-you-qi-toolbar-button"
-                  disabled={!local?.history.length || thinking}
-                  onClick={undoLocal}
-                >
-                  Undo
-                </button>
-                <button type="button" className="san-you-qi-toolbar-button" onClick={restartLocal}>
-                  Reset
-                </button>
-                <button
-                  type="button"
-                  className="san-you-qi-toolbar-button"
-                  onClick={() => {
-                    setLocal(null);
-                    setSelectedPieceId(null);
-                  }}
-                >
-                  Setup
-                </button>
-              </>
-            )}
-            {onlineGame && (
-              <button
-                type="button"
-                className="san-you-qi-toolbar-button"
-                onClick={() => setShowRoom(true)}
-              >
-                Room {room.roomCode}
-              </button>
-            )}
-            {onExit && (
-              <button type="button" className="san-you-qi-toolbar-button" onClick={onExit}>
-                All Games
-              </button>
-            )}
-          </div>
+          <nav className="san-you-qi-toolbar-actions" aria-label="Table controls">
+            <button
+              type="button"
+              className="san-you-qi-toolbar-button"
+              onClick={() => setGuideOpen(true)}
+              aria-label="Guide"
+              title="Guide"
+            >
+              <BookOpen size={16} /><span>Guide</span>
+            </button>
+
+            <button
+              type="button"
+              className="san-you-qi-toolbar-button"
+              aria-label={compactMatch ? "Open match details" : focusView ? "Show match panel" : "Focus view"}
+              title={compactMatch ? "Match details" : focusView ? "Show match panel" : "Focus view"}
+              onClick={() => compactMatch ? setMatchPanelOpen(true) : setFocusView((value) => !value)}
+            >
+              {compactMatch || focusView ? <PanelRightOpen size={17} /> : <PanelRightClose size={17} />}
+            </button>
+
+            <button
+              type="button"
+              className="san-you-qi-toolbar-button"
+              onClick={toggleFullScreen}
+              aria-label={fullScreen ? "Exit fullscreen" : "Fullscreen"}
+              title={fullScreen ? "Exit fullscreen" : "Fullscreen"}
+            >
+              {fullScreen ? <Minimize size={17} /> : <Maximize size={17} />}
+            </button>
+
+            <details className="san-you-qi-table-menu">
+              <summary aria-label="More table options" title="More">
+                <MoreHorizontal size={19} />
+              </summary>
+              <div>
+                {!onlineGame && (
+                  <>
+                    <button
+                      type="button"
+                      disabled={!local?.history.length || thinking}
+                      onClick={undoLocal}
+                    >
+                      <Undo2 size={16} /> Undo
+                    </button>
+                    <button type="button" onClick={restartLocal}>
+                      <RotateCcw size={16} /> New game
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLocal(null);
+                        setSelectedPieceId(null);
+                      }}
+                    >
+                      <ArrowLeft size={16} /> Setup
+                    </button>
+                  </>
+                )}
+                {onlineGame && (
+                  <button type="button" onClick={() => setShowRoom(true)}>
+                    <Users size={16} /> Room {room.roomCode}
+                  </button>
+                )}
+                {onExit && (
+                  <button type="button" onClick={onExit}>
+                    All Games
+                  </button>
+                )}
+              </div>
+            </details>
+          </nav>
         </header>
 
         {error && (
@@ -944,34 +1151,153 @@ export default function SanYouQiApp({ onExit }) {
         )}
         {message && <div className="san-you-qi-message" role="status">{message}</div>}
 
-        <div className="san-you-qi-layout">
-          <section className="san-you-qi-board-pane" aria-label="San You Qi battlefield">
-            <Board
-              state={state}
-              selectedPieceId={selectedPieceId}
-              targetIds={selectedTargets}
-              onSelectPiece={handleSelectPiece}
-              onMoveAttempt={handleMoveAttempt}
-              onClearSelection={() => setSelectedPieceId(null)}
-              canAct={canAct}
-            />
-          </section>
+        <section className="san-you-qi-table-body">
+          <div className="san-you-qi-battlefield-column">
+            <div className="san-you-qi-battlefield-stage">
+              <Board
+                state={state}
+                selectedPieceId={selectedPieceId}
+                targetIds={selectedTargets}
+                onSelectPiece={handleSelectPiece}
+                onMoveAttempt={handleMoveAttempt}
+                onClearSelection={() => setSelectedPieceId(null)}
+                canAct={canAct}
+              />
+            </div>
 
-          <div className="san-you-qi-rules-pane">
-            <Rulebook
+            <footer className="san-you-qi-board-footer">
+              <div className="san-you-qi-selection-feedback">
+                {selectedPiece ? (
+                  <img src={pieceAsset(selectedPiece)} alt="" />
+                ) : (
+                  <span className="san-you-qi-crosshair" aria-hidden="true">＋</span>
+                )}
+                <span>
+                  {selectedPiece
+                    ? `${ROLE_LABELS[selectedPiece.role]} · ${selectedTargets.length} legal ${selectedTargets.length === 1 ? "move" : "moves"}`
+                    : canAct
+                      ? "Select a piece to show legal moves"
+                      : state.outcome
+                        ? state.outcome.message
+                        : notice}
+                </span>
+              </div>
+              {state.lastAction && (
+                <small className="san-you-qi-last-move-copy">
+                  {getNodeLabel(state.lastAction.from)} → {getNodeLabel(state.lastAction.to)}
+                </small>
+              )}
+            </footer>
+
+            {compactMatch && (
+              <div className="san-you-qi-phone-players" aria-label="Kingdom status">
+                {FACTIONS.map((candidate) => {
+                  const count = state.pieces.filter(
+                    (piece) => piece.status === "board" && piece.owner === candidate,
+                  ).length;
+                  return (
+                    <button
+                      key={candidate}
+                      type="button"
+                      className={candidate === state.turn && !state.outcome ? "active" : ""}
+                      style={{ "--seat-color": FACTION_COLORS[candidate] }}
+                      onClick={() => setMatchPanelOpen(true)}
+                    >
+                      <span>{candidate === "red" ? "RED" : candidate === "green" ? "GREEN" : "BLUE"}</span>
+                      <strong>{state.activeFactions.includes(candidate) ? count : "Out"}</strong>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {!compactMatch && !focusView && (
+            <MatchPanel
               state={state}
               selectedPiece={selectedPiece}
               selectedTargets={selectedTargets}
               seatLabels={seatLabels}
               notice={notice}
+              online={Boolean(onlineGame)}
+              roomCode={room?.roomCode || ""}
+              connectionStatus={connected && synced ? "Connected" : "Reconnecting"}
             />
+          )}
+        </section>
+
+        {compactMatch && matchPanelOpen && (
+          <div
+            className="san-you-qi-mobile-backdrop"
+            role="presentation"
+            onClick={() => setMatchPanelOpen(false)}
+          >
+            <section
+              className="san-you-qi-mobile-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="sanyou-match-details-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <header>
+                <h2 id="sanyou-match-details-title">Match details</h2>
+                <button type="button" autoFocus aria-label="Close match details" onClick={() => setMatchPanelOpen(false)}>
+                  <X size={20} />
+                </button>
+              </header>
+              <MatchPanel
+                state={state}
+                selectedPiece={selectedPiece}
+                selectedTargets={selectedTargets}
+                seatLabels={seatLabels}
+                notice={notice}
+                online={Boolean(onlineGame)}
+                roomCode={room?.roomCode || ""}
+                connectionStatus={connected && synced ? "Connected" : "Reconnecting"}
+              />
+            </section>
           </div>
-        </div>
+        )}
+
+        {guideOpen && (
+          <div
+            className="san-you-qi-guide-backdrop"
+            role="presentation"
+            onClick={() => setGuideOpen(false)}
+          >
+            <section
+              className="san-you-qi-guide-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="sanyou-guide-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <header>
+                <div>
+                  <small>FIELD GUIDE</small>
+                  <h2 id="sanyou-guide-title">San You Qi</h2>
+                </div>
+                <button type="button" autoFocus aria-label="Close guide" onClick={() => setGuideOpen(false)}>
+                  <X size={20} />
+                </button>
+              </header>
+              <div className="san-you-qi-guide-scroll">
+                <Rulebook
+                  state={state}
+                  selectedPiece={selectedPiece}
+                  selectedTargets={selectedTargets}
+                  seatLabels={seatLabels}
+                  notice={notice}
+                />
+              </div>
+            </section>
+          </div>
+        )}
       </main>
     );
   }
 
-  if (seat) {
+  if (seat) {  if (seat) {
     return (
       <main className="san-you-qi-app san-you-qi-setup-page">
         <section className="san-you-qi-setup-card">
