@@ -512,7 +512,7 @@ describe("terrain and special movement", () => {
   it("uses the exact two Fire diagonals at each inner Fort-adjacent C-point", () => {
     const cases = [
       ["red", "C2", ["C1", "C17"]],
-      ["red", "C6", ["C7", "C8"]],
+      ["red", "C6", ["C7", "C9"]],
       ["green", "C8", ["C5", "C7"]],
       ["green", "C12", ["C13", "C15"]],
       ["blue", "C14", ["C13", "C11"]],
@@ -564,7 +564,7 @@ describe("terrain and special movement", () => {
     );
 
     expect(getPseudoTargets(state, fire.id)).not.toContain("C7");
-    expect(getPseudoTargets(state, fire.id)).not.toContain("C8");
+    expect(getPseudoTargets(state, fire.id)).not.toContain("C9");
   });
 
   it("Fire advances diagonally and Flag moves exactly two forward points before leaving home", () => {
