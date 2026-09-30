@@ -222,12 +222,12 @@ const ROLE_MOVEMENT = Object.freeze({
   general: "One orthogonal point inside the original palace.",
   advisor: "One palace-diagonal step.",
   elephant: "Two-point diagonal movement in its original arm; the eye must be clear.",
-  horse: "Blocked Xiangqi L move. It cannot use the extended Sea crossing as its first orthogonal step.",
+  horse: "Blocked Xiangqi L move. Only its first orthogonal leg is stopped by an extended-Sea crossing.",
   chariot: "Slides along one explicit line until blocked. It cannot cross the extended Sea passages.",
-  cannon: "Slides along one explicit line; captures beyond exactly one screen. Fort and Mountain restrictions apply.",
-  soldier: "One point forward. After first entering enemy territory it also gains sideways movement where a horizontal line exists.",
+  cannon: "Slides horizontally or vertically along one clear line. The first occupied point is a screen; captures only the next occupied enemy beyond exactly one screen. Fort and Mountain restrictions apply.",
+  soldier: "One point forward at all times. After first entering enemy territory it also gains sideways movement where a horizontal line exists.",
   fire: "One diagonal-forward step and never retreats.",
-  flag: "Two clear forward points before leaving home; then exactly two clear orthogonal points and no return home.",
+  flag: "Exactly two clear points straight forward before leaving home; once outside its original kingdom it moves any distance orthogonally like a Chariot and may not return home.",
 });
 
 function MatchPanel({
@@ -413,8 +413,8 @@ function Rulebook({ state, selectedPiece, selectedTargets, seatLabels = {}, noti
           <h3>SPECIAL UNITS</h3>
           <ul>
             <li><strong>Fire:</strong> one diagonal step forward; never retreats.</li>
-            <li><strong>Flag:</strong> two clear forward steps before leaving home; then exactly two orthogonal steps and no return to its original kingdom.</li>
-            <li><strong>Soldier:</strong> one forward step. On first entry into enemy territory it promotes and also gains sideways movement.</li>
+            <li><strong>Flag:</strong> exactly two clear forward steps before leaving home; after leaving, it moves any distance orthogonally like a Chariot and cannot return to its original kingdom.</li>
+            <li><strong>Soldier:</strong> always keeps its one-step forward move. On first entry into enemy territory it promotes and additionally gains sideways movement.</li>
           </ul>
         </div>
       </div>
@@ -422,8 +422,10 @@ function Rulebook({ state, selectedPiece, selectedTargets, seatLabels = {}, noti
       <section className="rules-section">
         <h3>VICTORY</h3>
         <p>
-          Checkmating a kingdom removes its General and transfers its surviving
-          army to the mating player. The last surviving General wins.
+          A checked kingdom must answer immediately; if that interrupts the normal
+          Red → Green → Blue cycle, the skipped turn resumes after the check is cleared.
+          Checkmating a kingdom removes its General and transfers its surviving army
+          to the faction whose piece actually delivered mate. The last surviving General wins.
         </p>
       </section>
 
