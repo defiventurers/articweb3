@@ -253,6 +253,33 @@ describe("faction-specific enemy territory and Soldier promotion", () => {
     for (const number of safe) expect(territoryOf(`C${number}`, "green")).not.toBe("enemy");
   });
 
+  it("does not promote a Soldier when it enters a shared gate owned by its camp", () => {
+    const cases = [
+      ["red", "red:L2-5", "C1"],
+      ["blue", "blue:L2-5", "C13"],
+      ["green", "green:L2-5", "C7"],
+    ];
+
+    for (const [faction, node, sharedGate] of cases) {
+      const state = sparseState([
+        { faction, role: "soldier", node, promoted: false, leftHome: false },
+      ], faction, [faction]);
+      const soldier = state.pieces.find(
+        (piece) => piece.faction === faction && piece.role === "soldier" && piece.status === "board",
+      );
+      const action = getLegalActions(state).find(
+        (candidate) => candidate.pieceId === soldier.id && candidate.to === sharedGate,
+      );
+      expect(action).toBeTruthy();
+
+      const result = applyAction(state, action);
+      expect(result.error).toBeNull();
+      const moved = result.state.pieces.find((piece) => piece.id === soldier.id);
+      expect(moved.promoted).toBe(false);
+      expect(moved.leftHome).toBe(false);
+    }
+  });
+
   it("keeps the approved Blue Soldier branch from C24 to C20 or C22", () => {
     const state = sparseState([
       { faction: "blue", role: "soldier", node: "C24" },
@@ -480,26 +507,45 @@ describe("terrain and special movement", () => {
     expect(getPseudoTargets(flagState, flag.id)).not.toContain("red:L5-2");
   });
 
-  it("lets a crossed Flag return to its own shared gate but not pass into exclusive home territory", () => {
+  it("lets a crossed Flag return to any shared gate belonging to its original camp", () => {
     const cases = [
-      ["red", "C18", "C1", "C2"],
-      ["red", "C8", "C7", "C6"],
-      ["green", "C6", "C7", "C8"],
-      ["green", "C14", "C13", "C12"],
-      ["blue", "C2", "C1", "C18"],
-      ["blue", "C12", "C13", "C14"],
+      ["red", "C18", "C1"],
+      ["blue", "C2", "C1"],
+      ["red", "C8", "C7"],
+      ["green", "C6", "C7"],
+      ["green", "C14", "C13"],
+      ["blue", "C12", "C13"],
     ];
 
-    for (const [faction, node, sharedGate, exclusiveHome] of cases) {
+    for (const [faction, node, sharedGate] of cases) {
       const state = sparseState([
         { faction, role: "flag", node, leftHome: true },
       ], faction, [faction]);
       const flag = state.pieces.find(
         (piece) => piece.faction === faction && piece.role === "flag" && piece.status === "board",
       );
-      const targets = new Set(getPseudoTargets(state, flag.id));
-      expect(targets).toContain(sharedGate);
-      expect(targets).not.toContain(exclusiveHome);
+      expect(getPseudoTargets(state, flag.id)).toContain(sharedGate);
+    }
+  });
+
+  it("treats a shared gate as the return boundary for a crossed Flag", () => {
+    const cases = [
+      ["red", "C1", "C2"],
+      ["blue", "C1", "C18"],
+      ["red", "C7", "C6"],
+      ["green", "C7", "C8"],
+      ["green", "C13", "C12"],
+      ["blue", "C13", "C14"],
+    ];
+
+    for (const [faction, sharedGate, exclusiveHome] of cases) {
+      const state = sparseState([
+        { faction, role: "flag", node: sharedGate, leftHome: true },
+      ], faction, [faction]);
+      const flag = state.pieces.find(
+        (piece) => piece.faction === faction && piece.role === "flag" && piece.status === "board",
+      );
+      expect(getPseudoTargets(state, flag.id)).not.toContain(exclusiveHome);
     }
   });
 
