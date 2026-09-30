@@ -4,7 +4,7 @@
 
 Current ruleset:
 
-`arctic-final-156-node-3.3.3`
+`arctic-final-156-node-3.3.4`
 
 The board now uses the latest user-supplied coordinates and the revised 21-point central topology.
 
@@ -35,7 +35,7 @@ The board now uses the latest user-supplied coordinates and the revised 21-point
 - Added canonical central camp territory: Red C2-C6/C20; Green C8-C12/C22; Blue C14-C18/C24; shared gates C1 Red+Blue, C7 Red+Green, C13 Green+Blue.
 - Shared gates do not trigger promotion/Flag departure for an owning camp.
 - A crossed Flag may return to its own shared gate, but cannot continue from that gate into exclusive home territory.
-- Corrected the six inner Fire seam sources to exact C-point destinations: Red C2→C1/C17, Red C6→C7/C8, Green C8→C5/C7, Green C12→C13/C15, Blue C14→C13/C11, Blue C18→C1/C3. Removed the previous incorrect C-point→arm targets.
+- Corrected the six inner Fire seam sources to exact C-point destinations: Red C2→C1/C17, Red C6→C7/C9, Green C8→C5/C7, Green C12→C13/C15, Blue C14→C13/C11, Blue C18→C1/C3. Removed the previous incorrect C-point→arm targets.
 - Added the six Fire Fort-seam diagonals so Fire can cross from L2-5/L8-5 into the neighbouring kingdom's outer L9-5/L1-5 point.
 - Updated unit tests, smoke text, rulebook copy, catalogue text and placement-tool defaults.
 
