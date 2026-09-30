@@ -389,7 +389,7 @@ const SANYOU_TOPOLOGY_DEBUG = Object.freeze({
  */
 
 const GAME_ID = "san-you-qi";
-const RULESET_VERSION = "arctic-final-156-node-3.3.3";
+const RULESET_VERSION = "arctic-final-156-node-3.3.4";
 
 const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 const FACTION_LABELS = Object.freeze({
@@ -770,7 +770,7 @@ const FIRE_FORT_EXTRA_DIAGONALS = Object.freeze({
 const FIRE_CENTER_EXACT_DIAGONALS = Object.freeze({
   red: Object.freeze({
     C2: Object.freeze(["C1", "C17"]),
-    C6: Object.freeze(["C7", "C8"]),
+    C6: Object.freeze(["C7", "C9"]),
   }),
 
   green: Object.freeze({
