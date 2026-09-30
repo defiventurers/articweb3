@@ -1951,23 +1951,36 @@ function searchBotAction(state, difficulty, options) {
     };
   }
 
-  const initial = preparedChildren(
-    state,
-    rootFaction,
-    context,
-    0,
-    Number.POSITIVE_INFINITY,
+  // Always keep a legal deterministic fallback, even if a deliberately tiny
+  // test/tuning budget expires while the first iteration is being prepared.
+  const fallbackActions = [...rootActions].sort(
+    (a, b) =>
+      fastMovePriority(state, b, context, 0) -
+        fastMovePriority(state, a, context, 0) ||
+      actionKey(a).localeCompare(actionKey(b)),
   );
-
-  let bestAction = initial[0]?.action || rootActions[0];
-  let bestScore = initial[0]
-    ? evaluateSanYouState(initial[0].child, rootFaction, context.weights)
-    : -INF;
-  let completedDepth = 1;
+  let bestAction = fallbackActions[0] || rootActions[0];
+  let bestScore = -INF;
+  let completedDepth = 0;
   let principalKey = actionKey(bestAction);
 
-  for (let depth = 2; depth <= level.depth; depth += 1) {
-    try {
+  try {
+    const initial = preparedChildren(
+      state,
+      rootFaction,
+      context,
+      0,
+      Number.POSITIVE_INFINITY,
+    );
+
+    if (initial.length) {
+      bestAction = initial[0].action;
+      bestScore = evaluateSanYouState(initial[0].child, rootFaction, context.weights);
+      principalKey = actionKey(bestAction);
+      completedDepth = 1;
+    }
+
+    for (let depth = 2; depth <= level.depth; depth += 1) {
       context.checkDeadline();
 
       const rootChildren = preparedChildren(
@@ -2014,10 +2027,9 @@ function searchBotAction(state, difficulty, options) {
       bestScore = iterationScore;
       principalKey = actionKey(iterationAction);
       completedDepth = depth;
-    } catch (error) {
-      if (error !== timeoutSignal) throw error;
-      break;
     }
+  } catch (error) {
+    if (error !== timeoutSignal) throw error;
   }
 
   return {
