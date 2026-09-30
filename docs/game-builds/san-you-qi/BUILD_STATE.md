@@ -4,7 +4,7 @@
 
 Current ruleset:
 
-`arctic-final-156-node-3.2.1`
+`arctic-final-156-node-3.3.0`
 
 The board now uses the latest user-supplied coordinates and the revised 21-point central topology.
 
@@ -32,6 +32,9 @@ The board now uses the latest user-supplied coordinates and the revised 21-point
 - Third-party discovered mate is credited to the faction whose piece actually gives the check, not automatically to the player whose move uncovered it.
 - Added the six compressed central Horse jumps: Red L4-5/L6-5 ↔ C20; Green L4-5/L6-5 ↔ C22; Blue L4-5/L6-5 ↔ C24.
 - Restored flying-General legality on approved continuation lines. Cannon geometry still includes sideways/branch routes, but those moves are correctly filtered when the Cannon is the only blocker shielding its General.
+- Added canonical central camp territory: Red C2-C6/C20; Green C8-C12/C22; Blue C14-C18/C24; shared gates C1 Red+Blue, C7 Red+Green, C13 Green+Blue.
+- Shared gates do not trigger promotion/Flag departure for an owning camp.
+- A crossed Flag may return to its own shared gate, but cannot continue from that gate into exclusive home territory.
 - Updated unit tests, smoke text, rulebook copy, catalogue text and placement-tool defaults.
 
 ## Terrain checkpoint
