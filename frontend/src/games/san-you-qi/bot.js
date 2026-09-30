@@ -159,34 +159,34 @@ function buildControlMap(state) {
   return controls;
 }
 
-function centralActivity(state, faction, controls) {
+function centralActivity(state, faction, controls, weights) {
   let score = 0;
   for (const piece of boardPieces(state, faction)) {
-    if (SHARED_GATES.has(piece.node)) score += SAN_YOU_EVAL_WEIGHTS.sharedGateOccupancy;
-    if (INNER_SEA.has(piece.node)) score += SAN_YOU_EVAL_WEIGHTS.innerSeaOccupancy;
+    if (SHARED_GATES.has(piece.node)) score += weights.sharedGateOccupancy;
+    if (INNER_SEA.has(piece.node)) score += weights.innerSeaOccupancy;
     if (piece.node?.startsWith("C")) score += 8;
     if (territoryOf(piece.node, piece.faction) === "enemy") {
-      score += SAN_YOU_EVAL_WEIGHTS.enemyTerritory;
+      score += weights.enemyTerritory;
     }
   }
 
   for (const [node, count] of controls[faction]) {
     if (node.startsWith("C")) {
-      score += Math.min(3, count) * SAN_YOU_EVAL_WEIGHTS.centralControl;
+      score += Math.min(3, count) * weights.centralControl;
     }
   }
 
   return score;
 }
 
-function activityAndSafety(state, faction, controls) {
+function activityAndSafety(state, faction, controls, weights) {
   let score = 0;
   const ownControl = controls[faction];
 
   for (const piece of boardPieces(state, faction)) {
     const value = pieceValue(piece);
     const targets = getPseudoTargets(state, piece.id);
-    score += targets.length * SAN_YOU_EVAL_WEIGHTS.mobility * (MOBILITY_FACTOR[piece.role] || 0.4);
+    score += targets.length * weights.mobility * (MOBILITY_FACTOR[piece.role] || 0.4);
 
     const enemyAttackers = FACTIONS
       .filter((enemy) => enemy !== faction && state.activeFactions.includes(enemy))
@@ -194,19 +194,17 @@ function activityAndSafety(state, faction, controls) {
     const defended = (ownControl.get(piece.node) || 0) > 0;
 
     if (piece.role !== "general" && enemyAttackers) {
-      score -= value * (defended
-        ? SAN_YOU_EVAL_WEIGHTS.attackedPiece
-        : SAN_YOU_EVAL_WEIGHTS.hangingPiece);
+      score -= value * (defended ? weights.attackedPiece : weights.hangingPiece);
     }
     if (piece.role !== "general" && defended) {
-      score += value * SAN_YOU_EVAL_WEIGHTS.defendedPiece;
+      score += value * weights.defendedPiece;
     }
 
     if (piece.role === "soldier" && piece.promoted) {
-      score += SAN_YOU_EVAL_WEIGHTS.promotedSoldier;
+      score += weights.promotedSoldier;
     }
     if (piece.role === "flag" && piece.leftHome) {
-      score += SAN_YOU_EVAL_WEIGHTS.crossedFlag;
+      score += weights.crossedFlag;
     }
   }
 
@@ -236,8 +234,8 @@ export function evaluateSanYouState(
   if (rivalMaterials[0]) score -= rivalMaterials[0] * weights.strongestRival;
   if (rivalMaterials[1]) score -= rivalMaterials[1] * weights.secondRival;
 
-  score += activityAndSafety(state, faction, controls);
-  score += centralActivity(state, faction, controls);
+  score += activityAndSafety(state, faction, controls, weights);
+  score += centralActivity(state, faction, controls, weights);
 
   const eliminatedOpponents = FACTIONS.filter(
     (candidate) => candidate !== faction && !state.activeFactions.includes(candidate),
@@ -439,22 +437,27 @@ function quiescence(state, rootFaction, alpha, beta, qDepth, context, ply) {
   if (Math.abs(terminal) >= MATE_SCORE) return terminal;
 
   const maximizing = state.turn === rootFaction;
+  const checked = isInCheck(state, state.turn);
   const standPat = evaluateSanYouState(state, rootFaction, context.weights);
 
   if (qDepth <= 0) return standPat;
 
-  if (maximizing) {
-    if (standPat >= beta) return standPat;
-    alpha = Math.max(alpha, standPat);
-  } else {
-    if (standPat <= alpha) return standPat;
-    beta = Math.min(beta, standPat);
+  // A checked player has no legal "stand pat": every legal reply must be
+  // considered before a static evaluation is allowed.
+  if (!checked) {
+    if (maximizing) {
+      if (standPat >= beta) return standPat;
+      alpha = Math.max(alpha, standPat);
+    } else {
+      if (standPat <= alpha) return standPat;
+      beta = Math.min(beta, standPat);
+    }
   }
 
   const children = tacticalChildren(state, rootFaction, context, ply, qDepth);
   if (!children.length) return standPat;
 
-  let best = standPat;
+  let best = checked ? (maximizing ? -INF : INF) : standPat;
 
   for (const entry of children) {
     const score = quiescence(
@@ -511,7 +514,7 @@ function paranoidSearch(
     );
   }
 
-  const key = `${rootFaction}|${depth}|${stateKey(state)}`;
+  const key = `${rootFaction}|${stateKey(state)}`;
   const originalAlpha = alpha;
   const originalBeta = beta;
   const tt = transpositionLookup(context, key, depth, alpha, beta);
