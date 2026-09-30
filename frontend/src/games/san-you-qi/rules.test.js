@@ -436,6 +436,9 @@ describe("legality and turn flow", () => {
   it("interrupts the cycle for a third-party discovered check, then resumes the skipped turn", () => {
     const state = sparseState([
       { faction: "red", role: "cannon", node: "C10", leftHome: true },
+      // Keep the Red and Blue Generals from facing directly across RB-5 so
+      // Blue's blocker move is otherwise legal.
+      { faction: "red", role: "soldier", node: "C20", leftHome: true },
       { faction: "green", role: "soldier", node: "green:L5-3" },
       {
         faction: "blue",
