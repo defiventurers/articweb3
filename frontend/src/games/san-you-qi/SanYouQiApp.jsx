@@ -222,7 +222,7 @@ const ROLE_MOVEMENT = Object.freeze({
   general: "One orthogonal point inside the original palace.",
   advisor: "One palace-diagonal step.",
   elephant: "Two-point diagonal movement in its original arm; the eye must be clear.",
-  horse: "Blocked Xiangqi L move. Only its first orthogonal leg is stopped by an extended-Sea crossing.",
+  horse: "Blocked Xiangqi L move. Only its first orthogonal leg is stopped by an extended-Sea crossing. The three central tips also support the paired L4-5/L6-5 Horse jumps into C20/C22/C24.",
   chariot: "Slides along one explicit line until blocked. It cannot cross the extended Sea passages.",
   cannon: "Slides horizontally or vertically along one clear line. The first occupied point is a screen; captures only the next occupied enemy beyond exactly one screen. Fort and Mountain restrictions apply.",
   soldier: "One point forward at all times. After first entering enemy territory it also gains sideways movement where a horizontal line exists.",
@@ -404,7 +404,7 @@ function Rulebook({ state, selectedPiece, selectedTargets, seatLabels = {}, noti
         <div className="rules-column">
           <h3>TERRAIN</h3>
           <ul>
-            <li>Extended-river crossings C3↔C17, C5↔C9 and C15↔C11 block Chariot and Horse; Cannon may cross.</li>
+            <li>Extended-river crossings C3↔C17, C5↔C9 and C15↔C11 block Chariot; for Horse they block only when used as the first orthogonal leg. Cannon may cross.</li>
             <li>Mountain crossings C2↔C18, C6↔C8 and C14↔C12 block Cannon.</li>
             <li>At Forts, Cannon may stop on C1/C7/C13 from its own side but may not continue through into the opposite kingdom.</li>
             <li>C20, C22 and C24 are legal central stopping points linked by continuation routes, not horizontal H-lines.</li>
