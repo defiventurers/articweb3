@@ -172,10 +172,33 @@ function buildThreatMaps(state: SanguoState) {
   return threats;
 }
 
+function factionInCheckFromThreats(
+  state: SanguoState,
+  faction: SanguoFaction,
+  threats: Record<SanguoFaction, Map<string, number>>,
+) {
+  const general = state.pieces.find(
+    (piece) =>
+      !piece.captured &&
+      piece.sector === faction &&
+      piece.role === "king",
+  );
+  if (!general) return false;
+
+  const square = nodeId(general.node);
+  return sanguoFactions.some(
+    (enemy) =>
+      enemy !== faction &&
+      !state.defeated.includes(enemy) &&
+      (threats[enemy].get(square) || 0) > 0,
+  );
+}
+
 function rawFactionScore(
   state: SanguoState,
   faction: SanguoFaction,
   threats: Record<SanguoFaction, Map<string, number>>,
+  checks: Record<SanguoFaction, boolean>,
   weights: SanguoEvalWeights,
 ) {
   if (state.defeated.includes(faction)) return -MATE_SCORE;
@@ -231,7 +254,7 @@ function rawFactionScore(
     }
   }
 
-  if (generalIsAttacked(faction, state.pieces)) {
+  if (checks[faction]) {
     score -= weights.check;
     if (state.turn === faction) score -= weights.sideToMoveInCheck;
   }
@@ -240,7 +263,7 @@ function rawFactionScore(
     if (
       rival !== faction &&
       !state.defeated.includes(rival) &&
-      generalIsAttacked(rival, state.pieces)
+      checks[rival]
     ) {
       score += weights.checkPressure;
     }
@@ -276,10 +299,17 @@ export function evaluateSanguo(
   }
 
   const threats = buildThreatMaps(state);
+  const checks = Object.fromEntries(
+    sanguoFactions.map((faction) => [
+      faction,
+      factionInCheckFromThreats(state, faction, threats),
+    ]),
+  ) as Record<SanguoFaction, boolean>;
+
   const raw = Object.fromEntries(
     sanguoFactions.map((faction) => [
       faction,
-      terminal[faction] ?? rawFactionScore(state, faction, threats, weights),
+      terminal[faction] ?? rawFactionScore(state, faction, threats, checks, weights),
     ]),
   ) as Record<SanguoFaction, number>;
 
