@@ -34,7 +34,7 @@ import {
 } from "./topology.js";
 
 export const GAME_ID = "san-you-qi";
-export const RULESET_VERSION = "arctic-final-156-node-3.3.2";
+export const RULESET_VERSION = "arctic-final-156-node-3.3.3";
 
 export const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 export const FACTION_LABELS = Object.freeze({
@@ -390,38 +390,54 @@ function diagonalForwardTargets(piece, pieces) {
   return candidates.filter((target) => destinationOpenFor(piece, pieces, target));
 }
 
-// Around each Fort the triangular junction compresses some forward-diagonal
-// Fire moves so they cannot be reconstructed reliably from the generic
-// forward/side graph intersection. Keep those seam diagonals explicit and
-// faction-oriented so appropriated Fires still move according to their
-// original army orientation.
-const FIRE_FORT_DIAGONALS = Object.freeze({
+// The arm-side Fort seams have six additional forward diagonals that are not
+// recoverable reliably from the generic forward/side graph intersection.
+const FIRE_FORT_EXTRA_DIAGONALS = Object.freeze({
   red: Object.freeze({
     [armNodeId("red", 2, 5)]: Object.freeze([armNodeId("blue", 9, 5)]),
     [armNodeId("red", 8, 5)]: Object.freeze([armNodeId("green", 1, 5)]),
-    C2: Object.freeze([armNodeId("blue", 8, 5)]),
-    C6: Object.freeze([armNodeId("green", 2, 5)]),
   }),
 
   green: Object.freeze({
     [armNodeId("green", 2, 5)]: Object.freeze([armNodeId("red", 9, 5)]),
     [armNodeId("green", 8, 5)]: Object.freeze([armNodeId("blue", 1, 5)]),
-    C8: Object.freeze([armNodeId("red", 8, 5)]),
-    C12: Object.freeze([armNodeId("blue", 2, 5)]),
   }),
 
   blue: Object.freeze({
     [armNodeId("blue", 2, 5)]: Object.freeze([armNodeId("green", 9, 5)]),
     [armNodeId("blue", 8, 5)]: Object.freeze([armNodeId("red", 1, 5)]),
-    C14: Object.freeze([armNodeId("green", 8, 5)]),
-    C18: Object.freeze([armNodeId("red", 2, 5)]),
+  }),
+});
+
+// At the six inner Fort-adjacent C-points, the board geometry is authoritative.
+// These are the exact two forward-diagonal Fire destinations for each faction.
+// Do not infer an arm destination from the old compressed-junction heuristic.
+const FIRE_CENTER_EXACT_DIAGONALS = Object.freeze({
+  red: Object.freeze({
+    C2: Object.freeze(["C1", "C17"]),
+    C6: Object.freeze(["C7", "C8"]),
+  }),
+
+  green: Object.freeze({
+    C8: Object.freeze(["C5", "C7"]),
+    C12: Object.freeze(["C13", "C15"]),
+  }),
+
+  blue: Object.freeze({
+    C14: Object.freeze(["C13", "C11"]),
+    C18: Object.freeze(["C1", "C3"]),
   }),
 });
 
 function fireTargets(piece, pieces) {
+  const exactCenterTargets = FIRE_CENTER_EXACT_DIAGONALS[piece.faction]?.[piece.node];
+  if (exactCenterTargets) {
+    return exactCenterTargets.filter((target) => destinationOpenFor(piece, pieces, target));
+  }
+
   const out = new Set(diagonalForwardTargets(piece, pieces));
 
-  for (const target of FIRE_FORT_DIAGONALS[piece.faction]?.[piece.node] || []) {
+  for (const target of FIRE_FORT_EXTRA_DIAGONALS[piece.faction]?.[piece.node] || []) {
     if (destinationOpenFor(piece, pieces, target)) out.add(target);
   }
 
@@ -942,7 +958,8 @@ export const __testing = Object.freeze({
   isOwnTerritory,
   isSharedTerritory,
   territoryCamps,
-  FIRE_FORT_DIAGONALS,
+  FIRE_FORT_EXTRA_DIAGONALS,
+  FIRE_CENTER_EXACT_DIAGONALS,
   isCenterNode,
   isArmNode,
 });
