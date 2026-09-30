@@ -10,7 +10,7 @@ San You Qi (三友棋), also called Three Friends Chess.
 
 ## CURRENT RULESET
 
-`arctic-final-156-node-3.2.1`
+`arctic-final-156-node-3.3.0`
 
 This release combines the historically supported Zheng Jinde / Qing-era Three Friends Chess core with the current Arctic Dominion board reconstruction.
 
@@ -95,9 +95,33 @@ Fort RG: Red L8-5, Red L9-5, C7, Green L1-5, Green L2-5.
 
 A Cannon may enter and stop on C1/C7/C13 from its own side but may not continue through that Fort into the opposite kingdom. The three direct outer Fort links are also Cannon-blocked.
 
+## CENTRAL CAMP TERRITORIES
+
+Every surviving central point belongs to one or two camps.
+
+Exclusive Red territory:
+- C2, C3, C4, C5, C6, C20
+
+Exclusive Green territory:
+- C8, C9, C10, C11, C12, C22
+
+Exclusive Blue territory:
+- C14, C15, C16, C17, C18, C24
+
+Shared Fort-gate territory:
+- C1 = Red + Blue
+- C7 = Red + Green
+- C13 = Green + Blue
+
+A shared gate counts as home territory for either owning camp. Entering that gate does **not** trigger Soldier promotion or Flag enemy-territory state for an owning camp.
+
+Once a Flag has entered enemy territory and gained its post-home movement, it may not re-enter exclusive territory belonging to its original camp. It may, however, return to one of its own shared gates (C1/C7/C13 as applicable). The shared gate is the return boundary; it does not reopen movement into exclusive home territory.
+
+For the third camp that does not share a particular gate, that gate is enemy territory.
+
 ## SOLDIER ENEMY TERRITORY
 
-The extended river does not change enemy status of surviving nodes.
+Enemy status is derived from the camp-territory map above. The extended river does not change that ownership.
 
 Red enemy: `C8 C9 C10 C11 C12 C13 C14 C15 C16 C17 C18 C22 C24`
 
@@ -149,9 +173,9 @@ Each piece stores both `faction` (original kingdom/artwork/orientation) and `own
 
 ## FLAG AFTER LEAVING HOME
 
-Before leaving its original territory, Flag moves exactly two clear points straight forward.
+While still inside territory belonging to its original camp, Flag moves exactly two clear points straight forward.
 
-After leaving, Flag moves like a Chariot: any clear distance orthogonally along one approved movement line. It may not re-enter its original kingdom.
+After first entering enemy territory, Flag moves like a Chariot: any clear distance orthogonally along one approved movement line. It may not re-enter exclusive territory of its original camp, but may return to a shared Fort gate that belongs to that camp (C1/C7/C13 as applicable).
 
 ## IMPLEMENTATION FILES
 
