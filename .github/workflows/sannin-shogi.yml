@@ -1,0 +1,52 @@
+name: Sannin Shogi
+on:
+  pull_request:
+    paths:
+      - frontend/src/games/sannin-shogi/**
+      - frontend/scripts/build-sannin-engine.mjs
+      - frontend/tests/sannin-shogi-smoke.spec.js
+      - frontend/package*.json
+      - frontend/vitest.sannin.config.ts
+      - server/sannin*.js
+      - server/sanninEngine.cjs
+      - server/tests/sannin-online.test.js
+      - server/package*.json
+      - server/allGamesBackendBootstrap.js
+      - .github/workflows/sannin-shogi.yml
+  push:
+    branches: [main]
+    paths:
+      - frontend/src/games/sannin-shogi/**
+      - frontend/scripts/build-sannin-engine.mjs
+      - frontend/tests/sannin-shogi-smoke.spec.js
+      - frontend/package*.json
+      - frontend/vitest.sannin.config.ts
+      - server/sannin*.js
+      - server/sanninEngine.cjs
+      - server/tests/sannin-online.test.js
+      - server/package*.json
+      - server/allGamesBackendBootstrap.js
+      - .github/workflows/sannin-shogi.yml
+
+jobs:
+  gameplay-and-rooms:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run test:sannin
+        working-directory: frontend
+      - run: npm run check:sannin-engine
+        working-directory: frontend
+      - run: npm run build:mainnet
+        working-directory: frontend
+      - run: npm install
+        working-directory: server
+      - run: npm run test:sannin
+        working-directory: server
