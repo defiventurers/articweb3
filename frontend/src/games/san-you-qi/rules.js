@@ -34,7 +34,7 @@ import {
 } from "./topology.js";
 
 export const GAME_ID = "san-you-qi";
-export const RULESET_VERSION = "arctic-final-156-node-3.3.4";
+export const RULESET_VERSION = "arctic-final-156-node-3.3.5";
 
 export const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 export const FACTION_LABELS = Object.freeze({
@@ -678,6 +678,32 @@ export function getLegalActions(state) {
   return generateFor(state, state.turn);
 }
 
+export function resolveStalemate(state) {
+  const error = stateInvariantError(state);
+  if (error || state.phase !== "play" || state.outcome) return state;
+
+  // A checked kingdom with no reply is checkmate and is handled by applyAction.
+  // Stalemate is specifically: side to move, not in check, zero legal actions.
+  if (isInCheck(state, state.turn) || generateFor(state, state.turn).length) {
+    return state;
+  }
+
+  const next = clone(state);
+  const stalled = next.turn;
+  next.phase = "complete";
+  next.resumeTurn = null;
+  next.outcome = {
+    type: "draw",
+    reason: "stalemate",
+    winner: null,
+    losers: [],
+    stalemated: stalled,
+    message: `Stalemate — ${FACTION_LABELS[stalled]} has no legal moves. Draw.`,
+  };
+  next.note = next.outcome.message;
+  return next;
+}
+
 function hasLegalMove(state, faction) {
   return generateFor(state, faction, { skipRepetition: true }).length > 0;
 }
@@ -876,7 +902,7 @@ export function applyAction(state, proposed) {
   }
 
   next.repetition[positionKey(next)] = actor;
-  return { state: next, error: null };
+  return { state: resolveStalemate(next), error: null };
 }
 
 function setupPieces() {
