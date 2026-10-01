@@ -115,6 +115,23 @@ describe("San You Qi bot levels", () => {
     expect(hard.action).not.toEqual(reversal);
   });
 
+  it("scores a stalemate outcome as neutral rather than as a loss for every kingdom", () => {
+    const state = createInitialState();
+    state.phase = "complete";
+    state.outcome = {
+      type: "draw",
+      reason: "stalemate",
+      winner: null,
+      losers: [],
+      stalemated: "green",
+      message: "Stalemate — draw.",
+    };
+
+    for (const faction of ["red", "green", "blue"]) {
+      expect(evaluateSanYouState(state, faction, SAN_YOU_EVAL_WEIGHTS)).toBe(0);
+    }
+  });
+
   it("returns legal actions for every supported difficulty", () => {
     const state = createInitialState();
     const legal = getLegalActions(state);
