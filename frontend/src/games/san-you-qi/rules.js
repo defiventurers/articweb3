@@ -585,6 +585,7 @@ function previewMove(state, piece, target) {
     victim.node = null;
   }
 
+  moving.lastMoveFrom = moving.node;
   moving.node = target;
   moving.hasMoved = true;
 
@@ -776,6 +777,11 @@ export function applyAction(state, proposed) {
   const next = previewMove(state, movingBefore, action.to);
 
   next.ply += 1;
+  const movedPiece = next.pieces.find((piece) => piece.id === action.pieceId);
+  if (movedPiece) {
+    movedPiece.lastMovedPly = next.ply;
+    movedPiece.lastMovedBy = actor;
+  }
   next.lastAction = { ...action, actor, ply: next.ply };
 
   const checked = next.activeFactions.filter(
@@ -891,6 +897,9 @@ function setupPieces() {
         promoted: false,
         leftHome: false,
         hasMoved: false,
+        lastMoveFrom: null,
+        lastMovedPly: null,
+        lastMovedBy: null,
       });
     }
   }
