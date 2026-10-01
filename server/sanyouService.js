@@ -6,6 +6,7 @@ const {
   createInitialState,
   applyAction,
   allNodes,
+  resolveStalemate,
 } = require("./sanyouEngine.cjs");
 const { createSanYouBotPool } = require("./sanyouBotPool.js");
 
@@ -240,7 +241,17 @@ function createSanYouService({
           return;
         }
 
-        if (!result?.action) throw new Error("No bot move available.");
+        if (!result?.action) {
+          const settled = resolveStalemate(room.gameState);
+          if (settled !== room.gameState && settled.outcome?.reason === "stalemate") {
+            room.gameState = settled;
+            room.revision += 1;
+            finish(room);
+            publish(room);
+            return;
+          }
+          throw new Error("No bot move available.");
+        }
         const applied = applyAction(room.gameState, result.action);
         if (applied.error) throw new Error("Bot returned an illegal move.");
 
