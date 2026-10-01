@@ -181,6 +181,9 @@ function createSanYouService({
   }
 
   function finish(room) {
+    const settled = resolveStalemate(room.gameState);
+    if (settled !== room.gameState) room.gameState = settled;
+
     if (room.gameState.outcome || room.gameState.phase === "complete") {
       room.status = "finished";
     }
