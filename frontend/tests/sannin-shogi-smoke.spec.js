@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 async function beginSanninMatch(page) {
   await expect(page.getByRole("heading", { name: "Sannin Shogi" })).toBeVisible();
-  await page.getByRole("button", { name: "Begin match" }).click();
+  await page.getByRole("button", { name: "Start solo game" }).click();
   const board = page.getByRole("grid", { name: "127-cell pointy-top hex board" });
   await expect(board.getByRole("gridcell")).toHaveCount(127);
   await expect(board.locator('[role="gridcell"][tabindex="0"]')).toHaveCount(1);
@@ -38,6 +38,6 @@ test("opening table 24 from the Heritage atlas synchronizes the query", async ({
   await page.goto("/?skipLoader=1&game=heritage-arcade");
   await page.getByRole("heading", { name: "Sannin Shogi", exact: true }).click();
   await page.getByRole("button", { name: "Play Sannin Shogi", exact: true }).first().click();
-  await expect(page.getByRole("button", { name: "Begin match" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Start solo game" })).toBeVisible();
   expect(new URL(page.url()).searchParams.get("table")).toBe("sannin-shogi");
 });
