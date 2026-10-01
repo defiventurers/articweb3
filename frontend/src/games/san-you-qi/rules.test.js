@@ -7,6 +7,7 @@ import {
   getLegalActions,
   getPseudoTargets,
   isInCheck,
+  resolveStalemate,
   squareKey,
   territoryOf,
   validateAction,
@@ -771,6 +772,38 @@ describe("legality and turn flow", () => {
     expect(resumed.error).toBeNull();
     expect(resumed.state.turn).toBe("red");
     expect(resumed.state.resumeTurn).toBeNull();
+  });
+
+  it("ends the entire game as a stalemate draw when the side to move has no legal action and is not in check", () => {
+    const state = sparseState([
+      { faction: "red", role: "soldier", node: "red:L1-4" },
+    ], "red", ["red", "green"]);
+
+    const greenGeneral = state.pieces.find(
+      (piece) => piece.faction === "green" && piece.role === "general",
+    );
+    greenGeneral.status = "captured";
+    greenGeneral.node = null;
+
+    const move = getLegalActions(state).find(
+      (action) =>
+        action.pieceId === "red-soldier-1" &&
+        action.to === "red:L1-5",
+    );
+    expect(move).toBeTruthy();
+
+    const result = applyAction(state, move);
+    expect(result.error).toBeNull();
+    expect(result.state.phase).toBe("complete");
+    expect(result.state.outcome).toMatchObject({
+      type: "draw",
+      reason: "stalemate",
+      winner: null,
+      stalemated: "green",
+    });
+    expect(result.state.outcome.message).toContain("Stalemate");
+    expect(result.state.outcome.message).toContain("Draw");
+    expect(resolveStalemate(result.state)).toBe(result.state);
   });
 
   it("rejects malformed or illegal actions without mutating the source state", () => {
