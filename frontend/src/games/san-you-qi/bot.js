@@ -129,6 +129,9 @@ function boardKey(state) {
 
 function terminalVector(state) {
   if (!state.outcome) return null;
+  if (state.outcome.type === "draw" || state.outcome.winner == null) {
+    return Object.fromEntries(FACTIONS.map((faction) => [faction, 0]));
+  }
   return Object.fromEntries(
     FACTIONS.map((faction) => [
       faction,
