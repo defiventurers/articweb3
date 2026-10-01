@@ -505,6 +505,8 @@ function Rulebook({ state, selectedPiece, selectedTargets, seatLabels = {}, noti
           Red → Green → Blue cycle, the skipped turn resumes after the check is cleared.
           Checkmating a kingdom removes its General and transfers its surviving army
           to the faction whose piece actually delivered mate. The last surviving General wins.
+          If the side to move is not in check but has no legal move, the game ends immediately
+          as a stalemate draw.
         </p>
       </section>
 
