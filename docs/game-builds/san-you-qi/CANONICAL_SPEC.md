@@ -10,7 +10,7 @@ San You Qi (三友棋), also called Three Friends Chess.
 
 ## CURRENT RULESET
 
-`arctic-final-156-node-3.3.4`
+`arctic-final-156-node-3.3.5`
 
 This release combines the historically supported Zheng Jinde / Qing-era Three Friends Chess core with the current Arctic Dominion board reconstruction.
 
@@ -174,6 +174,15 @@ The Xiangqi flying-General rule remains active on approved straight continuation
 Therefore a piece that is currently shielding its own General may be geometrically capable of moving sideways or onto another continuation branch but still be **legally pinned** if that move exposes the two Generals.
 
 Example: a Red Cannon on Blue L5-4 can have normal Cannon pseudo-moves toward Blue's rank and toward the Green L5 branch, yet those moves are illegal if that Cannon is the only blocker between the Red and Blue Generals.
+
+## STALEMATE DRAW
+
+Arctic Dominion completion rule:
+
+- If the faction whose turn it is is **not in check** and has **zero legal actions**, the entire game ends immediately as a stalemate draw.
+- No army is appropriated on stalemate.
+- A checked faction with zero legal replies is still checkmate and uses the existing checkmate/appropriation flow.
+- This rule applies equally to human turns, local bots and online bots.
 
 ## CHECK RESPONSE AND APPROPRIATION
 
