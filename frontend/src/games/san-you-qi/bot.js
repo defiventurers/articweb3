@@ -728,15 +728,18 @@ function chooseSearchedAction(state, difficulty, options = {}) {
       Boolean(result.state.outcome);
     const penalty = reversalPenalty(state, action, context, forcing);
 
+    const priority =
+      vector[rootFaction] -
+      penalty +
+      eliminated * 1_000_000 +
+      (result.state.outcome?.winner === rootFaction ? 20_000_000 : 0);
+
     onePly.push({
       action,
       child: result.state,
       vector,
-      priority:
-        vector[rootFaction] -
-        penalty +
-        eliminated * 1_000_000 +
-        (result.state.outcome?.winner === rootFaction ? 20_000_000 : 0),
+      priority,
+      score: vector[rootFaction] - penalty,
     });
   }
 
@@ -749,7 +752,7 @@ function chooseSearchedAction(state, difficulty, options = {}) {
   if (onePly.length) {
     bestAction = onePly[0].action;
     bestVector = onePly[0].vector;
-    bestScore = onePly[0].vector[rootFaction];
+    bestScore = onePly[0].score;
     completedDepth = 1;
   }
 
@@ -794,7 +797,7 @@ function chooseSearchedAction(state, difficulty, options = {}) {
         context.checkDeadline();
 
         if (state.activeFactions.length === 2) {
-          const value = alphaBeta(
+          let value = alphaBeta(
             entry.child,
             rootFaction,
             depth - 1,
@@ -803,6 +806,7 @@ function chooseSearchedAction(state, difficulty, options = {}) {
             context,
             1,
           );
+          value -= reversalPenalty(state, entry.action, context, entry.forcing);
 
           if (
             iterationAction == null ||
@@ -817,11 +821,18 @@ function chooseSearchedAction(state, difficulty, options = {}) {
             iterationVector = evaluateVector(entry.child, context);
           }
         } else {
-          const vector = maxNSearch(
+          const searched = maxNSearch(
             entry.child,
             depth - 1,
             context,
             1,
+          );
+          const vector = adjustVectorForMove(
+            searched,
+            state,
+            entry,
+            rootFaction,
+            context,
           );
           const value = vector[rootFaction];
 
