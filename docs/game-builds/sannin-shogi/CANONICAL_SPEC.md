@@ -182,18 +182,22 @@
 
 ## Integration and deployment decisions
 
-- First release is deterministic client-local three-seat/hot-seat play, with bot
-  modes only if the approved rules can be implemented honestly. No online-room,
-  staking, transaction, or wallet-required claim.
-- Retain table 24 in the primary Heritage collection. Replace its `CompactBoard`
-  fallthrough with the dedicated app and mark it audited/playable only after rules,
-  build, and browser QA pass.
-- Add a hidden direct catalog entry for `sannin-shogi`, the direct App render branch,
-  host/companion metadata, and both direct/Heritage smoke routes. The lead owns these
-  shared edits.
-- No backend, contract, database, wallet, chain, or new environment-variable change
-  is required. Existing Abstract network status remains observational; moves remain
-  local and off-chain. Deployment is frontend/Vercel only after production build.
+- The canonical rules engine remains pure and shared by all play modes. Local and
+  online play must use the same `getLegalActions → validateAction → applyAction`
+  boundary; online transport may not invent a second movement implementation.
+- On-device play supports 1, 2 or 3 humans, with the existing Easy/Medium command
+  bots filling unclaimed armies.
+- Online rooms are a modern Arctic Dominion transport layer, not a historical-rule
+  claim. They use an isolated `ss_` protocol, authoritative server state, hashed
+  seat tokens, revisions, reconnect handling, ready/start flow and server-side bots.
+- Private and public rooms may be configured for 1, 2 or 3 human seats. The host may
+  fill open seats with bots; a vacated live seat becomes bot-controlled.
+- Retain table 24 in the primary Heritage collection and hidden direct route
+  `?game=sannin-shogi`; Heritage online invite links use
+  `?game=heritage-arcade&table=sannin-shogi&room=<CODE>`.
+- Online play is free/off-chain. No staking, wallet, transaction, smart-contract or
+  paid API is part of Sannin Shogi. It reuses the existing lobby `VITE_WS_URL` and
+  persistence adapter.
 
 ## Verification and deployment status
 
