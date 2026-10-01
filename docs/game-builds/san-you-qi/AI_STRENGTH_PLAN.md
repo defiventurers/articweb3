@@ -26,23 +26,23 @@ That is not enough for the current Arctic Dominion rule set, which contains:
 
 ### Search
 
-Medium and Hard now use a root-centric three-player **paranoid alpha-beta** search over the real San You Qi move sequence.
+The first strengthening pass used root-centric paranoid alpha-beta. Human testing showed it was actually easier to beat: it treated the two other kingdoms as a single coordinated enemy and became too defensive in a game where every kingdom is independent.
 
-This deliberately assumes that both opponents will choose replies that are bad for the bot. That is conservative, but it preserves the exact current turn/check/appropriation rules and permits alpha-beta pruning, which the old MaxN search could not exploit effectively.
+The current engine therefore uses **MaxN while three kingdoms are alive**. Each kingdom selects moves that maximize its own utility. Once one kingdom is eliminated, the position becomes truly two-player and Hard switches to **alpha-beta**.
 
 The search stack now contains:
 
 1. iterative deepening;
-2. alpha-beta pruning;
-3. transposition table;
-4. previous-iteration / TT move ordering;
-5. MVV-LVA-style capture ordering;
-6. killer moves;
-7. history heuristic;
+2. three-player MaxN while all kingdoms are alive;
+3. alpha-beta after the game becomes two-player;
+4. transposition/evaluation caches;
+5. principal-variation move ordering;
+6. MVV-LVA-style capture ordering;
+7. killer/history ordering in the two-player phase;
 8. forcing-move preservation when beam-limiting;
 9. quiescence search for captures, checks, promotions and elimination;
 10. full legal response search while a kingdom is in check;
-11. deeper two-player search after one kingdom is eliminated.
+11. guaranteed one-ply scoring before any time-limited deeper iteration.
 
 ### Evaluation
 
@@ -51,18 +51,15 @@ The evaluator now understands:
 - controlled material, including appropriated armies;
 - promoted Soldiers;
 - crossed Flags;
-- mobility;
-- defended pieces;
-- attacked pieces;
-- hanging pieces;
-- current check;
-- check pressure against both opponents;
+- current legal mobility;
+- current check and check-to-move penalties;
+- checking-move pressure;
 - enemy-territory development;
 - shared Fort-gate occupancy;
 - inner-Sea control;
-- central C-point control;
+- central C-point occupation;
 - elimination / appropriation swing;
-- the strongest rival rather than treating both opponents as equally dangerous.
+- strongest-rival and second-rival pressure.
 
 This is intended to make the bot value the same strategic concepts that matter in Xiangqi while adapting them to the current three-player board.
 
@@ -82,11 +79,11 @@ Target: strong tactical club-level opponent for this custom game.
 
 Current settings:
 
-- iterative paranoid alpha-beta;
+- iterative MaxN;
 - maximum depth 4;
-- beam 20, with forcing moves always retained;
+- beam 14 plus root beam 28, with forcing moves always retained;
 - quiescence depth 2;
-- approximately 1.6 seconds per move;
+- approximately 2.8 seconds per move;
 - deterministic: no random top-three mistake injection.
 
 ### Hard
@@ -95,13 +92,13 @@ Target: strongest browser/server-safe opponent currently practical without a tra
 
 Current settings:
 
-- iterative paranoid alpha-beta;
-- maximum depth 7;
-- beam 34, with forcing moves always retained;
+- iterative MaxN while three kingdoms remain;
+- maximum depth 6;
+- beam 20 plus root beam 42, with forcing moves always retained;
 - quiescence depth 4;
-- approximately 6.5 seconds per move;
-- large transposition table;
-- deeper search after the game becomes two-player;
+- approximately 10.5 seconds per move;
+- large transposition/evaluation caches;
+- switches to deeper alpha-beta after one kingdom is eliminated;
 - deterministic, no deliberate mistakes.
 
 ## Self-play tuning
@@ -142,7 +139,7 @@ The tuner prints the best weight set. A longer offline run should be used before
 1. Run large self-play tournaments and replace hand-tuned weights only when the candidate has a clear win-rate improvement across all three seats.
 2. Build a San You Qi opening book from high-quality Hard-vs-Hard self-play instead of importing Xiangqi openings literally.
 3. Add tactical test suites: mate-in-N, forced appropriation, flying-General pins, Cannon screens, Horse-leg traps, promotion races and third-party discovered checks.
-4. Benchmark multiplayer search policies (paranoid vs MaxN vs Best-Reply Search) under equal time budgets.
+4. Benchmark MaxN against Best-Reply Search under equal time budgets; the paranoid version is retained only as a documented failed experiment from human testing.
 5. If classical search plateaus, train a policy/value network on self-play positions and use it to order / evaluate the alpha-beta tree or guide MCTS.
 
 A neural model should be a later stage, not the first fix. The exact San You Qi graph and rules differ enough from ordinary Xiangqi that a Xiangqi network cannot simply be dropped in without fine-tuning on this game's legal positions.
