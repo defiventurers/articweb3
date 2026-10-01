@@ -186,3 +186,141 @@
 @media (prefers-reduced-motion: reduce) {
   .sannin-shell *, .sannin-shell *::before, .sannin-shell *::after { scroll-behavior: auto !important; transition: none !important; }
 }
+
+
+/* Multiplayer lobby / authoritative online rooms */
+.sannin-mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0 20px;
+}
+.sannin-mode-tabs button {
+  display: grid;
+  gap: 4px;
+  min-height: 72px;
+  padding: 12px 14px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(3, 22, 35, .66);
+  color: var(--ink);
+}
+.sannin-mode-tabs button span { color: var(--muted); font-size: .75rem; }
+.sannin-mode-tabs button.is-selected {
+  border-color: rgba(255, 210, 122, .76);
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 122, .18);
+  background: linear-gradient(135deg, rgba(42, 84, 103, .86), rgba(3, 22, 35, .92));
+}
+.sannin-online-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.sannin-online-panel {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(3, 22, 35, .58);
+}
+.sannin-online-panel h2,
+.sannin-online-panel h3 { margin: 0; }
+.sannin-online-panel label,
+.sannin-invite label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: .76rem;
+  font-weight: 700;
+}
+.sannin-online-panel input,
+.sannin-online-panel select,
+.sannin-invite input {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(2, 15, 26, .84);
+  color: var(--ink);
+}
+.sannin-join { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.sannin-online-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sannin-room-list { display: grid; gap: 8px; }
+.sannin-room-list article {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(1, 15, 25, .58);
+}
+.sannin-room-list article div { display: grid; gap: 2px; }
+.sannin-room-list small { color: var(--muted); }
+.sannin-room-card { max-width: 840px; }
+.sannin-room-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.sannin-room-meta span,
+.sannin-room-meta b {
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(3, 22, 35, .64);
+  font-size: .75rem;
+}
+.sannin-room-seats { display: grid; gap: 8px; margin: 14px 0; }
+.sannin-room-seat {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-left: 4px solid currentColor;
+  border-radius: 13px;
+  background: rgba(3, 22, 35, .6);
+}
+.sannin-room-seat--red { color: #ff6b68; }
+.sannin-room-seat--green { color: #51dfa6; }
+.sannin-room-seat--blue { color: #5db5ff; }
+.sannin-room-seat > div { display: grid; color: var(--ink); }
+.sannin-room-seat small { color: var(--muted); }
+.sannin-invite {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  margin: 14px 0;
+}
+.sannin-invite label { grid-column: 1 / -1; }
+.sannin-room-actions { flex-wrap: wrap; }
+.sannin-online-state {
+  display: grid;
+  gap: 2px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: .72rem;
+}
+.sannin-online-state b { color: var(--ink); }
+
+@media (max-width: 760px) {
+  .sannin-mode-tabs,
+  .sannin-online-grid { grid-template-columns: 1fr; }
+  .sannin-join,
+  .sannin-invite { grid-template-columns: 1fr; }
+  .sannin-invite label { grid-column: auto; }
+  .sannin-room-seat { grid-template-columns: auto minmax(0, 1fr); }
+  .sannin-room-seat > span:last-child { grid-column: 2; }
+}
