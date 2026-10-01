@@ -8,17 +8,16 @@
 
 - 2026-09-16: Repaired allied terminal resolution. Repetition-forbidden escapes are no longer counted as mate defences. If an allied seat has no independent legal move while its partner is checked, the defence turn passes to that partner when it has a legal reply; if neither can reply, the attacking faction defeats the alliance. This prevents an alliance checkmate from being mislabeled as a draw.
 
-### Required lead-owned online-room integration
+### Online-room integration completed
 
-The existing production Sanguo Qi room transport cannot host Sannin actions: it is hard-wired to Sanguo's engine, state shape, `sg_` WebSocket events, validation, bot pool, persistence, and reconnection contracts. To make the lobby's **Online rooms** mode real, the lead must add a separate authoritative Sannin service in the shared server layer, rather than exposing local state as online play:
+- 2026-10-01: Added server-authoritative Sannin Shogi online rooms, using a dedicated `ss_` protocol and the same canonical rules engine as local play.
+- Added private/public six-character rooms, hashed seat tokens, reconnect/reserved seats, ready state, host-only start, persistent room snapshots, stale-revision rejection, and server-side legal-action validation.
+- Hosts may create 1-, 2-, or 3-human rooms. Every unclaimed seat can be filled with the existing Easy/Medium command bot. If a player leaves a live match, that faction becomes bot-controlled.
+- Added a generated Node rules bundle `server/sanninEngine.cjs`, `server/sanninService.js`, `server/sanninBackendBootstrap.js`, browser `onlineClient.js`, server integration tests, and a dedicated Sannin CI workflow.
+- Online transport is a modern Arctic Dominion product feature. It does not change or extend the historical Sannin Shogi ruleset.
+- Online play remains free/off-chain: no wallet, transaction, staking, chain, or new paid API is required.
 
-1. Bundle the pure Sannin rules engine for Node and use `createInitialState`, `getLegalActions`, and `applyAction` as the only room mutation path.
-2. Add a `sanninService` modeled on `server/sanguoService.js`, with isolated `ss_` room create/join/leave/ready/start/state/action events, seat tokens, reconnection, room snapshots, legal-action validation, and server-side bot turns.
-3. Register the new service through the shared backend bootstrap and persistence adapter; do not reuse Sanguo room IDs, tokens, or action schemas.
-4. Add a game-owned `SanninOnline.jsx`/client transport only after those event contracts exist, then replace the current local-only lobby note with room create/join and seat-ready controls.
-5. Add integration tests for three-seat readiness, token reconnect, server rejection of illegal action, bot seat turn, and spectator snapshot before deploying.
-
-- 2026-09-16: Reworked the local match lobby around the Sanguo Qi information hierarchy: play mode, player seating, game option, and three-army preview now precede the start action. Bot and online controls remain explicitly unavailable because this game currently implements neither system.
+- 2026-09-16: Reworked the local match lobby around the Sanguo/San You information hierarchy. Local play supports 1/2/3 humans on one device, with command bots filling every unclaimed army.
 
 - 2026-09-16: Applied the user-recorded board-art fit: centre `667,590`, global scale `1.3`, and per-row X/Y offsets plus horizontal scales. The SVG grid and `board.webp` share one viewBox, so the calibration scales together across responsive layouts.
 - 2026-09-16: Reduced board pieces from 63 to 56 viewBox units and set a visual faction fit for the supplied rotated art: blue `(+3,-2)`, red `(-3,-2)`, and green `(0,+2)` local units. The adjustment inherits each row and global artwork transform.
@@ -32,7 +31,7 @@ Canonical decisions live in `CANONICAL_SPEC.md` and are lead-owned.
 - Product title: **Sannin Shogi — Three Homes, One Pleasure Garden**.
 - Rules baseline: John Fairbairn's English Shogi Magazine transcription, checked against Kapitan Revival no. 40 and its Shogi Geppo-derived Japanese rules.
 - Historical identity: Kokusai Sannin Shogi, devised by Tanigasaki Jisuke around 1930–31; Tanigasaki's book appeared in 1932. This is a modern historical Japanese variant rather than an ancient folk game.
-- First release: deterministic three-seat local hot-seat play. No bot, online, wallet, chain, server, database, or staking claim.
+- Current release: deterministic 1/2/3-human on-device play with Easy/Medium command bots, plus server-authoritative online rooms with bots filling unclaimed or vacated seats. No wallet, chain, staking, or paid-service requirement.
 
 ## Evidence record
 
@@ -57,8 +56,13 @@ Canonical decisions live in `CANONICAL_SPEC.md` and are lead-owned.
 - `frontend/src/games/sannin-shogi/hex.js` and `hex.test.js` — Worker 3's sole geometry/projection source; 127 cells, 342 edges, rotation and projection contract.
 - `frontend/src/games/sannin-shogi/rules.js` — pure serializable engine with canonical setup, owner-relative movement/rays, capture/allegiance/hand/drop rules, promotion, castling, check safety, Garden victory, +K illumination, alliances, elimination, mate/draw/repetition policy, and public `getLegalActions → validateAction → applyAction` boundary.
 - `frontend/src/games/sannin-shogi/rules.test.js` — deterministic setup and gameplay regressions.
-- `frontend/src/games/sannin-shogi/SanninShogiApp.jsx` — local three-seat setup/play, SVG board interaction, hands/drops, promotion choice, undo/restart, outcomes, accessible labels, in-app Rulebook, and Research Notes.
+- `frontend/src/games/sannin-shogi/SanninShogiApp.jsx` — on-device 1/2/3-human play and online-room play, SVG board interaction, hands/drops, promotion choice, local undo/restart, authoritative online actions, outcomes, accessible labels, in-app Rulebook, and Research Notes.
 - `frontend/src/games/sannin-shogi/sanninShogi.css` — game-owned responsive, board-first Arctic presentation with mobile horizontal safety and reduced-motion handling.
+- `frontend/src/games/sannin-shogi/onlineClient.js` — online room transport, seat-token persistence, reconnect and invite-link handling.
+- `server/sanninEngine.cjs` — generated Node parity bundle built from the browser hex/rules/bot sources.
+- `server/sanninService.js` — authoritative Sannin rooms, seat ownership, readiness, action validation, bots, reconnect coverage and persistence.
+- `server/sanninBackendBootstrap.js` — isolated production backend registration for the `ss_` protocol.
+- `server/tests/sannin-online.test.js` — room security, readiness, authoritative action, bot-seat, leave-to-bot and restore-token regressions.
 - `frontend/public/assets/games/sannin-shogi/` — Worker 2's 42 lossless transparent runtime WebPs extracted from the user's supplied composite without redesign. This public directory intentionally contains no manifests or QA-only media.
 - `docs/game-builds/sannin-shogi/qa/` — non-runtime `pieces.json` crop/mask and legal-use manifest, machine-readable `qa-report.json`, checkerboard contact sheet, and source/mask alignment overlay.
 
