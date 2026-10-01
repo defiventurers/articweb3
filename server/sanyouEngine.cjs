@@ -1701,6 +1701,15 @@ function recordCutoff(context, actor, action, ply, depth, quiet) {
   );
 }
 
+function actorTieBreak(vector, actor) {
+  const strongestRival = Math.max(
+    ...FACTIONS
+      .filter((faction) => faction !== actor)
+      .map((faction) => vector[faction]),
+  );
+  return -strongestRival;
+}
+
 function maxNQuiescence(state, qDepth, context, ply) {
   context.checkDeadline();
   context.nodes += 1;
@@ -1735,7 +1744,10 @@ function maxNQuiescence(state, qDepth, context, ply) {
     if (
       !best ||
       vector[actor] > best[actor] ||
-      (vector[actor] === best[actor] && vector[context.rootFaction] > best[context.rootFaction])
+      (
+        vector[actor] === best[actor] &&
+        actorTieBreak(vector, actor) > actorTieBreak(best, actor)
+      )
     ) {
       best = vector;
     }
@@ -1783,7 +1795,7 @@ function maxNSearch(state, depth, context, ply) {
       vector[actor] > best[actor] ||
       (
         vector[actor] === best[actor] &&
-        vector[context.rootFaction] > best[context.rootFaction]
+        actorTieBreak(vector, actor) > actorTieBreak(best, actor)
       )
     ) {
       best = vector;
