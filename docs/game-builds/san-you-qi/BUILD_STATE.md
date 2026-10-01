@@ -4,7 +4,7 @@
 
 Current ruleset:
 
-`arctic-final-156-node-3.3.4`
+`arctic-final-156-node-3.3.5`
 
 The board now uses the latest user-supplied coordinates and the revised 21-point central topology.
 
@@ -38,6 +38,8 @@ The board now uses the latest user-supplied coordinates and the revised 21-point
 - Corrected the six inner Fire seam sources to exact C-point destinations: Red C2→C1/C17, Red C6→C7/C9, Green C8→C5/C7, Green C12→C13/C15, Blue C14→C13/C11, Blue C18→C1/C3. Removed the previous incorrect C-point→arm targets.
 - Added the six Fire Fort-seam diagonals so Fire can cross from L2-5/L8-5 into the neighbouring kingdom's outer L9-5/L1-5 point.
 - Updated unit tests, smoke text, rulebook copy, catalogue text and placement-tool defaults.
+
+- Added stalemate draw resolution: if the side to move is not in check and has no legal action, the whole game ends as a draw instead of leaving a bot/human turn stuck. Checkmate remains unchanged and still transfers the defeated army.
 
 ## Terrain checkpoint
 
