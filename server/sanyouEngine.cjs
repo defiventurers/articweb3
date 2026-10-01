@@ -389,7 +389,7 @@ const SANYOU_TOPOLOGY_DEBUG = Object.freeze({
  */
 
 const GAME_ID = "san-you-qi";
-const RULESET_VERSION = "arctic-final-156-node-3.3.4";
+const RULESET_VERSION = "arctic-final-156-node-3.3.5";
 
 const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 const FACTION_LABELS = Object.freeze({
@@ -1033,6 +1033,32 @@ function getLegalActions(state) {
   return generateFor(state, state.turn);
 }
 
+function resolveStalemate(state) {
+  const error = stateInvariantError(state);
+  if (error || state.phase !== "play" || state.outcome) return state;
+
+  // A checked kingdom with no reply is checkmate and is handled by applyAction.
+  // Stalemate is specifically: side to move, not in check, zero legal actions.
+  if (isInCheck(state, state.turn) || generateFor(state, state.turn).length) {
+    return state;
+  }
+
+  const next = clone(state);
+  const stalled = next.turn;
+  next.phase = "complete";
+  next.resumeTurn = null;
+  next.outcome = {
+    type: "draw",
+    reason: "stalemate",
+    winner: null,
+    losers: [],
+    stalemated: stalled,
+    message: `Stalemate — ${FACTION_LABELS[stalled]} has no legal moves. Draw.`,
+  };
+  next.note = next.outcome.message;
+  return next;
+}
+
 function hasLegalMove(state, faction) {
   return generateFor(state, faction, { skipRepetition: true }).length > 0;
 }
@@ -1231,7 +1257,7 @@ function applyAction(state, proposed) {
   }
 
   next.repetition[positionKey(next)] = actor;
-  return { state: next, error: null };
+  return { state: resolveStalemate(next), error: null };
 }
 
 function setupPieces() {
@@ -1451,6 +1477,9 @@ function boardKey(state) {
 
 function terminalVector(state) {
   if (!state.outcome) return null;
+  if (state.outcome.type === "draw" || state.outcome.winner == null) {
+    return Object.fromEntries(FACTIONS.map((faction) => [faction, 0]));
+  }
   return Object.fromEntries(
     FACTIONS.map((faction) => [
       faction,
@@ -2278,6 +2307,7 @@ module.exports = {
   getLegalActions,
   validateAction,
   applyAction,
+  resolveStalemate,
   allNodes,
   chooseSanYouBotAction,
   evaluateSanYouState,
