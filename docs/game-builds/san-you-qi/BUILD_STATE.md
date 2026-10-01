@@ -63,26 +63,35 @@ Cannon may stop on the boundary point from its own side but may not continue thr
 
 ## AI strength checkpoint
 
-Medium and Hard were rebuilt after the original shallow MaxN implementation proved too easy.
+Human testing showed the first strengthening pass (paranoid alpha-beta) was easier to beat than the earlier bot. The reason was structural: paranoid search treated the two rival kingdoms as one coordinated coalition, which made the bot overly defensive in an independent three-player game. The evaluator was also expensive enough that deeper iterations could time out early.
 
-Medium now uses deterministic iterative paranoid alpha-beta with:
+The current correction uses:
+- MaxN while all three kingdoms are alive, so each kingdom optimizes its own position;
+- alpha-beta only after one kingdom is eliminated and the game becomes genuinely two-player;
+- guaranteed one-ply scoring before the timed search begins;
+- compact board keys instead of serializing the full repetition-history keys into every search node;
+- transposition and evaluation caches;
+- forcing-move preservation for checks, captures, promotions and eliminations;
+- quiescence search to continue unstable tactical lines;
+- independently competitive MaxN tie-breaking rather than favoring the root player on equal opponent scores.
+
+Medium:
 - depth 4 target;
-- 20-move selective beam that always retains forcing moves;
+- beam 14 / root beam 28;
 - quiescence depth 2;
-- ~1.6 s move budget;
-- transposition table, killer moves and history ordering;
-- no random top-three mistakes.
+- ~2.8 s move budget;
+- no deliberate randomness.
 
-Hard now uses:
-- depth 7 target;
-- 34-move selective beam with forcing moves always retained;
+Hard:
+- depth 6 target while three kingdoms remain;
+- beam 20 / root beam 42;
 - quiescence depth 4;
-- ~6.5 s move budget;
-- a much larger transposition table;
-- deeper two-player search after one kingdom is eliminated;
-- no deliberate mistakes.
+- ~10.5 s move budget;
+- larger search/evaluation caches;
+- adds two extra plies and wider search after the game becomes two-player;
+- no deliberate randomness.
 
-The evaluator now includes appropriation-aware material, strongest-rival pressure, mobility, defended/hanging pieces, checks, promotion, post-crossing Flag value, central control, Fort-gate control, inner-Sea control and enemy-territory development.
+The evaluator includes appropriation-aware material, strongest-rival pressure, promotion, crossed-Flag value, check pressure, mobility, enemy-territory development, Fort-gate control, inner-Sea control and central occupation.
 
 Offline self-play weight tuning is available through:
 - `npm run tune:sanyou-bot`
