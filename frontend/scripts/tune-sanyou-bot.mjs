@@ -22,14 +22,12 @@ const TUNABLE = [
   "enemyTerritory",
   "sharedGateOccupancy",
   "innerSeaOccupancy",
-  "centralControl",
-  "mobility",
-  "defendedPiece",
-  "hangingPiece",
-  "attackedPiece",
+  "centralOccupancy",
+  "currentMobility",
   "check",
-  "sideToMoveInCheck",
-  "checkPressure",
+  "checkToMove",
+  "checkingMove",
+  "activeOpponentEliminated",
 ];
 
 function seededRandom(seed) {
@@ -83,7 +81,7 @@ function playGame(candidateFaction, candidateWeights, baselineWeights, seed) {
     const { action } = chooseSanYouBotAction(state, "hard", {
       budgetMs: MOVE_BUDGET_MS,
       maxDepth: 4,
-      beam: 18,
+      beam: 14,
       qDepth: 2,
       qBeam: 10,
       evalWeights: weights,
