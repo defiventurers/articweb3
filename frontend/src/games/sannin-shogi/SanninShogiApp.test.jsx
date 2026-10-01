@@ -57,7 +57,12 @@ describe("SanninShogiApp", () => {
     document.body.append(host);
     const root = createRoot(host);
     await act(async () => root.render(<SanninShogiApp />));
-    await act(async () => [...host.querySelectorAll("button")].find((button) => button.textContent === "Start solo game").click());
+    const threePlayers = [...host.querySelectorAll("button")].find(
+      (button) => button.textContent.includes("3 players"),
+    );
+    expect(threePlayers).toBeTruthy();
+    await act(async () => threePlayers.click());
+    await act(async () => [...host.querySelectorAll("button")].find((button) => button.textContent === "Start 3-player game").click());
     expect(host.querySelector(".sannin-board-art")?.getAttribute("href")).toBe("/assets/games/sannin-shogi/board.webp");
     expect(host.querySelector(".sannin-grid-layer")?.getAttribute("transform")).toBe("translate(667 590) scale(1.3 1.3)");
     expect(host.querySelector('.sannin-grid-row[data-row="0"]')?.getAttribute("transform")).toBe("translate(-73.07692307692308 -46.842511864032666) scale(1.02 1)");
