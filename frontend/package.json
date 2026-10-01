@@ -30,7 +30,10 @@
     "tune:sanyou-bot": "node scripts/tune-sanyou-bot.mjs",
     "benchmark:sanyou-bot": "SANYOU_TUNE_GENERATIONS=1 SANYOU_TUNE_CANDIDATES=1 SANYOU_TUNE_GAMES=1 node scripts/tune-sanyou-bot.mjs",
     "tune:sanguo-bot": "node scripts/tune-sanguo-bot.mjs",
-    "benchmark:sanguo-bot": "SANGUO_TUNE_GENERATIONS=1 SANGUO_TUNE_CANDIDATES=1 SANGUO_TUNE_GAMES=1 node scripts/tune-sanguo-bot.mjs"
+    "benchmark:sanguo-bot": "SANGUO_TUNE_GENERATIONS=1 SANGUO_TUNE_CANDIDATES=1 SANGUO_TUNE_GAMES=1 node scripts/tune-sanguo-bot.mjs",
+    "build:sannin-engine": "node scripts/build-sannin-engine.mjs",
+    "check:sannin-engine": "node scripts/build-sannin-engine.mjs --check",
+    "test:sannin": "vitest run --config vitest.sannin.config.ts"
   },
   "dependencies": {
     "@abstract-foundation/agw-client": "1.12.3",
