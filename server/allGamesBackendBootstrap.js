@@ -18,6 +18,7 @@ const sigeBackend = require("./sigeBackendBootstrap.js");
 const sevenRingsBackend = require("./sevenIceRingsBackendBootstrap.js");
 const { injectSanguo } = require("./sanguoBackendBootstrap.js");
 const { injectSanYouQi } = require("./sanyouBackendBootstrap.js");
+const { injectSanninShogi } = require("./sanninBackendBootstrap.js");
 
 function injectKhasiFishflowAfterAllGames(source) {
   let transformed = source;
@@ -145,7 +146,7 @@ function loadAllGamesBackend() {
   backendModule.filename = indexPath;
   backendModule.paths = Module._nodeModulePaths(path.dirname(indexPath));
   require.cache[indexPath] = backendModule;
-  backendModule._compile(injectSanYouQi(injectSanguo(transformed)), indexPath);
+  backendModule._compile(injectSanninShogi(injectSanYouQi(injectSanguo(transformed))), indexPath);
   return backendModule.exports;
 }
 
