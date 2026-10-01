@@ -12,8 +12,9 @@ describe("SanninShogiApp", () => {
     const html = renderToStaticMarkup(<SanninShogiApp />);
     expect(html).toContain("Sannin Shogi");
     expect(html).toContain("Three Homes, One Pleasure Garden");
-    expect(html).toContain("Start local game");
-    expect(html).toContain("Choose your command table");
+    expect(html).toContain("Start solo game");
+    expect(html).toContain("Choose where to play");
+    expect(html).toContain("Online rooms");
     expect(html).toContain("Opening pact");
   });
 
@@ -56,7 +57,7 @@ describe("SanninShogiApp", () => {
     document.body.append(host);
     const root = createRoot(host);
     await act(async () => root.render(<SanninShogiApp />));
-    await act(async () => [...host.querySelectorAll("button")].find((button) => button.textContent === "Start local game").click());
+    await act(async () => [...host.querySelectorAll("button")].find((button) => button.textContent === "Start solo game").click());
     expect(host.querySelector(".sannin-board-art")?.getAttribute("href")).toBe("/assets/games/sannin-shogi/board.webp");
     expect(host.querySelector(".sannin-grid-layer")?.getAttribute("transform")).toBe("translate(667 590) scale(1.3 1.3)");
     expect(host.querySelector('.sannin-grid-row[data-row="0"]')?.getAttribute("transform")).toBe("translate(-73.07692307692308 -46.842511864032666) scale(1.02 1)");
