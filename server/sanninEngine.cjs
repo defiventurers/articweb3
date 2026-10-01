@@ -779,7 +779,7 @@ function assetRole(piece) {
 const __testing = Object.freeze({ positionKey, ROTATION, MIDDLE_SETUP, ORTH, DIAG });
 
 
-const VALUE = { king: 1000, rook: 9, bishop: 8, gold: 6, silver: 5, knight: 4, lance: 4, pawn: 1 };
+const BOT_VALUE = { king: 1000, rook: 9, bishop: 8, gold: 6, silver: 5, knight: 4, lance: 4, pawn: 1 };
 
 function chooseSanninBotAction(state, difficulty = "medium") {
   const actions = getLegalActions(state);
@@ -790,7 +790,7 @@ function chooseSanninBotAction(state, difficulty = "medium") {
 
 function score(state, action, difficulty) {
   const victim = action.to && state.pieces.find((piece) => piece.status === "board" && piece.cell === action.to);
-  let value = victim && victim.owner !== state.turn ? (VALUE[victim.type] || 0) * 100 : 0;
+  let value = victim && victim.owner !== state.turn ? (BOT_VALUE[victim.type] || 0) * 100 : 0;
   if (action.promote) value += difficulty === "easy" ? 8 : 28;
   if (action.type === "illuminate") value += (action.targets?.length || 0) * 90;
   if (action.to === "0,0") value += 45;
