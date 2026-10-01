@@ -11,6 +11,7 @@ import {
   getNodeLabel,
   getNodePoint,
   isInCheck,
+  resolveStalemate,
 } from "./rules.js";
 import { BOT_LEVELS } from "./bot.js";
 import {
@@ -787,9 +788,31 @@ export default function SanYouQiApp({ onExit }) {
       if (cancelled) return;
       window.clearTimeout(timeout);
 
-      if (data.error || !data.action) {
+      if (data.error) {
         setThinking(false);
-        setError(data.error || "The bot could not choose a move. Retry its turn.");
+        setError(data.error);
+        return;
+      }
+
+      if (!data.action) {
+        const settled = resolveStalemate(position);
+        if (settled !== position && settled.outcome?.reason === "stalemate") {
+          setLocal((current) => {
+            if (!current || current.state !== position) return current;
+            return {
+              ...current,
+              state: settled,
+              history: [...current.history.slice(-49), current.state],
+            };
+          });
+          setSelectedPieceId(null);
+          setError("");
+          setThinking(false);
+          return;
+        }
+
+        setThinking(false);
+        setError("The bot could not choose a move. Retry its turn.");
         return;
       }
 
