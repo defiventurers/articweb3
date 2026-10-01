@@ -8,7 +8,6 @@ export default defineConfig({
       "src/games/sannin-shogi/bot.test.js",
       "src/games/sannin-shogi/SanninShogiApp.test.jsx",
     ],
-    environment: "jsdom",
     testTimeout: 20000,
   },
 });
