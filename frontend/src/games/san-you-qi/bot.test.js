@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createInitialState, getLegalActions } from "./rules.js";
-import { BOT_LEVELS, SAN_YOU_EVAL_WEIGHTS, chooseSanYouBotAction, evaluateSanYouState } from "./bot.js";
+import { applyAction, createInitialState, getLegalActions } from "./rules.js";
+import { BOT_LEVELS, SAN_YOU_EVAL_WEIGHTS, __botTesting, chooseSanYouBotAction, evaluateSanYouState } from "./bot.js";
 
 describe("San You Qi bot levels", () => {
   it("defines Easy, Medium and Hard as distinct decision levels", () => {
@@ -67,6 +67,52 @@ describe("San You Qi bot levels", () => {
       expect(result.stats.completedDepth).toBeGreaterThanOrEqual(1);
       expect(result.score).toBeGreaterThan(-100000000);
     }
+  });
+
+  it("remembers a Chariot's previous square and discourages an immediate quiet shuttle", () => {
+    let state = createInitialState();
+
+    const play = (pieceId, to) => {
+      const action = getLegalActions(state).find(
+        (candidate) => candidate.pieceId === pieceId && candidate.to === to,
+      );
+      expect(action).toBeTruthy();
+      const result = applyAction(state, action);
+      expect(result.error).toBeNull();
+      state = result.state;
+    };
+
+    play("red-chariot-1", "red:L1-2");
+    play("green-soldier-1", "green:L1-5");
+    play("blue-soldier-1", "blue:L1-5");
+
+    const chariot = state.pieces.find((piece) => piece.id === "red-chariot-1");
+    expect(chariot.lastMoveFrom).toBe("red:L1-1");
+    expect(chariot.lastMovedBy).toBe("red");
+
+    const reversal = getLegalActions(state).find(
+      (action) =>
+        action.pieceId === "red-chariot-1" &&
+        action.to === "red:L1-1",
+    );
+    expect(reversal).toBeTruthy();
+    expect(__botTesting.isRecentReversal(state, reversal)).toBe(true);
+
+    const context = { level: BOT_LEVELS.hard };
+    expect(__botTesting.reversalPenalty(state, reversal, context, false))
+      .toBe(BOT_LEVELS.hard.chariotReversalPenalty);
+    expect(__botTesting.reversalPenalty(state, reversal, context, true)).toBe(0);
+
+    const hard = chooseSanYouBotAction(state, "hard", {
+      budgetMs: 5,
+      maxDepth: 2,
+      beam: 8,
+      rootBeam: 12,
+      qDepth: 0,
+      qBeam: 0,
+    });
+    expect(hard.action).toBeTruthy();
+    expect(hard.action).not.toEqual(reversal);
   });
 
   it("returns legal actions for every supported difficulty", () => {
