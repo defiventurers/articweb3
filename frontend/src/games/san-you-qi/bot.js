@@ -39,6 +39,8 @@ export const BOT_LEVELS = Object.freeze({
     qBeam: 10,
     budgetMs: 2800,
     tableSize: 50000,
+    quietReversalPenalty: 260,
+    chariotReversalPenalty: 520,
   }),
   hard: Object.freeze({
     label: "Hard",
@@ -51,6 +53,8 @@ export const BOT_LEVELS = Object.freeze({
     qBeam: 16,
     budgetMs: 10500,
     tableSize: 220000,
+    quietReversalPenalty: 650,
+    chariotReversalPenalty: 1250,
   }),
 });
 
@@ -108,7 +112,7 @@ function boardKey(state) {
   const pieces = state.pieces
     .filter((piece) => piece.status === "board")
     .map((piece) =>
-      `${piece.id}:${piece.owner}:${piece.node}:${piece.promoted ? 1 : 0}:${piece.leftHome ? 1 : 0}`,
+      `${piece.id}:${piece.owner}:${piece.node}:${piece.promoted ? 1 : 0}:${piece.leftHome ? 1 : 0}:${piece.lastMoveFrom || ""}:${piece.lastMovedPly ?? ""}:${piece.lastMovedBy || ""}`,
     )
     .sort()
     .join(";");
@@ -266,6 +270,39 @@ function movePromotionBonus(state, action) {
   return 0;
 }
 
+function isRecentReversal(state, action) {
+  const moving = state.pieces.find((piece) => piece.id === action.pieceId);
+  if (
+    !moving ||
+    moving.lastMoveFrom == null ||
+    moving.lastMovedPly == null ||
+    moving.lastMovedBy !== state.turn ||
+    action.to !== moving.lastMoveFrom
+  ) {
+    return false;
+  }
+
+  // On the mover's next normal turn, two moves have normally passed in a
+  // three-player game and one in a two-player game. Allow one extra ply for
+  // check-interruption/resume sequencing.
+  const age = state.ply - moving.lastMovedPly;
+  return age >= 0 && age <= state.activeFactions.length;
+}
+
+function reversalPenalty(state, action, context, forcing = false) {
+  if (forcing || !isRecentReversal(state, action)) return 0;
+  const moving = state.pieces.find((piece) => piece.id === action.pieceId);
+  return moving?.role === "chariot"
+    ? context.level.chariotReversalPenalty
+    : context.level.quietReversalPenalty;
+}
+
+function adjustVectorForMove(vector, state, entry, actor, context) {
+  const penalty = reversalPenalty(state, entry.action, context, entry.forcing);
+  if (!penalty) return vector;
+  return { ...vector, [actor]: vector[actor] - penalty };
+}
+
 function movePriority(state, action, actor, context, ply, preferred = "") {
   const moving = state.pieces.find((piece) => piece.id === action.pieceId);
   const victim = capturedPiece(state, action);
@@ -283,6 +320,10 @@ function movePriority(state, action, actor, context, ply, preferred = "") {
   if (INNER_SEA.has(action.to)) score += 18_000;
   if (SHARED_GATES.has(action.to)) score += 16_000;
   else if (action.to?.startsWith("C")) score += 9_000;
+
+  if (isRecentReversal(state, action)) {
+    score -= moving?.role === "chariot" ? 1_400_000 : 650_000;
+  }
 
   const killers = context.killers.get(`${actor}:${ply}`) || [];
   if (killers.includes(key)) score += 500_000;
@@ -421,12 +462,13 @@ function maxNQuiescence(state, qDepth, context, ply) {
   let best = checked ? null : stand;
 
   for (const entry of children) {
-    const vector = maxNQuiescence(
+    const searched = maxNQuiescence(
       entry.child,
       qDepth - 1,
       context,
       ply + 1,
     );
+    const vector = adjustVectorForMove(searched, state, entry, actor, context);
 
     if (
       !best ||
@@ -475,7 +517,8 @@ function maxNSearch(state, depth, context, ply) {
   let bestMove = "";
 
   for (const entry of children) {
-    const vector = maxNSearch(entry.child, depth - 1, context, ply + 1);
+    const searched = maxNSearch(entry.child, depth - 1, context, ply + 1);
+    const vector = adjustVectorForMove(searched, state, entry, actor, context);
 
     if (
       !best ||
@@ -538,7 +581,7 @@ function alphaBeta(state, rootFaction, depth, alpha, beta, context, ply) {
   let bestMove = "";
 
   for (const entry of children) {
-    const value = alphaBeta(
+    let value = alphaBeta(
       entry.child,
       rootFaction,
       depth - 1,
@@ -547,6 +590,8 @@ function alphaBeta(state, rootFaction, depth, alpha, beta, context, ply) {
       context,
       ply + 1,
     );
+    const penalty = reversalPenalty(state, entry.action, context, entry.forcing);
+    if (penalty) value += state.turn === rootFaction ? -penalty : penalty;
 
     if (
       (maximizing && value > best) ||
@@ -664,12 +709,32 @@ function chooseSearchedAction(state, difficulty, options = {}) {
     if (result.error) continue;
     const vector = staticVector(result.state, context.weights);
     const eliminated = state.activeFactions.length - result.state.activeFactions.length;
+    const actorChecked = isInCheck(state, rootFaction);
+    const victim = capturedPiece(state, action);
+    const movingBefore = state.pieces.find((piece) => piece.id === action.pieceId);
+    const movingAfter = result.state.pieces.find((piece) => piece.id === action.pieceId);
+    const promoted =
+      (movingBefore?.role === "soldier" && !movingBefore.promoted && movingAfter?.promoted) ||
+      (movingBefore?.role === "flag" && !movingBefore.leftHome && movingAfter?.leftHome);
+    const givesCheck = result.state.activeFactions.some(
+      (faction) => faction !== rootFaction && isInCheck(result.state, faction),
+    );
+    const forcing =
+      actorChecked ||
+      Boolean(victim) ||
+      Boolean(promoted) ||
+      givesCheck ||
+      eliminated > 0 ||
+      Boolean(result.state.outcome);
+    const penalty = reversalPenalty(state, action, context, forcing);
+
     onePly.push({
       action,
       child: result.state,
       vector,
       priority:
-        vector[rootFaction] +
+        vector[rootFaction] -
+        penalty +
         eliminated * 1_000_000 +
         (result.state.outcome?.winner === rootFaction ? 20_000_000 : 0),
     });
@@ -861,3 +926,9 @@ export function describeBotMove(state, action) {
   const piece = state.pieces.find((candidate) => candidate.id === action.pieceId);
   return `${ROLE_LABELS[piece?.role] || "Piece"}: ${action.from} → ${action.to}`;
 }
+
+
+export const __botTesting = Object.freeze({
+  isRecentReversal,
+  reversalPenalty,
+});
