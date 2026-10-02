@@ -37,6 +37,7 @@ import { KhasiFishflowApp } from "./games/khasi-fishflow/KhasiFishflowApp.jsx";
 import { RumaIcePuzzleApp } from "./games/ruma-ice-puzzle/RumaIcePuzzleApp.jsx";
 import { HeritageArcadeApp } from "./games/heritage-arcade/HeritageArcadeApp.jsx";
 import SanYouQiApp from "./games/san-you-qi/SanYouQiApp.jsx";
+import SanYouQiMovementGuide from "./games/san-you-qi/SanYouQiMovementGuide.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
 import { soundManager } from "./utils/soundManager.js";
@@ -147,6 +148,7 @@ export default function App() {
   if (screen === "agon-cold-throne") return withAppChrome(<AgonColdThroneApp onExitToLibrary={exitToLibrary} />, screen);
   if (screen === "shogi-frozen-shogunate") return withAppChrome(<ShogiFrozenShogunateApp onExitToLibrary={exitToLibrary} />, screen);
   if (screen === "sannin-shogi") return withAppChrome(<SanninShogiApp onExit={exitToLibrary} />, screen);
+  if (screen === "san-you-qi" && params.get("movement") === "1") return withAppChrome(<SanYouQiMovementGuide onExit={exitToLibrary} />, screen);
   if (screen === "san-you-qi") return withAppChrome(<SanYouQiApp onExit={exitToLibrary} />, screen);
   if (screen === "nine-ice-forts") return withAppChrome(<NineIceFortsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
   if (screen === "four-wing-ice-hunt") return withAppChrome(<FourWingIceHuntApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
