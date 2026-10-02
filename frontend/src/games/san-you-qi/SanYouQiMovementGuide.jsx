@@ -152,6 +152,7 @@ export default function SanYouQiMovementGuide({ onExit }) {
   );
 
   function selectRole(nextRole) {
+    setNotice("Tap a green ring to move, or try an attack example.");
     setRole(nextRole);
     setPiece(makePiece(nextRole, team));
     setEnemies([]);
@@ -162,6 +163,7 @@ export default function SanYouQiMovementGuide({ onExit }) {
   }
 
   function resetPiece() {
+    setNotice("Piece reset. Tap a green ring to try a move.");
     setPiece(makePiece(role, team));
     setEnemies([]);
     setAddingEnemy(false);
@@ -171,6 +173,7 @@ export default function SanYouQiMovementGuide({ onExit }) {
   }
 
   function switchTeam(next) {
+    setNotice(`Learning with the ${next} team. Choose a piece or try a move.`);
     setHistory([]);
     setTeam(next); setPiece(makePiece(role, next)); setEnemies([]); setTrail([]);
     setEnemyTeam(next === "blue" ? "green" : "blue"); setFreeReposition(false); setAddingEnemy(false);
