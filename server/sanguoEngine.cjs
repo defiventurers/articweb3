@@ -483,7 +483,7 @@ const PALACE_CENTER = {
 * may not land on a friendly-controlled coin.
 */
 function sanguoAdvisorTargets(piece, pieces) {
-	if (piece.captured) return [];
+	if (piece.captured || piece.node.sector !== piece.sector) return [];
 	const { sector, rank, file } = piece.node;
 	const isCenter = rank === PALACE_CENTER.rank && file === PALACE_CENTER.file;
 	const isCorner = PALACE_CORNERS.some((corner) => corner.rank === rank && corner.file === file);

@@ -32,7 +32,7 @@ const PALACE_CENTER = { rank: 3, file: 4 } as const;
  * may not land on a friendly-controlled coin.
  */
 export function sanguoAdvisorTargets(piece: SanguoPiece, pieces: SanguoPiece[]): SanguoNode[] {
-  if (piece.captured) return [];
+  if (piece.captured || piece.node.sector !== piece.sector) return [];
 
   const { sector, rank, file } = piece.node;
   const isCenter = rank === PALACE_CENTER.rank && file === PALACE_CENTER.file;

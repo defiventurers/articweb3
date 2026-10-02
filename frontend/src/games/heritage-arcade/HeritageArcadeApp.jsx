@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { ArcadeChainStatus } from "./ArcadeChainStatus.jsx";
 import { ARCADE_GAMES, CATEGORIES } from "./ported/data/games.ts";
 import { ALL_CLANS, CLANS } from "./ported/game/millsRules.ts";
+import SanguoMovementGuide from "./ported/components/SanguoMovementGuide.jsx";
 import SanguoGame from "./ported/components/SanguoGame.tsx";
 import XiangqiBoard from "./ported/components/XiangqiBoard.tsx";
 import MillsBoard from "./ported/components/MillsBoard.tsx";
@@ -56,6 +57,8 @@ export function HeritageArcadeApp({ onExitToLibrary }) {
     window.history.replaceState({}, "", nextUrl);
   };
   const backToAtlas = () => setActiveMode(null);
+
+  if (activeMode === 1 && params.get("movement") === "1") return <SanguoMovementGuide onExit={onExitToLibrary} />;
 
   if (activeMode !== null) return renderBoard(activeMode, roster, backToAtlas);
 
