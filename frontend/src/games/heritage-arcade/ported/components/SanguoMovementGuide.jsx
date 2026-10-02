@@ -169,7 +169,7 @@ export default function SanguoMovementGuide({ onExit }) {
   }
 
   return (
-    <main className="sanyou-movement-lab">
+    <main className="sanyou-movement-lab" style={{ height: "100dvh", minHeight: 0, overflowY: "auto", boxSizing: "border-box" }}>
       <header className="sanyou-movement-lab__header">
         <div>
           <p>SANGUO QI · MOVEMENT LAB</p>
