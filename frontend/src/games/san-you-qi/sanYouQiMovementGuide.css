@@ -1,0 +1,408 @@
+.sanyou-movement-lab {
+  min-height: 100vh;
+  padding: 18px;
+  color: #edfaff;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(35, 140, 190, .16), transparent 38rem),
+    #061b27;
+  font-family: inherit;
+}
+
+.sanyou-movement-lab button,
+.sanyou-movement-lab a {
+  font: inherit;
+}
+
+.sanyou-movement-lab__header {
+  width: min(1500px, 100%);
+  margin: 0 auto 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+}
+
+.sanyou-movement-lab__header p,
+.sanyou-movement-lab__header h1,
+.sanyou-movement-lab__header span {
+  margin: 0;
+}
+
+.sanyou-movement-lab__header p {
+  margin-bottom: 4px;
+  font-size: .68rem;
+  letter-spacing: .22em;
+  color: #76d7ff;
+}
+
+.sanyou-movement-lab__header h1 {
+  font-size: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.sanyou-movement-lab__header span {
+  display: block;
+  margin-top: 5px;
+  color: #a9c6d2;
+  font-size: .82rem;
+}
+
+.sanyou-movement-lab__header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sanyou-movement-lab__header-actions a,
+.sanyou-movement-lab__header-actions button,
+.sanyou-movement-lab__controls button {
+  min-height: 40px;
+  padding: 8px 13px;
+  border: 1px solid rgba(132, 213, 239, .35);
+  border-radius: 10px;
+  background: rgba(8, 37, 50, .86);
+  color: #ecfbff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.sanyou-movement-lab__header-actions a:hover,
+.sanyou-movement-lab__header-actions button:hover,
+.sanyou-movement-lab__controls button:hover,
+.sanyou-movement-lab__controls button.is-active {
+  border-color: #75e8ff;
+  background: rgba(16, 69, 86, .94);
+}
+
+.sanyou-movement-lab__layout {
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(260px, 330px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.sanyou-movement-lab__picker,
+.sanyou-movement-lab__board-panel {
+  border: 1px solid rgba(127, 194, 219, .22);
+  border-radius: 16px;
+  background: rgba(3, 23, 34, .78);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
+}
+
+.sanyou-movement-lab__picker {
+  padding: 14px;
+}
+
+.sanyou-movement-lab__picker h2 {
+  margin: 0 0 10px;
+  font-size: .95rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+.sanyou-movement-lab__roles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.sanyou-movement-lab__roles button {
+  min-width: 0;
+  padding: 8px 4px;
+  border: 1px solid rgba(128, 190, 215, .2);
+  border-radius: 11px;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  color: #dff7ff;
+  background: rgba(4, 31, 44, .82);
+  cursor: pointer;
+}
+
+.sanyou-movement-lab__roles button.is-active {
+  border-color: #ff7e7e;
+  box-shadow: inset 0 0 0 1px rgba(255, 94, 94, .32), 0 0 22px rgba(255, 80, 80, .14);
+  background: rgba(83, 27, 34, .72);
+}
+
+.sanyou-movement-lab__roles img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.sanyou-movement-lab__roles span {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .68rem;
+}
+
+.sanyou-movement-lab__lesson {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(127, 194, 219, .18);
+}
+
+.sanyou-movement-lab__lesson-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sanyou-movement-lab__lesson-title img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+}
+
+.sanyou-movement-lab__lesson-title div {
+  display: grid;
+  gap: 2px;
+}
+
+.sanyou-movement-lab__lesson-title b {
+  font-size: 1rem;
+}
+
+.sanyou-movement-lab__lesson-title span,
+.sanyou-movement-lab__lesson small,
+.sanyou-movement-lab__trail span {
+  color: #aac6d1;
+  font-size: .72rem;
+}
+
+.sanyou-movement-lab__lesson p {
+  margin: 10px 0;
+  color: #d6edf5;
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.sanyou-movement-lab__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.sanyou-movement-lab__badges span,
+.sanyou-movement-lab__badges strong {
+  padding: 5px 8px;
+  border: 1px solid rgba(114, 211, 162, .28);
+  border-radius: 999px;
+  background: rgba(27, 91, 67, .28);
+  color: #adf5cf;
+  font-size: .65rem;
+}
+
+.sanyou-movement-lab__controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.sanyou-movement-lab__controls button {
+  min-height: 38px;
+  padding-inline: 7px;
+  font-size: .7rem;
+}
+
+.sanyou-movement-lab__trail {
+  display: grid;
+  gap: 3px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(127, 194, 219, .14);
+}
+
+.sanyou-movement-lab__board-panel {
+  min-width: 0;
+  padding: 10px;
+}
+
+.sanyou-movement-lab__board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1536 / 1152;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #000;
+}
+
+.sanyou-movement-lab__board > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
+
+.sanyou-movement-lab__node,
+.sanyou-movement-lab__piece {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.sanyou-movement-lab__node {
+  z-index: 3;
+  width: clamp(18px, 2vw, 30px);
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+}
+
+.sanyou-movement-lab__node:disabled {
+  pointer-events: none;
+}
+
+.sanyou-movement-lab__node.is-legal {
+  pointer-events: auto;
+  cursor: pointer;
+  border: 2px solid #7dffc0;
+  background: rgba(70, 240, 153, .28);
+  box-shadow: 0 0 0 4px rgba(77, 245, 159, .10), 0 0 18px rgba(77, 245, 159, .8);
+}
+
+.sanyou-movement-lab__node.is-reposition:not(.is-occupied) {
+  pointer-events: auto;
+  cursor: crosshair;
+  border: 1px dashed rgba(112, 220, 255, .56);
+  background: rgba(70, 186, 240, .12);
+}
+
+.sanyou-movement-lab__node.is-reposition.is-legal {
+  border-style: solid;
+}
+
+.sanyou-movement-lab__piece {
+  z-index: 5;
+  width: clamp(36px, 4.4vw, 70px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  filter: drop-shadow(0 7px 5px rgba(0, 0, 0, .52));
+}
+
+.sanyou-movement-lab__piece::after {
+  content: "";
+  position: absolute;
+  inset: 9%;
+  border: 2px solid rgba(255, 82, 82, .9);
+  border-radius: 50%;
+  box-shadow: 0 0 14px rgba(255, 68, 68, .62);
+}
+
+.sanyou-movement-lab__piece img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.sanyou-movement-lab__piece span {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffe98f;
+  color: #7a2d15;
+  font-size: .7rem;
+  font-weight: 900;
+}
+
+.sanyou-movement-lab__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 9px 4px 2px;
+  color: #a9c4cf;
+  font-size: .68rem;
+}
+
+.sanyou-movement-lab__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sanyou-movement-lab__legend i {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.sanyou-movement-lab__legend i.legal {
+  border: 2px solid #7dffc0;
+  background: rgba(70, 240, 153, .3);
+}
+
+.sanyou-movement-lab__legend i.piece {
+  border: 2px solid #ff6868;
+}
+
+.sanyou-movement-lab__legend i.free {
+  border: 1px dashed #6edcff;
+}
+
+@media (max-width: 850px) {
+  .sanyou-movement-lab {
+    padding: 10px;
+  }
+
+  .sanyou-movement-lab__header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .sanyou-movement-lab__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sanyou-movement-lab__picker {
+    order: 2;
+  }
+
+  .sanyou-movement-lab__board-panel {
+    order: 1;
+    padding: 5px;
+  }
+
+  .sanyou-movement-lab__roles {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .sanyou-movement-lab__roles img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sanyou-movement-lab__roles span {
+    font-size: .6rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .sanyou-movement-lab__roles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sanyou-movement-lab__controls {
+    grid-template-columns: 1fr;
+  }
+}
