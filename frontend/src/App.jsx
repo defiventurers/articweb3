@@ -12,6 +12,7 @@ import { CoverScreen } from "./screens/CoverScreen.jsx";
 import { GameLibraryScreen } from "./screens/GameLibraryScreen.jsx";
 import { GamePreviewScreen } from "./screens/GamePreviewScreen.jsx";
 import { MainMenu } from "./screens/MainMenu.jsx";
+import ArcticMovementGuide from "./games/arctic-dominion/ArcticMovementGuide.jsx";
 import { NineIceFortsApp } from "./games/nine-ice-forts/NineIceFortsApp.jsx";
 import { AgonColdThroneApp } from "./games/agon-cold-throne/AgonColdThroneApp.jsx";
 import { ShogiFrozenShogunateApp } from "./games/shogi-frozen-shogunate/ShogiFrozenShogunateApp.jsx";
@@ -104,6 +105,8 @@ export default function App() {
           ? "hub"
           : initialHighStakesRoomCode
             ? "cover"
+            : requestedGame?.id === "arctic-dominion" && params.get("movement") === "1"
+              ? "arctic-movement"
             : PLAYABLE_GAME_IDS.has(requestedGame?.id)
               ? requestedGame.id
               : requestedGame?.available
@@ -143,6 +146,7 @@ export default function App() {
   function resumeRoom(nextRoom) { setRoom(nextRoom); if (nextRoom.status === "finished") return goTo("results"); if (nextRoom.status === "playing") return goTo("game"); if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return goTo("waiting"); return goTo("team-select"); }
 
   if (screen === "kingdoms") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
+  if (screen === "arctic-movement") return withAppChrome(<ArcticMovementGuide onExit={exitToLibrary} onPlay={() => { syncGameQuery("arctic-dominion"); goTo("cover"); }} />);
   if (screen === "library") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
   if (screen === "heritage-arcade") return withAppChrome(<HeritageArcadeApp onExitToLibrary={exitToLibrary} profile={profile} />, screen);
   if (screen === "agon-cold-throne") return withAppChrome(<AgonColdThroneApp onExitToLibrary={exitToLibrary} />, screen);
@@ -179,7 +183,7 @@ export default function App() {
   if (screen === "settlement-admin") return withAppChrome(renderLazy(<SettlementAdminScreen onBack={() => goTo("dev-home")} />));
 
   if (screen === "cover") return withAppChrome(<CoverScreen onContinue={() => playTrackThenGo("coverScreen", initialHighStakesRoomCode ? "profile" : "menu", COVER_TRACK_DELAY_MS)} onBackToLibrary={initialHighStakesRoomCode ? undefined : exitToLibrary} />);
-  if (screen === "menu") return withAppChrome(<MainMenu onPlay={() => playTrackThenGo("playNow", "profile", PLAY_NOW_TRACK_DELAY_MS)} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} onAllGames={() => goTo("kingdoms")} />);
+  if (screen === "menu") return withAppChrome(<MainMenu onPlay={() => playTrackThenGo("playNow", "profile", PLAY_NOW_TRACK_DELAY_MS)} onSpectate={() => goTo("spectator")} onHowToPlay={() => goTo("how-to-play")} onMovementGuide={() => window.location.assign("/?game=arctic-dominion&movement=1&skipLoader=1")} onAllGames={() => goTo("kingdoms")} />);
   if (screen === "how-to-play") return withAppChrome(renderLazy(<HowToPlayScreen onBack={() => goTo("menu")} onStart={() => goTo("profile")} />));
   if (screen === "spectator") return withAppChrome(renderLazy(<SpectatorScreen initialRoomCode={initialSpectateCode} onBack={() => goTo(profile ? "hub" : "menu")} />));
   if (screen === "profile") return withAppChrome(renderLazy(<ProfileScreen onComplete={(createdProfile) => { soundManager.play("uiConfirm"); setProfile(createdProfile); goTo(initialHighStakesRoomCode ? "high-stakes" : "hub"); }} onBack={() => goTo("menu")} />));
@@ -202,4 +206,4 @@ export default function App() {
 function lazyNamed(loader, exportName) { return lazy(async () => ({ default: (await loader())[exportName] })); }
 function renderLazy(node, label) { return <Suspense fallback={<FrostRouteLoader label={label} />}>{node}</Suspense>; }
 function cleanInviteCode(value) { return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4); }
-function syncGameQuery(gameId) { const nextUrl = new URL(window.location.href); if (gameId) nextUrl.searchParams.set("game", gameId); else nextUrl.searchParams.delete("game"); window.history.replaceState({}, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`); }
+function syncGameQuery(gameId) { const nextUrl = new URL(window.location.href); nextUrl.searchParams.delete("movement"); if (gameId) nextUrl.searchParams.set("game", gameId); else nextUrl.searchParams.delete("game"); window.history.replaceState({}, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`); }

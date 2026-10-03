@@ -372,9 +372,13 @@ function slideMoves(state, row, col, dirs) {
   return out;
 }
 
+export function getPawnPromotionType(team, row, col) {
+  return PROMOTION_PIECES[team]?.[`${row},${col}`] || null;
+}
+
 function maybePromotePawn(piece, row, col, moveLog) {
   if (!piece || piece.type !== "pawn") return;
-  const promotionType = PROMOTION_PIECES[piece.team]?.[`${row},${col}`];
+  const promotionType = getPawnPromotionType(piece.team, row, col);
   if (!promotionType) return;
   piece.type = promotionType;
   piece.isRoyal = false;

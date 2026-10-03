@@ -180,7 +180,7 @@ function applyMove(state, move) {
   if (captured) moveLog.unshift(`${TEAM_LABEL[piece.team]} captured ${TEAM_LABEL[captured.team]} ${PIECE_NAME[captured.type]}`);
   else moveLog.unshift(`${TEAM_LABEL[piece.team]} moved ${PIECE_NAME[piece.type]}`);
   maybePromotePawn(board[move.toRow][move.toCol], move.toRow, move.toCol, moveLog);
-  if (captured?.type === "king") {
+  if (isRoyalKing(captured)) {
     removeTeamPieces(board, captured.team);
     if (!eliminatedTeams.includes(captured.team)) eliminatedTeams.push(captured.team);
     moveLog.unshift(`${TEAM_LABEL[captured.team]} eliminated`);
@@ -252,7 +252,8 @@ function maybePromotePawn(piece, row, col, moveLog) { if (!piece || piece.type !
 function removeTeamPieces(board, team) { for (let row = 0; row < ROWS; row += 1) { for (let col = 0; col < COLS; col += 1) { if (board[row][col]?.team === team) board[row][col] = null; } } }
 function checkWinner(state) { const alive = PLAYERS.filter((team) => teamHasKing(state.board, team)); if (alive.length > 1) return state; return touch({ ...state, gameOver: true, winner: alive[0] || null, selected: null, legalMoves: [] }); }
 function getPlacements(state) { const eliminated = state.eliminatedTeams || []; const alive = PLAYERS.filter((team) => teamHasKing(state.board, team)); const winner = state.winner || alive[0] || null; const ordered = []; if (winner) ordered.push(winner); [...eliminated].reverse().forEach((team) => { if (!ordered.includes(team)) ordered.push(team); }); PLAYERS.forEach((team) => { if (!ordered.includes(team)) ordered.push(team); }); return ordered.slice(0, 4); }
-function teamHasKing(board, team) { return board.some((row) => row.some((piece) => piece && piece.team === team && piece.type === "king")); }
+function isRoyalKing(piece) { return piece?.type === "king" && piece.isRoyal !== false; }
+function teamHasKing(board, team) { return board.some((row) => row.some((piece) => piece && piece.team === team && isRoyalKing(piece))); }
 function inBounds(row, col) { return row >= 0 && row < ROWS && col >= 0 && col < COLS; }
 function dedupeMoves(moves) { const seen = new Set(); return moves.filter((move) => { const key = `${move.fromRow},${move.fromCol},${move.toRow},${move.toCol},${move.dieIndex}`; if (seen.has(key)) return false; seen.add(key); return true; }); }
 function cloneBoard(board) { return board.map((row) => row.map((piece) => (piece ? { ...piece } : null))); }

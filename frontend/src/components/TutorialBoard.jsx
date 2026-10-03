@@ -8,8 +8,9 @@ import {
   getMovementPreviewTargets,
   makePiece
 } from "../game/gameRules.js";
+import { moveLesson } from "../games/arctic-dominion/movementLesson.js";
 
-const LOCAL_PIECE_ASSET_BASE = "/assets/arctic/pieces";
+const LOCAL_PIECE_ASSET_BASE = "/assets/artic/lesson-pieces";
 const REMOTE_PIECE_ASSET_BASE =
   "https://raw.githubusercontent.com/defiventurers/chaturanga-game/36d8ee9ae33fa08a21ba3d644b6053b9e13273e4/public/assets/arctic/pieces";
 
@@ -171,19 +172,16 @@ export function TutorialBoard({ teamColor = "red", diceMode = false }) {
 
     const move = legalMap.get(`${row},${col}`);
     if (selected && move) {
-      const nextBoard = cloneBoard(board);
-      const piece = nextBoard[move.fromRow][move.fromCol];
-      const captured = nextBoard[move.toRow][move.toCol];
-      nextBoard[move.toRow][move.toCol] = piece ? { ...piece } : null;
-      nextBoard[move.fromRow][move.fromCol] = null;
-      setBoard(nextBoard);
+      const result = moveLesson({ board, position: selected }, row, col);
+      setBoard(result.board);
+      setPieceType(result.board[row][col].type);
       setSelected(null);
 
       const nextDice = { values: [...dice.values], used: [...dice.used], rolled: dice.rolled };
       if (diceMode && activeDieIndex >= 0) nextDice.used[activeDieIndex] = true;
       if (diceMode) setDice(nextDice);
 
-      const actionText = getMoveResultText(piece, captured);
+      const actionText = result.message;
       if (diceMode) {
         const remaining = getRemainingDiceTypes(nextDice);
         setLastAction(remaining.length ? `${actionText} Use your second die: ${remaining.join(" or ")}.` : `${actionText} Both dice used. Roll again.`);
@@ -293,7 +291,7 @@ function TutorialPieceImage({ piece }) {
   }
 
   const filename = `${color}-${type}.png`;
-  const localSrc = `${LOCAL_PIECE_ASSET_BASE}/${filename}`;
+  const localSrc = `${LOCAL_PIECE_ASSET_BASE}/${filename.replace(".png", ".webp")}`;
   const remoteSrc = `${REMOTE_PIECE_ASSET_BASE}/${filename}`;
 
   return (
@@ -366,13 +364,6 @@ function getInitialMessage(pieceType, diceMode) {
   return `Tap the ${PIECE_NAME[pieceType]} on the board to reveal legal moves.`;
 }
 
-function getMoveResultText(piece, captured) {
-  if (!piece) return "Move complete.";
-  if (captured?.type === "king") return `${PIECE_NAME[piece.type]} captured the Frost King. Kingdom erased.`;
-  if (captured) return `${PIECE_NAME[piece.type]} captured ${PIECE_NAME[captured.type]}.`;
-  return `${PIECE_NAME[piece.type]} moved to glowing ice.`;
-}
-
 function getRemainingDiceTypes(dice) {
   const names = new Set();
   dice.values.forEach((value, index) => {
@@ -401,8 +392,4 @@ function normalizeTeam(color) {
 
 function isInBounds(target) {
   return target.row >= 0 && target.row < ROWS && target.col >= 0 && target.col < COLS;
-}
-
-function cloneBoard(board) {
-  return board.map((row) => row.map((piece) => (piece ? { ...piece } : null)));
 }

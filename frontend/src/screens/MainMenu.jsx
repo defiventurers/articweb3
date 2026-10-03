@@ -13,6 +13,7 @@ export function MainMenu(props) {
         />
         <button className="menu-hitbox menu-play-hitbox" aria-label="Start Game" onClick={props.onPlay} />
         <button className="menu-hitbox menu-how-hitbox" aria-label="Rules" onClick={props.onHowToPlay} />
+        {props.onMovementGuide && <button type="button" className="main-menu-movement-button" onClick={props.onMovementGuide}>Learn piece movement ↗</button>}
         <button className="menu-hitbox menu-spectate-hitbox" aria-label="Spectate Room" onClick={props.onSpectate}>
           Spectate Room
         </button>

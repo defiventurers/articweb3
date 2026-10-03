@@ -91,6 +91,7 @@ export function HowToPlayScreen({ onBack, onStart }) {
             <strong>Learn Arctic Dominion</strong>
           </div>
           <button type="button" className="academy-skip" onClick={onStart || onBack}>Play</button>
+          <a className="academy-skip" href="/?game=arctic-dominion&movement=1&skipLoader=1">Movement playground ↗</a>
         </header>
 
         <div className="academy-progress" aria-label="Tutorial progress">

@@ -3,7 +3,7 @@ import { DICE_ROLLS, TEAM_COLOR, TEAM_LABEL, createInitialGameState, currentTeam
 import { endGameTurn, getGameState, rollGameDice, selectGameSquare } from "../network/socketClient.js";
 import { soundManager } from "../utils/soundManager.js";
 
-const LOCAL_PIECE_ASSET_BASE = "/assets/arctic/pieces";
+const LOCAL_PIECE_ASSET_BASE = "/assets/artic/lesson-pieces";
 const REMOTE_PIECE_ASSET_BASE =
   "https://raw.githubusercontent.com/defiventurers/chaturanga-game/36d8ee9ae33fa08a21ba3d644b6053b9e13273e4/public/assets/arctic/pieces";
 const REMOTE_DESKTOP_GAME_ART =
@@ -140,7 +140,7 @@ function DiceFace({ game, index, team }) {
     </div>
   );
 }
-function PieceImage({ piece, className }) { const color = TEAM_ASSET_COLOR[piece.team]; const type = PIECE_ASSET_TYPE[piece.type]; if (!color || !type) return <span>{PIECE_LETTER[piece.type] || "?"}</span>; const filename = `${color}-${type}.png`; const remoteSrc = `${REMOTE_PIECE_ASSET_BASE}/${filename}`; const localSrc = `${LOCAL_PIECE_ASSET_BASE}/${filename}`; return <img src={remoteSrc} alt={`${TEAM_LABEL[piece.team]} ${piece.type}`} className={className} draggable="false" decoding="async" onError={(event) => { if (event.currentTarget.src !== localSrc) event.currentTarget.src = localSrc; }} />; }
+function PieceImage({ piece, className }) { const color = TEAM_ASSET_COLOR[piece.team]; const type = PIECE_ASSET_TYPE[piece.type]; if (!color || !type) return <span>{PIECE_LETTER[piece.type] || "?"}</span>; const filename = `${color}-${type}.png`; const remoteSrc = `${REMOTE_PIECE_ASSET_BASE}/${filename}`; const localSrc = `${LOCAL_PIECE_ASSET_BASE}/${filename.replace(".png", ".webp")}`; return <img src={localSrc} alt={`${TEAM_LABEL[piece.team]} ${piece.type}`} className={className} draggable="false" decoding="async" onError={(event) => { if (event.currentTarget.src !== remoteSrc) event.currentTarget.src = remoteSrc; }} />; }
 function renderBoardRows(board) { const cells = []; board.forEach((rowItems, row) => { rowItems.forEach((piece, col) => cells.push({ piece, row, col })); }); return cells; }
 function getStatusText({ game, team, isMyTurn, isBotTurn, busy, error, hasLegalMoveForRoll }) { if (error) return error; if (game.gameOver) return "Match complete."; if (isBotTurn) return "Bot is moving..."; if (!isMyTurn) return "Waiting for your turn."; if (busy) return "Submitting move..."; if (!game.dice.rolled) return "Roll dice."; if (!hasLegalMoveForRoll) return "No legal moves for this roll. Press End Turn, or tap Roll Dice to auto-skip."; return `${TEAM_LABEL[team]} rolled ${game.dice.values.join(" and ")}. Choose a legal move.`; }
 function winnerText(game) { if (!game.winner) return "Draw"; return `${TEAM_LABEL[game.winner]} Wins`; }

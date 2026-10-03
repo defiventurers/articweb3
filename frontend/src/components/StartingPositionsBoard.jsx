@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createStartingBoard } from "../game/gameRules.js";
 
-const LOCAL_PIECE_ASSET_BASE = "/assets/arctic/pieces";
+const LOCAL_PIECE_ASSET_BASE = "/assets/artic/lesson-pieces";
 const REMOTE_PIECE_ASSET_BASE =
   "https://raw.githubusercontent.com/defiventurers/chaturanga-game/36d8ee9ae33fa08a21ba3d644b6053b9e13273e4/public/assets/arctic/pieces";
 
@@ -68,7 +68,7 @@ function StartingPieceImage({ piece }) {
   }
 
   const filename = `${color}-${type}.png`;
-  const localSrc = `${LOCAL_PIECE_ASSET_BASE}/${filename}`;
+  const localSrc = `${LOCAL_PIECE_ASSET_BASE}/${filename.replace(".png", ".webp")}`;
   const remoteSrc = `${REMOTE_PIECE_ASSET_BASE}/${filename}`;
 
   return (
