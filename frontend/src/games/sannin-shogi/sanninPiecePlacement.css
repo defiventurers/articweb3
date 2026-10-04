@@ -1,0 +1,29 @@
+.sannin-placement .sannin-battle-toolbar { justify-content: space-between; }
+.sannin-placement-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; }
+.sannin-placement-stage { display: flex; flex-direction: column; min-height: 0; min-width: 0; background: radial-gradient(ellipse at center, #164859, #020d19 80%); }
+.sannin-placement .sannin-square { touch-action: none; cursor: grab; }
+.sannin-placement .sannin-square:active { cursor: grabbing; }
+.sannin-placement .sannin-cell { stroke: #fff0bb99; stroke-width: 1.4; }
+.sannin-placement .sannin-cell.is-selected { stroke: #fff8bf; stroke-width: 4; }
+.sannin-placement-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 12px; background: #031b2b; border-top: 1px solid var(--line); font-size: 11px; font-variant-numeric: tabular-nums; }
+.sannin-placement-footer button { padding: 5px 9px; font-size: 11px; border-radius: 8px; }
+.sannin-placement-controls { overflow: auto; min-height: 0; padding: 20px; background: #041a29; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+.sannin-placement-controls > * { flex-shrink: 0; }
+.sannin-placement-intro { margin: 0; font-size: 12px; line-height: 1.6; color: var(--muted); }
+.sannin-placement-controls label { display: grid; gap: 5px; font-size: 11px; font-weight: 700; color: var(--muted); }
+.sannin-placement-controls select, .sannin-placement-controls input { width: 100%; min-width: 0; min-height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 7px; background: #082b40; color: var(--ink); font: inherit; }
+.sannin-placement-controls textarea { width: 100%; min-height: 130px; resize: vertical; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font: 10px/1.6 ui-monospace, monospace; color: #c1e6ee; background: #010e18; }
+.sannin-placement-controls :is(select, input, textarea):focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.sannin-placement-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sannin-placement-nudge { display: grid; grid-template-columns: repeat(4, 1fr) 1.4fr; gap: 4px; align-items: end; }
+.sannin-placement-nudge button { padding: 0; border-radius: 8px; }
+.sannin-placement-buttons { display: flex; gap: 6px; }
+.sannin-placement-status { margin: 0; color: var(--amber); font-size: 11px; line-height: 1.5; }
+.sannin-placement-note { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+@media (max-width: 800px) {
+  .sannin-placement-body { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) 36%; }
+  .sannin-placement-controls { border-left: 0; border-top: 1px solid var(--line); padding: 12px 16px; }
+  .sannin-placement .sannin-battle-brand h1 { font-size: 16px; }
+  .sannin-placement-footer { flex-wrap: wrap; font-size: 10px; }
+  .sannin-placement-footer .sannin-zoom { margin-left: auto; }
+}

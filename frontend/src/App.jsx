@@ -17,6 +17,7 @@ import { NineIceFortsApp } from "./games/nine-ice-forts/NineIceFortsApp.jsx";
 import { AgonColdThroneApp } from "./games/agon-cold-throne/AgonColdThroneApp.jsx";
 import { ShogiFrozenShogunateApp } from "./games/shogi-frozen-shogunate/ShogiFrozenShogunateApp.jsx";
 import SanninShogiApp from "./games/sannin-shogi/SanninShogiApp.jsx";
+import SanninPiecePlacement from "./games/sannin-shogi/SanninPiecePlacement.jsx";
 import { FourWingIceHuntApp } from "./games/four-wing-ice-hunt/FourWingIceHuntApp.jsx";
 import { FishflowApp } from "./games/fishflow/FishflowApp.jsx";
 import { BreakTheIceApp } from "./games/break-the-ice/BreakTheIceApp.jsx";
@@ -151,6 +152,7 @@ export default function App() {
   if (screen === "heritage-arcade") return withAppChrome(<HeritageArcadeApp onExitToLibrary={exitToLibrary} profile={profile} />, screen);
   if (screen === "agon-cold-throne") return withAppChrome(<AgonColdThroneApp onExitToLibrary={exitToLibrary} />, screen);
   if (screen === "shogi-frozen-shogunate") return withAppChrome(<ShogiFrozenShogunateApp onExitToLibrary={exitToLibrary} />, screen);
+  if (screen === "sannin-shogi" && params.get("placement") === "1") return withAppChrome(<SanninPiecePlacement />, screen);
   if (screen === "sannin-shogi") return withAppChrome(<SanninShogiApp onExit={exitToLibrary} />, screen);
   if (screen === "san-you-qi" && params.get("movement") === "1") return withAppChrome(<SanYouQiMovementGuide onExit={exitToLibrary} />, screen);
   if (screen === "san-you-qi") return withAppChrome(<SanYouQiApp onExit={exitToLibrary} />, screen);

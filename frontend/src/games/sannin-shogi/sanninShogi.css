@@ -324,3 +324,77 @@
   .sannin-room-seat { grid-template-columns: auto minmax(0, 1fr); }
   .sannin-room-seat > span:last-child { grid-column: 2; }
 }
+
+/* The tactical table fits the viewport; only the match panel or a zoomed board scrolls. */
+body:has(.sannin-match), body:has(.sannin-placement) { overflow: hidden; }
+body:has(.sannin-match) .experience-companion, body:has(.sannin-placement) .experience-companion,
+body:has(.sannin-match) > #root .audio-toggle:not(.sannin-match-menu .audio-toggle), body:has(.sannin-placement) > #root .audio-toggle { display: none; }
+.sannin-shell.sannin-match, .sannin-shell.sannin-placement { height: 100dvh; min-height: 0; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.sannin-battle-toolbar { flex: 0 0 64px; display: flex; align-items: center; gap: 14px; padding: 8px 18px; border-bottom: 1px solid var(--line); background: #031521; z-index: 5; }
+.sannin-battle-brand h1 { margin: 0; font: 700 22px/1 Georgia, serif; }
+.sannin-battle-brand .sannin-kicker { font-size: 9px; margin-bottom: 5px; }
+.sannin-battle-turn { display: flex; align-items: center; gap: 10px; margin: 0 auto; padding: 5px 16px; border: 1px solid var(--line); border-radius: 12px; font-size: 12px; }
+.sannin-battle-turn > span:last-child { display: grid; gap: 2px; }
+.sannin-battle-turn small { color: var(--muted); font-size: 10px; }
+.sannin-battle-tools { display: flex; gap: 5px; }
+.sannin-shell .sannin-icon-button { display: grid; place-items: center; padding: 0; border-radius: 10px; }
+.sannin-match-menu { position: relative; }
+.sannin-match-menu summary { display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer; border-radius: 10px; border: 1px solid var(--line); background: #0a2f44; list-style: none; }
+.sannin-match-menu summary::-webkit-details-marker { display: none; }
+.sannin-match-menu summary:focus-visible { outline: 3px solid var(--amber); }
+.sannin-match-menu > div { position: absolute; right: 0; top: 50px; width: 210px; display: grid; gap: 6px; padding: 10px; background: #062337; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 40px #0009; }
+.sannin-match-menu a, .sannin-placement-link { display: block; padding: 12px; color: var(--amber); font-size: 12px; border-radius: 9px; }
+.sannin-match .sannin-play-layout { flex: 1; min-height: 0; width: 100%; max-width: none; margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) 270px; align-items: stretch; gap: 0; }
+.sannin-match.is-focused .sannin-play-layout { grid-template-columns: minmax(0, 1fr); }
+.sannin-match .sannin-board-panel { padding: 0; border: 0; border-radius: 0; box-shadow: none; display: flex; flex-direction: column; min-height: 0; overflow: hidden; background: radial-gradient(ellipse at center, #123e50, #020d19 80%); }
+.sannin-board-scroll { position: relative; }
+.sannin-match .sannin-board-scroll, .sannin-placement .sannin-board-scroll { flex: 1; min-height: 0; width: 100%; overflow: auto; overscroll-behavior: contain; }
+.sannin-match .sannin-board, .sannin-placement .sannin-board { width: calc(var(--sannin-fit-width, 100%) * var(--sannin-board-scale, 1)); max-width: none; min-width: 0; height: auto; aspect-ratio: var(--sannin-board-aspect); margin: auto; filter: none; }
+.sannin-piece-placement { transform: translate(var(--sannin-piece-x, 0px), var(--sannin-piece-y, 0px)); pointer-events: none; }
+.sannin-match .sannin-board-actions { flex: 0 0 auto; min-height: 48px; padding: 4px 12px; border-top: 1px solid var(--line); background: #041b2b; font-size: 11px; flex-wrap: nowrap; gap: 7px; }
+.sannin-match .sannin-board-actions > span { flex: 1; min-width: 0; }
+.sannin-match .sannin-board-actions > :nth-last-child(2) { margin-left: 0; }
+.sannin-match .sannin-board-actions button { font-size: 11px; padding: 6px 10px; border-radius: 8px; }
+.sannin-zoom { align-items: center; flex-shrink: 0; }
+.sannin-zoom output { min-width: 34px; text-align: center; font-size: 10px; font-variant-numeric: tabular-nums; }
+.sannin-match .sannin-roster { position: static; top: auto; display: flex; flex-direction: column; gap: 10px; overflow: auto; min-height: 0; padding: 14px; background: #041a29; border-left: 1px solid var(--line); }
+.sannin-match .sannin-roster > * { flex-shrink: 0; }
+.sannin-match .sannin-match-summary { padding: 10px; border-radius: 10px; font-size: 11px; }
+.sannin-match .sannin-match-summary .sannin-kicker { font-size: 9px; }
+.sannin-match .sannin-hand, .sannin-match .sannin-legend { padding: 10px; border-radius: 10px; font-size: 11px; box-shadow: none; }
+.sannin-match .sannin-hand header { font-size: 12px; }
+.sannin-match .sannin-match-seat { border-radius: 8px; font-size: 12px; }
+.sannin-match .sannin-inspector { margin: 0; font-size: 11px; padding: 7px; }
+.sannin-match .sannin-inspector img { width: 42px; height: 42px; }
+.sannin-match .sannin-result { margin: 0; padding: 10px; font-size: 12px; }
+.sannin-match .sannin-result button { font-size: 11px; }
+.sannin-drawer-shade { position: absolute; z-index: 30; inset: 64px 0 0; background: #0009; display: flex; justify-content: flex-end; }
+.sannin-match .sannin-drawer { width: min(320px, 92vw); height: 100%; box-shadow: -12px 0 40px #0008; }
+.sannin-drawer-close { width: 100%; }
+@media (max-width: 900px) {
+  .sannin-match .sannin-play-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .sannin-battle-toolbar { gap: 6px; padding: 6px 8px; flex-basis: 60px; }
+  .sannin-battle-brand h1 { font-size: 16px; }
+  .sannin-battle-brand .sannin-kicker { font-size: 7px; letter-spacing: .08em; }
+  .sannin-battle-turn { border: 0; padding: 0 4px; gap: 5px; font-size: 10px; }
+  .sannin-battle-turn small { font-size: 9px; }
+  .sannin-battle-tools { gap: 3px; }
+  .sannin-battle-tools > button[aria-label="Fullscreen"] { display: none; }
+  .sannin-match .sannin-board-actions { flex-wrap: wrap; padding: 4px 8px; gap: 4px; }
+  .sannin-match .sannin-board-actions > span { flex-basis: 100%; padding: 2px 0; }
+  .sannin-match .sannin-board-actions > .sannin-zoom { margin-left: auto; }
+  .sannin-drawer-shade { inset-block-start: 60px; }
+}
+.sannin-match .sannin-board-scroll, .sannin-placement .sannin-board-scroll { display: flex; }
+.sannin-match .sannin-board, .sannin-placement .sannin-board { flex: none; }
+
+.sannin-match-menu .audio-toggle { position: static !important; width: 100% !important; display: grid; border-radius: 8px !important; }
+@media (max-width: 600px) {
+  .sannin-battle-toolbar > .sannin-icon-button, .sannin-battle-tools .sannin-icon-button, .sannin-match-menu summary { min-width: 40px; width: 40px; }
+}
+@media (max-width: 360px) {
+  .sannin-match .sannin-battle-turn { display: none; }
+  .sannin-match .sannin-battle-tools { margin-left: auto; }
+}
