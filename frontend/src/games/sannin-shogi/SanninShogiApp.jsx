@@ -29,6 +29,7 @@ import "./sanninShogi.css";
 
 import { SIZE, BOARD_ART, BOARD_WIDTH, BOARD_HEIGHT, GRID_TRANSFORM, ROWS, CELLS_BY_ROW, PIECE_SIZE, ROTATION, rowTransform, BATTLE_VIEWBOX, FULL_VIEWBOX, BATTLE_ASPECT } from "./boardGeometry.js";
 import { readPiecePlacement, PLACEMENT_KEY } from "./piecePlacement.js";
+import { battleLayout } from "./battleLayout.js";
 const SHORT = { king: "K", rook: "R", bishop: "B", gold: "G", silver: "S", knight: "N", lance: "L", pawn: "P" };
 const roomFromUrl = () => (new URLSearchParams(window.location.search).get("room") || "").trim().toUpperCase();
 
@@ -198,6 +199,41 @@ function MatchSeat({ state, faction, humans = [], label = "" }) {
   </div>;
 }
 
+const MOVEMENT_NOTES = {
+  king: ["One adjacent hex. An unused, unchecked King may also make an opening castle jump within its home territory.", "Ranges along all twelve main and radian lines; may also illuminate eligible targets."],
+  rook: ["Ranges along four main lines and the directly rear radian line.", "Ranges along all six main lines."],
+  bishop: ["Ranges along all six radian lines, passing between the flanking hexes.", "Also steps to every adjacent hex."],
+  gold: ["Six steps: four main directions, plus forward and rear radian directions."],
+  silver: ["Four diagonal-forward/rear main steps and two forward radian steps.", "Also ranges directly forward and rear on radian lines."],
+  knight: ["Two sideways main steps and four sideways radian steps. It does not jump."],
+  lance: ["Ranges along the two forward main lines.", "Also ranges along the two rear main lines."],
+  pawn: ["Steps to either forward main hex.", "Moves as a Gold General."]
+};
+function PieceCommand({ state, selected, actions, canAct, onSelect, onLand }) {
+  const piece = state.pieces.find(item => item.id === selected?.id);
+  const landings = [...new Set(actions.map(action => action.to).filter(Boolean))];
+  return <section className="sannin-command" aria-label="Piece command">
+    <p className="sannin-kicker">{FACTION_LABELS[state.turn]} · quick select</p>
+    <div className="sannin-piece-shelf">{TYPES.map(type => {
+      const pieces = state.pieces.filter(item => item.owner === state.turn && item.type === type && item.status === "board");
+      return <button key={type} disabled={!canAct || !pieces.length} onClick={() => onSelect(pieces[0].id)} aria-label={`Select ${FACTION_LABELS[state.turn]} ${TYPE_LABELS[type]}`} aria-pressed={piece?.type === type && piece.owner === state.turn} title={TYPE_LABELS[type]}>
+        <img src={`/assets/games/sannin-shogi/${state.turn}-${type}.webp`} alt="" /><span>{SHORT[type]} <small>×{pieces.length}</small></span>
+      </button>;
+    })}</div>
+    {piece ? <div className="sannin-command-detail" aria-live="polite">
+      <div className="sannin-inspector"><img src={assetUrl(piece)} alt="" /><span><b>{pieceLabel(piece)}</b><small>{piece.status === "hand" ? "Ready to drop" : `Hex ${piece.cell}`} · {landings.length} legal destinations</small></span></div>
+      <p>{MOVEMENT_NOTES[piece.type][piece.promoted ? 1 : 0] || MOVEMENT_NOTES[piece.type][0]}</p>
+      {landings.length ? <><p className="sannin-roster-label">Tap a destination here or on the board</p><div className="sannin-destination-list">{landings.map(to => <button key={to} disabled={!canAct} onClick={() => onLand(to)}>{actions.some(action => action.to === to && action.type === "castle") ? "Castle " : getBoardPiece(state, to) ? "Capture " : ""}{to}</button>)}</div></> : <p className="sannin-roster-label">{actions.some(action => action.type === "illuminate") ? "Use Illuminate below the board." : "No legal destination for this piece."}</p>}
+    </div> : <div className="sannin-command-help"><b>Choose, then land</b><p>Select a piece on the board or above. Its legal moves light up on the hexes.</p><p>Each army follows its own forward direction. Keep your King safe as you approach the Garden.</p></div>}
+  </section>;
+}
+function RecentMoves({ state, history }) {
+  const moves = history ? [...history, state].map(position => position.lastAction).filter(Boolean).slice(-6).reverse() : state.lastAction ? [state.lastAction] : [];
+  return <section className="sannin-recent" aria-label="Recent moves"><p className="sannin-kicker">{history ? "Recent moves" : "Latest move"}</p>
+    {moves.length ? <ol>{moves.map(action => <li key={action.ply}><b className={`sannin-move-actor sannin-move-actor--${action.actor}`}>{FACTION_LABELS[action.actor]}</b><span>{action.type === "illuminate" ? `Illuminated ${action.targets.length} targets` : `${action.type === "drop" ? "Drop" : action.type === "castle" ? "Castle" : TYPE_LABELS[state.pieces.find(piece => piece.id === action.pieceId)?.type] || "Move"} · ${action.from ? `${action.from} → ` : ""}${action.to}${action.promote ? " · promoted" : ""}`}</span><small>{action.ply}</small></li>)}</ol> : <p>Moves appear here as the armies take their turns.</p>}
+  </section>;
+}
+
 function ArcticScrollRail({ onAllGames }) {
   const [progress, setProgress] = useState(0);
   useEffect(() => {
@@ -344,13 +380,10 @@ export default function SanninShogiApp({ onExit }) {
   const [matchPanelOpen, setMatchPanelOpen] = useState(false);
   const [focusView, setFocusView] = useState(false);
   const [fullArtwork, setFullArtwork] = useState(false);
-  const [compact, setCompact] = useState(() => window.innerWidth <= 900);
   const matchRef = useRef(null);
-  useEffect(() => {
-    const update = () => setCompact(window.innerWidth <= 900);
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
+  const layoutRef = useRef(null);
+  const [layout, setLayout] = useState(() => battleLayout(window.innerWidth, window.innerHeight - 64, BATTLE_ASPECT));
+  const compact = layout.mode === "compact";
   async function toggleFullscreen() {
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
@@ -624,6 +657,22 @@ export default function SanninShogiApp({ onExit }) {
     !showRoom;
 
   const state = onlineGame ? room.gameState : local?.state || null;
+  const battleActive = Boolean(state && (local || onlineGame));
+  useEffect(() => {
+    const region = layoutRef.current;
+    const measure = () => {
+      const width = region?.clientWidth || window.innerWidth;
+      const height = region?.clientHeight || window.innerHeight - 64;
+      const next = battleLayout(width, height, fullArtwork ? BOARD_WIDTH / BOARD_HEIGHT : BATTLE_ASPECT);
+      setLayout(previous => previous.mode === next.mode && previous.boardWidth === next.boardWidth ? previous : next);
+    };
+    measure();
+    const observer = region && typeof ResizeObserver === "function" ? new ResizeObserver(measure) : null;
+    if (observer) observer.observe(region);
+    window.addEventListener("resize", measure);
+    return () => { observer?.disconnect(); window.removeEventListener("resize", measure); };
+  }, [battleActive, fullArtwork]);
+
   const canAct = Boolean(
     state &&
     !state.outcome &&
@@ -752,26 +801,28 @@ export default function SanninShogiApp({ onExit }) {
 
     const illumination = selectedActions.find((action) => action.type === "illuminate");
 
-    const panel = <>
-            <div className="sannin-match-summary">
-              <div><p className="sannin-kicker">{onlineGame ? "Online table" : "Match panel"}</p><b>Three armies · 54 pieces</b></div>
-              <span>Turn {state.ply + 1}</span>
-            </div>
-            <div className="sannin-match-seats">
-              {FACTIONS.map((faction) => <MatchSeat key={faction} state={state} faction={faction} humans={local?.humans || []} label={seatLabels[faction]} />)}
-            </div>
-            <p className="sannin-roster-label">{state.alliance ? `${FACTIONS.filter(faction => state.alliance.includes(faction)).map(faction => FACTION_LABELS[faction]).join(" + ")} allied` : "No opening alliance"}</p>
-            <p className="sannin-roster-label">Captured pieces · tap an active piece to deploy it</p>
-            {FACTIONS.map((faction) => <Hand key={faction} state={state} faction={faction} active={canAct && state.turn === faction} selected={selected} onSelect={(id) => setSelected({ kind: "hand", id })} />)}
-            <div className="sannin-legend"><b>Pleasure Garden</b><span>The glowing central cell grants an immediate safe-King victory unless that King is allied.</span></div>
-            {onlineGame && <div className="sannin-online-state"><b>{connected && synced ? "Connected" : "Reconnecting"}</b><span>Server validates every action.</span></div>}
-            {selected && <div className="sannin-inspector" aria-live="polite">{(() => { const piece = state.pieces.find((item) => item.id === selected.id); return piece ? <><img src={assetUrl(piece)} alt="" /><span><b>{pieceLabel(piece)}</b><small>{piece.status === "hand" ? "Captured and ready to drop" : `${piece.cell} · ${selectedActions.length} legal actions`}</small></span></> : null; })()}</div>}
-            {state.outcome && <div className="sannin-result"><strong>{state.outcome.message}</strong>{onlineGame ? <button className="sannin-primary" onClick={() => setShowRoom(true)}>Room details</button> : <button className="sannin-primary" onClick={begin}>Rematch</button>}{!onlineGame && <button onClick={returnToSetup}>Return to setup</button>}{onExit && <button onClick={onExit}>All Games</button>}</div>}
+    const overview = <>
+      <div className="sannin-match-summary">
+        <div><p className="sannin-kicker">{onlineGame ? "Online table" : "Army overview"}</p><b>Three armies · {state.pieces.filter(piece => piece.status === "board").length} on board</b></div>
+        <span>Turn {state.ply + 1}</span>
+      </div>
+      <div className="sannin-match-seats">{FACTIONS.map(faction => <MatchSeat key={faction} state={state} faction={faction} humans={local?.humans || []} label={seatLabels[faction]} />)}</div>
+      <p className="sannin-roster-label">{state.alliance ? `${FACTIONS.filter(faction => state.alliance.includes(faction)).map(faction => FACTION_LABELS[faction]).join(" + ")} allied` : "No opening alliance"}</p>
+      <PieceCommand state={state} selected={selected} actions={selectedActions} canAct={canAct} onSelect={id => { setSelected({ kind: "piece", id }); setNotice(""); }} onLand={chooseCell} />
+      <div className="sannin-legend"><b>Pleasure Garden · the central hex</b><span>Win by moving an unallied King here safely, or by becoming the final surviving army.</span></div>
+    </>;
+    const reserves = <>
+      <div className="sannin-side-heading"><p className="sannin-kicker">Captured reserves</p><span>Choose a piece in the active army’s hand, then a highlighted hex to drop it.</span></div>
+      {FACTIONS.map(faction => <Hand key={faction} state={state} faction={faction} active={canAct && state.turn === faction} selected={selected} onSelect={id => { setSelected({ kind: "hand", id }); if (compact) setMatchPanelOpen(false); }} />)}
+      <RecentMoves state={state} history={local?.history} />
+      {onlineGame && <div className="sannin-online-state"><b>{connected && synced ? "Connected" : "Reconnecting"}</b><span>Server validates every action.</span></div>}
+      {state.outcome && <div className="sannin-result"><strong>{state.outcome.message}</strong>{onlineGame ? <button className="sannin-primary" onClick={() => setShowRoom(true)}>Room details</button> : <button className="sannin-primary" onClick={begin}>Rematch</button>}{!onlineGame && <button onClick={returnToSetup}>Return to setup</button>}{onExit && <button onClick={onExit}>All Games</button>}</div>}
       <a className="sannin-placement-link" href="/?game=sannin-shogi&placement=1&skipLoader=1" target="_blank" rel="noopener noreferrer">Align wooden pieces ↗</a>
     </>;
+    const panel = <>{overview}{reserves}</>;
     const closePanel = () => setMatchPanelOpen(false);
     return (
-      <main ref={matchRef} className={`sannin-shell sannin-match ${focusView ? "is-focused" : ""}`}>
+      <main ref={matchRef} className={`sannin-shell sannin-match ${focusView ? "is-focused" : ""}`} data-layout={layout.mode} style={{ "--sannin-stage-width": `${layout.boardWidth}px` }}>
         <header className="sannin-battle-toolbar">
           {onExit && <button className="sannin-icon-button" onClick={onExit} aria-label="All games"><ArrowLeft size={18} /></button>}
           <div className="sannin-battle-brand"><p className="sannin-kicker">{onlineGame ? `Room ${room.roomCode}` : "Heritage Table 24"}</p><h1>Sannin Shogi</h1></div>
@@ -790,7 +841,8 @@ export default function SanninShogiApp({ onExit }) {
             </div></details>
           </nav>
         </header>
-        <div className="sannin-play-layout">
+        <div ref={layoutRef} className="sannin-play-layout">
+          {!focusView && layout.mode === "wide" && <aside className="sannin-roster sannin-overview" aria-label="Army overview">{overview}</aside>}
           <section className="sannin-board-panel" aria-label="Battlefield">
             <SanninBoard state={state} selected={selected} legalActions={selectedActions} onCell={chooseCell} onCancel={() => { setSelected(null); setPromotionChoice(null); setNotice("Selection cancelled."); }} zoom={zoom} fullArtwork={fullArtwork} />
             <footer className="sannin-board-actions">
@@ -801,7 +853,7 @@ export default function SanninShogiApp({ onExit }) {
               <div className="sannin-zoom" aria-label="Board zoom controls"><button onClick={() => setZoom(100)}>Fit</button><button aria-label="Zoom board out" disabled={zoom === 100} onClick={() => setZoom(value => Math.max(100, value - 25))}>−</button><output aria-label="Board zoom">{zoom}%</output><button aria-label="Zoom board in" disabled={zoom === 200} onClick={() => setZoom(value => Math.min(200, value + 25))}>+</button></div>
             </footer>
           </section>
-          {!compact && !focusView && <aside className="sannin-roster" id="sannin-match-panel" aria-label="Match panel">{panel}</aside>}
+          {!compact && !focusView && <aside className="sannin-roster" id="sannin-match-panel" aria-label="Match panel">{layout.mode === "wide" ? reserves : panel}</aside>}
         </div>
         {compact && matchPanelOpen && <MatchDrawer onClose={closePanel}>{panel}</MatchDrawer>}
         {promotionChoice && <PromotionDialog choices={promotionChoice} onChoose={commit} onClose={() => setPromotionChoice(null)} />}

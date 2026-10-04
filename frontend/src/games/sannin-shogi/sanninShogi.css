@@ -403,3 +403,35 @@ body:has(.sannin-match) .network-badge, body:has(.sannin-placement) .network-bad
 
 .sannin-turn-inline { display: none; }
 @media (max-width: 360px) { .sannin-turn-inline { display: inline; color: var(--ink); } }
+
+/* Assign the letterbox width to working panels, keeping the full hex board undistorted. */
+.sannin-match[data-layout="wide"]:not(.is-focused) .sannin-play-layout { grid-template-columns: minmax(0, 1fr) var(--sannin-stage-width) minmax(0, 1fr); }
+.sannin-match[data-layout="single"]:not(.is-focused) .sannin-play-layout { grid-template-columns: var(--sannin-stage-width) minmax(0, 1fr); }
+.sannin-match[data-layout="compact"] .sannin-play-layout { grid-template-columns: minmax(0, 1fr); }
+.sannin-match .sannin-overview { border-left: 0; border-right: 1px solid var(--line); }
+.sannin-match:not([data-layout="compact"]) .sannin-board-actions { height: 53px; min-height: 53px; flex: 0 0 53px; padding: 4px 8px; }
+.sannin-match .sannin-board-actions button { padding-inline: 7px; }
+.sannin-side-heading { display: grid; gap: 5px; }
+.sannin-side-heading .sannin-kicker { margin: 0; }
+.sannin-side-heading > span { color: var(--muted); font-size: 11px; line-height: 1.55; }
+.sannin-command, .sannin-recent { padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #062235; }
+.sannin-command .sannin-kicker, .sannin-recent .sannin-kicker { font-size: 9px; letter-spacing: .12em; }
+.sannin-piece-shelf { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.sannin-shell .sannin-piece-shelf button { display: grid; justify-items: center; gap: 2px; min-width: 0; padding: 5px 2px; border-radius: 8px; font-size: 10px; }
+.sannin-piece-shelf img { width: min(100%, 42px); aspect-ratio: 1; object-fit: contain; }
+.sannin-piece-shelf small { color: var(--muted); }
+.sannin-piece-shelf button[aria-pressed="true"] { border-color: var(--amber); background: #39504d; }
+.sannin-command-detail > p, .sannin-command-help, .sannin-recent > p { color: var(--muted); font-size: 11px; line-height: 1.65; }
+.sannin-command-help { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.sannin-command-help b { color: var(--ink); }
+.sannin-command-help p { margin: 6px 0 0; }
+.sannin-command-detail .sannin-inspector { margin: 12px 0 0; border: 0; padding: 0; background: transparent; }
+.sannin-command-detail .sannin-inspector small { line-height: 1.5; }
+.sannin-destination-list { display: flex; flex-wrap: wrap; gap: 5px; max-height: 150px; overflow: auto; margin-top: 8px; }
+.sannin-shell .sannin-destination-list button { min-width: 0; min-height: 34px; padding: 5px 8px; border-radius: 8px; font-size: 10px; }
+.sannin-recent ol { list-style: none; margin: 0; padding: 0; display: grid; }
+.sannin-recent li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); font-size: 10px; }
+.sannin-recent li span { overflow-wrap: anywhere; color: var(--muted); }
+.sannin-recent li small { color: var(--muted); font-variant-numeric: tabular-nums; }
+.sannin-move-actor--red { color: #ff8b8a; }.sannin-move-actor--green { color: #69e5b5; }.sannin-move-actor--blue { color: #7ec6ff; }
+.sannin-match .sannin-placement-link { margin-top: auto; border-top: 1px solid var(--line); border-radius: 0; }

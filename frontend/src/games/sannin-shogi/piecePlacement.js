@@ -1,15 +1,18 @@
 import { HEX_CELL_BY_ID } from './hex.js';
-export const PLACEMENT_KEY = 'arctic-sannin-wood-placement-v1';
+import publishedPlacement from './publishedPiecePlacement.json';
+export const PUBLISHED_PLACEMENT = Object.freeze(publishedPlacement);
+// A new calibration baseline ignores drafts made before the approved alignment.
+export const PLACEMENT_KEY = 'arctic-sannin-wood-placement-v2';
 export function sanitisePlacement(value) {
   const result = {};
   if (!value || typeof value !== 'object' || Array.isArray(value)) return result;
   for (const [id,point] of Object.entries(value)) {
-    if (HEX_CELL_BY_ID[id] && point && Number.isFinite(point.x) && Number.isFinite(point.y) && Math.abs(point.x)<=120 && Math.abs(point.y)<=120) result[id]={x:point.x,y:point.y};
+    if (Object.hasOwn(HEX_CELL_BY_ID, id) && point && Number.isFinite(point.x) && Number.isFinite(point.y) && Math.abs(point.x)<=120 && Math.abs(point.y)<=120) result[id]={x:point.x,y:point.y};
   }
   return result;
 }
 export function readPiecePlacement() {
-  try { return sanitisePlacement(JSON.parse(localStorage.getItem(PLACEMENT_KEY)||'{}')); } catch { return {}; }
+  try { return { ...PUBLISHED_PLACEMENT, ...sanitisePlacement(JSON.parse(localStorage.getItem(PLACEMENT_KEY)||'{}')) }; } catch { return { ...PUBLISHED_PLACEMENT }; }
 }
 const round = value => Math.round(value*10000)/10000;
 export function placementCss(map) {

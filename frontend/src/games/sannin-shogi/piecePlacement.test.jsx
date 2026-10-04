@@ -7,7 +7,7 @@ import SanninShogiApp, { SanninBoard } from './SanninShogiApp.jsx';
 import { createInitialState } from './rules.js';
 import { HEX_CELLS } from './hex.js';
 import { artworkPoint, BATTLE_VIEWBOX, FULL_VIEWBOX, PIECE_SIZE } from './boardGeometry.js';
-import { PLACEMENT_KEY, sanitisePlacement, placementCss, shiftPlacement } from './piecePlacement.js';
+import { PLACEMENT_KEY, PUBLISHED_PLACEMENT, readPiecePlacement, sanitisePlacement, placementCss, shiftPlacement } from './piecePlacement.js';
 
 let host, root;
 beforeEach(() => {
@@ -42,14 +42,16 @@ describe('Sannin wooden-piece workshop', () => {
     expect(host.querySelectorAll('.sannin-piece image')).toHaveLength(127);
     expect([...host.querySelectorAll('.sannin-piece image')].every(p => p.getAttribute('width') === String(PIECE_SIZE))).toBe(true);
     await click('Move piece right');
-    expect(JSON.parse(localStorage.getItem(PLACEMENT_KEY))).toEqual({ '0,0': { x: 1, y: 0 } });
+    expect(JSON.parse(localStorage.getItem(PLACEMENT_KEY))['0,0']).toEqual({ x: 1.7344, y: 0 });
     await select('Apply adjustments to', 'row'); await click('Move piece up');
     const rowMap = JSON.parse(localStorage.getItem(PLACEMENT_KEY));
-    expect(Object.keys(rowMap)).toHaveLength(13); expect(rowMap['0,0']).toEqual({ x: 1, y: -1 });
+    expect(rowMap['0,0']).toEqual({ x: 1.7344, y: -1 });
+    for (const cell of HEX_CELLS.filter(c => c.r === 0)) expect(rowMap[cell.id].y).toBe((PUBLISHED_PLACEMENT[cell.id]?.y || 0) - 1);
+    expect(rowMap['6,-3']).toEqual(PUBLISHED_PLACEMENT['6,-3']);
     expect(host.querySelector('textarea').value).toContain('--sannin-piece-y: -1px');
     await select('Apply adjustments to', 'all'); await click('Move piece down');
     expect(Object.keys(JSON.parse(localStorage.getItem(PLACEMENT_KEY)))).toHaveLength(127);
-    await click('Reset all'); expect(JSON.parse(localStorage.getItem(PLACEMENT_KEY))).toEqual({});
+    await click('Reset all'); expect(JSON.parse(localStorage.getItem(PLACEMENT_KEY))).toEqual(PUBLISHED_PLACEMENT);
     await click('Undo'); expect(Object.keys(JSON.parse(localStorage.getItem(PLACEMENT_KEY)))).toHaveLength(127);
     await select('Preview', 'starting'); expect(host.querySelectorAll('.sannin-piece image')).toHaveLength(54);
     await select('Preview', 'one'); expect(host.querySelectorAll('.sannin-piece image')).toHaveLength(1);
@@ -63,8 +65,25 @@ describe('Sannin wooden-piece workshop', () => {
     await act(async () => cell.dispatchEvent(new MouseEvent('pointerdown', { clientX: 100, clientY: 100, button: 0, bubbles: true })));
     await act(async () => cell.dispatchEvent(new MouseEvent('pointermove', { clientX: 106, clientY: 92, bubbles: true })));
     await act(async () => cell.dispatchEvent(new MouseEvent('pointerup', { clientX: 106, clientY: 92, bubbles: true })));
-    expect(JSON.parse(localStorage.getItem(PLACEMENT_KEY))['0,0']).toEqual({ x: 3, y: -4 });
-    await click('Undo'); expect(JSON.parse(localStorage.getItem(PLACEMENT_KEY))).toEqual({});
+    expect(JSON.parse(localStorage.getItem(PLACEMENT_KEY))['0,0']).toEqual({ x: 3.7344, y: -4 });
+    await click('Undo'); expect(JSON.parse(localStorage.getItem(PLACEMENT_KEY))).toEqual(PUBLISHED_PLACEMENT);
+  });
+  it('loads all approved offsets as the default and ignores drafts from the old baseline', async () => {
+    localStorage.setItem('arctic-sannin-wood-placement-v1', JSON.stringify({ '6,-3': { x: 99, y: 99 } }));
+    expect(readPiecePlacement()).toEqual(PUBLISHED_PLACEMENT);
+    expect(Object.keys(PUBLISHED_PLACEMENT)).toHaveLength(95);
+    expect(PUBLISHED_PLACEMENT['6,-3']).toEqual({ x: 0, y: -.6832 });
+    expect(PUBLISHED_PLACEMENT['-4,-2']).toEqual({ x: -.2583, y: .0331 });
+    expect(PUBLISHED_PLACEMENT['0,6']).toEqual({ x: 2.2472, y: 1.7491 });
+    await act(async () => root.render(<SanninPiecePlacement />));
+    expect(host.querySelector('textarea').value).toContain('--sannin-piece-x: 0.7344px');
+    await select('Preview', 'starting');
+    for (const piece of createInitialState().pieces) {
+      const expected = PUBLISHED_PLACEMENT[piece.cell];
+      const style = host.querySelector(`[data-cell="${piece.cell}"] .sannin-piece-placement`).style;
+      expect(style.getPropertyValue('--sannin-piece-x')).toBe(expected ? `${expected.x}px` : '');
+      expect(style.getPropertyValue('--sannin-piece-y')).toBe(expected ? `${expected.y}px` : '');
+    }
   });
   it('shares saved offsets with battle and frames the whole playable area', async () => {
     localStorage.setItem(PLACEMENT_KEY, JSON.stringify({ '6,-3': { x: 2, y: -1 } }));

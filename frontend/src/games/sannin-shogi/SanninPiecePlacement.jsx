@@ -3,7 +3,7 @@ import { SanninBoard } from './SanninShogiApp.jsx';
 import { createInitialState, FACTIONS, FACTION_LABELS, TYPES, TYPE_LABELS } from './rules.js';
 import { HEX_CELLS, HEX_CELL_BY_ID } from './hex.js';
 import { PIECE_SIZE } from './boardGeometry.js';
-import { PLACEMENT_KEY, readPiecePlacement, placementCss, shiftPlacement } from './piecePlacement.js';
+import { PLACEMENT_KEY, PUBLISHED_PLACEMENT, readPiecePlacement, placementCss, shiftPlacement } from './piecePlacement.js';
 import './sanninPiecePlacement.css';
 
 export default function SanninPiecePlacement() {
@@ -17,7 +17,7 @@ export default function SanninPiecePlacement() {
   const [step, setStep] = useState(1);
   const [zoom, setZoom] = useState(100);
   const [fullArtwork, setFullArtwork] = useState(false);
-  const [status, setStatus] = useState('Choose a hex, then drag its wooden piece or use the arrows.');
+  const [status, setStatus] = useState('Your published alignment is loaded. Choose a hex to fine-tune it.');
   const drag = useRef(null);
   const exportRef = useRef(null);
   const state = useMemo(() => {
@@ -103,7 +103,7 @@ export default function SanninPiecePlacement() {
         <label>Apply adjustments to<select aria-label="Apply adjustments to" value={scope} onChange={e => setScope(e.target.value)}><option value="cell">Selected hex only</option><option value="row">Selected row</option><option value="all">All 127 hexes</option></select></label>
         <div className="sannin-placement-fields"><label>X offset<input type="number" step="0.25" min="-120" max="120" value={point.x} onChange={e => { if (e.target.value !== '' && Number.isFinite(e.target.valueAsNumber)) nudge(e.target.valueAsNumber - point.x, 0); }} /></label><label>Y offset<input type="number" step="0.25" min="-120" max="120" value={point.y} onChange={e => { if (e.target.value !== '' && Number.isFinite(e.target.valueAsNumber)) nudge(0, e.target.valueAsNumber - point.y); }} /></label></div>
         <div className="sannin-placement-nudge" aria-label="Nudge wooden piece"><button aria-label="Move piece left" onClick={() => nudge(-step, 0)}>←</button><button aria-label="Move piece up" onClick={() => nudge(0, -step)}>↑</button><button aria-label="Move piece down" onClick={() => nudge(0, step)}>↓</button><button aria-label="Move piece right" onClick={() => nudge(step, 0)}>→</button><label>Step<select aria-label="Step" value={step} onChange={e => setStep(Number(e.target.value))}><option value="0.25">0.25</option><option value="1">1</option><option value="5">5</option></select></label></div>
-        <div className="sannin-placement-buttons"><button disabled={!history.length} onClick={undo}>Undo</button><button onClick={() => { const next = { ...map }; idsFor(cell).forEach(id => delete next[id]); change(next); }}>Reset {scope === 'cell' ? 'hex' : scope === 'row' ? 'row' : 'all'}</button></div>
+        <div className="sannin-placement-buttons"><button disabled={!history.length} onClick={undo}>Undo</button><button onClick={() => { const next = { ...map }; idsFor(cell).forEach(id => { if (PUBLISHED_PLACEMENT[id]) next[id] = PUBLISHED_PLACEMENT[id]; else delete next[id]; }); change(next); }}>Reset {scope === 'cell' ? 'hex' : scope === 'row' ? 'row' : 'all'}</button></div>
         <p className="sannin-placement-status" role="status">{status}</p>
         <button className="sannin-primary" onClick={copy}>Copy CSS values</button>
         <textarea ref={exportRef} aria-label="Piece placement CSS" readOnly value={css} onFocus={e => e.target.select()} spellCheck={false} />

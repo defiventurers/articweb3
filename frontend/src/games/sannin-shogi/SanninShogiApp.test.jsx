@@ -79,4 +79,23 @@ describe("SanninShogiApp", () => {
     await act(async () => root.unmount());
     host.remove();
   }, 10000);
+  it("selects from the command shelf, lands legally, and keeps recent moves consistent with Undo", async () => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    globalThis.requestAnimationFrame = callback => callback();
+    const host = document.createElement("div"); document.body.append(host);
+    const root = createRoot(host);
+    await act(async () => root.render(<SanninShogiApp />));
+    await act(async () => [...host.querySelectorAll("button")].find(b => b.textContent.includes("3 players")).click());
+    await act(async () => [...host.querySelectorAll("button")].find(b => b.textContent === "Start 3-player game").click());
+    await act(async () => host.querySelector('[aria-label="Select First King"]').click());
+    expect(host.querySelector('.sannin-command-detail').textContent).toContain('First King');
+    await act(async () => [...host.querySelectorAll('.sannin-destination-list button')].find(b => b.textContent === '5,-3').click());
+    expect(host.querySelector('.sannin-recent').textContent).toContain('King · 6,-3 → 5,-3');
+    expect(host.querySelector('.sannin-battle-turn').textContent).toContain('Middle to move');
+    await act(async () => [...host.querySelectorAll('button')].find(b => b.textContent === 'Undo').click());
+    expect(host.querySelector('.sannin-recent').textContent).toContain('Moves appear here');
+    expect(host.querySelector('.sannin-battle-turn').textContent).toContain('First to move');
+    await act(async () => root.unmount()); host.remove();
+  });
+
 });
