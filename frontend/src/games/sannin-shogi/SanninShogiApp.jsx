@@ -794,7 +794,7 @@ export default function SanninShogiApp({ onExit }) {
           <section className="sannin-board-panel" aria-label="Battlefield">
             <SanninBoard state={state} selected={selected} legalActions={selectedActions} onCell={chooseCell} onCancel={() => { setSelected(null); setPromotionChoice(null); setNotice("Selection cancelled."); }} zoom={zoom} fullArtwork={fullArtwork} />
             <footer className="sannin-board-actions">
-              <span aria-live="polite">{state.outcome?.message || tableNotice || (selected ? `${selectedActions.length} legal actions · tap a highlighted hex` : canAct ? "Select your piece or drop from your hand" : "Waiting for the active player")}</span>
+              <span aria-live="polite"><b className="sannin-turn-inline">{FACTION_LABELS[state.turn]} to move · </b>{state.outcome?.message || tableNotice || (selected ? `${selectedActions.length} legal actions · tap a highlighted hex` : canAct ? "Select your piece or drop from your hand" : "Waiting for the active player")}</span>
               {illumination && canAct && <button className="sannin-illuminate" onClick={() => commit(illumination)}>Illuminate {illumination.targets.length} targets</button>}
               {selected && <button onClick={() => setSelected(null)}>Clear</button>}
               <button aria-pressed={fullArtwork} onClick={() => { setFullArtwork(value => !value); setZoom(100); }}>{fullArtwork ? "Battlefield" : "Full artwork"}</button>

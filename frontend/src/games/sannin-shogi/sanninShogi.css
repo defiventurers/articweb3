@@ -328,7 +328,7 @@
 /* The tactical table fits the viewport; only the match panel or a zoomed board scrolls. */
 body:has(.sannin-match), body:has(.sannin-placement) { overflow: hidden; }
 body:has(.sannin-match) .experience-companion, body:has(.sannin-placement) .experience-companion,
-body:has(.sannin-match) > #root .audio-toggle:not(.sannin-match-menu .audio-toggle), body:has(.sannin-placement) > #root .audio-toggle { display: none; }
+body:has(.sannin-match) > #root .audio-toggle:not(.sannin-match-menu .audio-toggle), body:has(.sannin-placement) > #root .audio-toggle { display: none !important; }
 .sannin-shell.sannin-match, .sannin-shell.sannin-placement { height: 100dvh; min-height: 0; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
 .sannin-battle-toolbar { flex: 0 0 64px; display: flex; align-items: center; gap: 14px; padding: 8px 18px; border-bottom: 1px solid var(--line); background: #031521; z-index: 5; }
 .sannin-battle-brand h1 { margin: 0; font: 700 22px/1 Georgia, serif; }
@@ -398,3 +398,8 @@ body:has(.sannin-match) > #root .audio-toggle:not(.sannin-match-menu .audio-togg
   .sannin-match .sannin-battle-turn { display: none; }
   .sannin-match .sannin-battle-tools { margin-left: auto; }
 }
+
+body:has(.sannin-match) .network-badge, body:has(.sannin-placement) .network-badge { display: none !important; }
+
+.sannin-turn-inline { display: none; }
+@media (max-width: 360px) { .sannin-turn-inline { display: inline; color: var(--ink); } }
