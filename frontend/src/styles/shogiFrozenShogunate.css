@@ -34,7 +34,7 @@ body:has(.shogi-battle) .experience-companion,body:has(.shogi-battle) .network-b
 .shogi-battle .shogi-play[data-layout="compact"],.shogi-battle .shogi-play.is-focused{grid-template-columns:minmax(0,1fr)}
 .shogi-battle .shogi-command,.shogi-battle .shogi-hands{grid-column:auto;grid-row:auto;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0;overflow:auto;padding:14px;overscroll-behavior:contain;background:#041c29;scrollbar-width:thin;scrollbar-color:#2f6575 transparent}
 .shogi-battle .shogi-command{border-right:1px solid var(--shogi-line)}.shogi-battle .shogi-hands{border-left:1px solid var(--shogi-line)}
-.shogi-battle .shogi-board-column{grid-row:auto;min-height:0;display:flex;gap:0;align-items:stretch;overflow:hidden;background:radial-gradient(ellipse at center,#103949,#020d19 85%)}
+.shogi-battle .shogi-board-column{grid-row:auto;min-height:0;display:flex;flex-direction:column;gap:0;align-items:stretch;overflow:hidden;background:radial-gradient(ellipse at center,#103949,#020d19 85%)}
 .shogi-board-viewport{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .shogi-battle .shogi-board-shell{width:var(--shogi-board-size);height:var(--shogi-board-size);flex:none;max-width:100%;border:0;border-radius:0;box-shadow:none}
 .shogi-battle .shogi-board-grid>button:focus-visible{outline:2px solid #fce8a1;outline-offset:-3px;z-index:5}
