@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, BookOpen, Maximize, MoreHorizontal, PanelRight, X } from "lucide-react";
+import { AudioToggle } from "../../components/AudioToggle.jsx";
+import { shogiBattleLayout } from "./battleLayout.js";
 import {
   HAND_TYPES,
   PIECE_NAMES,
@@ -82,7 +85,7 @@ export function ShogiFrozenShogunateApp({ onExitToLibrary }) {
   }
 
   function selectHand(type) {
-    if (!state.hands[state.turn][type] || state.winner || state.draw || (mode === "bot" && state.turn === BOT_SIDE)) return;
+    if (promotionChoice || !state.hands[state.turn][type] || state.winner || state.draw || (mode === "bot" && state.turn === BOT_SIDE)) return;
     setSelection({ kind: "hand", type });
     setMessage(`${PIECE_NAMES[type]} in hand selected. Choose a glowing empty square.`);
   }
@@ -105,8 +108,8 @@ export function ShogiFrozenShogunateApp({ onExitToLibrary }) {
     setMessage(`Impasse assessed: Crimson ${result.points.red} points, Sapphire ${result.points.blue} points.`);
   }
 
-  return <section className="shogi-app" aria-label="Shogi — Frozen Shogunate">
-    <header className="shogi-topbar">
+  return <section className={`shogi-app ${tab === "play" ? "shogi-battle" : ""}`} aria-label="Shogi — Frozen Shogunate">
+    {tab !== "play" && <><header className="shogi-topbar">
       <button type="button" className="shogi-back" onClick={onExitToLibrary}>← All Games</button>
       <div className="shogi-title"><span aria-hidden="true">将</span><div><p>SHOGI · JAPANESE TRADITION</p><h1>Frozen Shogunate</h1></div></div>
       <div className="shogi-badges"><span>DOCUMENTED RULES</span><span>2 PLAYERS</span><span>FREE PLAY</span></div>
@@ -114,9 +117,9 @@ export function ShogiFrozenShogunateApp({ onExitToLibrary }) {
 
     <nav className="shogi-tabs" aria-label="Shogi sections">
       {["play", "rulebook", "research"].map((name) => <button key={name} type="button" className={tab === name ? "active" : ""} onClick={() => setTab(name)} aria-current={tab === name ? "page" : undefined}>{name === "research" ? "Research Notes" : name[0].toUpperCase() + name.slice(1)}</button>)}
-    </nav>
+    </nav></>}
 
-    {tab === "play" && <PlayTable state={state} mode={mode} allActions={allActions} selection={selection} destinationActions={destinationActions} message={message} undoDisabled={!undoStack.length} onSquare={chooseSquare} onHand={selectHand} onMode={restart} onUndo={undo} onRestart={() => restart()} onHelp={() => setTab("rulebook")} onImpasse={declareImpasse} />}
+    {tab === "play" && <PlayTable state={state} mode={mode} allActions={allActions} selection={selection} destinationActions={destinationActions} message={message} undoDisabled={!undoStack.length} onSquare={chooseSquare} onHand={selectHand} onMode={restart} onUndo={undo} onRestart={() => restart()} onHelp={() => setTab("rulebook")} onImpasse={declareImpasse} history={undoStack} onExit={onExitToLibrary} onResearch={() => setTab("research")} onClear={() => setSelection(null)} />}
     {tab === "rulebook" && <Rulebook onPlay={() => setTab("play")} />}
     {tab === "research" && <ResearchNotes />}
 
@@ -124,54 +127,156 @@ export function ShogiFrozenShogunateApp({ onExitToLibrary }) {
   </section>;
 }
 
-function PlayTable({ state, mode, allActions, selection, destinationActions, message, undoDisabled, onSquare, onHand, onMode, onUndo, onRestart, onHelp, onImpasse }) {
+function PlayTable({ state, mode, allActions, selection, destinationActions, message, undoDisabled, onSquare, onHand, onMode, onUndo, onRestart, onHelp, onImpasse, history, onExit, onResearch, onClear }) {
+  const layoutRef = useRef(null);
+  const drawerRef = useRef(null);
+  const panelButton = useRef(null);
+  const [dimensions, setDimensions] = useState(() => ({ width: window.innerWidth, height: window.innerHeight - 64 }));
+  const [focused, setFocused] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [keyboardCell, setKeyboardCell] = useState(54);
+  const layout = shogiBattleLayout(dimensions.width, dimensions.height, focused);
+  const compact = layout.mode === "compact";
+  const blocked = Boolean(state.winner || state.draw || (mode === "bot" && state.turn === BOT_SIDE));
   const check = !state.winner && !state.draw && isInCheck(state, state.turn);
   const selectableSquares = new Set(allActions.filter((action) => action.kind === "move").map((action) => action.from));
   const selectedIndex = selection?.kind === "board" ? selection.from : null;
-  return <main className="shogi-play">
-    <aside className="shogi-command">
-      <section className={`shogi-turn-card ${state.turn} ${check ? "check" : ""}`}>
-        <span>{state.winner || state.draw ? "MATCH COMPLETE" : check ? "KING IN CHECK" : "CURRENT PLAYER"}</span>
-        <h2>{outcomeTitle(state)}</h2>
-        <p>{outcomeDetail(state, check)}</p>
-      </section>
-      <section className="shogi-controls">
-        <label>Play mode<select value={mode} onChange={(event) => onMode(event.target.value)}><option value="hotseat">Local two player</option><option value="bot">Practice vs Frost Bot</option></select></label>
-        <div><button type="button" disabled={undoDisabled} onClick={onUndo}>Undo</button><button type="button" onClick={onRestart}>Restart</button><button type="button" onClick={onHelp}>Rules</button></div>
-        <button type="button" className="shogi-impasse" onClick={onImpasse}>Assess mutual impasse</button>
-      </section>
-      <section className="shogi-key"><span><i className="selectable" /> Movable piece</span><span><i className="target" /> Legal destination</span><span><i className="capture" /> Capture</span><span><i className="zone" /> Promotion camp</span></section>
-    </aside>
+  const selectedPiece = selectedIndex !== null ? state.board[selectedIndex] : selection?.kind === "hand" ? { side: state.turn, type: selection.type, promoted: false } : null;
+  const playedPositions = new Map([...history, state].filter(position => position.lastAction).map(position => [position.ply, position]));
+  const moves = [...playedPositions.values()].slice(-6).reverse();
 
-    <section className="shogi-board-column">
-      <div className="shogi-board-caption"><span>9 × 9 ICE BOARD · 40 PIECES</span><strong>MOVE {Math.ceil(state.ply / 2)}</strong></div>
-      <div className="shogi-board-shell">
-        <div className="shogi-board-grid" role="grid" aria-label="Shogi board">
-          {state.board.map((piece, index) => {
-            const { row, col } = coordinatesOf(index);
-            const targets = destinationActions.get(index);
-            const capture = Boolean(targets?.length && piece?.side !== state.turn);
-            return <button key={index} type="button" role="gridcell" className={`${row < 3 || row > 5 ? "promotion-zone" : ""} ${selectableSquares.has(index) ? "selectable" : ""} ${selectedIndex === index ? "selected" : ""} ${targets?.length ? "target" : ""} ${capture ? "capture" : ""}`} aria-label={squareLabel(index, piece, targets)} onClick={() => onSquare(index)}>
-              {piece && <PieceTile piece={piece} />}
-              {targets?.length ? <span className="shogi-target-mark" aria-hidden="true" /> : null}
-            </button>;
-          })}
-        </div>
-      </div>
-      <div className="shogi-event" role="status"><span>ICE CHRONICLE</span><p>{message}</p></div>
+  useEffect(() => {
+    const measure = () => {
+      const rect = layoutRef.current?.getBoundingClientRect();
+      if (rect?.width && rect?.height) setDimensions({ width: rect.width, height: rect.height });
+    };
+    measure();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
+    if (layoutRef.current) observer?.observe(layoutRef.current);
+    window.addEventListener("resize", measure);
+    return () => { observer?.disconnect(); window.removeEventListener("resize", measure); };
+  }, []);
+
+  useEffect(() => {
+    if (!panelOpen || !compact) return;
+    const drawer = drawerRef.current;
+    drawer?.querySelector("button")?.focus();
+    function trap(event) {
+      if (event.key === "Escape") { setPanelOpen(false); event.preventDefault(); }
+      if (event.key !== "Tab") return;
+      const controls = [...drawer.querySelectorAll("button:not(:disabled),select,a[href]")];
+      const first = controls[0], last = controls.at(-1);
+      if (event.shiftKey && document.activeElement === first) { last?.focus(); event.preventDefault(); }
+      else if (!event.shiftKey && document.activeElement === last) { first?.focus(); event.preventDefault(); }
+    }
+    drawer?.addEventListener("keydown", trap);
+    return () => { drawer?.removeEventListener("keydown", trap); panelButton.current?.focus(); };
+  }, [panelOpen, compact]);
+
+  const chooseHand = type => { onHand(type); if (!blocked) setPanelOpen(false); };
+  const command = <>
+    <section className={`shogi-turn-card ${state.turn} ${check ? "check" : ""}`}>
+      <span>{state.winner || state.draw ? "MATCH COMPLETE" : check ? "KING IN CHECK" : "CURRENT PLAYER"}</span>
+      <h2>{outcomeTitle(state)}</h2><p>{outcomeDetail(state, check)}</p>
     </section>
+    <section className="shogi-armies" aria-label="Army overview">{["red", "blue"].map(side => <div key={side} className={side}>
+      <strong>{side === "red" ? "Crimson ↑" : "Sapphire ↓"}</strong>
+      <span><b>{state.board.filter(piece => piece?.side === side).length}</b> board</span>
+      <span><b>{Object.values(state.hands[side]).reduce((sum, count) => sum + count, 0)}</b> hand</span>
+    </div>)}</section>
+    <section className="shogi-piece-guide" aria-label="Piece movement guide">
+      <span className="shogi-panel-label">SELECT A PIECE · SEE ITS MOVES</span>
+      {selectedPiece ? <><div className="shogi-selected-piece"><PieceTile piece={selectedPiece} /><div><strong>{displayPieceName(selectedPiece)}</strong><small>{selectedIndex !== null ? `Square ${squareCoordinate(selectedIndex)}` : "Captured piece · drop from hand"} · {destinationActions.size} legal destinations</small></div></div>
+        <p>{selection.kind === "hand" ? "Drop onto a highlighted empty square. The piece returns unpromoted; all King-safety and drop restrictions still apply." : movementNote(selectedPiece)}</p>
+        <div className="shogi-destinations">{[...destinationActions.keys()].map(to => <button key={to} type="button" disabled={blocked} onClick={() => { onSquare(to); setPanelOpen(false); }} aria-label={`Move to ${squareCoordinate(to)}`}>{state.board[to] ? "Capture " : ""}{squareCoordinate(to)}</button>)}</div>
+        {!destinationActions.size && <p>This piece has no legal destination in the current position.</p>}
+      </> : <><p>Tap your piece on the board. Legal destinations glow; enemy targets glow pink.</p><p>Capture a piece to add it to your hand, then drop it back onto an empty square on a later turn.</p></>}
+    </section>
+    <section className="shogi-key"><span><i className="selectable" /> Movable piece</span><span><i className="target" /> Legal destination</span><span><i className="capture" /> Capture</span><span><i className="zone" /> Promotion camp</span></section>
+  </>;
+  const reserves = <>
+    <span className="shogi-panel-label">CAPTURED RESERVES · TAP TO DROP</span>
+    <HandDock side="blue" state={state} active={state.turn === "blue" && !blocked} selected={selection} onHand={chooseHand} />
+    <HandDock side="red" state={state} active={state.turn === "red" && !blocked} selected={selection} onHand={chooseHand} />
+    <section className="shogi-recent" aria-label="Recent moves"><span className="shogi-panel-label">RECENT MOVES</span>
+      {moves.length ? <ol>{moves.map(position => <li key={position.ply}><small>{Math.ceil((position.ply - 1) / 2)} · {position.lastAction.kind === "drop" ? "Drop" : `${squareCoordinate(position.lastAction.from)} →`} {squareCoordinate(position.lastAction.to)}</small><p>{position.lastAction.text}</p></li>)}</ol> : <p>Your moves appear here as the match progresses.</p>}
+    </section>
+    <section className="shogi-turn-order"><span>PROMOTE IN THE FAR CAMP</span><p>Your farthest three ranks are the promotion zone. Captured pieces lose promotion and change allegiance.</p></section>
+  </>;
 
-    <aside className="shogi-hands">
-      <HandDock side="blue" state={state} active={state.turn === "blue"} selected={selection} onHand={onHand} />
-      <section className="shogi-turn-order"><span>TURN ORDER</span><p>Crimson moves upward. Sapphire moves downward. Captured pieces change allegiance and may return as drops.</p></section>
-      <HandDock side="red" state={state} active={state.turn === "red"} selected={selection} onHand={onHand} />
-    </aside>
-  </main>;
+  function navigateBoard(event, index) {
+    if (event.key === "Escape") { onClear(); return; }
+    const delta = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -9, ArrowDown: 9 }[event.key];
+    if (delta === undefined) return;
+    event.preventDefault();
+    const { row, col } = coordinatesOf(index);
+    if ((delta === -1 && col === 0) || (delta === 1 && col === 8) || (delta === -9 && row === 0) || (delta === 9 && row === 8)) return;
+    const next = index + delta;
+    setKeyboardCell(next);
+    event.currentTarget.parentElement.children[next]?.focus();
+  }
+
+  return <>
+    <header className="shogi-battle-bar">
+      <button type="button" className="shogi-icon-button" aria-label="All games" title="All games" onClick={onExit}><ArrowLeft size={19} /></button>
+      <div className="shogi-battle-title"><p>SHOGI · JAPANESE TRADITION</p><h1>Frozen Shogunate</h1></div>
+      <div className={`shogi-battle-status ${state.turn}`}><i /><div><strong>{state.winner || state.draw ? outcomeTitle(state) : `${state.turn === "red" ? "Crimson" : "Sapphire"} ${check ? "in check" : "to move"}`}</strong><small>Move {Math.ceil(state.ply / 2)}</small></div></div>
+      <nav aria-label="Match controls">
+        <button type="button" className="shogi-icon-button" aria-label="Rulebook" title="Rulebook" onClick={onHelp}><BookOpen size={18} /></button>
+        <button ref={panelButton} type="button" className="shogi-icon-button" aria-label={compact ? "Match panel" : "Focus view"} title={compact ? "Match panel" : "Focus view"} aria-expanded={compact ? panelOpen : !focused} onClick={() => compact ? setPanelOpen(open => !open) : setFocused(value => !value)}><PanelRight size={18} /></button>
+        <button type="button" className="shogi-icon-button" aria-label="Fullscreen" title="Fullscreen" onClick={() => { const app = layoutRef.current?.closest(".shogi-app"); if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); else app?.requestFullscreen?.().catch(() => {}); }}><Maximize size={18} /></button>
+        <details className="shogi-match-menu"><summary aria-label="More match options" title="More match options"><MoreHorizontal size={20} /></summary><div>
+          <AudioToggle />
+          <label>Play mode<select value={mode} onChange={event => onMode(event.target.value)}><option value="hotseat">Local two player</option><option value="bot">Practice vs Frost Bot</option></select></label>
+          <button type="button" disabled={undoDisabled} onClick={onUndo}>Undo</button>
+          <button type="button" onClick={onRestart}>Restart</button>
+          <button type="button" onClick={onHelp}>Rules</button>
+          <button type="button" onClick={onResearch}>Research Notes</button>
+          <button type="button" onClick={onImpasse}>Assess mutual impasse</button>
+        </div></details>
+      </nav>
+    </header>
+    <main ref={layoutRef} className={`shogi-play ${focused && !compact ? "is-focused" : ""}`} data-layout={layout.mode} style={{ "--shogi-board-size": `${layout.boardSize}px` }}>
+      {!compact && !focused && layout.mode === "wide" && <aside className="shogi-command" aria-label="Army and movement controls">{command}</aside>}
+      <section className="shogi-board-column" aria-label="Battlefield">
+        <div className="shogi-board-viewport"><div className="shogi-board-shell">
+          <div className="shogi-board-grid" role="grid" aria-label="Shogi board">
+            {state.board.map((piece, index) => {
+              const { row } = coordinatesOf(index);
+              const targets = destinationActions.get(index);
+              const capture = Boolean(targets?.length && piece && piece.side !== state.turn);
+              return <button key={index} type="button" role="gridcell" tabIndex={keyboardCell === index ? 0 : -1} aria-selected={selectedIndex === index} onFocus={() => setKeyboardCell(index)} onKeyDown={event => navigateBoard(event, index)} className={`${row < 3 || row > 5 ? "promotion-zone" : ""} ${selectableSquares.has(index) && !blocked ? "selectable" : ""} ${selectedIndex === index ? "selected" : ""} ${targets?.length ? "target" : ""} ${capture ? "capture" : ""}`} aria-label={squareLabel(index, piece, targets)} onClick={() => onSquare(index)}>
+                {piece && <PieceTile piece={piece} />}{targets?.length ? <span className="shogi-target-mark" aria-hidden="true" /> : null}
+              </button>;
+            })}
+          </div>
+        </div></div>
+        <div className="shogi-battle-footer"><div className="shogi-event" role="status"><p>{message}</p></div><span>9 × 9 · {state.board.filter(Boolean).length} on board</span>{selection && <button type="button" onClick={onClear}>Clear</button>}</div>
+      </section>
+      {!compact && !focused && <aside className="shogi-hands" aria-label="Match panel">{layout.mode === "single" && command}{reserves}</aside>}
+    </main>
+    {compact && panelOpen && <div className="shogi-drawer-backdrop" onClick={event => { if (event.target === event.currentTarget) setPanelOpen(false); }}><aside ref={drawerRef} className="shogi-drawer" role="dialog" aria-modal="true" aria-label="Match panel"><header><strong>Match panel</strong><button type="button" className="shogi-icon-button" aria-label="Close match panel" onClick={() => setPanelOpen(false)}><X size={18} /></button></header>{command}{reserves}</aside></div>}
+  </>;
+}
+
+function squareCoordinate(index) { const { row, col } = coordinatesOf(index); return `${9 - col}${String.fromCharCode(97 + row)}`; }
+function movementNote(piece) {
+  if (piece.promoted && ["silver", "knight", "lance", "pawn"].includes(piece.type)) return "Moves as a Gold General: one square forward, sideways, backward, or diagonally forward. No diagonally backward step.";
+  return {
+    king: "One square in any direction. You may never move into check.",
+    rook: piece.promoted ? "Slides along ranks and files; also steps one square diagonally. Sliding routes must be clear." : "Slides any distance along ranks and files. Another piece blocks its route.",
+    bishop: piece.promoted ? "Slides diagonally; also steps one square along a rank or file. Sliding routes must be clear." : "Slides any distance diagonally. Another piece blocks its route.",
+    gold: "One square forward, sideways, backward, or diagonally forward. No diagonally backward step.",
+    silver: "One square forward or diagonally forward or backward. Promotes to Gold movement.",
+    knight: "Jumps two ranks forward and one file sideways, over intervening pieces. Promotes to Gold movement.",
+    lance: "Slides any distance straight forward along a clear file. Promotes to Gold movement.",
+    pawn: "One square straight forward, including captures. Promotes to a Tokin with Gold movement."
+  }[piece.type];
 }
 
 function HandDock({ side, state, active, selected, onHand }) {
   const entries = HAND_TYPES.filter((type) => state.hands[side][type] > 0);
-  return <section className={`shogi-hand-dock ${side} ${active ? "active" : ""}`}><header><span>{side === "red" ? "CRIMSON" : "SAPPHIRE"} HAND</span><strong>{entries.reduce((sum, type) => sum + state.hands[side][type], 0)} captured</strong></header><div>{entries.length ? entries.map((type) => <button key={type} type="button" disabled={!active || state.winner || state.draw} className={active && selected?.kind === "hand" && selected.type === type ? "selected" : ""} onClick={() => onHand(type)} aria-label={`${PIECE_NAMES[type]}, ${state.hands[side][type]} in hand`}><PieceTile piece={{ side, type, promoted: false }} compact /><b>×{state.hands[side][type]}</b></button>) : <p>No captured pieces.</p>}</div></section>;
+  return <section aria-label={`${side === "red" ? "Crimson" : "Sapphire"} captured pieces`} className={`shogi-hand-dock ${side} ${active ? "active" : ""}`}><header><span>{side === "red" ? "CRIMSON" : "SAPPHIRE"} HAND</span><strong>{entries.reduce((sum, type) => sum + state.hands[side][type], 0)} captured</strong></header><div>{entries.length ? entries.map((type) => <button key={type} type="button" disabled={!active || state.winner || state.draw} className={active && selected?.kind === "hand" && selected.type === type ? "selected" : ""} onClick={() => onHand(type)} aria-label={`${PIECE_NAMES[type]}, ${state.hands[side][type]} in hand`}><PieceTile piece={{ side, type, promoted: false }} compact /><b>×{state.hands[side][type]}</b></button>) : <p>No captured pieces.</p>}</div></section>;
 }
 
 function PieceTile({ piece, compact = false }) {
