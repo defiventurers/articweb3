@@ -118,3 +118,30 @@ body:has(.shogi-battle) .experience-companion,body:has(.shogi-battle) .network-b
   .shogi-destinations{justify-content:center}
 }
 @media(max-height:650px){.shogi-battle .shogi-piece-guide{flex-basis:130px;min-height:130px}.shogi-guide-empty{padding:8px 0}.shogi-guide-empty>svg{display:none}.shogi-battle .shogi-selected-piece{min-height:100px}.shogi-battle .shogi-selected-piece>.shogi-piece{width:30px;height:59px}}
+
+/* Match setup follows the shared Heritage Arcade lobby structure. */
+.shogi-lobby{display:grid;place-items:start center;padding:clamp(24px,5vh,64px) clamp(12px,3vw,40px);min-height:100dvh}
+.shogi-lobby *{box-sizing:border-box}
+.shogi-lobby-card{width:min(100%,960px);padding:clamp(20px,3vw,36px);border:1px solid var(--shogi-line);border-radius:24px;background:linear-gradient(145deg,#0b3046ee,#031b2dee);box-shadow:0 24px 80px #0005;display:grid;gap:22px}
+.shogi-lobby-heading>span{color:var(--shogi-cyan);font-size:10px;font-weight:800;letter-spacing:.15em}
+.shogi-lobby-heading h1{margin:12px 0;font:clamp(34px,5vw,52px)/1.1 Georgia,serif}.shogi-lobby-heading h1 small{display:block;font-size:18px;color:#bad7de;margin-top:8px}
+.shogi-lobby-heading p,.shogi-lobby-note{margin:0;color:#a8c6d0;font-size:12px;line-height:1.65}
+.shogi-lobby button,.shogi-lobby-info-nav button{min-height:44px;padding:10px 16px;border:1px solid var(--shogi-line);border-radius:11px;background:#0a2b40;color:#edfefe;cursor:pointer;font-family:inherit;font-weight:600;font-size:12px;line-height:1.5;display:inline-flex;gap:8px;align-items:center;justify-content:center}
+.shogi-lobby button:hover:not(:disabled){border-color:var(--shogi-cyan);background:#124359}.shogi-lobby button:disabled{opacity:.4;cursor:not-allowed}
+.shogi-lobby button[aria-pressed="true"]{border-color:var(--shogi-cyan);background:#12485a;box-shadow:inset 0 0 0 1px #72e7ef33}
+.shogi-lobby button.primary{background:linear-gradient(180deg,#c9faf9,#6cdae5);border-color:#a7edf0;color:#082335;font-weight:800;min-width:190px}
+.shogi-lobby-tabs,.shogi-lobby-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.shogi-lobby fieldset{min-width:0;margin:0;padding:0;border:0}.shogi-lobby legend{margin-bottom:10px;color:#c5e4ea;font-size:12px;font-weight:750}
+.shogi-lobby-choices button{flex-direction:column;gap:2px;padding:13px}.shogi-lobby-choices strong{font-size:15px}.shogi-lobby-choices small{color:#a9c6cf;font-size:11px}
+.shogi-lobby-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.shogi-lobby label{display:grid;gap:8px;color:#c5e4ea;font-size:12px;font-weight:650;min-width:0}
+.shogi-lobby input,.shogi-lobby select{width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--shogi-line);border-radius:10px;background:#031c2d;color:#edfefe;font:inherit}.shogi-lobby select:disabled{opacity:.65}
+.shogi-lobby-difficulties{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.shogi-lobby-difficulties button{display:grid;grid-template-columns:auto 1fr;align-content:start;text-align:left;justify-content:start;gap:9px;padding:17px;min-height:132px}.shogi-lobby-difficulties strong{font-size:14px}.shogi-lobby-difficulties span{grid-column:1/-1;color:#a9c6cf;font-size:11px;font-weight:400;line-height:1.65}
+.shogi-lobby-actions{display:flex;gap:10px;flex-wrap:wrap}.shogi-lobby-help{padding-top:18px;border-top:1px solid var(--shogi-line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}.shogi-lobby-help>span{margin-left:auto;color:#82b3c0;font-size:10px}
+.shogi-lobby h2{font:24px/1.2 Georgia,serif;margin:0 0 12px}.shogi-lobby-error{margin:0;padding:12px;border:1px solid #ff718966;border-radius:10px;color:#ffc3ce;background:#5d203433;font-size:12px}
+.shogi-lobby-join{padding-top:20px;border-top:1px solid var(--shogi-line)}.shogi-lobby-join form,.shogi-lobby-invite{display:flex;align-items:end;gap:10px}.shogi-lobby-join form label,.shogi-lobby-invite label{flex:1;min-width:0}
+.shogi-lobby-list-heading{display:flex;align-items:center;justify-content:space-between;margin:22px 0 14px}.shogi-lobby-list-heading h2{margin:0}.shogi-lobby-join ul{margin:0;padding:0;list-style:none;display:grid;gap:8px}.shogi-lobby-join li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--shogi-line);border-radius:10px}.shogi-lobby-join li small{display:block;margin-top:4px;color:#a9c6cf}
+.shogi-lobby-seats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.shogi-lobby-seats article{display:flex;align-items:center;gap:16px;padding:18px;border:1px solid #ff5e7255;border-radius:14px;background:#061e30}.shogi-lobby-seats .blue{border-color:#5da4ff66}.shogi-lobby-seats img{width:46px;height:90px;object-fit:contain}.shogi-lobby-seats h3{font-size:12px;margin:0 0 8px}.shogi-lobby-seats strong{font-size:14px}.shogi-lobby-seats p{font-size:11px;color:#a9c6cf}
+.shogi-lobby-info-nav{display:flex;gap:10px;padding:18px;flex-wrap:wrap}.shogi-rail-summary{margin:0;color:#b5d4dd;font-size:11px;line-height:1.6}
+@media(max-width:620px){.shogi-lobby-card{gap:18px;border-radius:18px}.shogi-lobby-fields,.shogi-lobby-seats{grid-template-columns:1fr}.shogi-lobby-difficulties{grid-template-columns:1fr}.shogi-lobby-difficulties button{min-height:0}.shogi-lobby-help>span{width:100%;margin-left:0}.shogi-lobby-tabs button{padding:10px 8px;font-size:11px}.shogi-lobby-actions button{flex:1}}

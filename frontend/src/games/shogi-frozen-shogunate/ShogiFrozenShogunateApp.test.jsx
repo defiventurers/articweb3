@@ -3,20 +3,22 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ShogiFrozenShogunateApp } from './ShogiFrozenShogunateApp.jsx';
+import { createShogiState, getLegalActions } from './rules.js';
 vi.mock('../../components/AudioToggle.jsx',()=>({AudioToggle:()=> <button className="audio-toggle">Mute sound</button>}));
 globalThis.IS_REACT_ACT_ENVIRONMENT=true;
 let host, root;
-afterEach(async()=>{if(root) await act(()=>root.unmount());host?.remove();root=null;vi.restoreAllMocks();});
-async function render(width=1363,height=936) {
+afterEach(async()=>{if(root) await act(()=>root.unmount());host?.remove();root=null;vi.restoreAllMocks();vi.unstubAllGlobals();});
+async function render(width=1363,height=936,start=true) {
   Object.defineProperty(window,'innerWidth',{configurable:true,value:width});
   Object.defineProperty(window,'innerHeight',{configurable:true,value:height});
   host=document.createElement('div');document.body.append(host);root=createRoot(host);
   await act(()=>root.render(<ShogiFrozenShogunateApp />));
+  if(start) { await click([...host.querySelectorAll("button")].find(b=>b.textContent.includes("All human"))); await click(button("Start local match")); }
 }
 async function click(element) { await act(()=>element.click()); }
 const button=name=>[...host.querySelectorAll('button')].find(b=>b.textContent===name||b.getAttribute('aria-label')===name);
 const cell=coordinate=>[...host.querySelectorAll('[role="gridcell"]')].find(c=>c.getAttribute('aria-label').startsWith(`${coordinate},`));
-describe('Shogi board-first match screen',()=>{
+describe('Shogi setup and match screen',()=>{
   it('renders both side panels and the full board with one keyboard entry',async()=>{
     await render();
     expect(host.querySelector('[data-layout]').dataset.layout).toBe('wide');
@@ -60,12 +62,50 @@ describe('Shogi board-first match screen',()=>{
     await act(()=>cell('9f').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true})));
     expect(host.querySelector('[aria-selected="true"]')).toBeNull();
   });
-  it('retains rules and research navigation and the bot mode',async()=>{
+  it('retains rules, research, and return to match setup',async()=>{
     await render();await click(button('Rulebook'));
     expect(host.textContent).toContain('Field Guide to the Frozen Shogunate');
     await click(button('Research Notes'));expect(host.textContent).toContain('documented modern game');
-    await click(button('Play'));
-    const mode=host.querySelector('select');await act(()=>{mode.value='bot';mode.dispatchEvent(new Event('change',{bubbles:true}));});
-    expect(mode.value).toBe('bot');
+    await click(button('Play'));await click(button('Match setup'));
+    expect(button('Start local match')).toBeTruthy();
+    expect(host.querySelectorAll('[role="gridcell"]')).toHaveLength(0);
+  });
+  it('starts at the shared local/online setup with two-player Shogi choices',async()=>{
+    await render(1363,936,false);
+    expect(host.textContent).toContain('On this device');
+    expect(host.textContent).toContain('Online rooms');
+    expect(host.textContent).toContain('1 player1 bot');
+    expect(host.textContent).toContain('2 playersAll human');
+    expect(host.textContent).not.toContain('3 players');
+    expect(host.querySelector('select').value).toBe('red');
+    expect(host.querySelectorAll('.shogi-lobby-difficulties button')).toHaveLength(3);
+    await click([...host.querySelectorAll('button')].find(b=>b.textContent.includes('All human')));
+    expect([...host.querySelectorAll('.shogi-lobby-difficulties button')].every(b=>b.disabled)).toBe(true);
+    await click(button('Start local match'));
+    expect(host.querySelectorAll('[role="gridcell"]')).toHaveLength(81);
+  });
+  it('lets a Blue human wait for the Red bot and preserves Hard selection',async()=>{
+    const workers=[];
+    vi.stubGlobal('Worker',class { constructor(){workers.push(this);} postMessage(data){this.data=data;} terminate(){} });
+    await render(1363,936,false);
+    const kingdom=host.querySelector('select');
+    await act(()=>{kingdom.value='blue';kingdom.dispatchEvent(new Event('change',{bubbles:true}));});
+    await click([...host.querySelectorAll('.shogi-lobby-difficulties button')].find(b=>b.textContent.includes('Hard')));
+    await click(button('Start local match'));
+    await click(cell('9g'));expect(host.querySelector('[aria-selected="true"]')).toBeNull();
+    await act(()=>new Promise(resolve=>setTimeout(resolve,480)));
+    expect(workers[0].data.difficulty).toBe('hard');
+    await act(()=>workers[0].onmessage({data:{action:getLegalActions(createShogiState())[0]}}));
+    expect(host.querySelector('.shogi-battle-status').textContent).toContain('Sapphire');
+    await click(cell('9c'));expect(host.querySelector('[aria-selected="true"]')).toBeTruthy();
+  });
+  it('preserves setup choices while reading the rule scroll',async()=>{
+    await render(1363,936,false);
+    const kingdom=host.querySelector('select');
+    await act(()=>{kingdom.value='blue';kingdom.dispatchEvent(new Event('change',{bubbles:true}));});
+    await click([...host.querySelectorAll('.shogi-lobby-difficulties button')].find(b=>b.textContent.includes('Hard')));
+    await click(button('Rules'));await click(button('Return to setup'));
+    expect(host.querySelector('select').value).toBe('blue');
+    expect([...host.querySelectorAll('.shogi-lobby-difficulties button')].find(b=>b.textContent.includes('Hard')).getAttribute('aria-pressed')).toBe('true');
   });
 });

@@ -1,8 +1,12 @@
-export const BOARD_SIZE = 9;
-export const SIDES = Object.freeze(["red", "blue"]);
-export const HAND_TYPES = Object.freeze(["rook", "bishop", "gold", "silver", "knight", "lance", "pawn"]);
+// GENERATED FILE. Do not edit directly.
+// Source: frontend/src/games/shogi-frozen-shogunate/{rules.js,bot.js}
+// Regenerate with: npm run build:shogi-engine
 
-export const PIECE_NAMES = Object.freeze({
+const BOARD_SIZE = 9;
+const SIDES = Object.freeze(["red", "blue"]);
+const HAND_TYPES = Object.freeze(["rook", "bishop", "gold", "silver", "knight", "lance", "pawn"]);
+
+const PIECE_NAMES = Object.freeze({
   king: "King",
   rook: "Rook",
   bishop: "Bishop",
@@ -13,7 +17,7 @@ export const PIECE_NAMES = Object.freeze({
   pawn: "Pawn"
 });
 
-export const PROMOTED_NAMES = Object.freeze({
+const PROMOTED_NAMES = Object.freeze({
   rook: "Dragon King",
   bishop: "Dragon Horse",
   silver: "Promoted Silver",
@@ -22,7 +26,7 @@ export const PROMOTED_NAMES = Object.freeze({
   pawn: "Tokin"
 });
 
-export const SHOGI_RULESET = Object.freeze({
+const SHOGI_RULESET = Object.freeze({
   id: "standard-hon-shogi",
   title: "Standard Shogi",
   players: 2,
@@ -39,7 +43,7 @@ const GOLD_STEPS = Object.freeze([[-1, 1], [0, 1], [1, 1], [-1, 0], [1, 0], [0, 
 const SILVER_STEPS = Object.freeze([[-1, 1], [0, 1], [1, 1], [-1, -1], [1, -1]]);
 const KING_STEPS = Object.freeze([[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]]);
 
-export function createShogiState(options = {}) {
+function createShogiState(options = {}) {
   const board = Array(BOARD_SIZE * BOARD_SIZE).fill(null);
   let id = 0;
   const place = (side, type, row, col) => { board[indexOf(row, col)] = { id: `${side}-${type}-${id++}`, side, type, promoted: false }; };
@@ -57,7 +61,7 @@ export function createShogiState(options = {}) {
   return state;
 }
 
-export function createEmptyShogiState(options = {}) {
+function createEmptyShogiState(options = {}) {
   const state = baseState({ board: Array(81).fill(null), ...options });
   state.positionHistory = [{ key: positionKey(state), mover: null, gaveCheck: false }];
   return state;
@@ -78,15 +82,15 @@ function baseState({ board, turn = "red", hands, mode = "hotseat" }) {
   };
 }
 
-export function emptyHand() { return Object.fromEntries(HAND_TYPES.map((type) => [type, 0])); }
-export function indexOf(row, col) { return row * BOARD_SIZE + col; }
-export function coordinatesOf(index) { return { row: Math.floor(index / BOARD_SIZE), col: index % BOARD_SIZE }; }
-export function inside(row, col) { return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE; }
-export function otherSide(side) { return side === "red" ? "blue" : "red"; }
-export function sideName(side) { return side === "red" ? "Crimson Shogunate" : "Sapphire Shogunate"; }
-export function isPromotionZone(side, row) { return side === "red" ? row <= 2 : row >= 6; }
+function emptyHand() { return Object.fromEntries(HAND_TYPES.map((type) => [type, 0])); }
+function indexOf(row, col) { return row * BOARD_SIZE + col; }
+function coordinatesOf(index) { return { row: Math.floor(index / BOARD_SIZE), col: index % BOARD_SIZE }; }
+function inside(row, col) { return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE; }
+function otherSide(side) { return side === "red" ? "blue" : "red"; }
+function sideName(side) { return side === "red" ? "Crimson Shogunate" : "Sapphire Shogunate"; }
+function isPromotionZone(side, row) { return side === "red" ? row <= 2 : row >= 6; }
 
-export function getLegalActions(state, side = state.turn, options = {}) {
+function getLegalActions(state, side = state.turn, options = {}) {
   if (state.winner || state.draw) return [];
   const actions = [];
   for (let from = 0; from < state.board.length; from += 1) {
@@ -113,14 +117,14 @@ export function getLegalActions(state, side = state.turn, options = {}) {
   return actions;
 }
 
-export function legalActionsForSource(state, source) {
+function legalActionsForSource(state, source) {
   const actions = getLegalActions(state);
   return typeof source === "number"
     ? actions.filter((action) => action.kind === "move" && action.from === source)
     : actions.filter((action) => action.kind === "drop" && action.type === source);
 }
 
-export function applyShogiAction(state, requested) {
+function applyShogiAction(state, requested) {
   if (state.winner || state.draw) return { error: "This match is already complete." };
   const legal = getLegalActions(state);
   const action = legal.find((candidate) => actionKey(candidate) === actionKey(requested));
@@ -150,7 +154,7 @@ export function applyShogiAction(state, requested) {
 
 // Search only: callers supply an action from getLegalActions. Public gameplay
 // continues to use applyShogiAction for validation and terminal adjudication.
-export function advanceShogiSearch(state, action) {
+function advanceShogiSearch(state, action) {
   const next = applyBare(state, action, state.turn);
   next.turn = otherSide(state.turn);
   next.ply = state.ply + 1;
@@ -159,13 +163,13 @@ export function advanceShogiSearch(state, action) {
   return next;
 }
 
-export function isInCheck(state, side) {
+function isInCheck(state, side) {
   const kingIndex = state.board.findIndex((piece) => piece?.side === side && piece.type === "king");
   if (kingIndex < 0) return true;
   return isSquareAttacked(state.board, kingIndex, otherSide(side));
 }
 
-export function isSquareAttacked(board, target, bySide) {
+function isSquareAttacked(board, target, bySide) {
   for (let from = 0; from < board.length; from += 1) {
     const piece = board[from];
     if (piece?.side === bySide && pseudoTargets(board, from, piece, true).includes(target)) return true;
@@ -173,7 +177,7 @@ export function isSquareAttacked(board, target, bySide) {
   return false;
 }
 
-export function assessImpasse(state) {
+function assessImpasse(state) {
   if (state.winner || state.draw) return { eligible: false, message: "The match is already complete." };
   const redKing = findKing(state, "red");
   const blueKing = findKing(state, "blue");
@@ -193,14 +197,14 @@ export function assessImpasse(state) {
   return { eligible: true, state: next, points };
 }
 
-export function materialPoints(state, side) {
+function materialPoints(state, side) {
   let score = 0;
   for (const piece of state.board) if (piece?.side === side && piece.type !== "king") score += piece.type === "rook" || piece.type === "bishop" ? 5 : 1;
   for (const type of HAND_TYPES) score += state.hands[side][type] * (type === "rook" || type === "bishop" ? 5 : 1);
   return score;
 }
 
-export function chooseShogiBotAction(state, side = state.turn) {
+function chooseShogiBotAction(state, side = state.turn) {
   const actions = getLegalActions(state, side);
   if (!actions.length) return null;
   let best = [];
@@ -222,18 +226,18 @@ export function chooseShogiBotAction(state, side = state.turn) {
   return best[Math.floor(Math.random() * best.length)];
 }
 
-export function positionKey(state) {
+function positionKey(state) {
   const board = state.board.map((piece) => piece ? `${piece.side[0]}:${piece.type}:${piece.promoted ? 1 : 0}` : "-").join("|");
   const hands = SIDES.map((side) => HAND_TYPES.map((type) => state.hands[side][type]).join(",")).join("|");
   return `${state.turn};${board};${hands}`;
 }
 
-export function actionKey(action) {
+function actionKey(action) {
   if (!action) return "";
   return action.kind === "drop" ? `d:${action.type}:${action.to}` : `m:${action.from}:${action.to}:${action.promote ? 1 : 0}`;
 }
 
-export function assetRole(piece) {
+function assetRole(piece) {
   if (!piece.promoted) return piece.type;
   if (piece.type === "rook") return "dragon";
   if (piece.type === "bishop") return "horse";
@@ -241,7 +245,7 @@ export function assetRole(piece) {
   return `promoted-${piece.type}`;
 }
 
-export function displayPieceName(piece) {
+function displayPieceName(piece) {
   return piece.promoted ? PROMOTED_NAMES[piece.type] || PIECE_NAMES[piece.type] : PIECE_NAMES[piece.type];
 }
 
@@ -363,3 +367,99 @@ function describeAction(state, action, gaveCheck) {
 function findKing(state, side) { return state.board.findIndex((piece) => piece?.side === side && piece.type === "king"); }
 function pieceValue(type) { return ({ king: 100, rook: 9, bishop: 8, gold: 6, silver: 5, knight: 4, lance: 3, pawn: 1 })[type] || 0; }
 function cloneState(state) { return { ...state, board: state.board.map((piece) => piece ? { ...piece } : null), hands: { red: { ...state.hands.red }, blue: { ...state.hands.blue } }, positionHistory: [...state.positionHistory], lastAction: state.lastAction ? { ...state.lastAction } : null }; }
+
+const BOT_LEVELS = Object.freeze({
+  easy: { label: "Easy", description: "Varied legal moves with a light preference for captures." },
+  medium: { label: "Medium", description: "Two-kingdom tactical search with checks, recaptures and promotion threats." },
+  hard: { label: "Hard", description: "Deeper alpha-beta strategy with tactical continuations. No deliberate mistakes." },
+});
+const VALUES = { king: 0, rook: 900, bishop: 800, gold: 600, silver: 500, knight: 350, lance: 300, pawn: 100 };
+const MATE = 100000;
+
+function evaluate(state, side) {
+  let score = 0;
+  for (let i = 0; i < 81; i++) {
+    const piece = state.board[i];
+    if (!piece) continue;
+    const row = Math.floor(i / 9), col = i % 9;
+    const advancement = piece.side === "red" ? 8-row : row;
+    const value = VALUES[piece.type] + (piece.promoted ? (piece.type === "pawn" ? 400 : 160) : 0)
+      + (piece.type === "king" ? 0 : advancement * 3 + (4-Math.abs(4-col)) * 2);
+    score += piece.side === side ? value : -value;
+  }
+  for (const army of [side, otherSide(side)]) {
+    for (const [type, count] of Object.entries(state.hands[army])) score += (army === side ? 1 : -1) * count * VALUES[type] * 1.1;
+  }
+  return score + (isInCheck(state, side) ? -45 : 0) + (isInCheck(state, otherSide(side)) ? 45 : 0);
+}
+
+function ordered(state, actions) {
+  const priority = action => (state.board[action.to] ? VALUES[state.board[action.to].type] * 10 - (VALUES[state.board[action.from]?.type] || 0) : 0) + (action.promote ? 500 : 0);
+  return [...actions].sort((a,b) => priority(b)-priority(a));
+}
+
+function chooseShogiSearchAction(state, difficulty = "medium", options = {}) {
+  const actions = getLegalActions(state);
+  if (!actions.length) return null;
+  if (difficulty === "easy") {
+    const random = options.random || Math.random;
+    const weights = actions.map(action => state.board[action.to] ? 1.6 : 1);
+    let pick = random() * weights.reduce((a,b) => a+b, 0);
+    return actions.find((_,i) => (pick -= weights[i]) < 0) || actions.at(-1);
+  }
+  const hard = difficulty === "hard";
+  const deadline = Date.now() + (options.budgetMs ?? (hard ? 1600 : 500));
+  const maxNodes = options.maxNodes ?? (hard ? 14000 : 4000);
+  let nodes = 0;
+  const interrupted = {};
+  function search(position, depth, alpha, beta, ply, tactical = 0) {
+    if (++nodes > maxNodes || Date.now() >= deadline) throw interrupted;
+    if (position.winner) return position.winner === position.turn ? MATE-ply : -MATE+ply;
+    if (position.draw) return 0;
+    const legal = getLegalActions(position);
+    if (!legal.length) return -MATE+ply;
+    const checked = isInCheck(position, position.turn);
+    let choices = legal;
+    if (depth <= 0) {
+      const value = evaluate(position, position.turn);
+      if (tactical <= 0) return value;
+      if (!checked) {
+        if (value >= beta) return value;
+        alpha = Math.max(alpha, value);
+        choices = legal.filter(action => position.board[action.to] || action.promote);
+        if (!choices.length) return value;
+      }
+    }
+    for (const action of ordered(position, choices)) {
+      const value = -search(advanceShogiSearch(position, action), depth-1, -beta, -alpha, ply+1, depth <= 0 ? tactical-1 : tactical);
+      if (value >= beta) return value;
+      alpha = Math.max(alpha, value);
+    }
+    return alpha;
+  }
+  let best = ordered(state, actions)[0];
+  let root = ordered(state, actions);
+  for (let depth = 1; depth <= (options.depth ?? (hard ? 4 : 2)); depth++) {
+    let candidate = best, bestScore = -Infinity;
+    try {
+      for (const action of root) {
+        const score = -search(advanceShogiSearch(state, action), depth-1, -Infinity, -bestScore, 1, hard ? 2 : 1);
+        if (score > bestScore) { bestScore = score; candidate = action; }
+      }
+      best = candidate;
+      root = [best, ...root.filter(action => action !== best)];
+      if (bestScore >= MATE-100) break;
+    } catch (error) {
+      if (error !== interrupted) throw error;
+      break;
+    }
+  }
+  return best;
+}
+
+
+module.exports = {
+  RULESET_VERSION: "standard-hon-shogi-v1",
+  SIDES, HAND_TYPES, createShogiState, createEmptyShogiState, getLegalActions,
+  applyShogiAction, chooseShogiSearchAction, actionKey, isInCheck, indexOf,
+};
