@@ -653,6 +653,47 @@ describe("terrain and special movement", () => {
   });
 });
 
+describe("General palace movement", () => {
+  for (const faction of FACTIONS) {
+    it(`${faction} General moves one orthogonal point only and stays inside its 3x3 palace`, () => {
+      const state = sparseState([], faction, [faction]);
+      const general = state.pieces.find(
+        (piece) => piece.faction === faction && piece.role === "general" && piece.status === "board",
+      );
+      general.node = armNodeId(faction, 5, 2);
+
+      expect(new Set(getPseudoTargets(state, general.id))).toEqual(new Set([
+        armNodeId(faction, 5, 1),
+        armNodeId(faction, 5, 3),
+        armNodeId(faction, 4, 2),
+        armNodeId(faction, 6, 2),
+      ]));
+      expect(getPseudoTargets(state, general.id)).not.toContain(armNodeId(faction, 4, 1));
+      expect(getPseudoTargets(state, general.id)).not.toContain(armNodeId(faction, 6, 3));
+
+      general.node = armNodeId(faction, 4, 1);
+      expect(new Set(getPseudoTargets(state, general.id))).toEqual(new Set([
+        armNodeId(faction, 4, 2),
+        armNodeId(faction, 5, 1),
+      ]));
+    });
+  }
+
+  it("keeps flying-General facing as check geometry, not as a General move destination", () => {
+    const state = sparseState([], "red", ["red", "blue"]);
+    const redGeneral = state.pieces.find(
+      (piece) => piece.faction === "red" && piece.role === "general" && piece.status === "board",
+    );
+    const blueGeneral = state.pieces.find(
+      (piece) => piece.faction === "blue" && piece.role === "general" && piece.status === "board",
+    );
+
+    expect(getPseudoTargets(state, redGeneral.id)).not.toContain(blueGeneral.node);
+    expect(isInCheck(state, "red")).toBe(true);
+    expect(isInCheck(state, "blue")).toBe(true);
+  });
+});
+
 describe("legality and turn flow", () => {
   it("generates legal Red opening actions", () => {
     const state = createInitialState();

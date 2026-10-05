@@ -60,6 +60,15 @@ describe("San Guo Qi Phase 6 General movement", () => {
     expect(ids(general, [general, leftAdvisor, rightAdvisor])).toEqual(["red-3-4"]);
   });
 
+  it("does not turn flying-General sightlines into movement destinations", () => {
+    const red = piece("red-general", "red", 3, 4);
+    const blue = piece("blue-general", "blue", 3, 4);
+    const moves = ids(red, [red, blue]);
+
+    expect(moves.every((move) => move.startsWith("red-"))).toBe(true);
+    expect(moves).not.toContain("blue-3-4");
+  });
+
   it("fails closed if a General is somehow outside its printed palace", () => {
     const general = piece("red-general", "red", 1, 4);
     expect(ids(general, [general])).toEqual([]);

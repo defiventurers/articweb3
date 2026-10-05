@@ -34,7 +34,7 @@ import {
 } from "./topology.js";
 
 export const GAME_ID = "san-you-qi";
-export const RULESET_VERSION = "arctic-final-156-node-3.3.5";
+export const RULESET_VERSION = "arctic-final-156-node-3.3.6";
 
 export const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
 export const FACTION_LABELS = Object.freeze({
@@ -231,27 +231,16 @@ function generalTargets(piece, pieces) {
   const arm = parseArmNode(piece.node);
   if (!arm || !insidePalace(piece.node, piece.faction)) return [];
 
+  // A General's move destinations are only the four adjacent orthogonal
+  // intersections of its own 3x3 palace. Palace diagonals belong to Advisors,
+  // not Generals, and the General never uses continuation lines as a move.
   const out = [];
   for (const [dRank, dLane] of [[-1,0],[1,0],[0,-1],[0,1]]) {
     const target = localArmTarget(piece.node, dRank, dLane);
     if (!target || !insidePalace(target, piece.faction)) continue;
     if (destinationOpenFor(piece, pieces, target)) out.push(target);
   }
-
-  // Flying-General attack geometry. On any approved straight continuation
-  // line, two opposing Generals may not face each other with no intervening
-  // piece. A pinned blocker therefore cannot legally leave that line.
-  for (const ray of lineRaysFrom(piece.node)) {
-    if (ray.kind === "horizontal") continue;
-    for (const node of ray.nodes) {
-      const hit = pieceAtUnchecked(pieces, node);
-      if (!hit) continue;
-      if (hit.role === "general" && hit.owner !== piece.owner) out.push(node);
-      break;
-    }
-  }
-
-  return dedupeNodes(out);
+  return out;
 }
 
 function advisorTargets(piece, pieces) {
@@ -552,7 +541,31 @@ function activeOpponents(state, faction) {
   return state.activeFactions.filter((candidate) => candidate !== faction);
 }
 
+function flyingGeneralAttacksNode(state, node, byFaction) {
+  const defender = pieceAt(state, node);
+  if (!defender || defender.role !== "general" || defender.owner === byFaction) return false;
+
+  return state.pieces.some((piece) => {
+    if (
+      piece.status !== "board" ||
+      piece.owner !== byFaction ||
+      piece.role !== "general"
+    ) return false;
+
+    for (const ray of lineRaysFrom(piece.node)) {
+      if (ray.kind === "horizontal") continue;
+      for (const rayNode of ray.nodes) {
+        const hit = pieceAtUnchecked(state.pieces, rayNode);
+        if (!hit) continue;
+        return hit.node === node && hit.role === "general" && hit.owner !== piece.owner;
+      }
+    }
+    return false;
+  });
+}
+
 function isGeometricallyAttacked(state, node, byFaction) {
+  if (flyingGeneralAttacksNode(state, node, byFaction)) return true;
   return state.pieces.some(
     (piece) =>
       piece.status === "board" &&
