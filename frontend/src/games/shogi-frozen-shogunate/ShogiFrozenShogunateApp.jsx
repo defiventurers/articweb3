@@ -143,7 +143,7 @@ function PlayTable({ state, mode, allActions, selection, destinationActions, mes
   const selectedIndex = selection?.kind === "board" ? selection.from : null;
   const selectedPiece = selectedIndex !== null ? state.board[selectedIndex] : selection?.kind === "hand" ? { side: state.turn, type: selection.type, promoted: false } : null;
   const playedPositions = new Map([...history, state].filter(position => position.lastAction).map(position => [position.ply, position]));
-  const moves = [...playedPositions.values()].slice(-6).reverse();
+  const moves = [...playedPositions.values()].slice(-24).reverse();
 
   useEffect(() => {
     const measure = () => {
