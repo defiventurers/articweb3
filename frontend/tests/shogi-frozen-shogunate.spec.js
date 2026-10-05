@@ -8,7 +8,9 @@ test("Shogi opens directly on the playable board and accepts a legal move", asyn
   await expect(page.locator(".shogi-battle-status")).toContainText("Crimson");
   const board = await page.locator(".shogi-board-shell").boundingBox();
   const battlefield = await page.locator('.shogi-board-viewport').boundingBox();
-  expect(board.width).toBeCloseTo(battlefield.width, 0);
+  expect(board.width).toBeLessThanOrEqual(battlefield.width);
+  expect(board.width / board.height).toBeLessThanOrEqual(0.851);
+  expect(board.x + board.width / 2).toBeCloseTo(battlefield.x + battlefield.width / 2, 0);
   expect(board.height).toBeCloseTo(battlefield.height, 0);
   expect(board.y + board.height).toBeLessThanOrEqual(page.viewportSize().height);
   await expect(page.locator(".shogi-board-grid .shogi-piece > span")).toHaveCount(0);

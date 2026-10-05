@@ -58,7 +58,8 @@ body:has(.shogi-battle) .experience-companion,body:has(.shogi-battle) .network-b
 
 @media(max-width:380px){.shogi-battle-bar{padding:8px 6px;gap:4px}.shogi-battle-title h1{font-size:13px}.shogi-battle-title p{display:none}.shogi-battle-bar .shogi-icon-button,.shogi-battle-bar .shogi-match-menu summary{width:32px}.shogi-battle-status{padding:5px;gap:4px;font-size:9px}.shogi-battle-status strong{max-width:75px}}
 
-/* Fixed rails leave all remaining width and height to the battlefield. */
+/* Board width follows its height; adaptive panels use the remaining space. */
+.shogi-battle .shogi-command,.shogi-battle .shogi-hands{container-type:inline-size}
 .shogi-battle .shogi-board-shell{--shogi-piece-height:min(calc(var(--shogi-board-height) * .8385 / 9 * .96),calc(var(--shogi-board-size) * .813 / 9 * .9 * 340 / 174))}
 .shogi-battle .shogi-board-grid .shogi-piece{height:var(--shogi-piece-height);max-width:none}
 .shogi-battle .shogi-command{overflow:auto;gap:8px}
@@ -105,4 +106,15 @@ body:has(.shogi-battle) .experience-companion,body:has(.shogi-battle) .network-b
 .shogi-drawer .shogi-rail-controls{flex:none}
 .shogi-drawer .shogi-reserves{flex:none}
 .shogi-match-menu .shogi-rail-controls{padding:0;border:0;background:none}
+@container(min-width:420px){
+  .shogi-armies{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .shogi-reserves{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .shogi-reserves>.shogi-panel-label{grid-column:1/-1}
+  .shogi-rail-controls{grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
+  .shogi-rail-controls>.shogi-panel-label,.shogi-rail-controls>.shogi-rail-impasse{grid-column:1/-1}
+  .shogi-battle .shogi-selected-piece{flex-direction:row;text-align:left;gap:20px;min-height:150px}
+  .shogi-battle .shogi-selected-piece>.shogi-piece{width:56px;height:auto;aspect-ratio:174/340}
+  .shogi-piece-guide.has-selection>p{max-width:48ch;align-self:center;text-align:center}
+  .shogi-destinations{justify-content:center}
+}
 @media(max-height:650px){.shogi-battle .shogi-piece-guide{flex-basis:130px;min-height:130px}.shogi-guide-empty{padding:8px 0}.shogi-guide-empty>svg{display:none}.shogi-battle .shogi-selected-piece{min-height:100px}.shogi-battle .shogi-selected-piece>.shogi-piece{width:30px;height:59px}}
