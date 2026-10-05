@@ -1,12 +1,9 @@
-// The 56px toolbar is outside this area. Stretch the calibrated board and
-// hit grid together; the footer needs 44px and the tall pieces retain their
-// original proportions inside the resulting rectangular cells.
-export const SHOGI_BOARD_ASPECT = 0.8;
+// The toolbar sits outside this area. Keep two compact rails on desktop;
+// the battlefield consumes every remaining pixel in both directions.
 export function shogiBattleLayout(width, height, focused = false) {
-  const boardHeight = Math.max(0, Math.min(width / SHOGI_BOARD_ASPECT, height - 44));
-  const fullSize = boardHeight * SHOGI_BOARD_ASPECT;
-  const spare = width - fullSize;
-  const mode = width <= 900 || spare < 240 ? 'compact' : spare >= 480 ? 'wide' : 'single';
-  const boardSize = focused || mode === 'compact' ? fullSize : Math.min(fullSize, width - (mode === 'wide' ? 480 : 240));
-  return { mode, boardSize, boardHeight: boardSize / SHOGI_BOARD_ASPECT };
+  const availableWidth = Math.max(0, width);
+  const mode = width < 960 || height < 420 ? 'compact' : width < 1180 ? 'single' : 'wide';
+  const panelWidth = Math.round(Math.min(260, Math.max(212, availableWidth * 0.14)));
+  const rails = focused || mode === 'compact' ? 0 : mode === 'wide' ? 2 : 1;
+  return { mode, boardSize: Math.max(0, availableWidth - rails * panelWidth), boardHeight: Math.max(0, height - 44), panelWidth };
 }
