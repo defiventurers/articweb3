@@ -62,6 +62,7 @@ body:has(.shogi-battle) .experience-companion,body:has(.shogi-battle) .network-b
 .shogi-battle .shogi-command,.shogi-battle .shogi-hands{container-type:inline-size}
 .shogi-battle .shogi-board-shell{--shogi-piece-height:min(calc(var(--shogi-board-height) * .8385 / 9 * .96),calc(var(--shogi-board-size) * .813 / 9 * .9 * 340 / 174))}
 .shogi-battle .shogi-board-grid .shogi-piece{height:var(--shogi-piece-height);max-width:none}
+.shogi-battle .shogi-board-grid .shogi-piece.blue{transform:translate(-50%,-50%) rotate(180deg)}
 .shogi-battle .shogi-command{overflow:auto;gap:8px}
 .shogi-battle .shogi-hands{gap:8px}
 .shogi-battle .shogi-turn-card{padding:12px}
