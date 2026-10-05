@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, BookOpen, Maximize, MoreHorizontal, PanelRight, X } from "lucide-react";
+import { ArrowLeft, BookOpen, Maximize, MoreHorizontal, MousePointer2, PanelRight, RotateCcw, Undo2, X } from "lucide-react";
 import { AudioToggle } from "../../components/AudioToggle.jsx";
 import { shogiBattleLayout } from "./battleLayout.js";
 import {
@@ -174,6 +174,12 @@ function PlayTable({ state, mode, allActions, selection, destinationActions, mes
   }, [panelOpen, compact]);
 
   const chooseHand = type => { onHand(type); if (!blocked) setPanelOpen(false); };
+  const matchControls = <section className="shogi-rail-controls" aria-label="Match settings">
+    <span className="shogi-panel-label">MATCH CONTROLS</span>
+    <label>Play mode<select value={mode} onChange={event => onMode(event.target.value)}><option value="hotseat">Local two player</option><option value="bot">Practice vs Frost Bot</option></select></label>
+    <div className="shogi-rail-actions"><button type="button" disabled={undoDisabled} onClick={onUndo}><Undo2 size={15} />Undo</button><button type="button" onClick={onRestart}><RotateCcw size={15} />Restart</button></div>
+    <button type="button" className="shogi-rail-impasse" onClick={onImpasse}>Assess mutual impasse</button>
+  </section>;
   const command = <>
     <section className={`shogi-turn-card ${state.turn} ${check ? "check" : ""}`}>
       <span>{state.winner || state.draw ? "MATCH COMPLETE" : check ? "KING IN CHECK" : "CURRENT PLAYER"}</span>
@@ -184,20 +190,21 @@ function PlayTable({ state, mode, allActions, selection, destinationActions, mes
       <span><b>{state.board.filter(piece => piece?.side === side).length}</b> board</span>
       <span><b>{Object.values(state.hands[side]).reduce((sum, count) => sum + count, 0)}</b> hand</span>
     </div>)}</section>
-    <section className="shogi-piece-guide" aria-label="Piece movement guide">
+    <section className={`shogi-piece-guide ${selectedPiece ? "has-selection" : ""}`} aria-label="Piece movement guide">
       <span className="shogi-panel-label">SELECT A PIECE · SEE ITS MOVES</span>
       {selectedPiece ? <><div className="shogi-selected-piece"><PieceTile piece={selectedPiece} /><div><strong>{displayPieceName(selectedPiece)}</strong><small>{selectedIndex !== null ? `Square ${squareCoordinate(selectedIndex)}` : "Captured piece · drop from hand"} · {destinationActions.size} legal destinations</small></div></div>
         <p>{selection.kind === "hand" ? "Drop onto a highlighted empty square. The piece returns unpromoted; all King-safety and drop restrictions still apply." : movementNote(selectedPiece)}</p>
         <div className="shogi-destinations">{[...destinationActions.keys()].map(to => <button key={to} type="button" disabled={blocked} onClick={() => { onSquare(to); setPanelOpen(false); }} aria-label={`Move to ${squareCoordinate(to)}`}>{state.board[to] ? "Capture " : ""}{squareCoordinate(to)}</button>)}</div>
         {!destinationActions.size && <p>This piece has no legal destination in the current position.</p>}
-      </> : <><p>Tap your piece on the board. Legal destinations glow; enemy targets glow pink.</p><p>Capture a piece to add it to your hand, then drop it back onto an empty square on a later turn.</p></>}
+      </> : <div className="shogi-guide-empty"><MousePointer2 size={32} aria-hidden="true" /><strong>{state.winner || state.draw ? "Battle complete" : "Your next move"}</strong><p>{state.winner || state.draw ? "Review the final position, undo a move, or start a new match." : "Select a piece to reveal its movement and legal destinations."}</p><small>Capture an enemy piece, then reuse it from your hand on a later turn.</small></div>}
     </section>
     <section className="shogi-key"><span><i className="selectable" /> Movable piece</span><span><i className="target" /> Legal destination</span><span><i className="capture" /> Capture</span><span><i className="zone" /> Promotion camp</span></section>
+    {matchControls}
   </>;
   const reserves = <>
-    <span className="shogi-panel-label">CAPTURED RESERVES · TAP TO DROP</span>
+    <div className="shogi-reserves"><span className="shogi-panel-label">CAPTURED RESERVES · TAP TO DROP</span>
     <HandDock side="blue" state={state} active={state.turn === "blue" && !blocked} selected={selection} onHand={chooseHand} />
-    <HandDock side="red" state={state} active={state.turn === "red" && !blocked} selected={selection} onHand={chooseHand} />
+    <HandDock side="red" state={state} active={state.turn === "red" && !blocked} selected={selection} onHand={chooseHand} /></div>
     <section className="shogi-recent" aria-label="Recent moves"><span className="shogi-panel-label">RECENT MOVES</span>
       {moves.length ? <ol>{moves.map(position => <li key={position.ply}><small>{Math.ceil((position.ply - 1) / 2)} · {position.lastAction.kind === "drop" ? "Drop" : `${squareCoordinate(position.lastAction.from)} →`} {squareCoordinate(position.lastAction.to)}</small><p>{position.lastAction.text}</p></li>)}</ol> : <p>Your moves appear here as the match progresses.</p>}
     </section>
@@ -227,16 +234,13 @@ function PlayTable({ state, mode, allActions, selection, destinationActions, mes
         <button type="button" className="shogi-icon-button" aria-label="Fullscreen" title="Fullscreen" onClick={() => { const app = layoutRef.current?.closest(".shogi-app"); if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); else app?.requestFullscreen?.().catch(() => {}); }}><Maximize size={18} /></button>
         <details className="shogi-match-menu"><summary aria-label="More match options" title="More match options"><MoreHorizontal size={20} /></summary><div>
           <AudioToggle />
-          <label>Play mode<select value={mode} onChange={event => onMode(event.target.value)}><option value="hotseat">Local two player</option><option value="bot">Practice vs Frost Bot</option></select></label>
-          <button type="button" disabled={undoDisabled} onClick={onUndo}>Undo</button>
-          <button type="button" onClick={onRestart}>Restart</button>
+          {(compact || focused) && matchControls}
           <button type="button" onClick={onHelp}>Rules</button>
           <button type="button" onClick={onResearch}>Research Notes</button>
-          <button type="button" onClick={onImpasse}>Assess mutual impasse</button>
         </div></details>
       </nav>
     </header>
-    <main ref={layoutRef} className={`shogi-play ${focused && !compact ? "is-focused" : ""}`} data-layout={layout.mode} style={{ "--shogi-board-size": `${layout.boardSize}px`, "--shogi-board-height": `${layout.boardHeight}px` }}>
+    <main ref={layoutRef} className={`shogi-play ${focused && !compact ? "is-focused" : ""}`} data-layout={layout.mode} style={{ "--shogi-board-size": `${layout.boardSize}px`, "--shogi-board-height": `${layout.boardHeight}px`, "--shogi-panel-width": `${layout.panelWidth}px` }}>
       {!compact && !focused && layout.mode === "wide" && <aside className="shogi-command" aria-label="Army and movement controls">{command}</aside>}
       <section className="shogi-board-column" aria-label="Battlefield">
         <div className="shogi-board-viewport"><div className="shogi-board-shell">
