@@ -34,7 +34,10 @@
     "build:sannin-engine": "node scripts/build-sannin-engine.mjs",
     "check:sannin-engine": "node scripts/build-sannin-engine.mjs --check",
     "test:sannin": "vitest run --config vitest.sannin.config.ts",
-    "test:arctic": "vitest run --config vitest.arctic.config.ts"
+    "test:arctic": "vitest run --config vitest.arctic.config.ts",
+    "test:shogi": "vitest run --config vitest.shogi.config.ts",
+    "build:shogi-engine": "node scripts/build-shogi-engine.mjs",
+    "check:shogi-engine": "node scripts/build-shogi-engine.mjs --check"
   },
   "dependencies": {
     "@abstract-foundation/agw-client": "1.12.3",

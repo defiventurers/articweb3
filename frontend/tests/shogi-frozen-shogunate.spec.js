@@ -1,9 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-test("Shogi opens directly on the playable board and accepts a legal move", async ({ page }) => {
+test("Shogi setup starts a local match and accepts a legal move", async ({ page }) => {
   await page.goto("/?skipLoader=1&game=shogi-frozen-shogunate");
   await expect(page.getByRole("heading", { name: "Frozen Shogunate" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await page.getByRole("button", { name: /2 players.*All human/ }).click();
+  await page.getByRole("button", { name: "Start local match", exact: true }).click();
   await expect(page.getByLabel("Shogi board").getByRole("gridcell")).toHaveCount(81);
   await expect(page.locator(".shogi-battle-status")).toContainText("Crimson");
   const board = await page.locator(".shogi-board-shell").boundingBox();
@@ -28,7 +30,6 @@ test("Shogi exposes its original-wording rules and sourced research", async ({ p
   if (await page.getByRole("button", { name: "Rulebook", exact: true }).isVisible()) {
     await page.getByRole("button", { name: "Rulebook", exact: true }).click();
   } else {
-    await page.getByLabel("More match options").click();
     await page.getByRole("button", { name: "Rules", exact: true }).click();
   }
   await expect(page.getByRole("heading", { name: "Field Guide to the Frozen Shogunate" })).toBeVisible();
@@ -44,6 +45,8 @@ test("Shogi is playable from the Heritage Board Arcade route", async ({ page }) 
   await page.getByRole("heading", { name: "Shogi", exact: true }).click();
   await page.getByRole("button", { name: "Play Shogi", exact: true }).first().click();
   await expect(page.getByRole("heading", { name: "Frozen Shogunate" })).toBeVisible();
+  await page.getByRole("button", { name: /2 players.*All human/ }).click();
+  await page.getByRole("button", { name: "Start local match", exact: true }).click();
   await expect(page.getByLabel("Shogi board").getByRole("gridcell")).toHaveCount(81);
   expect(page.url()).toContain("game=heritage-arcade");
 });

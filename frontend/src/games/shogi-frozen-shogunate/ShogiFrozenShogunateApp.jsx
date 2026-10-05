@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, BookOpen, Maximize, MoreHorizontal, MousePointer2, PanelRight, RotateCcw, Undo2, X } from "lucide-react";
 import { AudioToggle } from "../../components/AudioToggle.jsx";
 import { shogiBattleLayout } from "./battleLayout.js";
+import { BOT_LEVELS, chooseShogiSearchAction } from "./bot.js";
+import { ShogiLobby } from "./ShogiLobby.jsx";
 import {
   HAND_TYPES,
   PIECE_NAMES,
@@ -9,7 +11,6 @@ import {
   applyShogiAction,
   assessImpasse,
   assetRole,
-  chooseShogiBotAction,
   coordinatesOf,
   createShogiState,
   displayPieceName,
@@ -20,12 +21,21 @@ import {
 } from "./rules.js";
 
 const ASSET_ROOT = "/assets/games/shogi-frozen-shogunate";
-const BOT_SIDE = "blue";
 
 export function ShogiFrozenShogunateApp({ onExitToLibrary }) {
+  const [info, setInfo] = useState(null);
+  return <>{info && <section className="shogi-app"><div className="shogi-lobby-info-nav"><button onClick={() => setInfo(null)}>Return to setup</button><button onClick={onExitToLibrary}>All Games</button><button onClick={() => setInfo(info === "rules" ? "research" : "rules")}>{info === "rules" ? "Research Notes" : "Rules"}</button></div>{info === "rules" ? <Rulebook onPlay={() => setInfo(null)} returnLabel="Return to setup" /> : <ResearchNotes />}</section>}<div hidden={Boolean(info)}><ShogiLobby onExit={onExitToLibrary} onRules={() => setInfo("rules")} onResearch={() => setInfo("research")} renderMatch={props => <ShogiBattle {...props} />} /></div></>;
+}
+
+function ShogiBattle({ onExitToLibrary, config, onSetup, online }) {
   const [tab, setTab] = useState("play");
-  const [mode, setMode] = useState("hotseat");
-  const [state, setState] = useState(() => createShogiState());
+  const mode = config.humans.length === 1 ? "bot" : "hotseat";
+  const [localState, setState] = useState(() => createShogiState());
+  const state = online?.room.gameState || localState;
+  const canAct = online ? online.canAct : config.humans.includes(state.turn);
+  const [thinking, setThinking] = useState(false);
+  const [botRetry, setBotRetry] = useState(0);
+  const previousOnline = useRef(state);
   const [selection, setSelection] = useState(null);
   const [promotionChoice, setPromotionChoice] = useState(null);
   const [message, setMessage] = useState("Crimson moves first. Select a piece or a captured piece in hand.");
@@ -40,27 +50,43 @@ export function ShogiFrozenShogunateApp({ onExitToLibrary }) {
     return map;
   }, [selectedActions]);
 
-  useEffect(() => () => window.clearTimeout(botTimer.current), []);
   useEffect(() => {
     window.clearTimeout(botTimer.current);
-    if (tab !== "play" || mode !== "bot" || state.turn !== BOT_SIDE || state.winner || state.draw || promotionChoice) return;
+    if (online || tab !== "play" || canAct || state.winner || state.draw || promotionChoice) { setThinking(false); return; }
+    let cancelled = false, worker;
+    setThinking(true);
+    const finish = action => { if (!cancelled) { window.clearTimeout(timeout); worker?.terminate(); setThinking(false); if (action) commit(action); else setMessage("The bot did not return a move. Use Retry bot to continue."); } };
+    const fail = message => { if (!cancelled) { window.clearTimeout(timeout); worker?.terminate(); setThinking(false); setMessage(`${message} Use Retry bot to continue.`); } };
     botTimer.current = window.setTimeout(() => {
-      const action = chooseShogiBotAction(state, BOT_SIDE);
-      if (action) commit(action);
-    }, 520);
-    return () => window.clearTimeout(botTimer.current);
-  }, [tab, mode, state, promotionChoice]);
+      try {
+        if (typeof Worker === "undefined") { finish(chooseShogiSearchAction(state, config.difficulty)); return; }
+        worker = new Worker(new URL("./bot.worker.js", import.meta.url), { type: "module" });
+        worker.onmessage = ({ data }) => data.error ? fail(data.error) : finish(data.action);
+        worker.onerror = () => fail("The bot could not start.");
+        worker.postMessage({ state, difficulty: config.difficulty });
+      } catch { fail("The bot could not start."); }
+    }, 450);
+    const timeout = window.setTimeout(() => { worker?.terminate(); fail("The bot took too long."); }, 10000);
+    return () => { cancelled = true; window.clearTimeout(botTimer.current); window.clearTimeout(timeout); worker?.terminate(); };
+  }, [tab, state, online, canAct, config.difficulty, promotionChoice, botRetry]);
 
-  function restart(nextMode = mode) {
-    setMode(nextMode);
-    setState(createShogiState({ mode: nextMode }));
-    setSelection(null);
-    setPromotionChoice(null);
-    setUndoStack([]);
+  useEffect(() => {
+    if (!online) return;
+    if (previousOnline.current !== state) {
+      setUndoStack(history => [...history.slice(-119), previousOnline.current]);
+      previousOnline.current = state;
+      setSelection(null); setPromotionChoice(null);
+    }
+  }, [online, state]);
+
+  function restart() {
+    setState(createShogiState({ mode }));
+    setSelection(null); setPromotionChoice(null); setUndoStack([]);
     setMessage("Crimson moves first. Select a piece or a captured piece in hand.");
   }
 
   function commit(action) {
+    if (online) { if (canAct) { online.onAction(action); setSelection(null); setPromotionChoice(null); } return; }
     const result = applyShogiAction(state, action);
     if (result.error) return setMessage(result.error);
     setUndoStack((history) => [...history.slice(-119), state]);
@@ -71,7 +97,7 @@ export function ShogiFrozenShogunateApp({ onExitToLibrary }) {
   }
 
   function chooseSquare(index) {
-    if (state.winner || state.draw || promotionChoice || (mode === "bot" && state.turn === BOT_SIDE)) return;
+    if (state.winner || state.draw || promotionChoice || !canAct) return;
     const choices = destinationActions.get(index);
     if (choices?.length === 1) return commit(choices[0]);
     if (choices?.length > 1) return setPromotionChoice({ choices, piece: state.board[choices[0].from] });
@@ -85,14 +111,14 @@ export function ShogiFrozenShogunateApp({ onExitToLibrary }) {
   }
 
   function selectHand(type) {
-    if (promotionChoice || !state.hands[state.turn][type] || state.winner || state.draw || (mode === "bot" && state.turn === BOT_SIDE)) return;
+    if (promotionChoice || !state.hands[state.turn][type] || state.winner || state.draw || !canAct) return;
     setSelection({ kind: "hand", type });
     setMessage(`${PIECE_NAMES[type]} in hand selected. Choose a glowing empty square.`);
   }
 
   function undo() {
     if (!undoStack.length || promotionChoice) return;
-    const steps = mode === "bot" && state.turn === "red" && undoStack.length >= 2 ? 2 : 1;
+    const steps = mode === "bot" && config.humans.includes(state.turn) && undoStack.length >= 2 ? 2 : 1;
     const previous = undoStack[undoStack.length - steps];
     setState(previous);
     setUndoStack((history) => history.slice(0, -steps));
@@ -119,7 +145,7 @@ export function ShogiFrozenShogunateApp({ onExitToLibrary }) {
       {["play", "rulebook", "research"].map((name) => <button key={name} type="button" className={tab === name ? "active" : ""} onClick={() => setTab(name)} aria-current={tab === name ? "page" : undefined}>{name === "research" ? "Research Notes" : name[0].toUpperCase() + name.slice(1)}</button>)}
     </nav></>}
 
-    {tab === "play" && <PlayTable state={state} mode={mode} allActions={allActions} selection={selection} destinationActions={destinationActions} message={message} undoDisabled={!undoStack.length} onSquare={chooseSquare} onHand={selectHand} onMode={restart} onUndo={undo} onRestart={() => restart()} onHelp={() => setTab("rulebook")} onImpasse={declareImpasse} history={undoStack} onExit={onExitToLibrary} onResearch={() => setTab("research")} onClear={() => setSelection(null)} />}
+    {tab === "play" && <PlayTable state={state} mode={mode} allActions={allActions} selection={selection} destinationActions={destinationActions} message={online ? online.notice : thinking ? `${BOT_LEVELS[config.difficulty].label} bot is thinking…` : message} canAct={canAct} config={config} online={Boolean(online)} thinking={thinking} onSetup={onSetup} onRetry={() => setBotRetry(value => value+1)} undoDisabled={Boolean(online) || !undoStack.length} onSquare={chooseSquare} onHand={selectHand} onUndo={undo} onRestart={online ? undefined : restart} onHelp={() => setTab("rulebook")} onImpasse={online ? undefined : declareImpasse} history={undoStack} onExit={onExitToLibrary} onResearch={() => setTab("research")} onClear={() => setSelection(null)} />}
     {tab === "rulebook" && <Rulebook onPlay={() => setTab("play")} />}
     {tab === "research" && <ResearchNotes />}
 
@@ -127,7 +153,7 @@ export function ShogiFrozenShogunateApp({ onExitToLibrary }) {
   </section>;
 }
 
-function PlayTable({ state, mode, allActions, selection, destinationActions, message, undoDisabled, onSquare, onHand, onMode, onUndo, onRestart, onHelp, onImpasse, history, onExit, onResearch, onClear }) {
+function PlayTable({ state, mode, canAct, config, online, thinking, onSetup, onRetry, allActions, selection, destinationActions, message, undoDisabled, onSquare, onHand, onUndo, onRestart, onHelp, onImpasse, history, onExit, onResearch, onClear }) {
   const layoutRef = useRef(null);
   const drawerRef = useRef(null);
   const panelButton = useRef(null);
@@ -137,7 +163,7 @@ function PlayTable({ state, mode, allActions, selection, destinationActions, mes
   const [keyboardCell, setKeyboardCell] = useState(54);
   const layout = shogiBattleLayout(dimensions.width, dimensions.height, focused);
   const compact = layout.mode === "compact";
-  const blocked = Boolean(state.winner || state.draw || (mode === "bot" && state.turn === BOT_SIDE));
+  const blocked = Boolean(state.winner || state.draw || !canAct);
   const check = !state.winner && !state.draw && isInCheck(state, state.turn);
   const selectableSquares = new Set(allActions.filter((action) => action.kind === "move").map((action) => action.from));
   const selectedIndex = selection?.kind === "board" ? selection.from : null;
@@ -176,9 +202,11 @@ function PlayTable({ state, mode, allActions, selection, destinationActions, mes
   const chooseHand = type => { onHand(type); if (!blocked) setPanelOpen(false); };
   const matchControls = <section className="shogi-rail-controls" aria-label="Match settings">
     <span className="shogi-panel-label">MATCH CONTROLS</span>
-    <label>Play mode<select value={mode} onChange={event => onMode(event.target.value)}><option value="hotseat">Local two player</option><option value="bot">Practice vs Frost Bot</option></select></label>
-    <div className="shogi-rail-actions"><button type="button" disabled={undoDisabled} onClick={onUndo}><Undo2 size={15} />Undo</button><button type="button" onClick={onRestart}><RotateCcw size={15} />Restart</button></div>
-    <button type="button" className="shogi-rail-impasse" onClick={onImpasse}>Assess mutual impasse</button>
+    <p className="shogi-rail-summary">{online ? "Online room" : mode === "bot" ? `1 player · ${BOT_LEVELS[config.difficulty].label} bot` : "2 players · All human"}</p>
+    <button type="button" onClick={onSetup}>{online ? "Room details" : "Match setup"}</button>
+    {!online && !canAct && !thinking && <button type="button" onClick={onRetry}>Retry bot</button>}
+    <div className="shogi-rail-actions"><button type="button" disabled={undoDisabled} onClick={onUndo}><Undo2 size={15} />Undo</button><button type="button" disabled={!onRestart} onClick={onRestart}><RotateCcw size={15} />Restart</button></div>
+    <button type="button" className="shogi-rail-impasse" disabled={!onImpasse} onClick={onImpasse}>Assess mutual impasse</button>
   </section>;
   const command = <>
     <section className={`shogi-turn-card ${state.turn} ${check ? "check" : ""}`}>
@@ -225,7 +253,7 @@ function PlayTable({ state, mode, allActions, selection, destinationActions, mes
 
   return <>
     <header className="shogi-battle-bar">
-      <button type="button" className="shogi-icon-button" aria-label="All games" title="All games" onClick={onExit}><ArrowLeft size={19} /></button>
+      <button type="button" className="shogi-icon-button" aria-label={online ? "Room details" : "Match setup"} title={online ? "Room details" : "Match setup"} onClick={onSetup}><ArrowLeft size={19} /></button>
       <div className="shogi-battle-title"><p>SHOGI · JAPANESE TRADITION</p><h1>Frozen Shogunate</h1></div>
       <div className={`shogi-battle-status ${state.turn}`}><i /><div><strong>{state.winner || state.draw ? outcomeTitle(state) : `${state.turn === "red" ? "Crimson" : "Sapphire"} ${check ? "in check" : "to move"}`}</strong><small>Move {Math.ceil(state.ply / 2)}</small></div></div>
       <nav aria-label="Match controls">
@@ -294,9 +322,9 @@ function PromotionDialog({ choice, onChoose, onCancel }) {
   return <div className="shogi-modal-backdrop" role="presentation"><section className="shogi-promotion-modal" role="dialog" aria-modal="true" aria-labelledby="promotion-title"><span>ENTERING THE FAR CAMP</span><h2 id="promotion-title">Promote this {PIECE_NAMES[choice.piece.type]}?</h2><p>Promotion is optional here. It cannot be reversed while the piece remains on the board.</p><div><button type="button" onClick={() => onChoose(promoted)}>Promote to {PROMOTED_NAMES[choice.piece.type]}</button><button type="button" onClick={() => onChoose(plain)}>Keep current rank</button><button type="button" className="cancel" onClick={onCancel}>Cancel move</button></div></section></div>;
 }
 
-function Rulebook({ onPlay }) {
+function Rulebook({ onPlay, returnLabel = "Return to play" }) {
   return <main className="shogi-scroll-page"><article className="shogi-scroll">
-    <header><span className="shogi-scroll-seal">将</span><div><p>ORIGINAL WORDING · STANDARD HON-SHŌGI</p><h2>Field Guide to the Frozen Shogunate</h2></div><button type="button" onClick={onPlay}>Return to play</button></header>
+    <header><span className="shogi-scroll-seal">将</span><div><p>ORIGINAL WORDING · STANDARD HON-SHŌGI</p><h2>Field Guide to the Frozen Shogunate</h2></div><button type="button" onClick={onPlay}>{returnLabel}</button></header>
     <section className="shogi-objective"><strong>Objective</strong><p>Checkmate the opposing king: threaten its capture so that no legal move can remove the threat. The game ends at mate; the king is not physically captured.</p></section>
     <div className="shogi-rule-grid">
       <Rule n="1" title="Setup">Each commander starts with 20 pieces on a 9×9 board. Crimson moves first. There is no die or other randomizer.</Rule>
@@ -329,7 +357,7 @@ function ResearchNotes() {
       <Evidence status="reconstructed" title="Route into Japan">A chess ancestor derived ultimately from Indian chaturanga is the leading view, but the date and route—via China/Korea or Southeast Asia—are not established.</Evidence>
       <Evidence status="strong" title="Standard form">The JSA history places removal of the Drunk Elephant and emergence of hon-shōgi, including reuse of captured pieces, around the fifteenth–sixteenth centuries.</Evidence>
       <Evidence status="uncertain" title="Why drops began">The common explanation that captured-piece reuse prevented drawn-out games is a historical hypothesis, not an evidenced founding event.</Evidence>
-      <Evidence status="modern" title="Digital completion policies">Undo, a one-ply practice bot and non-check no-move loss are interface policies. They are not claims about historical play.</Evidence>
+      <Evidence status="modern" title="Digital completion policies">Undo, optional command bots and non-check no-move loss are interface policies. They are not claims about historical play.</Evidence>
     </div>
     <section className="shogi-adaptation"><h3>Arctic Dominion adaptation</h3><div><p><strong>Sente/Gote →</strong> Crimson and Sapphire Shogunates, while move order remains first player then second player.</p><p><strong>Promotion zone →</strong> the rival’s three-rank frost camp, indicated by a quiet non-color overlay.</p><p><strong>Captured pieces →</strong> visible “hands” beside the board; selecting one reveals legal drop squares.</p><p><strong>Orientation →</strong> faction color and artwork identify ownership; selecting a piece reveals its movement guide.</p><p><strong>Board and pieces →</strong> the supplied Arctic board and role sheets, mechanically cropped for runtime use.</p><p><strong>Rulebook →</strong> a pale ice-scroll panel using original wording and no reproduced modern diagram.</p></div></section>
     <section className="shogi-variants"><h3>Variants considered</h3><p><strong>Heian Shogi:</strong> ancestral and incompletely pinned down; omitted because its setup, board and drops do not equal modern Shogi. <strong>Sho Shogi:</strong> a medieval 9×9 predecessor with a Drunk Elephant; omitted. <strong>Chu/Dai Shogi:</strong> larger historical relatives with many additional pieces; omitted. <strong>Handicap Shogi:</strong> standard rules with one side removing material; suitable for a later toggle. <strong>Mini/Kyoto Shogi:</strong> modern variants; out of scope.</p><p><strong>Chosen version:</strong> standard hon-shōgi because it is authoritative, globally recognizable, fully implementable, and matches the supplied 9×9 board and fourteen illustrated piece states.</p></section>
