@@ -54,3 +54,26 @@ it('undo cancels bot work and restores the previous human decision after a reply
   expect(square(7,'a').querySelector('image')).toBeTruthy();
   expect(worker.terminated).toBe(true);
 });
+it('shows live guidance, captures and moves, and keeps the match when focus changes',async()=>{
+  await render();
+  await click(square(4,'a'));
+  expect(host.querySelector('.xiangqi-inspector.has-selection').textContent).toContain('One point forward');
+  await click(square(5,'a'));
+  expect(host.querySelector('.xiangqi-recent ol').textContent).toContain('a4 → a5');
+  expect(host.querySelector('.xiangqi-captures').textContent).toContain('0 lost');
+  await click(host.querySelector('[aria-label="Focus board"]'));
+  expect(host.querySelector('.xiangqi-battle').classList.contains('is-focused')).toBe(true);
+  expect(square(5,'a').querySelector('image')).toBeTruthy();
+  await click(host.querySelector('[aria-label="Full table"]'));
+  expect(host.querySelector('.xiangqi-recent ol').textContent).toContain('a4 → a5');
+});
+it('opens a keyboard-native match drawer and closes without resetting the position',async()=>{
+  HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
+  HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
+  await render();await click(square(4,'a'));await click(square(5,'a'));
+  await click(host.querySelector('[aria-label="Match panel"]'));
+  expect(host.querySelector('.xiangqi-drawer').open).toBe(true);
+  await click(host.querySelector('[aria-label="Close match panel"]'));
+  expect(host.querySelector('.xiangqi-drawer').open).toBe(false);
+  expect(square(5,'a').querySelector('image')).toBeTruthy();
+});

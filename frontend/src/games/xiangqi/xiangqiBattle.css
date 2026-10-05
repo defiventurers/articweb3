@@ -1,0 +1,133 @@
+/* A fitted battlefield with working rails, matching the other heritage tables. */
+body:has(.xiangqi-battle){overflow:hidden}
+body:has(.xiangqi-battle) .experience-companion,body:has(.xiangqi-battle) .network-badge,body:has(.xiangqi-battle) .audio-toggle{display:none!important}
+.xiangqi-screen.xiangqi-battle{--xq-line:rgba(149,221,230,.2);height:100dvh;min-height:0;padding:0;display:flex;flex-direction:column;overflow:hidden;background:#031725;font-family:Inter,system-ui,sans-serif;color:#e9f9fa}
+.xiangqi-battle *{box-sizing:border-box}
+.xiangqi-battle button,.xiangqi-battle summary{font:inherit;cursor:pointer;color:#e8fafb;border:1px solid var(--xq-line);border-radius:9px;background:#0a3044;min-height:36px}
+.xiangqi-battle button:hover:not(:disabled),.xiangqi-battle summary:hover{background:#124758;border-color:#77dde3}
+.xiangqi-battle button:disabled{opacity:.35;cursor:default}
+.xiangqi-battle button:focus-visible,.xiangqi-battle summary:focus-visible{outline:3px solid #efcf85;outline-offset:2px}
+.xiangqi-battle .xiangqi-eyebrow{font-size:9px;color:#90d6df;letter-spacing:.14em;font-weight:800}
+.xiangqi-battle-bar{height:64px;flex:none;display:flex;align-items:center;gap:12px;padding:8px 14px;border-bottom:1px solid var(--xq-line);background:#041c2b;z-index:5}
+.xiangqi-battle .xiangqi-icon-button,.xiangqi-match-menu summary{display:grid;place-items:center;width:42px;height:44px;min-width:42px;min-height:44px;padding:0;flex:none}
+.xiangqi-battle-brand>span{font-size:8px;letter-spacing:.16em;color:#87c9d3;font-weight:800}
+.xiangqi-battle-brand h1{margin:3px 0 0;font:24px/1 Georgia,serif;white-space:nowrap}
+.xiangqi-battle-brand small{font:10px/1.5 Inter,system-ui,sans-serif;color:#91b7c4;margin-left:8px}
+.xiangqi-battle-status{display:flex;align-items:center;gap:10px;margin:auto;padding:7px 16px;border:1px solid var(--xq-line);border-radius:12px}
+.xiangqi-battle-status i{height:9px;width:9px;border-radius:50%;background:#f17479;box-shadow:0 0 12px #f1747955;flex:none}
+.xiangqi-battle-status.black i{background:#66b8ff;box-shadow:0 0 12px #66b8ff55}
+.xiangqi-battle-status strong,.xiangqi-battle-status small{display:block;font-size:12px;line-height:1.4}
+.xiangqi-battle-status small{font-size:10px;color:#9dbec8}
+.xiangqi-battle-status.in-check{border-color:#e9be70;background:#55462955}
+.xiangqi-battle-bar nav{display:flex;gap:5px;align-items:center}
+.xiangqi-match-menu{position:relative}
+.xiangqi-match-menu summary{list-style:none}
+.xiangqi-match-menu summary::-webkit-details-marker{display:none}
+.xiangqi-match-menu>div{position:absolute;right:0;top:50px;width:210px;padding:10px;display:grid;gap:6px;background:#06283a;border:1px solid #3b6579;border-radius:12px;box-shadow:0 15px 40px #0009}
+.xiangqi-match-menu button{display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:12px}
+.xiangqi-battle .xiangqi-layout{flex:1;min-height:0;width:100%;max-width:none;margin:0;display:grid;grid-template-columns:minmax(0,1fr) var(--xiangqi-board-width) minmax(0,1fr);gap:0;align-items:stretch}
+.xiangqi-battle[data-layout=single]:not(.is-focused) .xiangqi-layout{grid-template-columns:var(--xiangqi-board-width) minmax(0,1fr)}
+.xiangqi-battle[data-layout=single] .xiangqi-match-rail{grid-column:2;grid-row:1;border-right:0;border-left:1px solid var(--xq-line)}
+.xiangqi-battle[data-layout=single] .xiangqi-board-panel{grid-column:1;grid-row:1}
+.xiangqi-battle[data-layout=compact] .xiangqi-layout,.xiangqi-battle.is-focused .xiangqi-layout{grid-template-columns:minmax(0,1fr)}
+.xiangqi-battle .xiangqi-match-rail,.xiangqi-battle .xiangqi-guide-rail{position:static;grid-row:auto;grid-column:auto;min-width:0;min-height:0;order:0;padding:10px;display:flex;flex-direction:column;gap:10px;border:0;border-radius:0;background:#041d2b;box-shadow:none;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#356375 transparent;container-type:inline-size}
+.xiangqi-battle .xiangqi-match-rail{border-right:1px solid var(--xq-line)}
+.xiangqi-battle .xiangqi-guide-rail{border-left:1px solid var(--xq-line)}
+.xiangqi-battle .xiangqi-board-panel{grid-column:auto;grid-row:auto;min-width:0;min-height:0;padding:0;border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(ellipse at center,#103a48,#020f1b 85%);order:0}
+.xiangqi-board-viewport{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.xiangqi-battle .xiangqi-board{display:block;flex:none;width:var(--xiangqi-board-width);height:var(--xiangqi-board-height);max-width:100%;max-height:100%;min-height:0;border:0;border-radius:0;touch-action:manipulation;user-select:none}
+.xiangqi-battle-footer{height:44px;flex:none;display:flex;align-items:center;gap:8px;padding:6px 10px;border-top:1px solid var(--xq-line);background:#041d2b;font-size:11px;overflow:hidden}
+.xiangqi-battle-footer>span{flex:1;min-width:0;line-height:1.5;overflow:auto;max-height:36px}
+.xiangqi-battle-footer>button{flex:none;padding:4px 9px;font-size:10px;min-height:30px}
+.xiangqi-battle .xiangqi-board-key{flex:none;margin:0;gap:8px;align-items:center;font-size:9px;letter-spacing:0;flex-wrap:nowrap}
+.xiangqi-board-key span{white-space:nowrap}
+.xiangqi-hit-area{cursor:pointer}
+.xiangqi-point-group[aria-disabled=true] .xiangqi-hit-area{cursor:default}
+.xiangqi-point-group:focus-visible{outline:none}
+.xiangqi-point-group:focus-visible .xiangqi-hit-area{stroke:#0b8587;stroke-width:3;fill:#20c7c21a;rx:8}
+.xiangqi-panel-card{flex:none;min-width:0;padding:12px;border:1px solid var(--xq-line);border-radius:12px;background:linear-gradient(145deg,#0c3040,#061f30)}
+.xiangqi-panel-card p{color:#accbd2;font-size:11px;line-height:1.65;margin:8px 0 0}
+.xiangqi-battle .xiangqi-turn-card h2{font:22px/1.15 Georgia,serif;margin:8px 0 0}
+.xiangqi-turn-card.in-check{border-color:#e9be70;background:linear-gradient(145deg,#403c29,#132e35)}
+.xiangqi-armies{display:grid;gap:7px;flex:none}
+.xiangqi-battle .xiangqi-army-card{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:8px;padding:8px;margin:0;border-radius:10px;opacity:.75;min-width:0}
+.xiangqi-battle .xiangqi-army-card img{height:38px;width:38px}
+.xiangqi-battle .xiangqi-army-card strong{font-size:11px}
+.xiangqi-battle .xiangqi-army-card span{font-size:9px;line-height:1.5;overflow-wrap:anywhere}
+.xiangqi-battle .xiangqi-army-card.active{opacity:1}
+.xiangqi-battle .xiangqi-inspector{flex:1 0 220px;display:flex;flex-direction:column;min-height:220px}
+.xiangqi-guide-empty{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;text-align:center;padding:18px 4px}
+.xiangqi-guide-empty>svg{color:#7ce2e6}
+.xiangqi-guide-empty>strong{font:22px/1.2 Georgia,serif}
+.xiangqi-guide-empty p{max-width:30ch;margin:0}
+.xiangqi-guide-empty small{color:#7cabb8;font-size:10px;line-height:1.5}
+.xiangqi-selected-piece{display:flex;align-items:center;gap:12px;margin-top:14px}
+.xiangqi-selected-piece img{width:68px;height:68px;object-fit:contain;filter:drop-shadow(0 4px 5px #0006)}
+.xiangqi-selected-piece strong,.xiangqi-selected-piece small{display:block;font-size:14px}
+.xiangqi-selected-piece small{font-size:10px;color:#9abdc7;margin-top:5px}
+.xiangqi-destinations{display:flex;gap:5px;flex-wrap:wrap;max-height:180px;overflow:auto;margin-top:12px}
+.xiangqi-destinations button{font-size:10px;padding:6px 8px;min-height:34px}
+.xiangqi-controls{display:grid;gap:8px}
+.xiangqi-controls p{margin:0}
+.xiangqi-controls>button,.xiangqi-controls>div>button{padding:7px 10px;font-size:11px;display:flex;align-items:center;justify-content:center;gap:6px}
+.xiangqi-controls>div{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.xiangqi-captures{display:grid;gap:12px}
+.xiangqi-captures>div{padding-top:8px;border-top:1px solid var(--xq-line)}
+.xiangqi-captures header{display:flex;justify-content:space-between;gap:8px;font-size:11px}
+.xiangqi-captures small{font-size:10px;color:#a7c4cd}
+.xiangqi-captures p{font-size:10px;color:#7fa7b4}
+.xiangqi-capture-shelf{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin-top:8px}
+.xiangqi-capture-shelf img{width:100%;aspect-ratio:1;object-fit:contain;max-height:55px}
+.xiangqi-battle .xiangqi-recent{flex:1 0 170px;min-height:170px;display:flex;flex-direction:column;overflow:hidden}
+.xiangqi-recent ol{list-style:none;margin:10px 0 0;padding:0;overflow:auto;min-height:0;scrollbar-width:thin}
+.xiangqi-recent li{display:grid;grid-template-columns:1fr auto;gap:3px;padding:9px 0;border-top:1px solid var(--xq-line);font-size:10px}
+.xiangqi-recent li:first-child{border:0}
+.xiangqi-recent li>span.red{color:#ff9499}.xiangqi-recent li>span.black{color:#87c8ff}
+.xiangqi-recent li>small{color:#d5c18c;font-size:9px}
+.xiangqi-recent li>p{grid-column:1/-1;font-size:10px;margin:0}
+.xiangqi-empty-history{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;flex-direction:column;text-align:center;color:#78a4b2;padding:20px 6px}
+.xiangqi-empty-history p{max-width:30ch;color:#89b1bd}
+.xiangqi-phone-armies{height:48px;flex:none;padding:4px 8px}
+.xiangqi-phone-armies .xiangqi-armies{grid-template-columns:1fr 1fr;gap:8px}
+.xiangqi-phone-armies .xiangqi-army-card{grid-template-columns:26px minmax(0,1fr) auto;padding:3px 6px;height:40px;gap:5px}
+.xiangqi-phone-armies .xiangqi-army-card img{width:26px;height:26px}
+.xiangqi-phone-armies .xiangqi-army-card strong{font-size:10px}
+.xiangqi-phone-armies .xiangqi-army-card span{font-size:8px}
+.xiangqi-phone-briefing{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:10px;background:#062334}
+.xiangqi-phone-briefing p{margin:8px 0;color:#a7c8d1;font-size:12px;line-height:1.55;max-width:44ch}
+.xiangqi-phone-briefing button{display:flex;gap:8px;align-items:center;font-size:11px;padding:5px 12px}
+.xiangqi-battle[data-layout=compact]:not(.is-focused) .xiangqi-board-viewport{flex:none;height:var(--xiangqi-board-height)}
+.xiangqi-live-notice{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.xiangqi-battle .xiangqi-drawer,.xiangqi-battle .xiangqi-rules-dialog{position:fixed;inset:0 0 0 auto;margin:0;width:min(390px,94vw);max-width:none;height:100dvh;max-height:none;padding:0;border:0;border-left:1px solid #477283;color:#e9f9fa;background:#041d2b;overflow:auto;overscroll-behavior:contain}
+.xiangqi-battle dialog:not([open]){display:none}
+.xiangqi-battle dialog::backdrop{background:#000a;backdrop-filter:blur(3px)}
+.xiangqi-battle dialog>header{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 16px;position:sticky;top:0;background:#06283a;z-index:1;border-bottom:1px solid var(--xq-line)}
+.xiangqi-battle dialog h2{font:23px/1.2 Georgia,serif;margin:0}
+.xiangqi-drawer>div{display:flex;flex-direction:column;gap:10px;padding:12px}
+.xiangqi-battle .xiangqi-rules-dialog{inset:0;margin:auto;width:min(800px,calc(100vw - 24px));height:fit-content;max-height:calc(100dvh - 24px);border:1px solid #477283;border-radius:14px;padding-bottom:18px}
+.xiangqi-rules-dialog>p{font-size:12px;line-height:1.7;margin:14px 20px;color:#aecdd5}
+.xiangqi-rules-dialog .xiangqi-rule-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:0 20px;gap:12px}
+.xiangqi-rules-dialog .xiangqi-rule-list article{grid-template-columns:36px 1fr;padding:10px 0}
+.xiangqi-rules-dialog .xiangqi-rule-list img{width:34px;height:34px}
+.xiangqi-rules-dialog .xiangqi-rule-list strong{font-size:12px}
+.xiangqi-rules-dialog .xiangqi-rule-list span{font-size:11px;line-height:1.6}
+.xiangqi-rules-page{font-family:Inter,system-ui,sans-serif}
+.xiangqi-rules-page .xiangqi-rule-list{max-width:1000px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.xiangqi-rules-page .xiangqi-rule-list span{font-size:14px;line-height:1.6}
+@container(min-width:400px){.xiangqi-armies{grid-template-columns:1fr 1fr}.xiangqi-captures{grid-template-columns:1fr 1fr}.xiangqi-captures>.xiangqi-eyebrow{grid-column:1/-1}.xiangqi-selected-piece{justify-content:center;gap:24px}.xiangqi-selected-piece img{width:88px;height:88px}.xiangqi-destinations{justify-content:center}}
+@media(max-width:900px){.xiangqi-battle-bar{padding:6px 8px;gap:8px}.xiangqi-battle-brand h1{font-size:20px}.xiangqi-battle-brand small{display:none}.xiangqi-battle-status{padding:5px 8px;margin-left:auto;margin-right:0}.xiangqi-battle-bar nav{gap:4px}.xiangqi-fullscreen-button{display:none!important}.xiangqi-battle-footer .xiangqi-board-key{display:none}}
+@media(max-width:540px){.xiangqi-battle-bar{height:60px;gap:5px;padding-top:max(6px,env(safe-area-inset-top))}.xiangqi-battle-brand>span{display:none}.xiangqi-battle-brand h1{font-size:18px}.xiangqi-battle .xiangqi-icon-button,.xiangqi-match-menu summary{width:36px;min-width:36px;height:40px;min-height:40px}.xiangqi-battle-status{gap:5px;border:0;padding:3px}.xiangqi-battle-status strong{font-size:10px}.xiangqi-battle-status small{font-size:9px}.xiangqi-battle-status i{width:6px;height:6px}.xiangqi-battle-bar nav{gap:3px}.xiangqi-rules-dialog .xiangqi-rule-list,.xiangqi-rules-page .xiangqi-rule-list{grid-template-columns:1fr}.xiangqi-battle-footer{padding-bottom:max(6px,env(safe-area-inset-bottom))}}
+@media(max-width:370px){.xiangqi-battle-status i{display:none}.xiangqi-battle-brand h1{font-size:16px}.xiangqi-battle .xiangqi-icon-button,.xiangqi-match-menu summary{width:32px;min-width:32px}.xiangqi-battle-status strong{font-size:9px}}
+@media(pointer:coarse){.xiangqi-battle button,.xiangqi-match-menu summary{min-height:44px}.xiangqi-battle .xiangqi-icon-button,.xiangqi-match-menu summary{min-width:40px}.xiangqi-battle-footer>button{min-height:32px}}
+@media(prefers-reduced-motion:reduce){.xiangqi-battle *{scroll-behavior:auto!important}}
+.xiangqi-phone-briefing{justify-content:flex-start;align-items:stretch;text-align:left;gap:6px;padding:12px 10px}
+.xiangqi-phone-briefing>p{margin:0;font-size:11px;max-width:none}
+.xiangqi-phone-shelf{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.xiangqi-phone-shelf button{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;padding:5px 1px;border-color:var(--xq-line)}
+.xiangqi-phone-shelf img{width:34px;height:34px;object-fit:contain}
+.xiangqi-phone-shelf small{font-size:8px;color:#b1cbd3}
+.xiangqi-phone-shelf button[aria-pressed=true]{border-color:#7ce2e6;background:#16505d}
+.xiangqi-phone-briefing .xiangqi-destinations{margin-top:0;flex-shrink:0}
+.xiangqi-phone-last{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:8px;border-top:1px solid var(--xq-line);color:#91b7c4;font-size:10px;line-height:1.5}
+.xiangqi-phone-last span{flex:1}.xiangqi-phone-last button{padding:0;min-width:36px;justify-content:center;flex:none}
+@media(max-height:500px){.xiangqi-battle-bar{height:52px}.xiangqi-battle-brand>span,.xiangqi-battle-status small{display:none}.xiangqi-battle .xiangqi-match-rail,.xiangqi-battle .xiangqi-guide-rail{padding:6px;gap:6px}.xiangqi-battle .xiangqi-inspector{flex-basis:160px;min-height:160px}.xiangqi-battle .xiangqi-recent{flex-basis:140px;min-height:140px}.xiangqi-battle .xiangqi-turn-card h2{font-size:18px}.xiangqi-panel-card{padding:9px}}
