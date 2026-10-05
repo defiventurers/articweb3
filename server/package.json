@@ -24,7 +24,8 @@
     "test:sanguo": "node --test tests/sanguo-online.test.js tests/sanguo-socket.test.js",
     "test:sanyou": "node --test tests/sanyou-online.test.js",
     "test:sannin": "node --test tests/sannin-online.test.js",
-    "test:shogi": "node --test tests/shogi-online.test.js tests/shogi-socket.test.js"
+    "test:shogi": "node --test tests/shogi-online.test.js tests/shogi-socket.test.js",
+    "test:xiangqi": "node --test tests/xiangqi-online.test.js tests/xiangqi-socket.test.js"
   },
   "dependencies": {
     "dotenv": "latest",
