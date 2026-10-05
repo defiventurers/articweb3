@@ -22,7 +22,7 @@ const compassMark = "/assets/heritage-arcade/board/ppba-compass-mark.png";
 const visualReference = "/assets/heritage-arcade/board/ppba-arcade-reference.png";
 const auditedTables = new Set([5, 19, 23, 24, 25, 26, 27]);
 const originalComplete = new Set([6, 7, 8, 10, 11, 13, 16, 20, 22]);
-const TABLE_QUERY_BY_ID = new Map([[1, "sanguo"], [24, "sannin-shogi"], [26, "shogi"], [27, "san-you-qi"]]);
+const TABLE_QUERY_BY_ID = new Map([[25, "xiangqi"], [1, "sanguo"], [24, "sannin-shogi"], [26, "shogi"], [27, "san-you-qi"]]);
 const TABLE_ID_BY_QUERY = new Map([...TABLE_QUERY_BY_ID].map(([id, query]) => [query, id]));
 
 // Tables intentionally separated from the primary Heritage strategy collection.
@@ -43,7 +43,7 @@ export function HeritageArcadeApp({ onExitToLibrary }) {
 
   const [selected, setSelected] = useState(featuredGame);
   const [category, setCategory] = useState("All routes");
-  const [activeMode, setActiveModeState] = useState(() => params.has("room") ? 1 : TABLE_ID_BY_QUERY.get(params.get("table")) ?? null);
+  const [activeMode, setActiveModeState] = useState(() => TABLE_ID_BY_QUERY.get(params.get("table")) ?? (params.has("room") ? 1 : null));
   const [roster, setRoster] = useState(["polly", "retsba", "pengu"]);
   const filtered = useMemo(() => category === "All routes" ? games : games.filter((game) => game.category === category), [category, games]);
   const toggleClan = (clan) => setRoster((current) => current.includes(clan) ? current.length === 3 ? current : current.filter((id) => id !== clan) : [...current.slice(0, 2), clan]);
@@ -54,6 +54,7 @@ export function HeritageArcadeApp({ onExitToLibrary }) {
     const tableQuery = TABLE_QUERY_BY_ID.get(id);
     if (tableQuery) nextUrl.searchParams.set("table", tableQuery);
     else nextUrl.searchParams.delete("table");
+    if (id === null) nextUrl.searchParams.delete("room");
     window.history.replaceState({}, "", nextUrl);
   };
   const backToAtlas = () => setActiveMode(null);
