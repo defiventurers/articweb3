@@ -5,17 +5,28 @@ test("Shogi opens directly on the playable board and accepts a legal move", asyn
   await expect(page.getByRole("heading", { name: "Frozen Shogunate" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await expect(page.getByLabel("Shogi board").getByRole("gridcell")).toHaveCount(81);
-  await expect(page.getByText("Crimson Shogunate", { exact: true })).toBeVisible();
+  await expect(page.locator(".shogi-battle-status")).toContainText("Crimson");
+  const board = await page.locator(".shogi-board-shell").boundingBox();
+  expect(board.width / board.height).toBeCloseTo(0.8, 2);
+  expect(board.y + board.height).toBeLessThanOrEqual(page.viewportSize().height);
+  await expect(page.locator(".shogi-board-grid .shogi-piece > span")).toHaveCount(0);
+  const piece = await page.locator(".shogi-board-grid .shogi-piece").first().boundingBox();
+  expect(piece.width / piece.height).toBeCloseTo(174 / 340, 2);
   await page.getByRole("gridcell", { name: /9g, Crimson Shogunate Pawn/ }).click();
   await expect(page.getByRole("gridcell", { name: /9f, empty, legal destination/ })).toBeVisible();
   await page.getByRole("gridcell", { name: /9f, empty, legal destination/ }).click();
-  await expect(page.getByText("Sapphire Shogunate", { exact: true })).toBeVisible();
-  await expect(page.getByText(/moved Pawn/)).toBeVisible();
+  await expect(page.locator(".shogi-battle-status")).toContainText("Sapphire");
+  await expect(page.locator(".shogi-event")).toContainText("moved Pawn");
 });
 
 test("Shogi exposes its original-wording rules and sourced research", async ({ page }) => {
   await page.goto("/?skipLoader=1&game=shogi-frozen-shogunate");
-  await page.getByRole("button", { name: "Rulebook" }).click();
+  if (await page.getByRole("button", { name: "Rulebook", exact: true }).isVisible()) {
+    await page.getByRole("button", { name: "Rulebook", exact: true }).click();
+  } else {
+    await page.getByLabel("More match options").click();
+    await page.getByRole("button", { name: "Rules", exact: true }).click();
+  }
   await expect(page.getByRole("heading", { name: "Field Guide to the Frozen Shogunate" })).toBeVisible();
   await expect(page.getByText(/Pawn-drop mate/, { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Research Notes" }).click();

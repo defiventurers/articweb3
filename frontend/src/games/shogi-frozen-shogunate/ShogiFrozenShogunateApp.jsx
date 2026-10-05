@@ -131,7 +131,7 @@ function PlayTable({ state, mode, allActions, selection, destinationActions, mes
   const layoutRef = useRef(null);
   const drawerRef = useRef(null);
   const panelButton = useRef(null);
-  const [dimensions, setDimensions] = useState(() => ({ width: window.innerWidth, height: window.innerHeight - 64 }));
+  const [dimensions, setDimensions] = useState(() => ({ width: window.innerWidth, height: window.innerHeight - 56 }));
   const [focused, setFocused] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [keyboardCell, setKeyboardCell] = useState(54);
@@ -236,7 +236,7 @@ function PlayTable({ state, mode, allActions, selection, destinationActions, mes
         </div></details>
       </nav>
     </header>
-    <main ref={layoutRef} className={`shogi-play ${focused && !compact ? "is-focused" : ""}`} data-layout={layout.mode} style={{ "--shogi-board-size": `${layout.boardSize}px` }}>
+    <main ref={layoutRef} className={`shogi-play ${focused && !compact ? "is-focused" : ""}`} data-layout={layout.mode} style={{ "--shogi-board-size": `${layout.boardSize}px`, "--shogi-board-height": `${layout.boardHeight}px` }}>
       {!compact && !focused && layout.mode === "wide" && <aside className="shogi-command" aria-label="Army and movement controls">{command}</aside>}
       <section className="shogi-board-column" aria-label="Battlefield">
         <div className="shogi-board-viewport"><div className="shogi-board-shell">
@@ -281,7 +281,7 @@ function HandDock({ side, state, active, selected, onHand }) {
 
 function PieceTile({ piece, compact = false }) {
   const role = assetRole(piece);
-  return <span className={`shogi-piece ${piece.side} ${compact ? "compact" : ""}`} title={displayPieceName(piece)}><img src={`${ASSET_ROOT}/${piece.side}-${role}.webp`} alt="" draggable="false" /><span>{shortRole(piece)}</span></span>;
+  return <span className={`shogi-piece ${piece.side} ${compact ? "compact" : ""}`}><img src={`${ASSET_ROOT}/${piece.side}-${role}.webp`} alt="" draggable="false" /></span>;
 }
 
 function PromotionDialog({ choice, onChoose, onCancel }) {
@@ -327,7 +327,7 @@ function ResearchNotes() {
       <Evidence status="uncertain" title="Why drops began">The common explanation that captured-piece reuse prevented drawn-out games is a historical hypothesis, not an evidenced founding event.</Evidence>
       <Evidence status="modern" title="Digital completion policies">Undo, a one-ply practice bot and non-check no-move loss are interface policies. They are not claims about historical play.</Evidence>
     </div>
-    <section className="shogi-adaptation"><h3>Arctic Dominion adaptation</h3><div><p><strong>Sente/Gote →</strong> Crimson and Sapphire Shogunates, while move order remains first player then second player.</p><p><strong>Promotion zone →</strong> the rival’s three-rank frost camp, indicated by a quiet non-color overlay.</p><p><strong>Captured pieces →</strong> visible “hands” beside the board; selecting one reveals legal drop squares.</p><p><strong>Orientation →</strong> faction color, shape and text labels identify ownership without relying on color alone.</p><p><strong>Board and pieces →</strong> the exact user-supplied Arctic board and role sheets, mechanically cropped for runtime use.</p><p><strong>Rulebook →</strong> a pale ice-scroll panel using original wording and no reproduced modern diagram.</p></div></section>
+    <section className="shogi-adaptation"><h3>Arctic Dominion adaptation</h3><div><p><strong>Sente/Gote →</strong> Crimson and Sapphire Shogunates, while move order remains first player then second player.</p><p><strong>Promotion zone →</strong> the rival’s three-rank frost camp, indicated by a quiet non-color overlay.</p><p><strong>Captured pieces →</strong> visible “hands” beside the board; selecting one reveals legal drop squares.</p><p><strong>Orientation →</strong> faction color and artwork identify ownership; selecting a piece reveals its movement guide.</p><p><strong>Board and pieces →</strong> the supplied Arctic board and role sheets, mechanically cropped for runtime use.</p><p><strong>Rulebook →</strong> a pale ice-scroll panel using original wording and no reproduced modern diagram.</p></div></section>
     <section className="shogi-variants"><h3>Variants considered</h3><p><strong>Heian Shogi:</strong> ancestral and incompletely pinned down; omitted because its setup, board and drops do not equal modern Shogi. <strong>Sho Shogi:</strong> a medieval 9×9 predecessor with a Drunk Elephant; omitted. <strong>Chu/Dai Shogi:</strong> larger historical relatives with many additional pieces; omitted. <strong>Handicap Shogi:</strong> standard rules with one side removing material; suitable for a later toggle. <strong>Mini/Kyoto Shogi:</strong> modern variants; out of scope.</p><p><strong>Chosen version:</strong> standard hon-shōgi because it is authoritative, globally recognizable, fully implementable, and matches the supplied 9×9 board and fourteen illustrated piece states.</p></section>
     <section className="shogi-sources"><h3>Sources</h3>
       <a href="https://www.shogi.or.jp/match/taikyoku_rules/" target="_blank" rel="noreferrer"><strong>Japan Shogi Association</strong><span>Official Match Rules, revised 1 October 2025</span><i>PRIMARY · RULES</i></a>
@@ -341,7 +341,6 @@ function ResearchNotes() {
 }
 
 function Evidence({ status, title, children }) { return <article className={`shogi-evidence ${status}`}><span>{status.toUpperCase()}</span><h3>{title}</h3><p>{children}</p></article>; }
-function shortRole(piece) { const name = displayPieceName(piece); return name === "Dragon King" ? "DRAGON" : name === "Dragon Horse" ? "HORSE" : name === "Tokin" ? "TOKIN" : name.replace(" General", "").replace("Promoted ", "+").toUpperCase(); }
 function squareLabel(index, piece, targets) { const { row, col } = coordinatesOf(index); return `${9 - col}${String.fromCharCode(97 + row)}${piece ? `, ${sideName(piece.side)} ${displayPieceName(piece)}` : ", empty"}${targets?.length ? ", legal destination" : ""}`; }
 function outcomeTitle(state) { if (state.winner) return `${sideName(state.winner)} wins`; if (state.draw) return "Drawn match"; return sideName(state.turn); }
 function outcomeDetail(state, check) {
