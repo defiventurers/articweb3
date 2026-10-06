@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/assets/heritage-arcade/board/xiangqi-arctic-board.png",
+      "destination": "/assets/heritage-arcade/board/xiangqi-arctic-board-gold-palace.svg"
+    },
+    {
       "source": "/api/health",
       "destination": "https://articweb3.onrender.com/health"
     }
