@@ -18,7 +18,7 @@ textarea{width:100%;height:480px;background:#050d16;color:#dff4ff;border:1px sol
 @media(max-width:850px){main{grid-template-columns:1fr}aside{position:static}}
 </style>
 <header><h1>Xiangqi — 90-point placement editor</h1><button id="labels">Hide labels</button><button id="reset">Reset</button></header>
-<main><div id="board"><img src="/assets/heritage-arcade/board/xiangqi-arctic-board.png"></div><aside><div id="info">Select a point, then drag it. Arrow keys nudge 1 px; Shift+arrow nudges 4 px.</div><textarea id="out" readonly></textarea></aside></main>
+<main><div id="board"><img src="/assets/heritage-arcade/board/xiangqi-arctic-board-gold-palace.svg"></div><aside><div id="info">Select a point, then drag it. Arrow keys nudge 1 px; Shift+arrow nudges 4 px.</div><textarea id="out" readonly></textarea></aside></main>
 <script>
 const W=1254,H=1254,X=[99,222,346,473,623,779,906,1030,1152],Y=[75,194,319,436,550,681,792,904,1025,1148];
 const seed=[];for(let r=0;r<10;r++)for(let c=0;c<9;c++)seed.push({r,c,n:String.fromCharCode(97+c)+(10-r),x:X[c]/W,y:Y[r]/H});
