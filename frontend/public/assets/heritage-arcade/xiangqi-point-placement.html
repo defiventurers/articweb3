@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Xiangqi point editor</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#07131f;color:#eef7ff;font:14px Arial,sans-serif}
+header{position:sticky;top:0;z-index:9;padding:10px 14px;background:#10263a;display:flex;gap:8px;align-items:center}
+h1{font-size:17px;margin:0 auto 0 0}button{padding:8px 10px;background:#214463;color:white;border:1px solid #537696;border-radius:6px}
+main{display:grid;grid-template-columns:minmax(500px,1fr) 330px;gap:12px;padding:12px}
+#board{position:relative;max-width:1050px;margin:auto;touch-action:none;user-select:none}
+#board img{display:block;width:100%;pointer-events:none}
+.p{position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;border:2px solid #05304c;box-shadow:0 0 0 2px #20c8ff;transform:translate(-50%,-50%);cursor:grab}
+.p.sel{width:23px;height:23px;background:#ffd65c;box-shadow:0 0 0 3px white,0 0 14px #ffc400}
+.p span{position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:#06131dcc;padding:2px 4px;border-radius:3px;font:10px Consolas;color:white}
+aside{background:#10263a;padding:12px;border-radius:7px;height:max-content;position:sticky;top:62px}
+#info{font:12px Consolas;line-height:1.5;margin-bottom:8px}
+textarea{width:100%;height:480px;background:#050d16;color:#dff4ff;border:1px solid #46647d;border-radius:5px;padding:8px;font:10px/1.35 Consolas}
+@media(max-width:850px){main{grid-template-columns:1fr}aside{position:static}}
+</style>
+<header><h1>Xiangqi — 90-point placement editor</h1><button id="labels">Hide labels</button><button id="reset">Reset</button></header>
+<main><div id="board"><img src="/assets/heritage-arcade/board/xiangqi-arctic-board.png"></div><aside><div id="info">Select a point, then drag it. Arrow keys nudge 1 px; Shift+arrow nudges 4 px.</div><textarea id="out" readonly></textarea></aside></main>
+<script>
+const W=1254,H=1254,X=[99,222,346,473,623,779,906,1030,1152],Y=[75,194,319,436,550,681,792,904,1025,1148];
+const seed=[];for(let r=0;r<10;r++)for(let c=0;c<9;c++)seed.push({r,c,n:String.fromCharCode(97+c)+(10-r),x:X[c]/W,y:Y[r]/H});
+let pts=seed.map(p=>({...p})),sel=-1,drag=null,show=true;
+const board=document.querySelector('#board'),out=document.querySelector('#out'),info=document.querySelector('#info');
+const clamp=v=>Math.max(0,Math.min(1,v));
+function exportValues(){const map={};let css='';pts.forEach(p=>{map[p.n]={row:p.r,col:p.c,x:+p.x.toFixed(7),y:+p.y.toFixed(7)};css+='.xiangqi-point[data-square="'+p.n+'"] { left: '+(p.x*100).toFixed(4)+'%; top: '+(p.y*100).toFixed(4)+'%; }\n'});out.value='const XIANGQI_POINT_MAP = '+JSON.stringify(map,null,2)+';\n\n/* CSS */\n'+css}
+function details(){if(sel<0){info.textContent='Select a point, then drag it. Arrow keys nudge 1 px; Shift+arrow nudges 4 px.';return}const p=pts[sel];info.innerHTML='<b>'+p.n+'</b><br>left '+(p.x*100).toFixed(4)+'% · top '+(p.y*100).toFixed(4)+'%<br>pixel '+Math.round(p.x*W)+', '+Math.round(p.y*H)}
+function render(){board.querySelectorAll('.p').forEach(e=>e.remove());pts.forEach((p,i)=>{const d=document.createElement('div');d.className='p'+(i===sel?' sel':'');d.style.left=p.x*100+'%';d.style.top=p.y*100+'%';d.dataset.i=i;const s=document.createElement('span');s.textContent=p.n;s.style.display=show?'block':'none';d.appendChild(s);d.onpointerdown=e=>{sel=i;const b=board.getBoundingClientRect();drag={id:e.pointerId,i,sx:(e.clientX-b.left)/b.width,sy:(e.clientY-b.top)/b.height,x:p.x,y:p.y};d.setPointerCapture(e.pointerId);render()};d.onpointermove=e=>{if(!drag||drag.id!==e.pointerId||drag.i!==i)return;const b=board.getBoundingClientRect();p.x=clamp(drag.x+(e.clientX-b.left)/b.width-drag.sx);p.y=clamp(drag.y+(e.clientY-b.top)/b.height-drag.sy);d.style.left=p.x*100+'%';d.style.top=p.y*100+'%';details();exportValues()};d.onpointerup=d.onpointercancel=e=>{if(drag&&drag.id===e.pointerId){drag=null;render()}};board.appendChild(d)});details();exportValues()}
+function nudge(dx,dy,k){if(sel<0)return;pts[sel].x=clamp(pts[sel].x+dx*k/W);pts[sel].y=clamp(pts[sel].y+dy*k/H);render()}
+window.onkeydown=e=>{const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(!d||document.activeElement===out)return;e.preventDefault();nudge(d[0],d[1],e.shiftKey?4:1)}
+document.querySelector('#labels').onclick=e=>{show=!show;e.target.textContent=show?'Hide labels':'Show labels';render()}
+document.querySelector('#reset').onclick=()=>{pts=seed.map(p=>({...p}));sel=-1;render()}
+render();
+</script>
