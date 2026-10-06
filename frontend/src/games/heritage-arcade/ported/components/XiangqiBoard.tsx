@@ -37,13 +37,21 @@ const ROLE_GUIDE: { role: XiangqiRole; move: string }[] = [
   { role: "soldier", move: "One point forward; after crossing the river, may also move one point sideways, never backward." },
 ];
 
-const X = 88; const Y = 78; const COL = 92; const ROW = 86;
-const point = ({ row, col }: XiangqiSquare) => ({ x: X + col * COL, y: Y + row * ROW });
+const BOARD_LEFT = 40;
+const BOARD_TOP = 35;
+const BOARD_RIGHT = 872;
+const BOARD_BOTTOM = 905;
+const XIANGQI_X = [105.6842, 187.2919, 269.563, 353.8246, 453.3461, 556.8485, 641.11, 723.3812, 804.3254];
+const XIANGQI_Y = [87.0335, 169.5933, 256.3158, 337.488, 416.5789, 507.4641, 584.4737, 662.177, 746.1244, 831.4593];
+const point = ({ row, col }: XiangqiSquare) => ({ x: XIANGQI_X[col], y: XIANGQI_Y[row] });
+const hitArea = ({ row, col }: XiangqiSquare) => {
+  const left = col === 0 ? BOARD_LEFT : (XIANGQI_X[col - 1] + XIANGQI_X[col]) / 2;
+  const right = col === 8 ? BOARD_RIGHT : (XIANGQI_X[col] + XIANGQI_X[col + 1]) / 2;
+  const top = row === 0 ? BOARD_TOP : (XIANGQI_Y[row - 1] + XIANGQI_Y[row]) / 2;
+  const bottom = row === 9 ? BOARD_BOTTOM : (XIANGQI_Y[row] + XIANGQI_Y[row + 1]) / 2;
+  return { x: left, y: top, width: right - left, height: bottom - top };
+};
 const allSquares = Array.from({ length: 90 }, (_, index) => ({ row: Math.floor(index / 9), col: index % 9 }));
-const palaceDiagonals = [
-  [{ row: 0, col: 3 }, { row: 2, col: 5 }], [{ row: 0, col: 5 }, { row: 2, col: 3 }],
-  [{ row: 9, col: 3 }, { row: 7, col: 5 }], [{ row: 9, col: 5 }, { row: 7, col: 3 }],
-] as const;
 
 const armyName = (side: XiangqiSide) => side === "red" ? "Red / Shu" : "Blue / Wei";
 const count = (pieces: XiangqiPiece[], side: XiangqiSide) => pieces.filter((piece) => piece.side === side).length;
@@ -190,13 +198,16 @@ export function XiangqiMatch({ config, onSetup, onExitToLibrary, online }: { con
         {!focused && compact && <div className="xiangqi-phone-armies">{armies}</div>}
         <div className="xiangqi-board-viewport">
         <svg className="xiangqi-board" viewBox="40 35 832 870" aria-label="Standard Xiangqi board with 90 intersections">
-          <rect className="xiangqi-board-base" x="22" y="22" width="866" height="886" rx="8" />
-          <rect className="xiangqi-river" x={X} y={point({ row: 4, col: 0 }).y + 3} width={COL * 8} height={ROW - 6} />
-          {Array.from({ length: 10 }, (_, row) => <line key={`rank-${row}`} className="xiangqi-rail" x1={X} y1={point({ row, col: 0 }).y} x2={X + COL * 8} y2={point({ row, col: 0 }).y} />)}
-          {Array.from({ length: 9 }, (_, col) => <g key={`file-${col}`}><line className="xiangqi-rail" x1={point({ row: 0, col }).x} y1={Y} x2={point({ row: 4, col }).x} y2={point({ row: 4, col }).y} /><line className="xiangqi-rail" x1={point({ row: 5, col }).x} y1={point({ row: 5, col }).y} x2={point({ row: 9, col }).x} y2={point({ row: 9, col }).y} /></g>)}
-          {palaceDiagonals.map(([start, end], index) => <line key={`palace-${index}`} className="xiangqi-rail xiangqi-palace-line" x1={point(start).x} y1={point(start).y} x2={point(end).x} y2={point(end).y} />)}
-          <text className="xiangqi-river-label" x="258" y="493">ICE RIVER</text><text className="xiangqi-river-label xiangqi-river-label-right" x="655" y="493">FROST BOUNDARY</text>
-          {allSquares.map((square) => { const location = point(square); const occupied = pieceAt(state.pieces, square); const target = targetKeys.has(squareKey(square)); const wasMoved = state.lastMove && (squareKey(state.lastMove.from) === squareKey(square) || squareKey(state.lastMove.to) === squareKey(square)); return <g key={squareKey(square)} className="xiangqi-point-group" onClick={() => chooseSquare(square)} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); chooseSquare(square); } }} role="button" tabIndex={canAct && (target || occupied?.side === state.turn) ? 0 : -1} aria-disabled={!canAct} aria-label={`rank ${10 - square.row}, file ${String.fromCharCode(97 + square.col)}`}><rect className="xiangqi-hit-area" x={location.x-COL/2} y={location.y-ROW/2} width={COL} height={ROW} fill="transparent" pointerEvents="all" /><circle className={`xiangqi-point ${target ? "legal" : ""} ${target && occupied ? "capture" : ""} ${wasMoved ? "last" : ""}`} cx={location.x} cy={location.y} r={target ? 15 : 5} />{occupied && <g className={`xiangqi-piece ${selected === occupied.id ? "selected" : ""}`} transform={`translate(${location.x} ${location.y})`}><circle className="xiangqi-piece-pad" r="38" /><image className="xiangqi-piece-art" href={ROLE_ASSETS[occupied.side][occupied.role]} x="-38" y="-38" width="76" height="76" preserveAspectRatio="xMidYMid meet" /><circle className="xiangqi-piece-ring" r="38" /></g>}</g>; })}
+          <image
+            href="/assets/heritage-arcade/board/xiangqi-arctic-board.png"
+            x="40"
+            y="35"
+            width="832"
+            height="870"
+            preserveAspectRatio="none"
+            pointerEvents="none"
+          />
+          {allSquares.map((square) => { const location = point(square); const hit = hitArea(square); const occupied = pieceAt(state.pieces, square); const target = targetKeys.has(squareKey(square)); const wasMoved = state.lastMove && (squareKey(state.lastMove.from) === squareKey(square) || squareKey(state.lastMove.to) === squareKey(square)); return <g key={squareKey(square)} className="xiangqi-point-group" onClick={() => chooseSquare(square)} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); chooseSquare(square); } }} role="button" tabIndex={canAct && (target || occupied?.side === state.turn) ? 0 : -1} aria-disabled={!canAct} aria-label={`rank ${10 - square.row}, file ${String.fromCharCode(97 + square.col)}`}><rect className="xiangqi-hit-area" x={hit.x} y={hit.y} width={hit.width} height={hit.height} fill="transparent" pointerEvents="all" /><circle className={`xiangqi-point ${target ? "legal" : ""} ${target && occupied ? "capture" : ""} ${wasMoved ? "last" : ""}`} cx={location.x} cy={location.y} r={target ? 15 : 5} />{occupied && <g className={`xiangqi-piece ${selected === occupied.id ? "selected" : ""}`} transform={`translate(${location.x} ${location.y})`}><circle className="xiangqi-piece-pad" r="38" /><image className="xiangqi-piece-art" href={ROLE_ASSETS[occupied.side][occupied.role]} x="-38" y="-38" width="76" height="76" preserveAspectRatio="xMidYMid meet" /><circle className="xiangqi-piece-ring" r="38" /></g>}</g>; })}
         </svg>
         </div>
         {!focused && compact && layout.briefingHeight >= 90 && <section className="xiangqi-phone-briefing"><span className="xiangqi-eyebrow">{selectedPiece ? "PIECE COMMAND" : state.lastMove ? "LAST COMMAND" : "OPENING FORMATION"}</span><div className="xiangqi-phone-shelf">{ROLE_GUIDE.map(({role}) => { const pieces = state.pieces.filter(piece => piece.side === state.turn && piece.role === role); return <button key={role} disabled={!canAct || !pieces.length} aria-label={`Select ${ROLE_LABELS[role]}`} aria-pressed={selectedPiece?.role === role} onClick={() => setSelected((pieces.find(piece => legalTargets(piece,state.pieces).length) || pieces[0]).id)}><img src={ROLE_ASSETS[state.turn][role]} alt="" /><small>{ROLE_LABELS[role]}</small></button>; })}</div><p>{selectedPiece ? ROLE_GUIDE.find(guide => guide.role === selectedPiece.role)?.move : "Choose a piece on the board, or use the command shelf above."}</p>{selectedPiece && <div className="xiangqi-destinations">{targets.map(target => <button key={squareKey(target)} disabled={!canAct} onClick={() => chooseSquare(target)}>{pieceAt(state.pieces,target) ? "Capture " : "Move "}{squareName(target)}</button>)}</div>}<div className="xiangqi-phone-last"><span>{state.lastMove ? moveText(state.lastMove) : "Red opens · Both armies at full strength"}</span><button onClick={() => setDrawerOpen(true)} aria-label="View match details"><PanelRight size={15} /></button></div></section>}
