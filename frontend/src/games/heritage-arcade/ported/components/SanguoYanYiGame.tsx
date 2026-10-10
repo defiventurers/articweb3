@@ -56,7 +56,7 @@ export default function SanguoYanYiGame({ onBack }: { onBack: () => void }) {
     setSession({ state: createYanYiState(options), humans, difficulty }); setHistory([]); setSelected(null); setBotError(""); setZoom(1);
   };
   const commitState = (next: YanYiState | null) => { if (!next || !session) return; setHistory(prev => [...prev.slice(-79), session.state]); setSession({ ...session, state: next }); setSelected(null); };
-  const move = (to: YanYiPoint) => { if (state && selected && canPlay) commitState(applyYanYiMove(state, selected, to)); };
+  const move = (to: YanYiPoint) => { if (state && selected && canPlay) commitState(applyYanYiMove(state, selected, { x: to.x, y: to.y })); };
   const select = (target: YanYiPiece) => {
     if (selected && targets.some(to => sameYanYiPoint(to, target))) move(target);
     else setSelected(current => current === target.id ? null : target.id);

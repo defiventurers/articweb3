@@ -72,6 +72,37 @@ describe("movement and blocking", () => {
   });
 });
 describe("Han activation and alliances", () => {
+  it.each(YAN_YI_FACTIONS)("%s captures retain the attacker's identity when the destination is an occupied piece", owner => {
+    const enemy = YAN_YI_FACTIONS.find(f => f !== owner)!;
+    const attacker = p("attacker", owner, "chariot", 7, 7), victim = p("victim", enemy, "horse", 7, 9);
+    const s = position([attacker, victim], owner);
+    const next = applyYanYiMove(s, attacker.id, victim)!;
+    expect(next).not.toBeNull();
+    expect(next.pieces.find(p => p.id === attacker.id)).toEqual({ ...attacker, x: 7, y: 9 });
+    expect(next.pieces.some(p => p.id === victim.id)).toBe(false);
+    expect(next.pieces).toHaveLength(s.pieces.length - 1);
+    expect(next.events.at(-1)).toMatchObject({ actor: owner, pieceId: attacker.id, capture: "horse", to: { x: 7, y: 9 } });
+    expect(Object.keys(next.events.at(-1)!.to!)).toEqual(["x", "y"]);
+  });
+  it("red's occupied-piece regicide preserves its Horse and lets both red and inherited Han capture allied rivals", () => {
+    const horse = p("red-horse", "red", "horse", 2, 7);
+    const redR = p("red-chariot", "red", "chariot", 7, 7);
+    const blueTarget = p("blue-target", "blue", "soldier", 6, 6);
+    const greenTarget = p("green-target", "green", "horse", 7, 9);
+    const s = position([...han(), horse, redR, blueTarget, greenTarget], "red");
+    const emperor = s.pieces.find(p => p.role === "emperor")!;
+    const activated = applyYanYiMove(s, horse.id, emperor)!;
+    expect(activated.pieces.find(p => p.id === horse.id)).toEqual({ ...horse, x: 0, y: 8 });
+    expect(activated.hanOwner).toBe("red"); expect(activated.alliance).toEqual(["green", "blue"]);
+    for (const [attackerId, victim] of [["han-chariot-6", blueTarget], [redR.id, greenTarget]] as const) {
+      const turn = { ...activated, turn: "red" as const };
+      const attacker = turn.pieces.find(p => p.id === attackerId)!;
+      expect(includes(legalYanYiTargets(turn, attacker), victim.x, victim.y)).toBe(true);
+      const captured = applyYanYiMove(turn, attacker.id, victim)!;
+      expect(captured.pieces.find(p => p.id === attacker.id)).toEqual({ ...attacker, x: victim.x, y: victim.y });
+      expect(captured.pieces.some(p => p.id === victim.id)).toBe(false);
+    }
+  });
   it("Horse landing on another faction's point forces alliance and gives Han to the third", () => {
     const h = p("h", "blue", "horse", 2, 6), s = position([...han(), h]);
     const next = applyYanYiMove(s, h.id, { x: 0, y: 7 })!; expect(next).not.toBeNull(); expect(next.alliance).toEqual(["blue", "red"]); expect(next.hanOwner).toBe("green"); expect(next.pieces.filter(p => p.origin === "han")).toHaveLength(4); expect(next.pieces.filter(p => p.origin === "han").every(p => p.owner === "green")).toBe(true);

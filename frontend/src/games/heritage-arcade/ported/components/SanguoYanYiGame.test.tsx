@@ -3,7 +3,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import SanguoYanYiGame from "./SanguoYanYiGame";
-import { createYanYiState } from "../game/sanguoYanYiRules";
+import { createYanYiState, YAN_YI_FACTIONS } from "../game/sanguoYanYiRules";
 import { YAN_YI_X, YAN_YI_Y } from "../game/sanguoYanYiPresentation";
 let container: HTMLDivElement, root: Root;
 const click = async (element: Element) => { await act(async () => element.dispatchEvent(new MouseEvent("click", { bubbles: true }))); };
@@ -16,6 +16,51 @@ beforeEach(() => {
 });
 afterEach(async () => { await act(async () => root.unmount()); container.remove(); vi.restoreAllMocks(); });
 describe("Yan Yi English play screen", () => {
+  it.each(YAN_YI_FACTIONS)("%s captures an opponent by tapping its image and keeps the attacking piece", async owner => {
+    const enemy = YAN_YI_FACTIONS.find(f => f !== owner)!;
+    const initial = createYanYiState();
+    const attacker = { id: "attacker", origin: owner, owner, role: "chariot" as const, x: 7, y: 7 };
+    const victim = { id: "victim", origin: enemy, owner: enemy, role: "horse" as const, x: 7, y: 9 };
+    const state = { ...initial, pieces: [...initial.pieces.filter(p => p.role === "king"), attacker, victim], turn: owner, ply: 6, opening: { blue: true, green: true, red: true } };
+    localStorage.setItem("arctic-sanguo-yan-yi-v1", JSON.stringify({ state, humans: [...YAN_YI_FACTIONS], difficulty: "medium" }));
+    await render(); await click(button("Resume saved campaign"));
+    await click(container.querySelector(`.yy-piece[aria-label^="${owner} Chariot,"] img`)!);
+    const target = container.querySelector(`.yy-piece[aria-label^="${enemy} Horse,"]`)!;
+    expect(target.classList.contains("capture-target")).toBe(true);
+    await click(target.querySelector("img")!);
+    const next = JSON.parse(localStorage.getItem("arctic-sanguo-yan-yi-v1")!).state;
+    expect(next.pieces.find((p: any) => p.id === attacker.id)).toEqual({ ...attacker, x: 7, y: 9 });
+    expect(next.pieces.some((p: any) => p.id === victim.id)).toBe(false);
+    expect(container.querySelectorAll(".yy-piece")).toHaveLength(4);
+    expect(next.events.at(-1)).toMatchObject({ actor: owner, capture: "horse" });
+    expect(container.querySelector(`.yy-piece[aria-label^="${owner} Chariot,"]`)).not.toBeNull();
+  });
+  it("red's Horse survives taking Han and its yellow Chariot captures a blue opponent", async () => {
+    const initial = createYanYiState();
+    const horse = { id: "red-horse", origin: "red" as const, owner: "red" as const, role: "horse" as const, x: 2, y: 7 };
+    const victim = { id: "blue-target", origin: "blue" as const, owner: "blue" as const, role: "soldier" as const, x: 6, y: 6 };
+    const state = { ...initial, pieces: [...initial.pieces.filter(p => p.role === "king" || p.origin === "han"), horse, victim], turn: "red" as const, ply: 6, opening: { blue: true, green: true, red: true } };
+    localStorage.setItem("arctic-sanguo-yan-yi-v1", JSON.stringify({ state, humans: [...YAN_YI_FACTIONS], difficulty: "medium" }));
+    await render(); await click(button("Resume saved campaign"));
+    await click(container.querySelector('.yy-piece[aria-label^="red Horse,"] img')!);
+    const emperor = container.querySelector('.yy-piece[aria-label^="han Emperor,"]')!;
+    expect(emperor.classList.contains("capture-target")).toBe(true); await click(emperor.querySelector(".yy-neutral-token")!);
+    let next = JSON.parse(localStorage.getItem("arctic-sanguo-yan-yi-v1")!).state;
+    expect(next.pieces.find((p: any) => p.id === horse.id)).toEqual({ ...horse, x: 0, y: 8 });
+    expect(next.hanOwner).toBe("red"); expect(next.alliance).toEqual(["green", "blue"]);
+    // Play the two allied kingdoms' quiet King replies, then capture on red's next turn.
+    const playKing = async (owner: string) => { await click(container.querySelector(`.yy-piece[aria-label^="${owner} King,"]`)!); await click(container.querySelector(".yy-node.legal")!); };
+    await playKing("green"); await playKing("blue");
+    expect(JSON.parse(localStorage.getItem("arctic-sanguo-yan-yi-v1")!).state.turn).toBe("red");
+    const chariot = [...container.querySelectorAll(".yy-piece")].find(b => b.getAttribute("aria-label")?.startsWith("han Chariot,") && (b as HTMLButtonElement).style.top === `${YAN_YI_Y[6] / 15.36}%`)!;
+    await click(chariot.querySelector(".yy-neutral-token")!);
+    const target = container.querySelector('.yy-piece[aria-label^="blue Soldier,"]')!;
+    expect(target.classList.contains("capture-target")).toBe(true); await click(target.querySelector("img")!);
+    next = JSON.parse(localStorage.getItem("arctic-sanguo-yan-yi-v1")!).state;
+    expect(next.pieces.find((p: any) => p.id === "han-chariot-6")).toMatchObject({ owner: "red", origin: "han", role: "chariot", x: 6, y: 6 });
+    expect(next.pieces.some((p: any) => p.id === victim.id)).toBe(false);
+    expect(next.events.at(-1)).toMatchObject({ actor: "red", pieceId: "han-chariot-6", capture: "soldier" });
+  });
   it("offers the PDF and SRT, seven named sprites per faction and the separate legacy game", async () => {
     await render(); expect(container.querySelector('a[href$=".pdf"]')).not.toBeNull(); expect(container.querySelector('a[href$=".srt"]')).not.toBeNull(); expect(container.querySelector('a[href*="rules=legacy"]')).not.toBeNull();
     await click(button("Pieces")); expect(container.querySelectorAll(".yy-gallery-team a")).toHaveLength(21); expect(container.textContent).not.toMatch(/[\u3400-\u9fff]/);

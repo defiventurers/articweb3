@@ -132,7 +132,9 @@ function activateHan(state: YanYiState, owner: YanYiFaction, alliance: [YanYiFac
 }
 function simulateYanYiMove(state: YanYiState, piece: YanYiPiece, to: YanYiPoint): YanYiState {
   const victim = yanYiPieceAt(state, to);
-  let next: YanYiState = { ...state, pieces: state.pieces.filter(p => !victim || p.id !== victim.id).map(p => p.id === piece.id ? { ...p, ...to } : p) };
+  // Occupied destinations can be full piece objects from the UI. Move only the
+  // coordinates; never replace the attacker's identity, role or controller.
+  let next: YanYiState = { ...state, pieces: state.pieces.filter(p => !victim || p.id !== victim.id).map(p => p.id === piece.id ? { ...p, x: to.x, y: to.y } : p) };
   if (piece.role === "horse" && !state.activationUsed) {
     const survivors = YAN_YI_FACTIONS.filter(f => !state.defeated.includes(f));
     if (victim?.role === "emperor") {
@@ -224,7 +226,7 @@ export function applyYanYiMove(state: YanYiState, pieceId: string, to: YanYiPoin
   if (count > state.options.checkLimit && yanYiHasMove(next, previous)) { next = annex(next, actor, previous); messages.push(`Perpetual check: ${YAN_YI_NAMES[actor]} continued after the ${state.options.checkLimit}-check limit and forfeits its army to ${YAN_YI_NAMES[previous]}.`); }
   else if (count === state.options.checkLimit) messages.push(`Perpetual-check warning: change on your next move or forfeit to ${YAN_YI_NAMES[previous]}.`);
   next = finishTurn(next, actor, messages);
-  const event: YanYiEvent = { number: next.ply, actor, text: next.note, from: { x: piece.x, y: piece.y }, to, pieceId, ...(victim ? { capture: victim.role } : {}) };
+  const event: YanYiEvent = { number: next.ply, actor, text: next.note, from: { x: piece.x, y: piece.y }, to: { x: to.x, y: to.y }, pieceId, ...(victim ? { capture: victim.role } : {}) };
   return { ...next, events: [...state.events, event].slice(-2000) };
 }
 export function resignYanYi(state: YanYiState, faction: YanYiFaction): YanYiState | null {
