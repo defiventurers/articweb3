@@ -2,7 +2,7 @@
   "ruleset": "sanguo-yan-yi-free-play-1",
   "generationMode": "built-in image_gen",
   "reference": "User-supplied three-faction, seven-role piece sheet",
-  "assetCount": 21,
+  "assetCount": 25,
   "physicalStartingPieces": 53,
   "format": "Transparent 512×512 WebP",
   "pieces": [
@@ -194,6 +194,59 @@
       "filename": "red-soldier.webp",
       "countPerArmy": 5,
       "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Crimson Penguin Spearman, RED faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 3 COLUMN 7: the upright silver spear with red diamond pennant above a small red penguin soldier. Preserve its reference appearance, metallic silver-and-gold round badge, vivid crimson red faction accents, and detailed painted 3D game-art style. ONE complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scenery, no pedestal, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "han-emperor",
+      "faction": "han",
+      "role": "emperor",
+      "displayName": "Han Golden Emperor",
+      "filename": "han-emperor.webp",
+      "countPerArmy": 1,
+      "pieceIds": [
+        "han-emperor"
+      ],
+      "prompt": "Use case: stylized-concept.\nAsset type: one individual transparent circular board-game token for Arctic Dominion Sanguo Yan Yi Qi.\nInput image 1: USER-SUPPLIED STYLE REFERENCE, a sheet with three rows of blue, green and red pieces. Generate a NEW YELLOW HAN counterpart in this exact visual family, not a copy of the sheet.\nStyle/medium: polished sculpted 3D fantasy game art, crisp chibi proportions, metallic silver and gold trim, rich enamel surfaces, simple readable silhouette.\nBadge construction: complete circular medallion, thin dark gunmetal outermost rim, vivid SUNFLOWER-YELLOW enamel faction ring, two thin polished silver inner rings, dark warm ochre textured backplate. The yellow faction ring must be bright and recognizably YELLOW, not orange or red. The central subject is raised with soft realistic depth, exactly like the supplied badges.\nComposition/framing: ONE token on a square canvas. Complete circular rim is centered and fills 90 percent of canvas, with equal transparent padding all sides. Subject and crown/barrel/wheels remain entirely inside the circle. Large central subject, readable at 50 pixels.\nLighting: soft studio highlights from upper left, restrained dimensional shadows only inside the badge.\nConstraints: actual transparent alpha outside the circular token. No solid or checkerboard background painted into the image, no scenery, no plinth, no extra pieces, no grid, no external glow or shadow, no text, no letters, no Chinese characters, no watermark. Match the scale and materials of the original piece family.\n\nEnglish asset name for metadata only, do not write it in the image: Han Golden Emperor.\nSubject: A majestic but friendly WHITE-FACED PENGUIN EMPEROR facing forward, wearing rich sunflower-yellow and gold royal robes, an elaborate raised GOLD IMPERIAL CROWN with a large faceted YELLOW DIAMOND at the center and short symmetrical pearl tassels. White cheek mask, glossy dark eyes, small amber-gold beak. More stately than the source kings, yet clearly the same cute penguin family. Bust fills the round badge, with no wings or objects outside the circle."
+    },
+    {
+      "id": "han-chariot-imperial",
+      "faction": "han",
+      "role": "chariot",
+      "displayName": "Han Imperial Chariot",
+      "filename": "han-chariot-imperial.webp",
+      "countPerArmy": 2,
+      "pieceIds": [
+        "han-chariot-6",
+        "han-chariot-10"
+      ],
+      "prompt": "Use case: stylized-concept.\nAsset type: one individual transparent circular board-game token for Arctic Dominion Sanguo Yan Yi Qi.\nInput image 1: USER-SUPPLIED STYLE REFERENCE, a sheet with three rows of blue, green and red pieces. Generate a NEW YELLOW HAN counterpart in this exact visual family, not a copy of the sheet.\nStyle/medium: polished sculpted 3D fantasy game art, crisp chibi proportions, metallic silver and gold trim, rich enamel surfaces, simple readable silhouette.\nBadge construction: complete circular medallion, thin dark gunmetal outermost rim, vivid SUNFLOWER-YELLOW enamel faction ring, two thin polished silver inner rings, dark warm ochre textured backplate. The yellow faction ring must be bright and recognizably YELLOW, not orange or red. The central subject is raised with soft realistic depth, exactly like the supplied badges.\nComposition/framing: ONE token on a square canvas. Complete circular rim is centered and fills 90 percent of canvas, with equal transparent padding all sides. Subject and crown/barrel/wheels remain entirely inside the circle. Large central subject, readable at 50 pixels.\nLighting: soft studio highlights from upper left, restrained dimensional shadows only inside the badge.\nConstraints: actual transparent alpha outside the circular token. No solid or checkerboard background painted into the image, no scenery, no plinth, no extra pieces, no grid, no external glow or shadow, no text, no letters, no Chinese characters, no watermark. Match the scale and materials of the original piece family.\n\nEnglish asset name for metadata only, do not write it in the image: Han Imperial Chariot.\nSubject: A compact wooden TWO-WHEELED IMPERIAL WAR CHARIOT closely matching the war-cart silhouette in COLUMN 5 of the reference. Near-frontal three-quarter view, broad dark walnut front panel with gleaming gold and ivory-silver metal bands, two very readable large spoked wheels, raised back rails, small gold finials. One large faceted YELLOW DIAMOND in a gold setting on the front. Rich sunflower-yellow inset panels, gold trim, restrained warm wooden texture. This is an empty war chariot, not a throne, wagon full of treasure, horse, cannon, or character."
+    },
+    {
+      "id": "han-chariot-vanguard",
+      "faction": "han",
+      "role": "chariot",
+      "displayName": "Han Vanguard Chariot",
+      "filename": "han-chariot-vanguard.webp",
+      "countPerArmy": 1,
+      "pieceIds": [
+        "han-chariot-8"
+      ],
+      "prompt": "Use case: stylized-concept.\nAsset type: one individual transparent circular board-game token for Arctic Dominion Sanguo Yan Yi Qi.\nInput image 1: USER-SUPPLIED STYLE REFERENCE, a sheet with three rows of blue, green and red pieces. Generate a NEW YELLOW HAN counterpart in this exact visual family, not a copy of the sheet.\nStyle/medium: polished sculpted 3D fantasy game art, crisp chibi proportions, metallic silver and gold trim, rich enamel surfaces, simple readable silhouette.\nBadge construction: complete circular medallion, thin dark gunmetal outermost rim, vivid SUNFLOWER-YELLOW enamel faction ring, two thin polished silver inner rings, dark warm ochre textured backplate. The yellow faction ring must be bright and recognizably YELLOW, not orange or red. The central subject is raised with soft realistic depth, exactly like the supplied badges.\nComposition/framing: ONE token on a square canvas. Complete circular rim is centered and fills 90 percent of canvas, with equal transparent padding all sides. Subject and crown/barrel/wheels remain entirely inside the circle. Large central subject, readable at 50 pixels.\nLighting: soft studio highlights from upper left, restrained dimensional shadows only inside the badge.\nConstraints: actual transparent alpha outside the circular token. No solid or checkerboard background painted into the image, no scenery, no plinth, no extra pieces, no grid, no external glow or shadow, no text, no letters, no Chinese characters, no watermark. Match the scale and materials of the original piece family.\n\nEnglish asset name for metadata only, do not write it in the image: Han Vanguard Chariot.\nSubject: A compact wooden TWO-WHEELED VANGUARD WAR CHARIOT, a slightly more armored companion to the COLUMN 5 war carts of the reference. Near-frontal three-quarter view, broad dark walnut front panel armored with gleaming gold and ivory-silver bands, two very readable large spoked wheels, raised back rails, small gold finials. Its central front YELLOW DIAMOND sits inside a SMALL SHIELD-SHAPED GOLD SETTING; subtle extra raised gold edging distinguishes this central guard chariot. Rich sunflower-yellow inset panels and gold trim. Same size and basic cart silhouette as the original chariots, with no extra weapon or character."
+    },
+    {
+      "id": "han-cannon",
+      "faction": "han",
+      "role": "cannon",
+      "displayName": "Han Golden Cannon",
+      "filename": "han-cannon.webp",
+      "countPerArmy": 1,
+      "pieceIds": [
+        "han-cannon"
+      ],
+      "prompt": "Use case: stylized-concept.\nAsset type: one individual transparent circular board-game token for Arctic Dominion Sanguo Yan Yi Qi.\nInput image 1: USER-SUPPLIED STYLE REFERENCE, a sheet with three rows of blue, green and red pieces. Generate a NEW YELLOW HAN counterpart in this exact visual family, not a copy of the sheet.\nStyle/medium: polished sculpted 3D fantasy game art, crisp chibi proportions, metallic silver and gold trim, rich enamel surfaces, simple readable silhouette.\nBadge construction: complete circular medallion, thin dark gunmetal outermost rim, vivid SUNFLOWER-YELLOW enamel faction ring, two thin polished silver inner rings, dark warm ochre textured backplate. The yellow faction ring must be bright and recognizably YELLOW, not orange or red. The central subject is raised with soft realistic depth, exactly like the supplied badges.\nComposition/framing: ONE token on a square canvas. Complete circular rim is centered and fills 90 percent of canvas, with equal transparent padding all sides. Subject and crown/barrel/wheels remain entirely inside the circle. Large central subject, readable at 50 pixels.\nLighting: soft studio highlights from upper left, restrained dimensional shadows only inside the badge.\nConstraints: actual transparent alpha outside the circular token. No solid or checkerboard background painted into the image, no scenery, no plinth, no extra pieces, no grid, no external glow or shadow, no text, no letters, no Chinese characters, no watermark. Match the scale and materials of the original piece family.\n\nEnglish asset name for metadata only, do not write it in the image: Han Golden Cannon.\nSubject: A compact gleaming GOLD CANNON matching the two-wheeled cannon silhouette in COLUMN 6 of the reference. Three-quarter view, a big round dark muzzle points slightly upward to the RIGHT, a short golden barrel sits on a dark walnut carriage with two clearly readable ivory-silver and gold spoked wheels. Sunflower-YELLOW metal accent panels, a prominent faceted YELLOW DIAMOND in a small gold mount on the barrel side. Distinct unmistakable cannon shape, no projectile, smoke, explosion, person, or horse."
     }
-  ]
+  ],
+  "playerAssetCount": 21,
+  "hanAssetCount": 4,
+  "physicalHanPieces": 5,
+  "hanArtworkNote": "Four Han artwork files cover five physical tokens: the two outer Chariots share the Imperial Chariot design. Artwork follows permanent piece ID and Han origin after movement or takeover."
 }

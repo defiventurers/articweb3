@@ -10,8 +10,9 @@ local humans, two humans plus a bot, or one human plus two bots. It saves locall
 
 ## Deliverables
 
-- `frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/`: 21 individually
-  generated, transparent 512x512 WebP sprites, seven roles in each of three colors.
+- `frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/`: 25 individually
+  generated, transparent 512x512 WebP sprites: seven roles in each of three colors
+  and four yellow/gold Han designs matching the supplied piece sheet.
 - `pieces/manifest.json`: English display names, roles, physical counts, final
   filenames, generation mode and every final prompt.
 - `yan-yi-arctic-board.webp`: supplied board artwork. English UI overlays cover
@@ -34,9 +35,25 @@ local humans, two humans plus a bot, or one human plus two bots. It saves locall
 | Cannon | Frost Cannon | 2 | blue-cannon, green-cannon, red-cannon |
 | Soldier | Penguin Spearman | 5 | blue-soldier, green-soldier, red-soldier |
 
-Every filename has the `.webp` extension. The 21 assets represent 48 starting
-player pieces. Three Han Chariots, one Han Cannon and one Han Emperor bring the
-physical starting total to 53; the neutral pieces use English gold UI markers.
+Every filename has the `.webp` extension. The 21 player-army assets represent 48
+starting player pieces. Three Han Chariots, one Han Cannon and one Han Emperor
+bring the physical starting total to 53. Four Han artwork files replace the gold
+letter markers, with the two outer Chariots sharing one design:
+
+| Role | English artwork name | Physical copies | Filename | Permanent piece IDs |
+|---|---|---:|---|---|
+| Emperor | Han Golden Emperor | 1 | han-emperor.webp | han-emperor |
+| Chariot | Han Imperial Chariot | 2 | han-chariot-imperial.webp | han-chariot-6, han-chariot-10 |
+| Chariot | Han Vanguard Chariot | 1 | han-chariot-vanguard.webp | han-chariot-8 |
+| Cannon | Han Golden Cannon | 1 | han-cannon.webp | han-cannon |
+
+All three Han Chariots use the same movement rules. These four assets were created
+using the built-in `image_gen` tool in `stylized-concept` mode, with the supplied
+blue/green/red piece sheet as the style reference. Final prompts and mappings are
+in `pieces/manifest.json`. Source alpha is preserved during conversion to WebP.
+The board, inspector and downloadable gallery all use the same named images.
+Artwork follows Han origin and permanent ID, so it stays yellow after a move,
+activation or inheritance. Controller rings and labels still identify its owner.
 
 ## Rules and edition boundaries
 
@@ -73,7 +90,7 @@ tables and their existing host designs are unaffected.
 `sanguoYanYiRules.ts` is separate from the legacy engine; its worker does tactical
 legal-move selection. `sanguoYanYiPresentation.ts` calibrates the supplied artwork
 without changing geometry. `SanguoYanYiGame.tsx` handles saved campaigns, English
-rules, 21-piece downloads, ownership labels, zoom, journal, resignation and draw.
+rules, 25-design downloads, ownership labels, zoom, journal, resignation and draw.
 
 From `frontend/`:
 
@@ -86,8 +103,9 @@ npm run check:sanguo-engine
 npm run build:mainnet
 ```
 
-The change adds 31 rule tests and five DOM interaction tests. Browser layout QA
-was unavailable in this managed container; no browser preview was substituted.
+The test suite covers rules, image-target captures for each faction, Han activation,
+Han artwork downloads, all five Han tokens and saved ownership for all three teams.
+Browser layout QA was unavailable in this managed container; no browser preview was substituted.
 The rulebook was rendered and every page checked, with all 588 timed intervals
 and all 21 filenames verified after PDF compression.
 

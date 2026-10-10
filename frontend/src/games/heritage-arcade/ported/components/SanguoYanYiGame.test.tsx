@@ -3,7 +3,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import SanguoYanYiGame from "./SanguoYanYiGame";
-import { createYanYiState, YAN_YI_FACTIONS } from "../game/sanguoYanYiRules";
+import { createYanYiState, YAN_YI_COLORS, YAN_YI_FACTIONS } from "../game/sanguoYanYiRules";
 import { YAN_YI_X, YAN_YI_Y } from "../game/sanguoYanYiPresentation";
 let container: HTMLDivElement, root: Root;
 const click = async (element: Element) => { await act(async () => element.dispatchEvent(new MouseEvent("click", { bubbles: true }))); };
@@ -44,7 +44,9 @@ describe("Yan Yi English play screen", () => {
     await render(); await click(button("Resume saved campaign"));
     await click(container.querySelector('.yy-piece[aria-label^="red Horse,"] img')!);
     const emperor = container.querySelector('.yy-piece[aria-label^="han Emperor,"]')!;
-    expect(emperor.classList.contains("capture-target")).toBe(true); await click(emperor.querySelector(".yy-neutral-token")!);
+    expect(emperor.classList.contains("capture-target")).toBe(true);
+    expect(emperor.querySelector("img")?.getAttribute("src")).toMatch(/\/han-emperor\.webp$/);
+    await click(emperor.querySelector("img")!);
     let next = JSON.parse(localStorage.getItem("arctic-sanguo-yan-yi-v1")!).state;
     expect(next.pieces.find((p: any) => p.id === horse.id)).toEqual({ ...horse, x: 0, y: 8 });
     expect(next.hanOwner).toBe("red"); expect(next.alliance).toEqual(["green", "blue"]);
@@ -53,17 +55,49 @@ describe("Yan Yi English play screen", () => {
     await playKing("green"); await playKing("blue");
     expect(JSON.parse(localStorage.getItem("arctic-sanguo-yan-yi-v1")!).state.turn).toBe("red");
     const chariot = [...container.querySelectorAll(".yy-piece")].find(b => b.getAttribute("aria-label")?.startsWith("han Chariot,") && (b as HTMLButtonElement).style.top === `${YAN_YI_Y[6] / 15.36}%`)!;
-    await click(chariot.querySelector(".yy-neutral-token")!);
+    expect(chariot.querySelector("img")?.getAttribute("src")).toMatch(/\/han-chariot-imperial\.webp$/);
+    await click(chariot.querySelector("img")!);
     const target = container.querySelector('.yy-piece[aria-label^="blue Soldier,"]')!;
     expect(target.classList.contains("capture-target")).toBe(true); await click(target.querySelector("img")!);
     next = JSON.parse(localStorage.getItem("arctic-sanguo-yan-yi-v1")!).state;
     expect(next.pieces.find((p: any) => p.id === "han-chariot-6")).toMatchObject({ owner: "red", origin: "han", role: "chariot", x: 6, y: 6 });
     expect(next.pieces.some((p: any) => p.id === victim.id)).toBe(false);
     expect(next.events.at(-1)).toMatchObject({ actor: "red", pieceId: "han-chariot-6", capture: "soldier" });
+    expect(container.querySelector('.yy-piece[aria-label^="han Chariot,"] img')?.getAttribute("src")).toMatch(/\/han-chariot-imperial\.webp$/);
   });
-  it("offers the PDF and SRT, seven named sprites per faction and the separate legacy game", async () => {
+  it("offers the PDF and SRT, seven sprites per faction, four named Han downloads and the separate legacy game", async () => {
     await render(); expect(container.querySelector('a[href$=".pdf"]')).not.toBeNull(); expect(container.querySelector('a[href$=".srt"]')).not.toBeNull(); expect(container.querySelector('a[href*="rules=legacy"]')).not.toBeNull();
-    await click(button("Pieces")); expect(container.querySelectorAll(".yy-gallery-team a")).toHaveLength(21); expect(container.textContent).not.toMatch(/[\u3400-\u9fff]/);
+    await click(button("Pieces")); expect(container.querySelectorAll(".yy-gallery-team:not(.yy-gallery-han) a")).toHaveLength(21);
+    const hanDownloads = [...container.querySelectorAll(".yy-gallery-han a")];
+    expect(hanDownloads).toHaveLength(4);
+    expect(hanDownloads.map(a => a.getAttribute("download"))).toEqual(["han-emperor.webp", "han-chariot-imperial.webp", "han-chariot-vanguard.webp", "han-cannon.webp"]);
+    expect(hanDownloads.map(a => a.querySelector("b")?.textContent)).toEqual(["Han Golden Emperor", "Han Imperial Chariot", "Han Vanguard Chariot", "Han Golden Cannon"]);
+    expect(container.querySelectorAll(".yy-gallery-team a")).toHaveLength(25); expect(container.textContent).not.toMatch(/[\u3400-\u9fff]/);
+  });
+  it("renders the Emperor, three Chariots and Cannon using four yellow Han images", async () => {
+    await render(); await click(button("Begin the campaign"));
+    const tokens = [...container.querySelectorAll('.yy-piece[aria-label^="han "]')];
+    expect(tokens).toHaveLength(5);
+    const sources = tokens.map(b => b.querySelector("img")?.getAttribute("src")?.split("/").at(-1));
+    expect(sources.filter(s => s === "han-chariot-imperial.webp")).toHaveLength(2);
+    expect(new Set(sources)).toEqual(new Set(["han-emperor.webp", "han-chariot-imperial.webp", "han-chariot-vanguard.webp", "han-cannon.webp"]));
+    expect(container.querySelectorAll(".yy-neutral-token")).toHaveLength(0);
+    await click(tokens.find(b => b.getAttribute("aria-label")?.startsWith("han Emperor,"))!);
+    expect(container.querySelector(".yy-inspector h3")?.textContent).toBe("Han Golden Emperor");
+    expect(container.querySelector(".yy-inspector-piece img")?.getAttribute("src")).toMatch(/\/han-emperor\.webp$/);
+  });
+  it.each(YAN_YI_FACTIONS)("keeps a moved Han Vanguard Chariot yellow when a saved campaign is controlled by %s", async owner => {
+    const initial = createYanYiState();
+    const state = { ...initial, pieces: initial.pieces.filter(p => p.role !== "emperor").map(p => p.origin === "han" ? { ...p, owner, ...(p.id === "han-chariot-8" ? { x: 7, y: 6 } : {}) } : p), hanOwner: owner, activationUsed: true, turn: owner, ply: 6, opening: { blue: true, green: true, red: true } };
+    localStorage.setItem("arctic-sanguo-yan-yi-v1", JSON.stringify({ state, humans: [...YAN_YI_FACTIONS], difficulty: "medium" }));
+    await render(); await click(button("Resume saved campaign"));
+    const token = [...container.querySelectorAll('.yy-piece[aria-label^="han Chariot,"]')].find(b => (b as HTMLButtonElement).style.left === `${YAN_YI_X[7] / 15.36}%`)!;
+    expect(token.querySelector("img")?.getAttribute("src")).toMatch(/\/han-chariot-vanguard\.webp$/);
+    expect((token as HTMLButtonElement).style.getPropertyValue("--piece-color")).toBe(YAN_YI_COLORS[owner]);
+    expect(token.querySelector(".yy-owner-tag")?.textContent).toBe(owner === "blue" ? "WEI" : owner === "green" ? "WU" : "SHU");
+    await click(token.querySelector("img")!);
+    expect(container.querySelector(".yy-inspector h3")?.textContent).toBe("Han Vanguard Chariot");
+    expect(container.querySelector(".yy-inspector-piece img")?.getAttribute("src")).toMatch(/\/han-chariot-vanguard\.webp$/);
   });
   it("opens at 53 calibrated intersections, moves a selected piece, updates the turn, saves and undoes", async () => {
     await render(); await click(button("Begin the campaign")); expect(container.querySelectorAll(".yy-piece")).toHaveLength(53);
