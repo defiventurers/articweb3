@@ -147,6 +147,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{}}) 
           // Chat never changes the board revision, so typing cannot invalidate a move.
           broadcast(room);await persist(room);
         } else if(type==='ap_room_leave') {
+          me.left=true;
           if(room.status==='waiting') {
             delete room.players[me.id];
             if(!Object.keys(room.players).length) room.status='cancelled';
@@ -154,6 +155,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{}}) 
           } else if(room.status==='playing') {
             if(['yanyi','sanguo','shogi','xiangqi'].includes(room.tableId)) room.gameState=engine.forfeit(room.tableId,room.gameState,me.seat);
             else {me.bot=true;me.ready=true;me.name+=' (bot)';me.tokenHash=null;}
+            if(!Object.values(room.players).some(p=>!p.bot&&!p.left)&&!engine.result(room.gameState)) room.gameState={...room.gameState,mobileResult:{winner:null,draw:true,reason:'All players left the table.'}};
           }
           subscriptions.delete(ws);advance(room);
           return ok(ws,requestId,'ap_room_left',{room:view(room)});
@@ -165,11 +167,17 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{}}) 
       return ok(ws,requestId,`${type}_ok`,{room:view(room),...(token?{seatToken:token}: {})});
     } catch(error) { return fail(ws,requestId,error.message || 'The room request failed.'); }
   }
-  function restoreRoom(room) { if(room?.gameId===ROOM_GAME_ID&&room.rulesetVersion===engine.VERSION) schedule(room); }
+  function restoreRoom(room) {
+    if(room?.gameId!==ROOM_GAME_ID||room.rulesetVersion!==engine.VERSION)return;
+    if(room.status==='playing'&&!Object.values(room.players).some(p=>!p.bot&&!p.left)&&!engine.result(room.gameState)) {
+      room.gameState={...room.gameState,mobileResult:{winner:null,draw:true,reason:'All players left the table.'}};room.status='finished';room.revision++;persist(room);
+    }
+    schedule(room);
+  }
   function disconnected(ws) {const sub=subscriptions.get(ws);subscriptions.delete(ws);if(sub){const room=rooms.get(sub.roomCode);if(room)broadcast(room);} }
   function handleHttp(req,res) {
     const url=new URL(req.url,'https://articweb3.onrender.com');
-    if(url.pathname==='/arctic-play/health') {res.writeHead(200,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,version:engine.VERSION,games:engine.GAME_LIST.map(g=>({id:g.id,name:g.name,players:g.players}))}));return true;}
+    if(url.pathname==='/arctic-play/health') {res.writeHead(200,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,version:engine.VERSION,buildCommit:process.env.RENDER_GIT_COMMIT||null,games:engine.GAME_LIST.map(g=>({id:g.id,name:g.name,players:g.players}))}));return true;}
     if(url.pathname==='/arctic-play/join') {
       const code=codeOf(url.searchParams.get('room'));const valid=/^[A-Z2-9]{6}$/.test(code);const safe=valid?code:'------';
       res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"});

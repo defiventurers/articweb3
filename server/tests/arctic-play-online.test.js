@@ -42,3 +42,9 @@ test('Only explicit fill-with-bots starts a table with empty seats; bot complete
   const started=await h.call(ws,'ap_room_start',{...session,fillWithBots:true});assert.equal(started.payload.room.players.filter(p=>p.bot).length,2);
   await new Promise(resolve=>setTimeout(resolve,1800));const room=h.rooms.get(session.roomCode);assert.equal(engine.turn(room.gameState),'red');assert.ok(room.revision>started.payload.room.revision);
 });
+test('Leaving the last human seat ends the room instead of running unattended bot games',async t=>{
+  const h=harness();t.after(()=>h.service.close());const ws=h.socket(),playerId=randomUUID();const created=await h.call(ws,'ap_room_create',{tableId:'sannin',playerId,name:'Host'});
+  const credentials={roomCode:created.payload.room.roomCode,playerId,seatToken:created.payload.seatToken};await h.call(ws,'ap_room_ready',{...credentials,ready:true});await h.call(ws,'ap_room_start',{...credentials,fillWithBots:true});
+  const left=await h.call(ws,'ap_room_leave',credentials);assert.equal(left.payload.room.status,'finished');assert.equal(engine.result(left.payload.room.gameState).draw,true);
+  const revision=left.payload.room.revision;await new Promise(resolve=>setTimeout(resolve,650));assert.equal(h.rooms.get(credentials.roomCode).revision,revision);
+});
