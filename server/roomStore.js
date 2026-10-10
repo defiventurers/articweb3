@@ -98,6 +98,14 @@ async function loadRooms() {
   return result.rows.map(rowToRoom).filter(Boolean).map(sanitizeRoom);
 }
 
+// Authenticated Android diagnostics read one saved room without loading the lobby.
+async function loadSavedRoom(roomCode) {
+  if (!(await initRoomStore())) return null;
+  const result = await getPool().query(`SELECT room_json, created_at FROM rooms WHERE room_code = $1`, [roomCode]);
+  const room = rowToRoom(result.rows[0]);
+  return room ? sanitizeRoom(room) : null;
+}
+
 function rowToRoom(row) {
   const room = row?.room_json;
   if (!room) return null;
@@ -115,4 +123,4 @@ function roomStoreStatus() {
   return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError };
 }
 
-module.exports = { initRoomStore, saveRoom, loadRooms, roomStoreStatus };
+module.exports = { initRoomStore, saveRoom, loadRooms, loadSavedRoom, roomStoreStatus };

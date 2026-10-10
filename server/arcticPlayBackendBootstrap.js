@@ -1,7 +1,7 @@
 function injectArcticPlay(source) {
   if(source.includes('const arcticPlay = createArcticPlayService')) return source;
   const replace=(needle,value)=>{if(!source.includes(needle))throw new Error(`Android integration anchor missing: ${needle}`);source=source.replace(needle,value);};
-  replace('const server = http.createServer(', 'const { createArcticPlayService } = require("./arcticPlayService.js");\nconst arcticPlay = createArcticPlayService({ rooms, send, ok, fail, saveRoomSafe: room => saveRoom(room) });\nconst server = http.createServer(');
+  replace('const server = http.createServer(', 'const { createArcticPlayService } = require("./arcticPlayService.js");\nconst arcticPlay = createArcticPlayService({ rooms, send, ok, fail, saveRoomSafe: room => saveRoom(room), loadSavedRoom: require("./roomStore.js").loadSavedRoom });\nconst server = http.createServer(');
   replace('http.createServer((req, res) => {', 'http.createServer((req, res) => { if (arcticPlay.handleHttp(req,res)) return;');
   replace('function scheduleBotIfNeeded(room) {', 'function scheduleBotIfNeeded(room) { if (room?.gameId === "arctic-play") return;');
   replace('shogi.restoreRoom(room);', 'shogi.restoreRoom(room); arcticPlay.restoreRoom(room);');

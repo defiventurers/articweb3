@@ -8,7 +8,7 @@ const hash = token => createHash('sha256').update(String(token || '')).digest('h
 const nameOf = value => String(value || 'Player').replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,24) || 'Player';
 const publicPlayer = p => ({id:p.id,name:p.name,seat:p.seat,ready:p.ready,bot:!!p.bot});
 
-function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{}}) {
+function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},loadSavedRoom=async()=>null}) {
   const subscriptions = new Map(), bots = new Map(), writes = new Map(), rates = new WeakMap(), processing = new Set();
   const workers=createArcticPlayWorkerPool();
   function codeOf(value) { return String(value || '').toUpperCase().replace(/\s/g,''); }
@@ -78,13 +78,13 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{}}) 
   }
   function newPlayer(id,name,seat,bot=false) {
     const token=bot?null:randomBytes(32).toString('hex');
-    return {token,player:{id,name:nameOf(name),wallet:`ap:${id}`,seat,team:seat,ready:bot,bot,tokenHash:token?hash(token):null}};
+    return {token,player:{id,name:nameOf(name),wallet:`ap:${id}`,seat,team:seat,ready:bot,bot,joinedAt:Date.now(),tokenHash:token?hash(token):null}};
   }
   async function dispatch(ws,requestId,type,payload={}) {
     try {
       if(!payload || typeof payload!=='object' || Array.isArray(payload)) throw new Error('Invalid app request.');
       rate(ws,'requests',180);
-      let room, me, token;
+      let room, me, token, storedRevision=null;
       if(type==='ap_room_create') {
         rate(ws,'create',6);
         const definition=engine.game(payload.tableId); if(!definition) throw new Error('Choose one of the six Arctic games.');
@@ -93,7 +93,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{}}) 
         let code; do {code=Array.from(randomBytes(6),x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');} while(rooms.has(code));
         const seat=definition.seats.includes(payload.seat)?payload.seat:definition.seats[0];
         const created=newPlayer(id,payload.name,seat);token=created.token;
-        room={gameId:ROOM_GAME_ID,tableId:definition.id,rulesetVersion:engine.VERSION,roomCode:code,roomMode:'free',visibility:'private',status:'waiting',matchId:randomUUID(),hostId:id,players:{[id]:created.player},gameState:engine.create(definition.id),chat:[],revision:0,createdAt:new Date().toISOString()};
+        room={gameId:ROOM_GAME_ID,tableId:definition.id,rulesetVersion:engine.VERSION,roomCode:code,roomMode:'free',visibility:'private',status:'waiting',matchId:randomUUID(),hostId:id,players:{[id]:created.player},gameState:engine.create(definition.id),chat:[],revision:0,createdAt:Date.now()};
         rooms.set(code,room);attach(ws,room,created.player);await persist(room);
       } else if(type==='ap_room_join') {
         rate(ws,'join',30);
@@ -112,7 +112,18 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{}}) 
         broadcast(room);
       } else {
         room=getRoom(payload.roomCode);me=authenticate(room,payload);attach(ws,room,me);
-        if(type==='ap_room_get') { broadcast(room);schedule(room); }
+        if(type==='ap_room_get') {
+          broadcast(room);schedule(room);
+          if(payload.verifyStored) {
+            rate(ws,'storage-check',3);
+            await persist(room);const saved=await loadSavedRoom(room.roomCode);
+            if(!saved)throw new Error('This room has not been saved to the database.');
+            authenticate(saved,payload);
+            const normalize=value=>Array.isArray(value)?value.map(normalize):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,normalize(value[key])])):value;
+            if(saved.revision!==room.revision||JSON.stringify(normalize(saved.gameState))!==JSON.stringify(normalize(room.gameState)))throw new Error('The saved board is still synchronizing. Please retry.');
+            storedRevision=saved.revision;
+          }
+        }
         else if(type==='ap_room_ready') {
           if(room.status!=='waiting') throw new Error('The match has already started.');
           me.ready=!!payload.ready;advance(room);
@@ -164,7 +175,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{}}) 
           return ok(ws,requestId,'ap_room_detached',{});
         } else throw new Error('Unknown Android room control.');
       }
-      return ok(ws,requestId,`${type}_ok`,{room:view(room),...(token?{seatToken:token}: {})});
+      return ok(ws,requestId,`${type}_ok`,{room:view(room),...(token?{seatToken:token}: {}),...(storedRevision!==null?{storageVerified:true,savedRevision:storedRevision}:{})});
     } catch(error) { return fail(ws,requestId,error.message || 'The room request failed.'); }
   }
   function restoreRoom(room) {
