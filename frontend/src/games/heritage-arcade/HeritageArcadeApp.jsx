@@ -60,7 +60,7 @@ export function HeritageArcadeApp({ onExitToLibrary }) {
   };
   const backToAtlas = () => setActiveMode(null);
 
-  if (activeMode === 1 && params.get("movement") === "1" && params.get("rules") === "legacy") return <SanguoMovementGuide onExit={onExitToLibrary} />;
+  if (activeMode === 1 && params.get("movement") === "1") return <SanguoMovementGuide onExit={onExitToLibrary} />;
   if (activeMode === 1 && params.get("rules") !== "legacy" && !params.has("room")) return <SanguoYanYiGame onBack={backToAtlas} />;
 
   if (activeMode !== null) return renderBoard(activeMode, roster, backToAtlas);
