@@ -1,0 +1,199 @@
+{
+  "ruleset": "sanguo-yan-yi-free-play-1",
+  "generationMode": "built-in image_gen",
+  "reference": "User-supplied three-faction, seven-role piece sheet",
+  "assetCount": 21,
+  "physicalStartingPieces": 53,
+  "format": "Transparent 512×512 WebP",
+  "pieces": [
+    {
+      "id": "blue-king",
+      "faction": "blue",
+      "role": "king",
+      "displayName": "Pengu Order Frost King",
+      "filename": "blue-king.webp",
+      "countPerArmy": 1,
+      "prompt": "Use case: background-extraction\nAsset type: individual transparent board-game token for Arctic Dominion Sanguo Yan Yi Qi.\nInput image: the supplied 3-row by 7-column piece sheet is the design reference and edit target.\nPrimary request: carefully recreate ONLY the BLUE KING badge in ROW 1 COLUMN 1 as ONE standalone piece. Preserve the exact crowned penguin, blue ice robe, frosty round silver-and-gold rim, blue glowing jewel, frontal pose and painted 3D game-art style from that badge.\nComposition: one centered, complete circular token, square canvas, token fills 90 percent of the canvas; equal transparent padding all sides. Keep every part of the circular rim visible. Outside the badge must be genuinely transparent alpha.\nConstraints: reproduce this single blue king only, no other pieces, no contact sheet, no scenery, no pedestal, no drop shadow outside the badge, no text, no Chinese characters, no watermark. This is one of 21 matching individually named game sprites. Preserve readability at small game-board size."
+    },
+    {
+      "id": "blue-advisor",
+      "faction": "blue",
+      "role": "advisor",
+      "displayName": "Pengu Order Shield Guard",
+      "filename": "blue-advisor.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Shield Guard, BLUE faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 1 COLUMN 2: the blue shield with crossed golden spears and a small crowned penguin insignia. Preserve its source appearance, metallic silver-and-gold round badge, vivid icy blue faction accents, detailed painted 3D game art. Create ONE single complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Keep the symbol large and readable at small size.\nConstraints: the same circular badge family as the supplied sheet, exact specified piece only; genuine transparent alpha outside the badge. No additional badges, no sheet, no background scene, no base, no text, no watermark, no shadow outside the circle."
+    },
+    {
+      "id": "blue-elephant",
+      "faction": "blue",
+      "role": "elephant",
+      "displayName": "Pengu Order Royal Mammoth",
+      "filename": "blue-elephant.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Royal Mammoth, BLUE faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 1 COLUMN 3: the white woolly mammoth / elephant head with long curved ivory tusks, blue jeweled crown and gold trim. Preserve its source appearance, metallic silver-and-gold round badge, vivid icy blue faction accents, detailed painted 3D game art. Create ONE single complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Keep the symbol large and readable at small size.\nConstraints: the same circular badge family as the supplied sheet, exact specified piece only; genuine transparent alpha outside the badge. No additional badges, no sheet, no background scene, no base, no text, no watermark, no shadow outside the circle."
+    },
+    {
+      "id": "blue-horse",
+      "faction": "blue",
+      "role": "horse",
+      "displayName": "Pengu Order Ice Unicorn",
+      "filename": "blue-horse.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Ice Unicorn, BLUE faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 1 COLUMN 4: the white unicorn in profile, long gold horn, blue flowing mane and blue jeweled bridle. Preserve its source appearance, metallic silver-and-gold round badge, vivid icy blue faction accents, detailed painted 3D game art. Create ONE single complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Keep the symbol large and readable at small size.\nConstraints: the same circular badge family as the supplied sheet, exact specified piece only; genuine transparent alpha outside the badge. No additional badges, no sheet, no background scene, no base, no text, no watermark, no shadow outside the circle."
+    },
+    {
+      "id": "blue-chariot",
+      "faction": "blue",
+      "role": "chariot",
+      "displayName": "Pengu Order War Chariot",
+      "filename": "blue-chariot.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, War Chariot, BLUE faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 1 COLUMN 5: the frosted wooden and gold war cart with blue ice load and two heavy wheels. Preserve its source appearance, metallic silver-and-gold round badge, vivid icy blue faction accents, detailed painted 3D game art. Create ONE single complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Keep the symbol large and readable at small size.\nConstraints: the same circular badge family as the supplied sheet, exact specified piece only; genuine transparent alpha outside the badge. No additional badges, no sheet, no background scene, no base, no text, no watermark, no shadow outside the circle."
+    },
+    {
+      "id": "blue-cannon",
+      "faction": "blue",
+      "role": "cannon",
+      "displayName": "Pengu Order Frost Cannon",
+      "filename": "blue-cannon.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Frost Cannon, BLUE faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 1 COLUMN 6: the golden cannon barrel mounted on a dark wooden carriage, blue crystal at the rear. Preserve its source appearance, metallic silver-and-gold round badge, vivid icy blue faction accents, detailed painted 3D game art. Create ONE single complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Keep the symbol large and readable at small size.\nConstraints: the same circular badge family as the supplied sheet, exact specified piece only; genuine transparent alpha outside the badge. No additional badges, no sheet, no background scene, no base, no text, no watermark, no shadow outside the circle."
+    },
+    {
+      "id": "blue-soldier",
+      "faction": "blue",
+      "role": "soldier",
+      "displayName": "Pengu Order Penguin Spearman",
+      "filename": "blue-soldier.webp",
+      "countPerArmy": 5,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Penguin Spearman, BLUE faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 1 COLUMN 7: the upright silver spear with blue diamond pennant above a small blue penguin foot soldier. Preserve its source appearance, metallic silver-and-gold round badge, vivid icy blue faction accents, detailed painted 3D game art. Create ONE single complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Keep the symbol large and readable at small size.\nConstraints: the same circular badge family as the supplied sheet, exact specified piece only; genuine transparent alpha outside the badge. No additional badges, no sheet, no background scene, no base, no text, no watermark, no shadow outside the circle."
+    },
+    {
+      "id": "green-king",
+      "faction": "green",
+      "role": "king",
+      "displayName": "Abster Tribe Frost King",
+      "filename": "green-king.webp",
+      "countPerArmy": 1,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Emerald King, GREEN faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 2 COLUMN 1: the crowned green penguin ruler with jeweled green crown and royal robes. Preserve the reference design and its silver-and-gold round badge with vivid emerald green accents and polished painted 3D style. ONE complete circular token centered on a square canvas, filling 90 percent, equal transparent padding, full rim visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scene, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "green-advisor",
+      "faction": "green",
+      "role": "advisor",
+      "displayName": "Abster Tribe Shield Guard",
+      "filename": "green-advisor.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Emerald Shield Guard, GREEN faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 2 COLUMN 2: the green shield with two crossed golden spears and a small crowned green penguin. Preserve the reference design and its silver-and-gold round badge with vivid emerald green accents and polished painted 3D style. ONE complete circular token centered on a square canvas, filling 90 percent, equal transparent padding, full rim visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scene, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "green-elephant",
+      "faction": "green",
+      "role": "elephant",
+      "displayName": "Abster Tribe Royal Mammoth",
+      "filename": "green-elephant.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Emerald Royal Mammoth, GREEN faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 2 COLUMN 3: the white woolly mammoth head with long ivory tusks, green jeweled crown. Preserve the reference design and its silver-and-gold round badge with vivid emerald green accents and polished painted 3D style. ONE complete circular token centered on a square canvas, filling 90 percent, equal transparent padding, full rim visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scene, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "green-horse",
+      "faction": "green",
+      "role": "horse",
+      "displayName": "Abster Tribe Ice Unicorn",
+      "filename": "green-horse.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Emerald Ice Unicorn, GREEN faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 2 COLUMN 4: the white unicorn in profile with gold horn, green flowing mane and green jeweled bridle. Preserve the reference design and its silver-and-gold round badge with vivid emerald green accents and polished painted 3D style. ONE complete circular token centered on a square canvas, filling 90 percent, equal transparent padding, full rim visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scene, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "green-chariot",
+      "faction": "green",
+      "role": "chariot",
+      "displayName": "Abster Tribe War Chariot",
+      "filename": "green-chariot.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Emerald War Chariot, GREEN faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 2 COLUMN 5: the wooden and gold war cart with frosted emerald load and two heavy wheels. Preserve the reference design and its silver-and-gold round badge with vivid emerald green accents and polished painted 3D style. ONE complete circular token centered on a square canvas, filling 90 percent, equal transparent padding, full rim visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scene, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "green-cannon",
+      "faction": "green",
+      "role": "cannon",
+      "displayName": "Abster Tribe Frost Cannon",
+      "filename": "green-cannon.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Emerald Frost Cannon, GREEN faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 2 COLUMN 6: the gold cannon on its wooden wheeled carriage with green crystal accents. Preserve the reference design and its silver-and-gold round badge with vivid emerald green accents and polished painted 3D style. ONE complete circular token centered on a square canvas, filling 90 percent, equal transparent padding, full rim visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scene, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "green-soldier",
+      "faction": "green",
+      "role": "soldier",
+      "displayName": "Abster Tribe Penguin Spearman",
+      "filename": "green-soldier.webp",
+      "countPerArmy": 5,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Emerald Penguin Spearman, GREEN faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 2 COLUMN 7: the upright silver spear with green diamond pennant above a small green penguin soldier. Preserve the reference design and its silver-and-gold round badge with vivid emerald green accents and polished painted 3D style. ONE complete circular token centered on a square canvas, filling 90 percent, equal transparent padding, full rim visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scene, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "red-king",
+      "faction": "red",
+      "role": "king",
+      "displayName": "Retsba Legion Frost King",
+      "filename": "red-king.webp",
+      "countPerArmy": 1,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Crimson King, RED faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 3 COLUMN 1: the crowned red penguin ruler with ruby crown and red royal robes. Preserve its reference appearance, metallic silver-and-gold round badge, vivid crimson red faction accents, and detailed painted 3D game-art style. ONE complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scenery, no pedestal, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "red-advisor",
+      "faction": "red",
+      "role": "advisor",
+      "displayName": "Retsba Legion Shield Guard",
+      "filename": "red-advisor.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Crimson Shield Guard, RED faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 3 COLUMN 2: the red shield with two crossed golden spears and a small crowned red penguin. Preserve its reference appearance, metallic silver-and-gold round badge, vivid crimson red faction accents, and detailed painted 3D game-art style. ONE complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scenery, no pedestal, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "red-elephant",
+      "faction": "red",
+      "role": "elephant",
+      "displayName": "Retsba Legion Royal Mammoth",
+      "filename": "red-elephant.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Crimson Royal Mammoth, RED faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 3 COLUMN 3: the white woolly mammoth head with ivory tusks, red jeweled crown and gold trim. Preserve its reference appearance, metallic silver-and-gold round badge, vivid crimson red faction accents, and detailed painted 3D game-art style. ONE complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scenery, no pedestal, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "red-horse",
+      "faction": "red",
+      "role": "horse",
+      "displayName": "Retsba Legion Ice Unicorn",
+      "filename": "red-horse.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Crimson Ice Unicorn, RED faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 3 COLUMN 4: the white unicorn in profile with gold horn, red flowing mane and red jeweled bridle. Preserve its reference appearance, metallic silver-and-gold round badge, vivid crimson red faction accents, and detailed painted 3D game-art style. ONE complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scenery, no pedestal, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "red-chariot",
+      "faction": "red",
+      "role": "chariot",
+      "displayName": "Retsba Legion War Chariot",
+      "filename": "red-chariot.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Crimson War Chariot, RED faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 3 COLUMN 5: the wooden and gold war cart with frosted red load and two heavy wheels. Preserve its reference appearance, metallic silver-and-gold round badge, vivid crimson red faction accents, and detailed painted 3D game-art style. ONE complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scenery, no pedestal, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "red-cannon",
+      "faction": "red",
+      "role": "cannon",
+      "displayName": "Retsba Legion Frost Cannon",
+      "filename": "red-cannon.webp",
+      "countPerArmy": 2,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Crimson Frost Cannon, RED faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 3 COLUMN 6: the gold cannon on its wooden wheeled carriage with ruby accents. Preserve its reference appearance, metallic silver-and-gold round badge, vivid crimson red faction accents, and detailed painted 3D game-art style. ONE complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scenery, no pedestal, no text, no watermark, no shadow outside the badge."
+    },
+    {
+      "id": "red-soldier",
+      "faction": "red",
+      "role": "soldier",
+      "displayName": "Retsba Legion Penguin Spearman",
+      "filename": "red-soldier.webp",
+      "countPerArmy": 5,
+      "prompt": "Use case: background-extraction. Asset type: individual transparent game token, Crimson Penguin Spearman, RED faction.\nInput image: supplied 3-row by 7-column piece sheet, design reference and edit target.\nCarefully recreate ONLY ROW 3 COLUMN 7: the upright silver spear with red diamond pennant above a small red penguin soldier. Preserve its reference appearance, metallic silver-and-gold round badge, vivid crimson red faction accents, and detailed painted 3D game-art style. ONE complete circular token centered on a square canvas, filling 90 percent with equal transparent padding. All rim edges visible. Large readable subject suitable for small board sizes.\nConstraints: genuine transparent alpha outside circle; exactly one specified piece, matching the source sheet badge family. No additional tokens, no sheet, no scenery, no pedestal, no text, no watermark, no shadow outside the badge."
+    }
+  ]
+}
