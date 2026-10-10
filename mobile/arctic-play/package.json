@@ -1,0 +1,10 @@
+{
+  "name": "arctic-play-android",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-web.mjs",
+    "test": "node --test tests/*.test.mjs"
+  }
+}
