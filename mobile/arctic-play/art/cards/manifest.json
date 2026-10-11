@@ -1,0 +1,116 @@
+[
+  {
+    "id": "shogi",
+    "game": "Shogi",
+    "file": "shogi-card-v2.webp",
+    "keyPieces": [
+      "Red King",
+      "Blue Rook"
+    ],
+    "references": [
+      "frontend/public/assets/games/shogi-frozen-shogunate/red-king.webp",
+      "frontend/public/assets/games/shogi-frozen-shogunate/blue-rook.webp"
+    ],
+    "createdWith": "Built-in image generation; existing pieces used as visual references",
+    "size": [
+      960,
+      640
+    ]
+  },
+  {
+    "id": "sannin",
+    "game": "Sannin Shogi",
+    "file": "sannin-card-v2.webp",
+    "keyPieces": [
+      "Red King",
+      "Green King",
+      "Blue King"
+    ],
+    "references": [
+      "frontend/public/assets/games/sannin-shogi/red-king.webp",
+      "frontend/public/assets/games/sannin-shogi/green-king.webp",
+      "frontend/public/assets/games/sannin-shogi/blue-king.webp"
+    ],
+    "createdWith": "Built-in image generation; existing pieces used as visual references",
+    "size": [
+      960,
+      640
+    ]
+  },
+  {
+    "id": "sanguo",
+    "game": "Sanguo Qi",
+    "file": "sanguo-card-v2.webp",
+    "keyPieces": [
+      "Blue General",
+      "Red Chariot",
+      "Green Horse"
+    ],
+    "references": [
+      "frontend/public/assets/heritage-arcade/tokens/token-sanguo-blue-general.webp",
+      "frontend/public/assets/heritage-arcade/tokens/token-sanguo-red-chariot.webp",
+      "frontend/public/assets/heritage-arcade/tokens/token-sanguo-green-horse.webp"
+    ],
+    "createdWith": "Built-in image generation; existing pieces used as visual references",
+    "size": [
+      960,
+      640
+    ]
+  },
+  {
+    "id": "sanyou",
+    "game": "San You Qi",
+    "file": "sanyou-card-v2.webp",
+    "keyPieces": [
+      "Green General",
+      "Green Fire",
+      "Blue Flag"
+    ],
+    "references": [
+      "frontend/public/assets/heritage-arcade/tokens/sanyou/green_team_SWfacing_general.webp",
+      "frontend/public/assets/heritage-arcade/tokens/sanyou/green_team_SWfacing_fire.webp",
+      "frontend/public/assets/heritage-arcade/tokens/sanyou/blue_team_SEfacing_flag.webp"
+    ],
+    "createdWith": "Built-in image generation; existing pieces used as visual references",
+    "size": [
+      960,
+      640
+    ]
+  },
+  {
+    "id": "yanyi",
+    "game": "Sanguo Yan Yi Qi",
+    "file": "yanyi-card-v2.webp",
+    "keyPieces": [
+      "Yellow Han Emperor",
+      "Blue Unicorn Horse"
+    ],
+    "references": [
+      "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/han-emperor.webp",
+      "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/blue-horse.webp"
+    ],
+    "createdWith": "Built-in image generation; existing pieces used as visual references",
+    "size": [
+      960,
+      640
+    ]
+  },
+  {
+    "id": "xiangqi",
+    "game": "Xiangqi",
+    "file": "xiangqi-card-v2.webp",
+    "keyPieces": [
+      "Red General",
+      "Blue Cannon"
+    ],
+    "references": [
+      "frontend/public/assets/heritage-arcade/tokens/token-sanguo-red-general.webp",
+      "frontend/public/assets/heritage-arcade/tokens/token-sanguo-blue-cannon.webp"
+    ],
+    "createdWith": "Built-in image generation; existing pieces used as visual references",
+    "size": [
+      960,
+      640
+    ]
+  }
+]

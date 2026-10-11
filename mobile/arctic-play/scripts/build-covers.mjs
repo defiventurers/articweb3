@@ -6,6 +6,7 @@ export async function buildCovers(mobile,destination){
   const require=createRequire(path.join(mobile,'../../frontend/package.json'));
   const sharp=require('sharp');
   const engine=require(path.join(mobile,'build/games.cjs'));
+  const cards=JSON.parse(await fs.readFile(path.join(mobile,'art/cards/manifest.json'),'utf8'));
   const target=path.join(destination,'art/covers');
   await fs.mkdir(target,{recursive:true});
   // SVG's raster loader supports PNG consistently; inline WebP can render empty.
@@ -18,6 +19,11 @@ export async function buildCovers(mobile,destination){
   for(const definition of engine.GAME_LIST){
     const geometry=engine.board(definition.id),state=engine.create(definition.id);
     await fs.copyFile(path.join(mobile,'art/covers',`${definition.id}-scene-v1.webp`),path.join(target,`${definition.id}-scene-v1.webp`));
+    const card=cards.find(card=>card.id===definition.id);
+    if(!card||card.file!==`${definition.id}-card-v2.webp`||!card.keyPieces.length)throw new Error(`Missing piece-led card for ${definition.id}`);
+    const cardPath=path.join(mobile,'art/cards',card.file),cardMeta=await sharp(cardPath).metadata(),cardStats=await sharp(cardPath).stats();
+    if(cardMeta.width<960||cardMeta.height<640||cardStats.entropy<2)throw new Error(`Invalid card artwork for ${definition.id}`);
+    await fs.copyFile(cardPath,path.join(target,card.file));
     const [x,y,width,height]=geometry.viewBox.split(' ').map(Number);
     const layers=[];
     if(geometry.image)layers.push(`<image xlink:href="${await data(geometry.image)}" x="${geometry.imageX||0}" y="${geometry.imageY||0}" width="${geometry.imageWidth}" height="${geometry.imageHeight}" preserveAspectRatio="none"/>`);
@@ -38,7 +44,7 @@ export async function buildCovers(mobile,destination){
     const stats=await sharp(rendered).stats();
     if(stats.channels[3]?.max===0||stats.entropy<1)throw new Error(`Empty board artwork for ${definition.id}`);
     await fs.writeFile(path.join(target,`${definition.id}-board-v1.webp`),rendered);
-    manifest.push({id:definition.id,name:definition.name,cells:geometry.cells.length,pieces:units.length,scene:`${definition.id}-scene-v1.webp`,board:`${definition.id}-board-v1.webp`,geometrySource:'Canonical Heritage Arcade adapter; no generated board geometry'});
+    manifest.push({id:definition.id,name:definition.name,cells:geometry.cells.length,pieces:units.length,scene:`${definition.id}-scene-v1.webp`,board:`${definition.id}-board-v1.webp`,card:card.file,keyPieces:card.keyPieces,geometrySource:'Canonical Heritage Arcade adapter; no generated board geometry'});
   }
   await fs.writeFile(path.join(target,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');
 }

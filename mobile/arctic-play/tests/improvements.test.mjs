@@ -68,3 +68,16 @@ test('Saved seat resumes and a guest automatically enters the board when the hos
   room={...room,chat:[{id:randomUUID(),name:'Host',seat:'red',text:'Ready!',at:new Date().toISOString()}]};socket.onmessage({data:JSON.stringify({type:'ap_room_update',payload:{room}})});await settle();
   assert.ok(document.querySelector('.room-code'),'chat updates preserve a deliberately opened table screen');assert.equal(document.querySelector('.match-header'),null);assert.deepEqual(app.errors,[]);
 });
+
+test('Dark is the default and the saved theme applies to navigation, boards and dialogs',async t=>{
+  const native=[];
+  const app=openApp(window=>{window.Android.setDarkTheme=dark=>native.push(dark);});t.after(()=>app.dom.window.close());const {document,window,button}=app;await settle();
+  assert.equal(document.documentElement.dataset.theme,'dark');assert.equal(native.at(-1),true);assert.equal(JSON.parse(window.localStorage.getItem('arctic-play.v1.theme')),'dark');
+  assert.equal(document.querySelectorAll('.cover-hero').length,6);assert.equal(document.querySelectorAll('.cover-board').length,0);
+  button('Profile').click();await settle();const control=document.querySelector('[role="switch"][aria-label="Dark mode"]');assert.equal(control.getAttribute('aria-checked'),'true');control.click();await settle();
+  assert.equal(document.documentElement.dataset.theme,'light');assert.equal(control.getAttribute('aria-checked'),'false');assert.equal(native.at(-1),false);
+  button('Games').click();await settle();document.querySelector('[aria-label="Play Shogi"]').click();await settle();button('On this phonePass the phone between players').click();await waitFor(()=>document.querySelector('.selection-hint')?.textContent==='Tap a piece to see its legal moves.','light board ready');
+  assert.equal(document.documentElement.dataset.theme,'light');document.querySelector('[aria-label="Read game rules"]').click();await settle();assert.ok(document.querySelector('.rulebook'));assert.equal(document.documentElement.dataset.theme,'light');assert.equal(native.at(-1),false);
+  const saved=JSON.parse(window.localStorage.getItem('arctic-play.v1.theme'));assert.equal(saved,'light');
+  const restarted=openApp(w=>w.localStorage.setItem('arctic-play.v1.theme',JSON.stringify(saved)));t.after(()=>restarted.dom.window.close());await settle();assert.equal(restarted.document.documentElement.dataset.theme,'light');restarted.button('Profile').click();await settle();restarted.document.querySelector('[role="switch"]').click();await settle();assert.equal(restarted.document.documentElement.dataset.theme,'dark');assert.deepEqual(app.errors,[]);assert.deepEqual(restarted.errors,[]);
+});

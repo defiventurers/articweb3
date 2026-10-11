@@ -37,10 +37,11 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         root = new FrameLayout(this);
-        root.setBackgroundColor(Color.WHITE);
+        root.setBackgroundColor(Color.rgb(13,20,34));
         root.setFitsSystemWindows(Build.VERSION.SDK_INT < 30);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         web = new WebView(this);
+        web.setBackgroundColor(Color.rgb(13,20,34));
         root.addView(web, new FrameLayout.LayoutParams(-1, -1));
         setContentView(root);
         if (Build.VERSION.SDK_INT >= 30) {
@@ -118,7 +119,7 @@ public final class MainActivity extends Activity {
     public final class NativeBridge {
         @JavascriptInterface public void appReady() { runOnUiThread(() -> { ready = true; deliverRoom(); }); }
         @JavascriptInterface public void setDarkTheme(boolean dark) { runOnUiThread(() -> {
-            int color = dark ? Color.rgb(33,31,49) : Color.WHITE;
+            int color = dark ? Color.rgb(13,20,34) : Color.rgb(246,248,252);
             root.setBackgroundColor(color); web.setBackgroundColor(color);
             getWindow().setStatusBarColor(color); getWindow().setNavigationBarColor(color);
             if (Build.VERSION.SDK_INT >= 30) {

@@ -1,7 +1,7 @@
 import {pieces} from './games.ts';
 
 // App presentation versions are independent of the online ruleset protocol.
-export const APP_VERSION='1.1.0';
+export const APP_VERSION='1.2.0';
 export const GAME_PRESENTATION={
   shogi:{tag:'9 × 9 · Captures become drops',shape:'Square board',goal:'Checkmate the opposing King.',tips:['Move and capture with your army on the 9 × 9 board.','Captured pieces enter your hand. Drop one back onto an empty legal square.','Eligible pieces can promote in the far three ranks. Always keep your King safe.']},
   sannin:{tag:'127 hexes · Three armies',shape:'Hexagonal board',goal:'Reach the central Pleasure Garden safely, or become the last surviving player.',tips:['Red, Green and Blue take turns across 127 hexes. Directions follow your army’s seat.','Captured pieces change owner and enter your hand for later drops.','Promotion, royal powers and alliances matter. Open the full rules before your first complete game.']},

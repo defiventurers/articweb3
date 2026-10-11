@@ -12,8 +12,8 @@ for the existing website rooms.
 
 ## Install and play
 
-1. Download `ArcticPlay-v1.1.0.apk` onto an Android phone and open it. Install it
-   over v1.0.0 to keep your profile, favorites, practice games and saved seats.
+1. Download `ArcticPlay-v1.2.0.apk` onto an Android phone and open it. Install it
+   over v1.0.0 or v1.1.0 to keep your profile, favorites, practice games and saved seats.
 2. If Android asks, allow the app that opened the APK to install from that source.
 3. Open Arctic Play and choose your name/avatar in Profile.
 4. In Games, choose a game and tap **Play with friends**.
@@ -27,7 +27,22 @@ Android's share sheet. There are no accounts, wallets, entry fees or purchases.
 Online play needs internet; practice and pass-the-phone games work offline.
 Android 7.0/API 24 or newer with an up-to-date Android System WebView is required.
 
-## What's improved in 1.1
+## What's improved in 1.2
+
+- Dark mode is the default across Games, Home, Friends, Chats, Profile, private
+  tables, matches and dialogs. Native startup and system bars use the same dark
+  navy. Profile's **Dark mode** switch saves a light appearance when preferred.
+- Six new covers feature the actual important pieces at a readable scale: King
+  and Rook for Shogi; three Kings for Sannin; General/Chariot/Horse for Sanguo;
+  General/Fire/Flag for San You; yellow Han Emperor and blue unicorn Horse for
+  Yan Yi; and General/walrus Cannon for Xiangqi.
+- The original artwork guides the characters, faction colors, props and token
+  shapes. `art/cards/` holds the optimized images, reference manifest and exact
+  prompt set. Earlier canonical board previews remain in quick starts.
+- VersionCode is 3; the package, storage namespace, original signing key and
+  online ruleset protocol are retained.
+
+## Learning and friend-room improvements
 
 - Six distinct Arctic cover scenes are paired with thumbnails rendered from the
   actual starting positions. Board shapes and all existing pieces stay accurate.
@@ -42,8 +57,9 @@ Android 7.0/API 24 or newer with an up-to-date Android System WebView is require
 
 Only the Android app changes in this release. The website, rules, character art,
 server and online protocol stay the same. The package and storage namespace also
-stay the same; versionCode is 2. Updates must use the original signing key.
-See `art/covers/README.md` for asset provenance and the generation prompt set.
+stay the same. Updates must use the original signing key.
+See `art/cards/README.md` for the piece-led covers and `art/covers/README.md`
+for the earlier decorative scenery and canonical board previews.
 
 ## Phone controls
 
