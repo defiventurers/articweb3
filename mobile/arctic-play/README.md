@@ -12,11 +12,13 @@ for the existing website rooms.
 
 ## Install and play
 
-1. Download `ArcticPlay-v1.0.0.apk` onto an Android phone and open it.
+1. Download `ArcticPlay-v1.1.0.apk` onto an Android phone and open it. Install it
+   over v1.0.0 to keep your profile, favorites, practice games and saved seats.
 2. If Android asks, allow the app that opened the APK to install from that source.
 3. Open Arctic Play and choose your name/avatar in Profile.
 4. In Games, choose a game and tap **Play with friends**.
-5. Share the invitation or the six-character room code. Friends tap **Join room**.
+5. Share the invitation or the six-character room code. Friends tap **Join room**
+   and enter the code or paste the full invitation message/link.
 6. Everyone taps **I'm ready**. The host starts the table. A third seat can be
    filled with a casual bot when only two friends are available.
 
@@ -25,11 +27,31 @@ Android's share sheet. There are no accounts, wallets, entry fees or purchases.
 Online play needs internet; practice and pass-the-phone games work offline.
 Android 7.0/API 24 or newer with an up-to-date Android System WebView is required.
 
+## What's improved in 1.1
+
+- Six distinct Arctic cover scenes are paired with thumbnails rendered from the
+  actual starting positions. Board shapes and all existing pieces stay accurate.
+- Every game has a three-step quick start and an offline first-move guide using
+  the real legal-move engine. The full English rules remain available.
+- Gold rings show the last accepted move. Undo and restart clear those rings.
+- Guests enter the board automatically when their host starts. A saved table
+  can be resumed directly from Games using its existing seat credentials.
+- Join accepts codes, deep links, web links and a complete shared invitation.
+- Board zoom reaches 400%, board tap areas are larger, and essential controls
+  have comfortable touch targets. Navigation text cannot be accidentally selected.
+
+Only the Android app changes in this release. The website, rules, character art,
+server and online protocol stay the same. The package and storage namespace also
+stay the same; versionCode is 2. Updates must use the original signing key.
+See `art/covers/README.md` for asset provenance and the generation prompt set.
+
 ## Phone controls
 
 Tap a piece, then a highlighted destination. Orange rings mark captures; blue
 dots mark empty destinations. Every legal destination also has a text button
 below the board. Pinch or use **+ / − / Fit** to zoom; drag a zoomed board to pan.
+Use **Quick start & first move** from a game card to learn the first interaction.
+Gold rings show the source and destination of the most recent accepted move.
 Shogi hands have drop buttons; legal promotions, Sannin castling and illumination
 have explicit controls. Inherited armies keep their original art and show an
 owner ring. The yellow Han sprites stay yellow after takeover.
