@@ -5,6 +5,7 @@ The bundled React app is built by `npm run build` first. Signing material remain
 outside the repository; keep it to sign future updates with the same identity.
 """
 import argparse, hashlib, json, os, pathlib, secrets, shutil, subprocess, tempfile, zipfile
+import xml.etree.ElementTree as ET
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--sdk',required=True,type=pathlib.Path)
@@ -15,6 +16,9 @@ parser.add_argument('--password-file',type=pathlib.Path)
 args=parser.parse_args()
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 APP=ROOT/'android/app/src/main'
+manifest=ET.parse(APP/'AndroidManifest.xml').getroot()
+VERSION=manifest.attrib['{http://schemas.android.com/apk/res/android}versionName']
+VERSION_CODE=int(manifest.attrib['{http://schemas.android.com/apk/res/android}versionCode'])
 OUTPUT=args.output.resolve();OUTPUT.mkdir(parents=True,exist_ok=True)
 (ROOT/'build').mkdir(exist_ok=True)
 WORK=pathlib.Path(tempfile.mkdtemp(prefix='apk-',dir=ROOT/'build'))
@@ -50,12 +54,12 @@ if not key.exists():
     password.write_text(secrets.token_urlsafe(32)+'\n');os.chmod(password,0o600)
     run(args.jdk/'bin/keytool','-genkeypair','-keystore',key,'-storepass:file',password,'-keypass:file',password,'-alias','arctic-play','-keyalg','RSA','-keysize','3072','-validity','10000','-dname','CN=Arctic Play, O=Arctic Dominion','-storetype','JKS')
     os.chmod(key,0o600)
-apk=OUTPUT/'ArcticPlay-v1.0.0.apk'
+apk=OUTPUT/f'ArcticPlay-v{VERSION}.apk'
 run(signer,'sign','--ks',key,'--ks-key-alias','arctic-play','--ks-pass',f'file:{password}','--out',apk,aligned)
 run(signer,'verify','--verbose','--print-certs',apk)
 run(align,'-c','-p','4',apk)
 digest=hashlib.sha256(apk.read_bytes()).hexdigest()
-(OUTPUT/'ArcticPlay-v1.0.0.apk.sha256').write_text(f'{digest}  {apk.name}\n')
-metadata={'file':apk.name,'bytes':apk.stat().st_size,'sha256':digest,'package':'xyz.arcticdominion.play','version':'1.0.0','minSdk':24,'targetSdk':35,'games':['Shogi','Sannin Shogi','Sanguo Qi','San You Qi','Sanguo Yan Yi Qi','Xiangqi']}
+(OUTPUT/f'ArcticPlay-v{VERSION}.apk.sha256').write_text(f'{digest}  {apk.name}\n')
+metadata={'file':apk.name,'bytes':apk.stat().st_size,'sha256':digest,'package':'xyz.arcticdominion.play','version':VERSION,'versionCode':VERSION_CODE,'minSdk':24,'targetSdk':35,'games':[entry['game'] for entry in json.loads((ROOT/'art/cards/manifest.json').read_text())]}
 (OUTPUT/'build-info.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(json.dumps(metadata,indent=2))
