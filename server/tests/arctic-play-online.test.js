@@ -49,3 +49,12 @@ test('Leaving the last human seat ends the room instead of running unattended bo
   const left=await h.call(ws,'ap_room_leave',credentials);assert.equal(left.payload.room.status,'finished');assert.equal(engine.result(left.payload.room.gameState).draw,true);
   const revision=left.payload.room.revision;await new Promise(resolve=>setTimeout(resolve,650));assert.equal(h.rooms.get(credentials.roomCode).revision,revision);
 });
+test('Arctic Dominion fills all three empty seats and a bot completes its roll and moves',{timeout:10000},async t=>{
+  const h=harness();t.after(()=>h.service.close());const ws=h.socket(),playerId=randomUUID();
+  const created=await h.call(ws,'ap_room_create',{tableId:'dominion',seat:'red',playerId,name:'Host'});
+  const session={roomCode:created.payload.room.roomCode,playerId,seatToken:created.payload.seatToken};
+  await h.call(ws,'ap_room_ready',{...session,ready:true});const started=await h.call(ws,'ap_room_start',{...session,fillWithBots:true});
+  assert.equal(started.payload.room.players.filter(p=>p.bot).length,3);assert.equal(engine.turn(started.payload.room.gameState),'green');
+  const deadline=Date.now()+7000;while(engine.turn(h.rooms.get(session.roomCode).gameState)!=='red'&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,50));
+  const room=h.rooms.get(session.roomCode);assert.equal(engine.turn(room.gameState),'red');assert.equal(room.gameState.dice.rolled,false);assert.ok(room.revision>started.payload.room.revision);
+});
