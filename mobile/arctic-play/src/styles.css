@@ -142,3 +142,24 @@ input::placeholder{color:var(--muted);opacity:.9}
 .card-favorite{background:#1f5077ed;color:#bce4ff;border:1px solid #68bcf851}
 .card-favorite[aria-pressed=true]{background:#248fea;color:#fff}
 @media(prefers-reduced-motion:reduce){.theme-switch i{transition:none}}
+
+/* Arctic Dominion: four seats and two independently spent dice. */
+.cover-dominion{background:#07172a}
+.featured .cover-dominion .cover-hero{width:88%;object-fit:contain;object-position:right center;mask-image:none;-webkit-mask-image:none}
+.cover-dominion .cover-scene{filter:blur(4px) brightness(.45)}
+.four-players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-width:610px;padding-top:7px;gap:5px}
+.four-players .player-pill{max-width:none;padding:5px 9px}
+.player-pill.eliminated{opacity:.45}.player-pill.eliminated small{color:#ff8f9f}
+.dice-tray{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px;margin:10px 0;color:var(--text)}
+.dice-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dice-heading>span{min-width:0}.dice-heading strong{font-size:12px;display:block}.dice-heading small{font-size:10px;color:var(--muted);display:block;margin-top:4px}
+.dice-heading button{min-height:44px;padding:9px 12px;font-size:11px;white-space:nowrap}
+.dice-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.die{display:flex;align-items:center;gap:8px;background:var(--soft-blue);border:1px solid var(--line);border-radius:10px;padding:8px;min-width:0;color:var(--blue)}
+.die svg{width:40px;height:40px;flex-shrink:0;color:#a7dcff}.die>span{min-width:0}.die strong{font-size:11px;display:block}.die small{font-size:10px;color:var(--text);display:block;line-height:1.4;margin-top:4px}
+.die.used{opacity:.5}.dice-skip{font-size:10px;color:var(--gold);line-height:1.5;margin:9px 0 0}
+.dominion-match>.dice-tray{width:100%;max-width:610px;flex-shrink:0;margin:3px 0 9px}
+@media(min-width:600px){.four-players{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:359px){.die{gap:5px;padding:6px}.die svg{width:32px;height:32px}.die small{font-size:9px}.dice-tray{padding:9px}.dice-heading button{padding:8px 9px}}
+@media(orientation:landscape) and (max-height:600px){.players-strip.four-players{display:flex;max-width:none;padding:0}.four-players .player-pill{padding:4px;gap:4px}.four-players .avatar{width:28px!important;height:28px!important}.four-players .player-pill strong{font-size:9px}.four-players .player-pill small{font-size:8px}.dice-tray{padding:9px}.die{gap:5px;padding:6px}.die svg{width:32px;height:32px}.die small{font-size:9px}}
+@media(orientation:landscape) and (max-height:600px){.dominion-match{display:grid;grid-template-columns:minmax(0,55%) minmax(0,240px);grid-template-rows:auto minmax(0,1fr);align-items:stretch;column-gap:22px;row-gap:0}.dominion-match>.match-board-wrap{grid-column:1;grid-row:1 / span 2;max-width:100%;align-items:center;min-height:0}.dominion-match>.dice-tray{grid-column:2;grid-row:1;margin:0;align-self:start}.dominion-match>.command-area{grid-column:2;grid-row:2;min-height:0}.dominion-match .dice-heading small{display:none}}

@@ -112,5 +112,27 @@
       960,
       640
     ]
+  },
+  {
+    "id": "dominion",
+    "game": "Arctic Dominion",
+    "file": "dominion-card-v2.webp",
+    "keyPieces": [
+      "Green Frost King",
+      "Blue Aurora Unicorn",
+      "Red War Mammoth",
+      "Pink Icebreaker"
+    ],
+    "references": [
+      "frontend/public/assets/artic/lesson-pieces/green-frost-king.webp",
+      "frontend/public/assets/artic/lesson-pieces/blue-aurora-unicorn.webp",
+      "frontend/public/assets/artic/lesson-pieces/red-war-mammoth.webp",
+      "frontend/public/assets/artic/lesson-pieces/pink-icebreaker.webp"
+    ],
+    "createdWith": "Built-in image generation; existing pieces used as visual references",
+    "size": [
+      1200,
+      800
+    ]
   }
 ]

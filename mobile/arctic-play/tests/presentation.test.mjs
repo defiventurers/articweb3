@@ -10,12 +10,12 @@ test('Invitations: accept shared links and codes while rejecting unrelated or ma
   for(const value of ['abc234',' ABC234 ','arcticplay://room/abc234','https://articweb3.onrender.com/arctic-play/join?room=abc234','Join me for Shogi on Arctic Play. Room: ABC234\nhttps://articweb3.onrender.com/arctic-play/join?room=ABC234'])assert.equal(parseInvitation(value),'ABC234');
   assert.equal(parseInvitation('arcticplay://room/ABC234\narcticplay://room/DEF567'),null,'ambiguous invitations do not join the wrong table');
   for(const value of ['',null,'ABC01D','ABC2347','https://example.com/arctic-play/join?room=ABC234','https://articweb3.onrender.com.evil.example/arctic-play/join?room=ABC234','http://articweb3.onrender.com/arctic-play/join?room=ABC234','arcticplay://room/ABC234/other'])assert.equal(parseInvitation(value),null);
-  assert.equal(APP_VERSION,'1.2.0');assert.equal(engine.VERSION,'arctic-play-1.0.0','existing rooms retain the same protocol');
+  assert.equal(APP_VERSION,'1.3.0');assert.equal(engine.VERSION,'arctic-play-1.0.0','existing rooms retain the same protocol');
 });
 
-test('Last-move markers follow accepted positions for all six games and ignore unchanged boards',()=>{
+test('Last-move markers follow accepted positions for all seven games and ignore unchanged boards',()=>{
   for(const game of engine.GAME_LIST){
-    const before=engine.create(game.id),action=engine.actions(game.id,before).find(a=>a.source.startsWith('piece:')&&a.target);
+    const before=engine.create(game.id);if(game.id==='dominion')before.dice={rolled:true,values:[1,3],used:[false,false]};const action=engine.actions(game.id,before).find(a=>a.source.startsWith('piece:')&&a.target);
     const unit=engine.pieces(game.id,before).find(p=>p.source===action.source),after=engine.apply(game.id,before,action.id);
     const movement=describeTransition(game.id,before,after);
     assert.equal(movement.from,unit.cell);assert.equal(movement.to,action.target);assert.ok(movement.label);
@@ -34,7 +34,7 @@ test('A Shogi drop marks the new destination without inventing an origin square'
 test('Every game has a visible board cover with its canonical cells and initial army',async()=>{
   const root=new URL('../android/app/src/main/assets/art/covers/',import.meta.url);
   const manifest=JSON.parse(fs.readFileSync(new URL('manifest.json',root)));
-  assert.equal(manifest.length,6);
+  assert.equal(manifest.length,engine.GAME_LIST.length);
   for(const game of engine.GAME_LIST){
     const cover=manifest.find(c=>c.id===game.id);assert.ok(cover);
     assert.equal(cover.cells,engine.board(game.id).cells.length);assert.equal(cover.pieces,engine.pieces(game.id,engine.create(game.id)).length);
@@ -49,7 +49,7 @@ test('Every game has a visible board cover with its canonical cells and initial 
 
 test('Piece-led covers are tied to the actual source pieces, including Han and the unicorn',()=>{
   const manifest=JSON.parse(fs.readFileSync(new URL('../art/cards/manifest.json',import.meta.url)));
-  assert.equal(manifest.length,6);
+  assert.equal(manifest.length,engine.GAME_LIST.length);
   const han=manifest.find(c=>c.id==='yanyi');assert.deepEqual(han.keyPieces,['Yellow Han Emperor','Blue Unicorn Horse']);
   assert.ok(han.references.some(p=>p.endsWith('/han-emperor.webp')));assert.ok(han.references.some(p=>p.endsWith('/blue-horse.webp')));
   for(const card of manifest){assert.ok(engine.game(card.id));for(const reference of card.references)assert.ok(fs.existsSync(new URL('../../../'+reference,import.meta.url)),reference);}

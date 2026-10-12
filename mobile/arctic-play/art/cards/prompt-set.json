@@ -67,5 +67,12 @@
       "frontend/public/assets/heritage-arcade/tokens/token-sanguo-red-general.webp",
       "frontend/public/assets/heritage-arcade/tokens/token-sanguo-blue-cannon.webp"
     ]
+  },
+  {
+    "id": "dominion",
+    "game": "Arctic Dominion",
+    "output": "dominion-card-v2.webp",
+    "mode": "Built-in image generation",
+    "prompt": "Use case: stylized-concept. Asset type: one polished mobile game card for Arctic Dominion, a four-player dice-activated Chaturanga-inspired arctic strategy game. Input images 1–4 are identity references, NOT images to edit: 1 green Frost King penguin with gold crown and white fur, 2 blue-maned white Aurora Unicorn with gold horn, 3 brown War Mammoth with gold tusks and red royal cloth, 4 pink Icebreaker with a penguin captain, gold anchor and pink hull. Preserve those species, costumes and faction colors. Create a new wide 1536x1024 premium collectible game illustration in the same friendly detailed 3D storybook style as the Arctic Play game cards. Scene: dark midnight arctic bay, subtle aurora, cool blue ice and gentle snow. The four actual piece characters appear as a striking clustered set of raised round collectible medallions on the RIGHT 60%: green king prominent upper-middle, blue unicorn nearby upper-right, red mammoth lower-middle, pink captain's ship lower-right. Use warm gold edging and recognizable faces, generous separation and clean silhouettes. Keep all four characters within x45–94%, y12–83%, so they remain readable when the artwork is cropped to a wide Android card. Leave the LEFT 35% quiet midnight navy for UI text; bottom 24% should fade to quiet dark navy for white labels. Tasteful subtle dice motif in the scene can signal the game mechanic, but no text, letters, numerals, logos, game board, UI, title, watermark, human characters, invented chess pieces or extra mascots. Give the king green regalia, unicorn blue mane, mammoth red armor and ship pink faction consistently. This artwork supplements the original sprites; do not redesign playable pieces."
   }
 ]

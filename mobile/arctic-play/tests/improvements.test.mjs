@@ -22,16 +22,18 @@ function openApp(prepare=()=>{}){
   return {dom,document,window:dom.window,errors,button};
 }
 
-test('First-move guides use legal moves for all six games; undo removes the route',{timeout:30000},async t=>{
+test('First-move guides use legal moves for all seven games; undo removes the route',{timeout:30000},async t=>{
+  t.mock.method(globalThis.crypto,'getRandomValues',array=>{array.fill(0);return array;});
   const app=openApp();t.after(()=>app.dom.window.close());const {document,window,button}=app;await settle();
   for(const game of engine.GAME_LIST){
     document.querySelector(`[aria-label="Play ${game.name}"]`).click();await settle();button('Quick start & first move').click();await settle();
     assert.equal(document.querySelector('.quickstart-steps').children.length,3);assert.ok(document.querySelector('.quickstart-goal').textContent.length>25);
-    button('Try your first move').click();await waitFor(()=>document.querySelector('.suggested-piece')&&document.querySelector('.selection-hint')?.textContent==='Tap a piece to see its legal moves.',`${game.name} guided piece ready`);
-    const state=engine.create(game.id),action=engine.actions(game.id,state).find(a=>a.source.startsWith('piece:')),piece=engine.pieces(game.id,state).find(p=>p.source===action.source);
+    button('Try your first move').click();if(game.id==='dominion'){await waitFor(()=>document.querySelector('.dice-heading button')?.disabled===false,'guided dice ready');assert.match(document.querySelector('.first-move-guide').textContent,/Roll both dice/);button('Roll both dice').click();await settle();assert.ok(document.querySelector('.first-move-guide'),'rolling retains the guide');}await waitFor(()=>document.querySelector('.suggested-piece')&&document.querySelector('.selection-hint')?.textContent==='Tap a piece to see its legal moves.',`${game.name} guided piece ready`);
+    const state=engine.create(game.id);if(game.id==='dominion')state.dice={rolled:true,values:[1,1],used:[false,false]};const action=engine.actions(game.id,state).find(a=>a.source.startsWith('piece:')),piece=engine.pieces(game.id,state).find(p=>p.source===action.source);
     document.querySelector(`[data-cell="${piece.cell}"]`).dispatchEvent(new window.MouseEvent('click',{bubbles:true}));await settle();
     assert.match(document.querySelector('.first-move-guide').textContent,/Choose a highlighted destination/);
     document.querySelector(`[data-cell="${action.target}"]`).dispatchEvent(new window.MouseEvent('click',{bubbles:true}));await settle();
+    if(game.id==='dominion')button('Use die 1 (1)').click();
     if(document.querySelector('[aria-label="Choose your move"]')){button(action.promote?'Promote':'Keep unpromoted').click();}
     await waitFor(()=>!document.querySelector('.first-move-guide'),`${game.name} guide complete`);assert.equal(document.querySelectorAll('.last-move-ring').length,2);
     assert.match(document.querySelector('.last-move-note').textContent,/Last move:/);
@@ -73,7 +75,7 @@ test('Dark is the default and the saved theme applies to navigation, boards and 
   const native=[];
   const app=openApp(window=>{window.Android.setDarkTheme=dark=>native.push(dark);});t.after(()=>app.dom.window.close());const {document,window,button}=app;await settle();
   assert.equal(document.documentElement.dataset.theme,'dark');assert.equal(native.at(-1),true);assert.equal(JSON.parse(window.localStorage.getItem('arctic-play.v1.theme')),'dark');
-  assert.equal(document.querySelectorAll('.cover-hero').length,6);assert.equal(document.querySelectorAll('.cover-board').length,0);
+  assert.equal(document.querySelectorAll('.cover-hero').length,engine.GAME_LIST.length);assert.equal(document.querySelectorAll('.cover-board').length,0);
   button('Profile').click();await settle();const control=document.querySelector('[role="switch"][aria-label="Dark mode"]');assert.equal(control.getAttribute('aria-checked'),'true');control.click();await settle();
   assert.equal(document.documentElement.dataset.theme,'light');assert.equal(control.getAttribute('aria-checked'),'false');assert.equal(native.at(-1),false);
   button('Games').click();await settle();document.querySelector('[aria-label="Play Shogi"]').click();await settle();button('On this phonePass the phone between players').click();await waitFor(()=>document.querySelector('.selection-hint')?.textContent==='Tap a piece to see its legal moves.','light board ready');

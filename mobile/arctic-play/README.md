@@ -1,7 +1,7 @@
 # Arctic Play for Android
 
-A separate, signed Android app containing exactly six games: Shogi, Sannin Shogi,
-Sanguo Qi, San You Qi, Sanguo Yan Yi Qi and Xiangqi. The light lobby, game cards,
+A separate, signed Android app containing seven games: Shogi, Sannin Shogi,
+Sanguo Qi, San You Qi, Sanguo Yan Yi Qi, Xiangqi and Arctic Dominion (Chaturanga). The dark lobby, game cards,
 blue filters, five bottom tabs and dark board/chat screens follow the supplied
 Plato reference. Game art and canonical rule engines come from Heritage Arcade.
 
@@ -12,22 +12,34 @@ for the existing website rooms.
 
 ## Install and play
 
-1. Download `ArcticPlay-v1.2.0.apk` onto an Android phone and open it. Install it
-   over v1.0.0 or v1.1.0 to keep your profile, favorites, practice games and saved seats.
+1. Download `ArcticPlay-v1.3.0.apk` onto an Android phone and open it. Install it
+   over v1.0.0, v1.1.0 or v1.2.0 to keep your profile, favorites, practice games and saved seats.
 2. If Android asks, allow the app that opened the APK to install from that source.
 3. Open Arctic Play and choose your name/avatar in Profile.
 4. In Games, choose a game and tap **Play with friends**.
 5. Share the invitation or the six-character room code. Friends tap **Join room**
    and enter the code or paste the full invitation message/link.
-6. Everyone taps **I'm ready**. The host starts the table. A third seat can be
-   filled with a casual bot when only two friends are available.
+6. Everyone taps **I'm ready**. The host starts the table. Empty seats can be
+   filled with casual bots. Arctic Dominion supports four players.
 
 The APK itself can be shared from **Profile → Share the Android app** through
 Android's share sheet. There are no accounts, wallets, entry fees or purchases.
 Online play needs internet; practice and pass-the-phone games work offline.
 Android 7.0/API 24 or newer with an up-to-date Android System WebView is required.
 
-## What's improved in 1.2
+## What's improved in 1.3
+
+- Arctic Dominion joins the collection: the original 8 × 8 four-kingdom game,
+  two dice, automatic Guard promotion and royal King elimination, adapted from
+  `server/gameRules.js` without changing its rules. Each online roll is generated
+  inside the server worker; the client sends only an allowed action ID.
+- A new piece-led card features Green Frost King, Blue Aurora Unicorn, Red War
+  Mammoth and Pink Icebreaker. Four-player filtering, seat avatars, a dice tray,
+  die-choice controls, rules, guided learning and offline bots are included.
+- Existing two- and three-player games, profiles and room seats retain the same
+  online protocol and storage namespace.
+
+### Appearance and learning retained from 1.2
 
 - Dark mode is the default across Games, Home, Friends, Chats, Profile, private
   tables, matches and dialogs. Native startup and system bars use the same dark
@@ -39,7 +51,7 @@ Android 7.0/API 24 or newer with an up-to-date Android System WebView is require
 - The original artwork guides the characters, faction colors, props and token
   shapes. `art/cards/` holds the optimized images, reference manifest and exact
   prompt set. Earlier canonical board previews remain in quick starts.
-- VersionCode is 3; the package, storage namespace, original signing key and
+- VersionCode is 4; the package, storage namespace, original signing key and
   online ruleset protocol are retained.
 
 ## Learning and friend-room improvements
@@ -55,8 +67,8 @@ Android 7.0/API 24 or newer with an up-to-date Android System WebView is require
 - Board zoom reaches 400%, board tap areas are larger, and essential controls
   have comfortable touch targets. Navigation text cannot be accidentally selected.
 
-Only the Android app changes in this release. The website, rules, character art,
-server and online protocol stay the same. The package and storage namespace also
+The Android app and its separate server rule bundle add the new table. Existing
+website frontend files, original rule authorities and legacy events are unchanged. The package and storage namespace also
 stay the same. Updates must use the original signing key.
 See `art/cards/README.md` for the piece-led covers and `art/covers/README.md`
 for the earlier decorative scenery and canonical board previews.
@@ -74,7 +86,7 @@ owner ring. The yellow Han sprites stay yellow after takeover.
 
 The match menu has English rules, offline undo/restart, invitations and explicit
 leave controls. Backing out keeps an online seat reserved; leaving a live match
-resigns in Shogi/Xiangqi/Sanguo/Yan Yi, or hands a Sannin/San You seat to a bot.
+resigns in Shogi/Xiangqi/Sanguo/Yan Yi, or hands a Sannin/San You/Arctic Dominion seat to a bot.
 Keep the app's data on the same phone to reclaim a saved online seat.
 
 Friends is a local list of names for invitations. Chats contains private room
@@ -119,7 +131,7 @@ backend entry point enables:
 
 - `wss://articweb3.onrender.com` with `ap_room_create/join/get/ready/start`,
   `ap_game_action`, `ap_room_chat`, `ap_room_leave` and `ap_room_detach`.
-- `https://articweb3.onrender.com/arctic-play/health` listing the six games.
+- `https://articweb3.onrender.com/arctic-play/health` listing the seven games.
 - `https://articweb3.onrender.com/arctic-play/join?room=CODE` invitation landing.
 
 Moves use authenticated seats, the expected board revision and a server-generated
@@ -136,7 +148,7 @@ permission. No signing material belongs in the public repository or shareable AP
 
 ## Verification and limits
 
-Tests cover all six rule adapters and boards, legal moves for every seat, captured
+Tests cover all seven rule adapters and boards, legal moves for every seat, captured
 Shogi drops, Yan Yi captures for every faction and inherited Han, room ownership,
 turn/revision validation, authenticated chat, reconnect, bot fills and phone UI
 controls. Android tooling verifies the package and its APK v2/v3 signature.

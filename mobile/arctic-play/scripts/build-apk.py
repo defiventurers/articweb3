@@ -60,6 +60,6 @@ run(signer,'verify','--verbose','--print-certs',apk)
 run(align,'-c','-p','4',apk)
 digest=hashlib.sha256(apk.read_bytes()).hexdigest()
 (OUTPUT/f'ArcticPlay-v{VERSION}.apk.sha256').write_text(f'{digest}  {apk.name}\n')
-metadata={'file':apk.name,'bytes':apk.stat().st_size,'sha256':digest,'package':'xyz.arcticdominion.play','version':VERSION,'versionCode':VERSION_CODE,'minSdk':24,'targetSdk':35,'games':['Shogi','Sannin Shogi','Sanguo Qi','San You Qi','Sanguo Yan Yi Qi','Xiangqi']}
+metadata={'file':apk.name,'bytes':apk.stat().st_size,'sha256':digest,'package':'xyz.arcticdominion.play','version':VERSION,'versionCode':VERSION_CODE,'minSdk':24,'targetSdk':35,'games':[entry['game'] for entry in json.loads((ROOT/'art/cards/manifest.json').read_text())]}
 (OUTPUT/'build-info.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(json.dumps(metadata,indent=2))
