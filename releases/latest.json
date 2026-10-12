@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "packageName": "xyz.arcticdominion.play",
+  "versionName": "1.4.0",
+  "versionCode": 5,
+  "downloadUrl": "https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/ArcticPlay-v1.4.0.apk",
+  "sizeBytes": 8592049,
+  "sha256": "aeb927bc2bcf0c7b816ab26324eda408c87d9937b1371b5da283efc3a93e4557",
+  "publishedAt": "2026-10-12T16:49:15.285057Z",
+  "releaseNotes": [
+    "App updates in Profile automatically checks for the latest version when opened.",
+    "Check for updates, read release notes and download the latest APK with one tap.",
+    "Clear offline and retry messages, with the same saved profiles, games and room seats."
+  ]
+}
