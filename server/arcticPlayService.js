@@ -87,7 +87,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
       let room, me, token, storedRevision=null;
       if(type==='ap_room_create') {
         rate(ws,'create',6);
-        const definition=engine.game(payload.tableId); if(!definition) throw new Error('Choose one of the six Arctic games.');
+        const definition=engine.game(payload.tableId); if(!definition) throw new Error('Choose a game from Arctic Play.');
         const id=playerId(payload.playerId);
         if([...rooms.values()].filter(r=>r.gameId===ROOM_GAME_ID&&r.status==='waiting'&&r.hostId===id).length>=5) throw new Error('You already have five waiting rooms. Reuse one of them.');
         let code; do {code=Array.from(randomBytes(6),x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');} while(rooms.has(code));
@@ -192,7 +192,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
     if(url.pathname==='/arctic-play/join') {
       const code=codeOf(url.searchParams.get('room'));const valid=/^[A-Z2-9]{6}$/.test(code);const safe=valid?code:'------';
       res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"});
-      res.end(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Join Arctic Play</title><style>body{font:18px system-ui;background:#f5f8fc;color:#203145;text-align:center;margin:0;padding:64px 24px}main{max-width:400px;margin:auto}h1{font-size:32px}strong{display:block;font-size:42px;letter-spacing:6px;margin:30px}a{display:block;text-decoration:none;background:#2293f4;color:white;border-radius:20px;padding:18px;font-weight:700}p{line-height:1.6}</style><main><h1>You're invited to play</h1><p>Six classic strategy games. One private table with your friends.</p><strong>${safe}</strong>${valid?`<a href="arcticplay://room/${safe}">Open Arctic Play</a>`:''}<p>Already installed? Tap the button or enter this code in Games → Join room.</p><p>Need the app? Ask your friend to share the Arctic Play APK from their Profile tab.</p></main></html>`);return true;
+      res.end(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Join Arctic Play</title><style>body{font:18px system-ui;background:#f5f8fc;color:#203145;text-align:center;margin:0;padding:64px 24px}main{max-width:400px;margin:auto}h1{font-size:32px}strong{display:block;font-size:42px;letter-spacing:6px;margin:30px}a{display:block;text-decoration:none;background:#2293f4;color:white;border-radius:20px;padding:18px;font-weight:700}p{line-height:1.6}</style><main><h1>You're invited to play</h1><p>${engine.GAME_LIST.length} strategy games. One private table with your friends.</p><strong>${safe}</strong>${valid?`<a href="arcticplay://room/${safe}">Open Arctic Play</a>`:''}<p>Already installed? Tap the button or enter this code in Games → Join room.</p><p>Need the app? Ask your friend to share the Arctic Play APK from their Profile tab.</p></main></html>`);return true;
     }
     return false;
   }
