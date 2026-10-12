@@ -37,11 +37,13 @@ for(const game of engine.GAME_LIST)test(`${game.name}: private room, every seat,
   const verified=await h.call(reconnected,'ap_room_get',{...host.session,verifyStored:true});assert.equal(verified.payload.storageVerified,true);assert.equal(verified.payload.savedRevision,room.revision);
   await new Promise(resolve=>setImmediate(resolve));assert.ok(h.snapshots.length);const persisted=h.snapshots.at(-1);assert.equal(persisted.roomMode,'free');assert.ok(persisted.players[host.session.playerId].tokenHash);assert.ok(!JSON.stringify(persisted).includes(host.session.seatToken));
 });
-test('Only explicit fill-with-bots starts a table with empty seats; bot completes its turn',async t=>{
+test('Only explicit fill-with-bots starts a table with empty seats; bot completes its turn',{timeout:15000},async t=>{
   const h=harness();t.after(()=>h.service.close());const ws=h.socket(),playerId=randomUUID();const created=await h.call(ws,'ap_room_create',{tableId:'yanyi',seat:'red',playerId,name:'Host'});
   const session={roomCode:created.payload.room.roomCode,playerId,seatToken:created.payload.seatToken};await h.call(ws,'ap_room_ready',{...session,ready:true});assert.equal((await h.call(ws,'ap_room_start',session)).type,'error');
   const started=await h.call(ws,'ap_room_start',{...session,fillWithBots:true});assert.equal(started.payload.room.players.filter(p=>p.bot).length,2);
-  await new Promise(resolve=>setTimeout(resolve,1800));const room=h.rooms.get(session.roomCode);assert.equal(engine.turn(room.gameState),'red');assert.ok(room.revision>started.payload.room.revision);
+  // Wait for the accepted bot turns rather than assuming workers finish in 1.8s.
+  const deadline=Date.now()+10000;while(engine.turn(h.rooms.get(session.roomCode).gameState)!=='red'&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,50));
+  const room=h.rooms.get(session.roomCode);assert.equal(engine.turn(room.gameState),'red');assert.ok(room.revision>started.payload.room.revision);
 });
 test('Leaving the last human seat ends the room instead of running unattended bot games',async t=>{
   const h=harness();t.after(()=>h.service.close());const ws=h.socket(),playerId=randomUUID();const created=await h.call(ws,'ap_room_create',{tableId:'sannin',playerId,name:'Host'});

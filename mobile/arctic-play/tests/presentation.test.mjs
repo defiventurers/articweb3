@@ -10,7 +10,7 @@ test('Invitations: accept shared links and codes while rejecting unrelated or ma
   for(const value of ['abc234',' ABC234 ','arcticplay://room/abc234','https://articweb3.onrender.com/arctic-play/join?room=abc234','Join me for Shogi on Arctic Play. Room: ABC234\nhttps://articweb3.onrender.com/arctic-play/join?room=ABC234'])assert.equal(parseInvitation(value),'ABC234');
   assert.equal(parseInvitation('arcticplay://room/ABC234\narcticplay://room/DEF567'),null,'ambiguous invitations do not join the wrong table');
   for(const value of ['',null,'ABC01D','ABC2347','https://example.com/arctic-play/join?room=ABC234','https://articweb3.onrender.com.evil.example/arctic-play/join?room=ABC234','http://articweb3.onrender.com/arctic-play/join?room=ABC234','arcticplay://room/ABC234/other'])assert.equal(parseInvitation(value),null);
-  assert.equal(APP_VERSION,'1.3.0');assert.equal(engine.VERSION,'arctic-play-1.0.0','existing rooms retain the same protocol');
+  assert.equal(APP_VERSION,'1.4.0');assert.equal(engine.VERSION,'arctic-play-1.0.0','existing rooms retain the same protocol');
 });
 
 test('Last-move markers follow accepted positions for all seven games and ignore unchanged boards',()=>{

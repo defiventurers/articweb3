@@ -3,6 +3,7 @@ package xyz.arcticdominion.play;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.graphics.Color;
 import android.graphics.Insets;
 import android.net.Uri;
@@ -25,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.util.Collections;
+import org.json.JSONObject;
 
 public final class MainActivity extends Activity {
     private static final String HOST = "appassets.androidplatform.net";
@@ -117,6 +119,20 @@ public final class MainActivity extends Activity {
     @Override protected void onDestroy() { if (web != null) { web.removeJavascriptInterface("Android"); web.destroy(); } super.onDestroy(); }
 
     public final class NativeBridge {
+        @JavascriptInterface public String getAppInfo() {
+            try {
+                PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
+                return new JSONObject().put("packageName", getPackageName()).put("versionName", info.versionName).put("versionCode", Build.VERSION.SDK_INT >= 28 ? info.getLongVersionCode() : info.versionCode).toString();
+            } catch (Exception error) { return "{}"; }
+        }
+        @JavascriptInterface public boolean downloadUpdate(String url) {
+            if (url == null || !url.matches("https://raw[.]githubusercontent[.]com/defiventurers/articweb3/arctic-play-releases/releases/ArcticPlay-v[0-9]+[.][0-9]+[.][0-9]+[.]apk")) return false;
+            runOnUiThread(() -> {
+                try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)).addCategory(Intent.CATEGORY_BROWSABLE)); }
+                catch (Exception error) { Toast.makeText(MainActivity.this, "A browser is needed to download the update.", Toast.LENGTH_LONG).show(); }
+            });
+            return true;
+        }
         @JavascriptInterface public void appReady() { runOnUiThread(() -> { ready = true; deliverRoom(); }); }
         @JavascriptInterface public void setDarkTheme(boolean dark) { runOnUiThread(() -> {
             int color = dark ? Color.rgb(13,20,34) : Color.rgb(246,248,252);

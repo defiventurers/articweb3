@@ -85,7 +85,9 @@ test('Royal capture removes the defeated army, skips its turn and ends on the fi
   assert.equal(e.result(win).winner,'green');assert.deepEqual(e.actions('dominion',win),[]);
 });
 
-test('Casual bots complete dice phases for all four kingdoms without changing canonical legality',()=>{
+test('Casual bots complete dice phases for all four kingdoms without changing canonical legality',t=>{
+  // Stable rolls let every original royal take a turn before random early captures.
+  t.mock.method(globalThis.crypto,'getRandomValues',array=>{array.fill(0);return array;});
   let state=e.create('dominion');const seen=new Set();
   for(let i=0;i<60&&!e.result(state);i++){
     seen.add(e.turn(state));const action=e.chooseBot('dominion',state);assert.ok(e.actions('dominion',state).some(a=>a.id===action));state=e.apply('dominion',state,action);

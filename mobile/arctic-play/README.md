@@ -12,8 +12,8 @@ for the existing website rooms.
 
 ## Install and play
 
-1. Download `ArcticPlay-v1.3.0.apk` onto an Android phone and open it. Install it
-   over v1.0.0, v1.1.0 or v1.2.0 to keep your profile, favorites, practice games and saved seats.
+1. Download `ArcticPlay-v1.4.0.apk` onto an Android phone and open it. Install it
+   over an earlier version to keep your profile, favorites, practice games and saved seats.
 2. If Android asks, allow the app that opened the APK to install from that source.
 3. Open Arctic Play and choose your name/avatar in Profile.
 4. In Games, choose a game and tap **Play with friends**.
@@ -26,6 +26,53 @@ The APK itself can be shared from **Profile → Share the Android app** through
 Android's share sheet. There are no accounts, wallets, entry fees or purchases.
 Online play needs internet; practice and pass-the-phone games work offline.
 Android 7.0/API 24 or newer with an up-to-date Android System WebView is required.
+
+## What's improved in 1.4
+
+- **Profile → App updates** checks for the newest public APK when opened. It
+  shows the installed version from Android, latest version, download size and
+  release notes. **Check for updates** refreshes the feed; failures and a
+  12-second timeout show a retry action and clear stale download targets.
+- **Download update** opens the exact APK in the phone's browser. The browser
+  handles downloading, and Android asks the user to confirm installation. No
+  installer or storage permission is added to the app. The same-version APK can
+  also be downloaded for sharing. Older versions cannot be downloaded here.
+- Version 1.4.0 / code 5 retains the original signing certificate, app package,
+  local storage and multiplayer protocol. Install 1.4 once to gain this screen;
+  future releases are discovered through it.
+- `release-config.json` supplies the displayed build version. Builds verify it
+  against the Android manifest. The update feed requires the matching app
+  package, a positive version code, HTTPS repository URL, APK size and SHA-256.
+  Android's installer checks the APK signature during installation.
+
+### Publish future APK updates
+
+The stable feed is
+`https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/latest.json`.
+Download files live alongside it as `ArcticPlay-vX.Y.Z.apk` on the separate
+`arctic-play-releases` branch. It does not require a game-server deployment.
+
+1. Increase `release-config.json`, `package.json`, Android manifest and Gradle
+   versions together. Increase versionCode for every APK update.
+2. Build, test and sign with the original private signing key. Verify certificate
+   continuity against the previous public APK. Keep signing material private.
+3. Write release notes as a JSON array, then generate the feed with:
+
+```bash
+python3 mobile/arctic-play/scripts/prepare-update.py \
+  --build-info /absolute/path/to/release/build-info.json \
+  --notes /absolute/path/to/release/release-notes.json \
+  --output /absolute/path/to/release/latest.json
+```
+
+4. Publish the APK and `releases/latest.json` in one commit on the release branch,
+   preserving older APKs. Verify that the public feed and APK return successfully
+   and that the downloaded bytes match the feed's checksum before announcing it.
+
+For a presentation-only rebuild, `npm run build --prefix mobile/arctic-play --
+--reuse-artwork /absolute/path/to/prior/art` reuses the previous APK's unmodified
+`assets/art` tree, including all seven cards and board manifests. A normal build
+continues to produce artwork from the canonical source assets.
 
 ## What's improved in 1.3
 
