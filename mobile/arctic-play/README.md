@@ -14,7 +14,7 @@ for the existing website rooms.
 
 ## Install and play
 
-1. Download `AntarcticKingdoms-v2.0.0.apk` onto an Android phone and open it. Install it
+1. Download `AntarcticKingdoms-v2.1.0.apk` onto an Android phone and open it. Install it
    over an earlier version to keep your profile, favorites, practice games and saved seats.
 2. If Android asks, allow the app that opened the APK to install from that source.
 3. Open Antarctic Kingdoms and choose your name/avatar in Profile.
@@ -41,12 +41,12 @@ Android 7.0/API 24 or newer with an up-to-date Android System WebView is require
   entry. All games remain open, with no progress locks.
 - Every game exposes origin/edition labels. Living traditions and historical
   variants are distinguished from Arctic Dominion’s modern adaptation.
-- Version 2.0.0 / code 6 keeps the original signing key, package, storage and
+- Version 2.1.0 / code 7 keeps the original signing key, package, storage and
   multiplayer protocol. Old invitations work; antarctickingdoms:// links are
   supported too. Android sharing uses the actual installed version filename.
 - Public updates keep the existing trusted ArcticPlay-vX.Y.Z.apk URL format so
   v1.4 users can discover this rebrand. The public alias is byte-identical to
-  AntarcticKingdoms-v2.0.0.apk; neither file requires uninstalling the old app.
+  AntarcticKingdoms-v2.1.0.apk; neither file requires uninstalling the old app.
 
 ## What's improved in 1.4
 
@@ -222,3 +222,27 @@ turn/revision validation, authenticated chat, reconnect, bot fills and phone UI
 controls. Android tooling verifies the package and its APK v2/v3 signature.
 Real-device installation, soft-keyboard rendering and pinch gestures still need
 an Android phone check; no Android device/emulator is available in this workspace.
+
+## Living companions (2.1)
+
+Tap the mascot in Games for a hello, or ask for a thought. In Discover,
+choose one of the four guide cards to keep that companion with you. Polly is
+welcoming, Retsba focused, Pengu calm, and Abster curious and patient. Their
+portraits blink, breathe and perform distinct short tap gestures.
+
+**Profile → Your penguin companion** lets you follow each game's usual guide,
+pin a favourite, turn motion or automatic reactions off, and hide the companion
+during play. Choices persist locally. Device reduced-motion settings take
+priority; offscreen and background portraits pause. Idle motion stops during
+play. All responses are authored and work offline.
+
+Companions react to accepted moves, captures, dice rolls, first discoveries,
+undo, restart and game endings. Important discoveries stay readable; ordinary
+move chatter is spaced out. Reactions acknowledge events and never claim to
+assess the strength of a move. The penguins remain outside the playable board.
+
+Run `npm test` after building the web assets. Run
+`node scripts/smoke-phone.mjs` with `PLAYWRIGHT_CHROMIUM_EXECUTABLE` when a
+local Chromium path is required. The browser checks all four voices, preference
+restoration, reduced motion, quiet manual taps, undo reactions and hide controls
+at four phone/landscape sizes, alongside real-worker legal moves and updates.
