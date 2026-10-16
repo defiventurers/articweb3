@@ -15,7 +15,7 @@ digest=hashlib.sha256(apk.read_bytes()).hexdigest()
 if info['package']!=config['packageName'] or info['version']!=config['versionName'] or info['versionCode']!=config['versionCode']:raise SystemExit('Build and release config do not match.')
 if digest!=info['sha256'] or apk.stat().st_size!=info['bytes']:raise SystemExit('APK checksum or size does not match the verified build.')
 if not isinstance(notes,list) or len(notes)>12 or any(not isinstance(n,str) or not n.strip() or len(n)>300 for n in notes):raise SystemExit('Release notes must be an array of at most 12 short strings.')
-metadata={'schemaVersion':1,'packageName':config['packageName'],'versionName':config['versionName'],'versionCode':config['versionCode'],'downloadUrl':'https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/'+apk.name,'sizeBytes':info['bytes'],'sha256':digest,'publishedAt':datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00','Z'),'releaseNotes':notes}
+metadata={'schemaVersion':1,'packageName':config['packageName'],'versionName':config['versionName'],'versionCode':config['versionCode'],'downloadUrl':'https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/'+info.get('updateFile',apk.name),'sizeBytes':info['bytes'],'sha256':digest,'publishedAt':datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00','Z'),'releaseNotes':notes}
 args.output.parent.mkdir(parents=True,exist_ok=True)
 args.output.write_text(json.dumps(metadata,indent=2)+'\n')
 print(f'Prepared {args.output} for {apk.name}')

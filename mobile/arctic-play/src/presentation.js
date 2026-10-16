@@ -26,11 +26,11 @@ export function describeTransition(id,before,after){
 export function parseInvitation(value){
   const text=String(value||'').trim();
   if(/^[A-Z2-9]{6}$/i.test(text))return text.toUpperCase();
-  const candidates=/\s/.test(text)?text.match(/(?:https:\/\/|arcticplay:\/\/)[^\s]+/g)||[]:[text];
+  const candidates=/\s/.test(text)?text.match(/(?:https:\/\/|arcticplay:\/\/|antarctickingdoms:\/\/)[^\s]+/g)||[]:[text];
   const codes=new Set();
   for(const candidate of candidates){try{
     const url=new URL(candidate);
-    if(url.protocol==='arcticplay:'&&url.hostname==='room'){
+    if(['arcticplay:','antarctickingdoms:'].includes(url.protocol)&&url.hostname==='room'){
       const code=url.pathname.replace(/^\//,'');
       if(/^[A-Z2-9]{6}$/i.test(code))codes.add(code.toUpperCase());
     }

@@ -84,7 +84,7 @@ public final class MainActivity extends Activity {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 if ("https".equals(uri.getScheme()) && HOST.equals(uri.getHost()) && uri.getPath() != null && uri.getPath().startsWith("/assets/")) return false;
-                if ("arcticplay".equals(uri.getScheme())) { receiveRoom(uri); return true; }
+                if ("arcticplay".equals(uri.getScheme()) || "antarctickingdoms".equals(uri.getScheme())) { receiveRoom(uri); return true; }
                 if ("https".equals(uri.getScheme()) || "http".equals(uri.getScheme())) {
                     try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); } catch (Exception ignored) { }
                 }
@@ -100,7 +100,7 @@ public final class MainActivity extends Activity {
     private WebResourceResponse blocked() { return new WebResourceResponse("text/plain", "UTF-8", new ByteArrayInputStream("Not available".getBytes())); }
     @Override protected void onNewIntent(Intent intent) { super.onNewIntent(intent); setIntent(intent); receiveRoom(intent.getData()); }
     private void receiveRoom(Uri uri) {
-        if (uri == null || !"arcticplay".equals(uri.getScheme()) || !"room".equals(uri.getHost())) return;
+        if (uri == null || !("arcticplay".equals(uri.getScheme()) || "antarctickingdoms".equals(uri.getScheme())) || !"room".equals(uri.getHost())) return;
         String path = uri.getLastPathSegment();
         if (path != null && path.toUpperCase(java.util.Locale.ROOT).matches("[A-Z2-9]{6}")) { pendingRoom = path.toUpperCase(java.util.Locale.ROOT); deliverRoom(); }
     }
@@ -149,10 +149,10 @@ public final class MainActivity extends Activity {
             try { startActivity(Intent.createChooser(send, "Invite a friend")); } catch (Exception error) { Toast.makeText(MainActivity.this, "No sharing app is available.", Toast.LENGTH_SHORT).show(); }
         }); }
         @JavascriptInterface public void shareApp() { runOnUiThread(() -> {
-            Uri uri = Uri.parse("content://xyz.arcticdominion.play.apk/ArcticPlay.apk");
-            Intent send = new Intent(Intent.ACTION_SEND).setType("application/vnd.android.package-archive").putExtra(Intent.EXTRA_STREAM, uri).putExtra(Intent.EXTRA_TEXT, "Install Arctic Play, then join my private game room.");
-            send.setClipData(ClipData.newRawUri("Arctic Play APK", uri));send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            try { startActivity(Intent.createChooser(send, "Share Arctic Play APK")); } catch (Exception error) { Toast.makeText(MainActivity.this, "No app can share this APK. Share the downloaded installation file instead.", Toast.LENGTH_LONG).show(); }
+            Uri uri = Uri.parse("content://xyz.arcticdominion.play.apk/AntarcticKingdoms.apk");
+            Intent send = new Intent(Intent.ACTION_SEND).setType("application/vnd.android.package-archive").putExtra(Intent.EXTRA_STREAM, uri).putExtra(Intent.EXTRA_TEXT, "Install Antarctic Kingdoms, then join my private game room.");
+            send.setClipData(ClipData.newRawUri("Antarctic Kingdoms APK", uri));send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            try { startActivity(Intent.createChooser(send, "Share Antarctic Kingdoms APK")); } catch (Exception error) { Toast.makeText(MainActivity.this, "No app can share this APK. Share the downloaded installation file instead.", Toast.LENGTH_LONG).show(); }
         }); }
     }
 }

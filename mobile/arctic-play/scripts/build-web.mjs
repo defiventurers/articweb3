@@ -3,8 +3,11 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {buildCovers} from './build-covers.mjs';
+import {buildBrand} from './build-brand.mjs';
 const here=path.dirname(fileURLToPath(import.meta.url));
 const mobile=path.resolve(here,'..'),root=path.resolve(mobile,'../..');
+// Keep generated engine source labels independent of npm's working directory.
+process.chdir(root);
 const require=createRequire(path.join(root,'frontend/package.json'));
 const {build}=await import(require.resolve('rolldown'));
 const sharp=require('sharp');
@@ -23,7 +26,7 @@ await build({input:path.join(mobile,'src/games.ts'),platform:'node',output:{file
 await build({input:path.join(mobile,'src/presentation.js'),platform:'node',output:{file:path.join(mobile,'build/presentation.cjs'),format:'cjs',minify:false}});
 await build({input:path.join(mobile,'src/updates.js'),platform:'node',output:{file:path.join(mobile,'build/updates.cjs'),format:'cjs',minify:false}});
 const files=await fs.readdir(destination);const css=files.filter(f=>f.endsWith('.css'));
-await fs.writeFile(path.join(destination,'index.html'),`<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src wss://articweb3.onrender.com https://raw.githubusercontent.com; worker-src 'self'; font-src 'self'; base-uri 'none'; object-src 'none'"><title>Arctic Play</title>${css.map(f=>`<link rel="stylesheet" href="${f}">`).join('')}</head><body><div id="root"></div><script src="app.js"></script></body></html>`);
+await fs.writeFile(path.join(destination,'index.html'),`<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src wss://articweb3.onrender.com https://raw.githubusercontent.com; worker-src 'self'; font-src 'self'; base-uri 'none'; object-src 'none'"><meta name="theme-color" content="#0d1422"><title>Antarctic Kingdoms</title>${css.map(f=>`<link rel="stylesheet" href="${f}">`).join('')}</head><body><div id="root"></div><script src="app.js"></script></body></html>`);
 const art=path.join(destination,'art'),source=path.join(root,'frontend/public/assets');
 const reuseFlag=process.argv.indexOf('--reuse-artwork');
 if(reuseFlag>=0){
@@ -53,5 +56,6 @@ const dm=await sharp(dominionBase).metadata(),side=Math.round(dm.width*.6684);
 await sharp(dominionBase).extract({left:Math.round(dm.width*.1881),top:Math.round(dm.height*.3350),width:side,height:side}).resize(1000,1000).webp({quality:90}).toFile(path.join(art,'dominion/board.webp'));
 await buildCovers(mobile,destination);
 }
+await buildBrand(mobile,destination);
 const size=await fs.stat(path.join(destination,'app.js'));
 console.log(`Built Android web app: ${files.join(', ')}; JavaScript ${(size.size/1024).toFixed(0)} KiB. Seven games and their assets are bundled.`);

@@ -1,9 +1,11 @@
-# Arctic Play for Android
+# Antarctic Kingdoms for Android
 
 A separate, signed Android app containing seven games: Shogi, Sannin Shogi,
-Sanguo Qi, San You Qi, Sanguo Yan Yi Qi, Xiangqi and Arctic Dominion (Chaturanga). The dark lobby, game cards,
-blue filters, five bottom tabs and dark board/chat screens follow the supplied
-Plato reference. Game art and canonical rule engines come from Heritage Arcade.
+Sanguo Qi, San You Qi, Sanguo Yan Yi Qi, Xiangqi and Arctic Dominion (Chaturanga). Antarctic Kingdoms is the separate Android app by Antarctic Gaming Co.:
+**Timeless games. A new world.** The Frozen Archive, original penguin guides,
+dark navy identity and learning journal surround the games. Game art and
+canonical rule engines come from Heritage Arcade. See BRAND_DIRECTION.md for
+the accepted direction, edition labels and continuity requirements.
 
 The existing Arctic Dominion website's frontend files and rule engines are not
 modified. Android rooms use a separate `ap_` protocol and `arctic-play` room type.
@@ -12,10 +14,10 @@ for the existing website rooms.
 
 ## Install and play
 
-1. Download `ArcticPlay-v1.4.0.apk` onto an Android phone and open it. Install it
+1. Download `AntarcticKingdoms-v2.0.0.apk` onto an Android phone and open it. Install it
    over an earlier version to keep your profile, favorites, practice games and saved seats.
 2. If Android asks, allow the app that opened the APK to install from that source.
-3. Open Arctic Play and choose your name/avatar in Profile.
+3. Open Antarctic Kingdoms and choose your name/avatar in Profile.
 4. In Games, choose a game and tap **Play with friends**.
 5. Share the invitation or the six-character room code. Friends tap **Join room**
    and enter the code or paste the full invitation message/link.
@@ -26,6 +28,25 @@ The APK itself can be shared from **Profile → Share the Android app** through
 Android's share sheet. There are no accounts, wallets, entry fees or purchases.
 Online play needs internet; practice and pass-the-phone games work offline.
 Android 7.0/API 24 or newer with an up-to-date Android System WebView is required.
+
+## What’s new in 2.0
+
+- Antarctic Kingdoms replaces Arctic Play as the visible app name; the umbrella
+  brand is Antarctic Gaming Co.
+- A generated penguin royal-piece emblem is packaged for legacy launchers,
+  adaptive masks and Android 13 themed icons. Source masters and prompts are
+  in art/brand; build-brand.mjs reproduces the packaged sizes.
+- Discover introduces the fictional Frozen Archive, the four original hosts and
+  a local learning journal. Only an accepted guided piece move completes an
+  entry. All games remain open, with no progress locks.
+- Every game exposes origin/edition labels. Living traditions and historical
+  variants are distinguished from Arctic Dominion’s modern adaptation.
+- Version 2.0.0 / code 6 keeps the original signing key, package, storage and
+  multiplayer protocol. Old invitations work; antarctickingdoms:// links are
+  supported too. Android sharing uses the actual installed version filename.
+- Public updates keep the existing trusted ArcticPlay-vX.Y.Z.apk URL format so
+  v1.4 users can discover this rebrand. The public alias is byte-identical to
+  AntarcticKingdoms-v2.0.0.apk; neither file requires uninstalling the old app.
 
 ## What's improved in 1.4
 

@@ -6,7 +6,7 @@ import {randomUUID} from 'node:crypto';
 const require=createRequire(import.meta.url);
 const updates=require('../build/updates.cjs');
 const {APP_VERSION,APP_VERSION_CODE,PACKAGE_NAME,DOWNLOAD_ROOT,UPDATE_FEED_URL,validateRelease,installedVersion,fetchLatestRelease,releaseStatus,openReleaseDownload}=updates;
-const fixture=(versionName='1.5.0',versionCode=6)=>({schemaVersion:1,packageName:PACKAGE_NAME,versionName,versionCode,downloadUrl:DOWNLOAD_ROOT+`ArcticPlay-v${versionName}.apk`,sizeBytes:9000000,sha256:'a'.repeat(64),publishedAt:'2026-10-12T16:00:00Z',releaseNotes:['Better phone gameplay.']});
+const fixture=(versionName='2.1.0',versionCode=7)=>({schemaVersion:1,packageName:PACKAGE_NAME,versionName,versionCode,downloadUrl:DOWNLOAD_ROOT+`ArcticPlay-v${versionName}.apk`,sizeBytes:9000000,sha256:'a'.repeat(64),publishedAt:'2026-10-12T16:00:00Z',releaseNotes:['Better phone gameplay.']});
 
 test('Update decisions use the actual installed version code and never offer a downgrade',()=>{
   const native={getAppInfo:()=>JSON.stringify({packageName:PACKAGE_NAME,versionName:'1.9.0',versionCode:10})};
@@ -21,13 +21,13 @@ test('Update decisions use the actual installed version code and never offer a d
 });
 
 test('Update metadata rejects other apps, untrusted URLs, missing hashes and malformed versions',()=>{
-  assert.equal(validateRelease(fixture()).versionCode,6);
+  assert.equal(validateRelease(fixture()).versionCode,7);
   for(const change of [{packageName:'another.app'},{downloadUrl:'javascript:alert(1)'},{downloadUrl:DOWNLOAD_ROOT+'../../evil.apk'},{downloadUrl:DOWNLOAD_ROOT+'ArcticPlay-v1.5.0.apk?source=bad'},{downloadUrl:'http://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/ArcticPlay-v1.5.0.apk'},{versionCode:1.5},{versionCode:-1},{versionName:'1.5'},{sha256:''},{sizeBytes:200*1048576},{releaseNotes:['x'.repeat(301)]},{publishedAt:'unknown'}])assert.throws(()=>validateRelease({...fixture(),...change}));
 });
 
 test('Update checks bypass caches, handle service/JSON failures, time out and cancel',async()=>{
   const latest=await fetchLatestRelease({fetchImpl:async(url,options)=>{assert.ok(url.startsWith(UPDATE_FEED_URL+'?check='));assert.equal(options.cache,'no-store');assert.equal(options.credentials,'omit');return {ok:true,json:async()=>fixture()};}});
-  assert.equal(latest.versionName,'1.5.0');
+  assert.equal(latest.versionName,'2.1.0');
   await assert.rejects(fetchLatestRelease({fetchImpl:async()=>({ok:false})}),/unavailable/);
   await assert.rejects(fetchLatestRelease({fetchImpl:async()=>{throw new TypeError('offline');}}),/internet connection/);
   await assert.rejects(fetchLatestRelease({fetchImpl:async()=>({ok:true,json:async()=>{throw new SyntaxError('bad json');}})}),/update service/);
@@ -64,7 +64,7 @@ test('Phone update screen: automatically check, retry offline, download once and
     await waitFor(()=>button('Profile'));button('Profile').click();await waitFor(()=>doc.querySelector('.profile-options'));
     const profileBefore=window.localStorage.getItem('arctic-play.v1.profile');
     const open=()=>[...doc.querySelectorAll('.profile-options button')].find(b=>b.textContent.includes('App updates')).click();
-    open();await waitFor(()=>button('Download update'));assert.match(doc.querySelector('.update-details').textContent,/1\.4\.0/);button('Download update').click();await waitFor(()=>doc.querySelector('.update-download-note'));assert.deepEqual(downloads,[fixture().downloadUrl]);
+    open();await waitFor(()=>button('Download update'));assert.ok(doc.querySelector('.update-details').textContent.includes(APP_VERSION));button('Download update').click();await waitFor(()=>doc.querySelector('.update-download-note'));assert.deepEqual(downloads,[fixture().downloadUrl]);
     response='offline';button('Check for updates').click();await waitFor(()=>button('Retry update check'));assert.ok(doc.querySelector('[role="alert"]'));assert.equal(button('Download update'),undefined,'a failed check cannot retain an outdated download target');
     response='current';button('Retry update check').click();await waitFor(()=>button('Download latest APK'));assert.match(doc.querySelector('.update-status').textContent,/up to date/);
     window.arcticBack();await waitFor(()=>!doc.querySelector('.app-updates'));assert.ok(doc.querySelector('.profile-card'));
