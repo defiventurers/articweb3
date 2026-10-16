@@ -3,10 +3,10 @@
 export const BRAND={name:'Antarctic Kingdoms',company:'Antarctic Gaming Co.',tagline:'Timeless games. A new world.',icon:'art/brand/icon.webp'};
 
 export const GUIDES={
-  polly:{name:'Polly',clan:'Polly Clan',color:'#f5a9cd',image:'art/brand/hosts/polly.webp',role:'Your welcoming practice guide',detail:'Start with one move. Learn at your own pace, then bring a friend.'},
-  retsba:{name:'Retsba',clan:'Retsba Legion',color:'#f17b86',image:'art/brand/hosts/retsba.png',role:'Your focused tactics guide',detail:'Look for captures, read the formation and protect your royal piece.'},
-  pengu:{name:'Pengu',clan:'Pengu Order',color:'#8eb9ff',image:'art/brand/hosts/pengu.png',role:'Your calm rules guide',detail:'Every board has its own paths. Let the legal highlights show the way.'},
-  abster:{name:'Abster',clan:'Abster Tribe',color:'#68d7a8',image:'art/brand/hosts/abster.png',role:'Your patient puzzle guide',detail:'Pause, notice the pattern and explore another possibility.'},
+  polly:{name:'Polly',clan:'Polly Clan',color:'#f5a9cd',image:'art/brand/hosts-cute-v3/polly.webp',role:'Your welcoming practice guide',detail:'Start with one move. Learn at your own pace, then bring a friend.'},
+  retsba:{name:'Retsba',clan:'Retsba Legion',color:'#f17b86',image:'art/brand/hosts-cute-v3/retsba.webp',role:'Your focused tactics guide',detail:'Look for captures, read the formation and protect your royal piece.'},
+  pengu:{name:'Pengu',clan:'Pengu Order',color:'#8eb9ff',image:'art/brand/hosts-cute-v3/pengu.webp',role:'Your calm rules guide',detail:'Every board has its own paths. Let the legal highlights show the way.'},
+  abster:{name:'Abster',clan:'Abster Tribe',color:'#68d7a8',image:'art/brand/hosts-cute-v3/abster.webp',role:'Your patient puzzle guide',detail:'Pause, notice the pattern and explore another possibility.'},
 };
 
 // Edition descriptions follow the supplied catalogue and the existing rulebooks.

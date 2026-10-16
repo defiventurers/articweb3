@@ -73,7 +73,7 @@ export function CompanionDock({companion,onOpen,onSettings,inline=false,hidden=f
   </aside>;
 }
 
-export function CompanionCamp({companion,onSettings,onExplore,exploreLabel='Find a game together'}){
+export function CompanionCamp({companion,onSettings,onExplore,onLearn,exploreLabel='Find a game together'}){
   const {preferences,campHost,meet,talk,message,history}=companion,guide=GUIDES[campHost];
   const disabled=preferences.mode==='off';
   const latest=history.filter(item=>item.host===campHost).at(-1);
@@ -88,6 +88,7 @@ export function CompanionCamp({companion,onSettings,onExplore,exploreLabel='Find
       <button className="keep-companion" aria-pressed={preferences.guide===campHost} onClick={()=>companion.update({guide:preferences.guide===campHost?'auto':campHost})}><Heart size={17} fill={preferences.guide===campHost?'currentColor':'none'}/>{preferences.guide===campHost?`${guide.name} is your companion`:`Keep ${guide.name} beside me`}<ChevronRight size={17}/></button>
       {preferences.guide!=='auto'&&<button className="text-button" onClick={()=>companion.update({guide:'auto'})}>Let all four guides take turns</button>}
     </>}
+    {onLearn&&<button className="primary full camp-learn" onClick={onLearn}><Sparkles size={16}/> Learn together <ChevronRight size={17}/></button>}
     <button className="secondary full" onClick={onExplore}>{exploreLabel} <ChevronRight size={17}/></button>
     <p className="camp-footnote">Choose a prompt for an offline character response. Camp conversations stay on this phone and never appear in table chat.</p>
     <button className="text-button" onClick={onSettings}><Settings size={16}/> Companion settings</button>

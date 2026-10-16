@@ -1,5 +1,8 @@
 # Antarctic Kingdoms · interactive companions
 
+For the v2.3 cuter-art and pocket-guide update, see CUTE_SCHOOL.md. The original
+references below are retained; the new variants follow the user’s later request.
+
 Accepted direction, 16 October 2026: make Polly, Retsba, Pengu and Abster feel
 alive through ongoing, optional interaction. Implement this in the separate
 Android app; work on the full How to Play section follows later.

@@ -29,4 +29,6 @@ export async function buildBrand(mobile,destination){
   const webPiece=await sharp(mark).resize(480,480,{fit:'inside'}).png().toBuffer();
   await sharp({create:{width:512,height:512,channels:4,background:'#00000000'}}).composite([{input:webPiece,gravity:'centre'}]).webp({quality:92,alphaQuality:100}).toFile(path.join(web,'icon.webp'));
   await fs.cp(path.join(source,'hosts'),path.join(web,'hosts'),{recursive:true});
+  const cute=path.join(web,'hosts-cute-v3');await fs.mkdir(cute,{recursive:true});
+  for(const host of ['polly','pengu','retsba','abster'])await fs.copyFile(path.join(source,'hosts-cute-v3',host+'.webp'),path.join(cute,host+'.webp'));
 }

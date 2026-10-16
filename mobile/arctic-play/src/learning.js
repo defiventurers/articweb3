@@ -95,6 +95,11 @@ function describe(id,state,filter){
   const focus=legal[0].source;
   return {state,legal:legal.filter(a=>a.source===focus),focus};
 }
+function fewDropSpots(id,position){
+  const cells=board(id).cells,byId=new Map(cells.map(c=>[c.id,c]));
+  const royal=pieces(id,position.state).find(p=>p.owner===position.state.turn&&p.label==='King'),anchor=byId.get(royal?.cell)||cells[0];
+  return {...position,legal:[...position.legal].sort((a,b)=>{const x=byId.get(a.target),y=byId.get(b.target);return Math.hypot(x.x-anchor.x,x.y-anchor.y)-Math.hypot(y.x-anchor.x,y.y-anchor.y);}).slice(0,4)};
+}
 export function lessonPosition(id,kind){
   if(!Object.hasOwn(LESSONS,id)||!CHALLENGES.includes(kind))throw new Error('Choose a lesson from this game.');
   const state=create(id),pawn=findUnit(id,state,pawnRole(id));
@@ -118,11 +123,11 @@ export function lessonPosition(id,kind){
   }
   if(id==='shogi'){
     state.board=state.board.map(p=>p?.id===pawn.id?null:p);state.hands.red.pawn=1;
-    return describe(id,state,a=>a.kind==='drop'&&a.source==='hand:pawn');
+    return fewDropSpots(id,describe(id,state,a=>a.kind==='drop'&&a.source==='hand:pawn'));
   }
   if(id==='sannin'){
     const captive=findUnit(id,state,'pawn','green');Object.assign(captive,{owner:'red',status:'hand',cell:null,promoted:false});
-    return describe(id,state,a=>a.kind==='drop'&&a.source===`hand:${captive.id}`);
+    return fewDropSpots(id,describe(id,state,a=>a.kind==='drop'&&a.source===`hand:${captive.id}`));
   }
   if(id==='sanyou'){
     const flag=findUnit(id,state,'flag');return describe(id,state,a=>a.source===`piece:${flag.id}`&&a.kind==='move');

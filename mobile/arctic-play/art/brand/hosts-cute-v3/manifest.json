@@ -1,0 +1,38 @@
+{
+  "version": "cute-v3",
+  "direction": "Cuter variants implemented at user request; original references retained",
+  "mascots": [
+    {
+      "key": "polly",
+      "file": "polly.webp",
+      "bytes": 30416,
+      "sha256": "debd50c6732cdcd756a76e13c7eb6cdfb848efde17bbf353b85c44cfd51aed4d",
+      "generatedWith": "built-in image_gen",
+      "sourceReference": "art/brand/hosts/polly.webp"
+    },
+    {
+      "key": "pengu",
+      "file": "pengu.webp",
+      "bytes": 31384,
+      "sha256": "58b5322fabfee64c081089eec4d394eee7c7235ca70e1dd0b75815b0fb902d2c",
+      "generatedWith": "built-in image_gen",
+      "sourceReference": "art/brand/hosts/pengu.png"
+    },
+    {
+      "key": "retsba",
+      "file": "retsba.webp",
+      "bytes": 33400,
+      "sha256": "ed7827dd82c1cd2b97a25dd34ee80696c3a850b1e1bfd7378d96841af35da63b",
+      "generatedWith": "built-in image_gen",
+      "sourceReference": "art/brand/hosts/retsba.png"
+    },
+    {
+      "key": "abster",
+      "file": "abster.webp",
+      "bytes": 33950,
+      "sha256": "1179e4ee3bd4a78321cc0cff06d9226f55bab882ebbd678333f20f8926a77f57",
+      "generatedWith": "built-in image_gen",
+      "sourceReference": "art/brand/hosts/abster.png"
+    }
+  ]
+}

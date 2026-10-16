@@ -41,6 +41,20 @@ Android's share sheet. There are no accounts, wallets, entry fees or purchases.
 Online play needs internet; practice and pass-the-phone games work offline.
 Android 7.0/API 24 or newer with an up-to-date Android System WebView is required.
 
+## What’s new in 2.3
+
+- Four new transparent, rounded mascot illustrations preserve Polly, Pengu,
+  Retsba and Abster's colours and roles. Original references remain in the repo.
+- **Pocket rules** provides a quick goal and three turn steps, visual piece
+  cards, small glossary terms, searchable complete rules and edition details.
+- All five learning steps fit on a phone. Short cues, optional explanations,
+  calmer drop examples and a badge for three accepted challenges simplify play.
+- Tap guides for tiny tips or a flipper five; **Learn together** connects the
+  companion camp to school. These taps never change moves or lesson progress.
+- Version 2.3.0 / code 9 keeps the package, original signing key, saved data and
+  online protocol. See CUTE_SCHOOL.md for the accepted direction and checks;
+  art/brand/hosts-cute-v3 contains the assets, manifest and generation prompts.
+
 ## What’s new in 2.2
 
 - **How to play → Little Flipper School** brings Polly, Pengu, Retsba and Abster
