@@ -13,13 +13,17 @@ import java.io.FileNotFoundException;
 // Grant a temporary read-only stream of the installed APK. No storage permission.
 public final class ApkProvider extends ContentProvider {
     @Override public boolean onCreate() { return true; }
-    private void validate(Uri uri) { if (!"/ArcticPlay.apk".equals(uri.getPath())) throw new IllegalArgumentException("Unknown APK path"); }
+    private void validate(Uri uri) { if (!"/ArcticPlay.apk".equals(uri.getPath()) && !"/AntarcticKingdoms.apk".equals(uri.getPath())) throw new IllegalArgumentException("Unknown APK path"); }
     private File apk() { return new File(getContext().getApplicationInfo().sourceDir); }
+    private String displayName() {
+        try { return "AntarcticKingdoms-v" + getContext().getPackageManager().getPackageInfo(getContext().getPackageName(),0).versionName + ".apk"; }
+        catch (Exception error) { return "AntarcticKingdoms.apk"; }
+    }
     @Override public String getType(Uri uri) { validate(uri);return "application/vnd.android.package-archive"; }
     @Override public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         validate(uri);String[] columns = projection == null ? new String[]{OpenableColumns.DISPLAY_NAME,OpenableColumns.SIZE} : projection;
         MatrixCursor cursor = new MatrixCursor(columns,1);Object[] values = new Object[columns.length];
-        for(int i=0;i<columns.length;i++)values[i]=OpenableColumns.DISPLAY_NAME.equals(columns[i])?"ArcticPlay-v1.2.0.apk":OpenableColumns.SIZE.equals(columns[i])?apk().length():null;
+        for(int i=0;i<columns.length;i++)values[i]=OpenableColumns.DISPLAY_NAME.equals(columns[i])?displayName():OpenableColumns.SIZE.equals(columns[i])?apk().length():null;
         cursor.addRow(values);return cursor;
     }
     @Override public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {

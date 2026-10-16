@@ -25,7 +25,7 @@ export function AppUpdates(){
   const title=status==='checking'?'Checking for updates…':status==='available'?'A new version is ready':status==='current'?'You’re up to date':'Couldn’t check for updates';
   const canDownload=release&&release.versionCode>=installed.versionCode;
   return <div className="app-updates">
-    <div className={`update-status ${status}`} role="status" aria-live="polite"><span className="update-icon"><Icon size={30}/></span><h3>{title}</h3><p>{status==='available'?`Arctic Play ${release.versionName} is available.`:status==='current'?'You have the latest available version.':status==='checking'?'Looking for the latest Arctic Play APK.':'Connect to the internet, then try again.'}</p></div>
+    <div className={`update-status ${status}`} role="status" aria-live="polite"><span className="update-icon"><Icon size={30}/></span><h3>{title}</h3><p>{status==='available'?`Antarctic Kingdoms ${release.versionName} is available.`:status==='current'?'You have the latest available version.':status==='checking'?'Looking for the latest Antarctic Kingdoms APK.':'Connect to the internet, then try again.'}</p></div>
     <dl className="update-details"><div><dt>Installed version</dt><dd>{installed.versionName}</dd></div>{release&&<><div><dt>Latest version</dt><dd>{release.versionName}</dd></div><div><dt>Download size</dt><dd>{(release.sizeBytes/1048576).toFixed(1)} MB</dd></div></>}</dl>
     {error&&<p className="update-error" role="alert">{error}</p>}
     {canDownload&&<button className={status==='available'?'primary full':'secondary full'} onClick={download}><Download size={19}/>{status==='available'?'Download update':'Download latest APK'}</button>}
