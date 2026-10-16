@@ -1,0 +1,26 @@
+{
+  "sourceCommit": "a979553738be4e986043cfa77c23097e5e3157ec",
+  "version": "2.0.0",
+  "versionCode": 6,
+  "package": "xyz.arcticdominion.play",
+  "certificateContinuity": true,
+  "signingCertificateSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+  "signatureV2": true,
+  "signatureV3": true,
+  "zipAligned": true,
+  "originalArtworkFilesUnchanged": 212,
+  "testedAssetsMatchApk": true,
+  "sizeBytes": 8855172,
+  "sha256": "198be50ddd71356aa3283fb66b2f574cb236de7b101fc734b59398fd1860ecb9",
+  "mobileTests": 33,
+  "privateRoomTests": 10,
+  "phoneBrowserViewports": [
+    "320x640",
+    "360x800",
+    "412x915",
+    "800x360"
+  ],
+  "physicalAndroidInstallVerified": false,
+  "localBuildCommit": "9b28def528e978ae5f9b3450d646e75893f1f22e",
+  "sourceTree": "b05708ae2d4bb4805b9954f2be074837292d3de9"
+}

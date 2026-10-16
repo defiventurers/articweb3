@@ -1,15 +1,18 @@
 {
   "schemaVersion": 1,
   "packageName": "xyz.arcticdominion.play",
-  "versionName": "1.4.0",
-  "versionCode": 5,
-  "downloadUrl": "https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/ArcticPlay-v1.4.0.apk",
-  "sizeBytes": 8592049,
-  "sha256": "aeb927bc2bcf0c7b816ab26324eda408c87d9937b1371b5da283efc3a93e4557",
-  "publishedAt": "2026-10-12T16:49:15.285057Z",
+  "versionName": "2.0.0",
+  "versionCode": 6,
+  "downloadUrl": "https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/ArcticPlay-v2.0.0.apk",
+  "sizeBytes": 8855172,
+  "sha256": "198be50ddd71356aa3283fb66b2f574cb236de7b101fc734b59398fd1860ecb9",
+  "publishedAt": "2026-10-16T14:37:06.767Z",
   "releaseNotes": [
-    "App updates in Profile automatically checks for the latest version when opened.",
-    "Check for updates, read release notes and download the latest APK with one tap.",
-    "Clear offline and retry messages, with the same saved profiles, games and room seats."
+    "Welcome to Antarctic Kingdoms by Antarctic Gaming Co. Timeless games. A new world.",
+    "A new penguin royal-piece app icon, dark Antarctic lobby and fictional Frozen Archive discovery story.",
+    "Meet Polly, Retsba, Pengu and Abster; learn a first move in each game and track your local Archive journal.",
+    "Origin and edition notes distinguish living traditions, historical variants and modern adaptations.",
+    "All seven games, original artwork, legal moves, bots, private rooms and chat are retained.",
+    "Install over Arctic Play to keep your profile, favorites, saved seats and practice games. Old invitations still work."
   ]
 }

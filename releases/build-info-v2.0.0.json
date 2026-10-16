@@ -1,0 +1,24 @@
+{
+  "file": "AntarcticKingdoms-v2.0.0.apk",
+  "updateFile": "ArcticPlay-v2.0.0.apk",
+  "bytes": 8855172,
+  "sha256": "198be50ddd71356aa3283fb66b2f574cb236de7b101fc734b59398fd1860ecb9",
+  "package": "xyz.arcticdominion.play",
+  "version": "2.0.0",
+  "versionCode": 6,
+  "minSdk": 24,
+  "targetSdk": 35,
+  "games": [
+    "Shogi",
+    "Sannin Shogi",
+    "Sanguo Qi",
+    "San You Qi",
+    "Sanguo Yan Yi Qi",
+    "Xiangqi",
+    "Arctic Dominion"
+  ],
+  "sourceCommit": "a979553738be4e986043cfa77c23097e5e3157ec",
+  "signerSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+  "localBuildCommit": "9b28def528e978ae5f9b3450d646e75893f1f22e",
+  "sourceTree": "b05708ae2d4bb4805b9954f2be074837292d3de9"
+}
