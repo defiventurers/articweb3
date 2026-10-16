@@ -60,3 +60,28 @@ trademark, company-registration, domain or social-handle availability.
 Physical Android installation, system launcher masking, native sharing and the
 browser-to-installer handoff still require a real phone. Automated browser
 checks do not verify those Android interactions.
+
+## Living companion extension · 2.1
+
+The requested mobile companion experience extends the original catalogue's
+static host seals into interactive guides. Their original colours, references,
+roles and cultural boundaries stay intact. This change is scoped to the Android
+app; the shared web catalogue and the game engines are unchanged.
+
+- Polly: a warm welcome, a happy waddle and encouragement to take a first step.
+- Retsba: a focused nod, formation-minded reflections and respectful endings.
+- Pengu: a gentle bow, calm language and patient reminders about legal paths.
+- Abster: a curious tilt, patterns, second attempts and reassurance after undo.
+
+Reference portraits are unchanged. SVG eyelids and CSS transforms provide
+blinks, breathing and bounded gestures. Idle movement stays within two pixels
+outside play; match portraits have no continuous idle loop. Event and tap
+reactions are short and stay inside the companion frame. Reduced motion and
+explicit motion-off settings disable them. Offscreen and background motion
+pauses. The settings also offer automatic comments off and a hidden companion
+during play.
+
+Dialogue is authored offline text, not a strategic analysis or a live person.
+It never sends table chat, changes a legal action or replaces a board piece.
+The existing Archive journal records first guided moves; companion choices are
+saved in a separate local preference key.
