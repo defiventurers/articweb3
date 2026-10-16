@@ -1,3 +1,15 @@
+# Interactive companions in v2.1
+
+Polly, Retsba, Pengu and Abster now keep you company throughout the app. Tap
+a companion to visit the camp, greet each guide, share a high five, ask for
+encouragement or choose a favourite. **Profile → Mascot companions** offers
+Lively, Quiet, Off and gentle-motion controls. Preferences stay on this phone;
+all conversations work offline and remain separate from table chat.
+
+See [MASCOT_COMPANIONS.md](MASCOT_COMPANIONS.md) for the accepted direction,
+interaction behaviour and verification criteria. The full How to Play section
+is a later task; existing guides, rules and game modes remain available.
+
 # Antarctic Kingdoms for Android
 
 A separate, signed Android app containing seven games: Shogi, Sannin Shogi,
@@ -14,7 +26,7 @@ for the existing website rooms.
 
 ## Install and play
 
-1. Download `AntarcticKingdoms-v2.0.0.apk` onto an Android phone and open it. Install it
+1. Download `AntarcticKingdoms-v2.1.0.apk` onto an Android phone and open it. Install it
    over an earlier version to keep your profile, favorites, practice games and saved seats.
 2. If Android asks, allow the app that opened the APK to install from that source.
 3. Open Antarctic Kingdoms and choose your name/avatar in Profile.
