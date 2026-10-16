@@ -1,9 +1,9 @@
 import React,{useMemo,useRef,useState} from 'react';
 import {Plus,Minus} from 'lucide-react';
 import {board,pieces,COLORS,seatName} from './games.ts';
-export function Board({id,state,legal,selected,suggested,trail,onSelect,onTarget,canAct}){
+export function Board({id,state,legal=[],selected=null,suggested=null,trail,onSelect,onTarget,canAct,positionPieces,spotlight,destinationLabel='legal destination'}){
   const geometry=useMemo(()=>board(id),[id]);
-  const units=useMemo(()=>pieces(id,state),[id,state]);
+  const units=useMemo(()=>positionPieces||pieces(id,state),[id,state,positionPieces]);
   const byCell=useMemo(()=>new Map(units.map(p=>[p.cell,p])),[units]);
   const destinations=useMemo(()=>new Set(legal.filter(a=>a.source===selected).map(a=>a.target)),[legal,selected]);
   const [zoom,setZoom]=useState(1),[pan,setPan]=useState({x:0,y:0});
@@ -35,15 +35,15 @@ export function Board({id,state,legal,selected,suggested,trail,onSelect,onTarget
           <text x="450" y="52" textAnchor="middle" fill="#72502e" fontSize="26" fontWeight="700">SHOGI</text>
         </>}
         {geometry.cells.map(cell=>{
-          const unit=byCell.get(cell.id),isSelected=unit?.source===selected,highlight=destinations.has(cell.id),inherited=unit&&unit.owner&&unit.origin!==unit.owner,half=geometry.size/2;
-          return <g key={cell.id} data-cell={cell.id} role="button" aria-label={`${cell.label}${unit?`, ${seatName(id,unit.owner||unit.origin)} ${unit.label}`:''}${highlight?', legal destination':''}`} tabIndex={canAct&&(highlight||isSelected||unit&&legal.some(a=>a.source===unit.source))?0:-1} onClick={()=>activate(cell)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate(cell);}}}>
+          const unit=byCell.get(cell.id),isSelected=!!unit&&unit.source===selected,highlight=destinations.has(cell.id),inherited=unit&&unit.owner&&unit.origin!==unit.owner,half=geometry.size/2;
+          return <g key={cell.id} data-cell={cell.id} role="button" aria-label={`${cell.label}${unit?`, ${seatName(id,unit.owner||unit.origin)} ${unit.label}`:''}${highlight?`, ${destinationLabel}`:''}`} tabIndex={canAct&&(highlight||isSelected||unit&&legal.some(a=>a.source===unit.source))?0:-1} onClick={()=>activate(cell)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate(cell);}}}>
             <circle cx={cell.x} cy={cell.y} r={half*.95} fill="transparent"/>
             {(cell.id===trail?.from||cell.id===trail?.to)&&<circle className="last-move-ring" cx={cell.x} cy={cell.y} r={half*1.03} fill="#ffc85b22" stroke="#ffd477" strokeWidth="4" strokeDasharray={cell.id===trail?.from?'7 5':undefined} pointerEvents="none"/>}
             {unit?.source===suggested&&<circle className="suggested-piece" cx={cell.x} cy={cell.y} r={half*1.07} fill="#ffd47722" stroke="#ffe59e" strokeWidth="6" strokeDasharray="9 5" pointerEvents="none"/>}
             {isSelected&&<circle cx={cell.x} cy={cell.y} r={half*1.04} fill="#389cf470" stroke="#b9efff" strokeWidth="5"/>}
             {unit&&<>
               {inherited&&<circle cx={cell.x} cy={cell.y} r={half*1.01} fill="none" stroke={COLORS[unit.owner]} strokeWidth="8"/>}
-              <image href={unit.sprite} x={cell.x-half} y={cell.y-half} width={geometry.size} height={geometry.size} opacity={unit.inactive ? .45 : 1} transform={unit.rotation?`rotate(${unit.rotation} ${cell.x} ${cell.y})`:undefined} pointerEvents="none"/>
+              <image href={unit.sprite} x={cell.x-half} y={cell.y-half} width={geometry.size} height={geometry.size} opacity={spotlight&&spotlight!==unit.source&&!highlight ? .35 : unit.inactive ? .45 : 1} transform={unit.rotation?`rotate(${unit.rotation} ${cell.x} ${cell.y})`:undefined} pointerEvents="none"/>
               {inherited&&<circle cx={cell.x+half*.67} cy={cell.y+half*.65} r={half*.2} fill={COLORS[unit.owner]} stroke="white" strokeWidth="2"/>}
             </>}
             {highlight&&(unit?<circle cx={cell.x} cy={cell.y} r={half*.99} fill="#ff6e6322" stroke="#ff9a76" strokeWidth="6"/>:<circle cx={cell.x} cy={cell.y} r={half*.29} fill="#78d2ff" stroke="#fff" strokeWidth="3"/>)}

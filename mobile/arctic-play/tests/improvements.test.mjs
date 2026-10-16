@@ -55,17 +55,27 @@ test('Favorites do not open games, full invitation links paste into Join, and ex
   assert.deepEqual(JSON.parse(window.localStorage.getItem('arctic-play.v1.profile')),profile);assert.deepEqual(app.errors,[]);
 });
 
-test('Saved seat resumes and a guest automatically enters the board when the host starts',async t=>{
+test('Saved seats resume, guests enter when the host starts, and live updates survive visiting How to Play',async t=>{
   const profile={id:randomUUID(),name:'Guest',avatar:'blue'},host=randomUUID();
   let room={roomCode:'ABC234',tableId:'shogi',rulesetVersion:engine.VERSION,status:'waiting',hostId:host,revision:2,createdAt:Date.now(),players:[{id:host,name:'Host',seat:'red',ready:true,connected:true},{id:profile.id,name:'Guest',seat:'blue',ready:true,connected:true}],gameState:engine.create('shogi'),chat:[]};
-  const session={roomCode:room.roomCode,playerId:profile.id,seatToken:'saved-seat-token'};let socket,request;
+  const session={roomCode:room.roomCode,playerId:profile.id,seatToken:'saved-seat-token'},requests=[];let socket,request;
   const app=openApp(window=>{
     window.localStorage.setItem('arctic-play.v1.profile',JSON.stringify(profile));window.localStorage.setItem('arctic-play.v1.rooms',JSON.stringify({ABC234:{session,room,at:Date.now()}}));
-    window.WebSocket=class{static OPEN=1;constructor(){socket=this;this.readyState=0;setTimeout(()=>{this.readyState=1;this.onopen?.();},0);}send(message){request=JSON.parse(message);setTimeout(()=>this.onmessage?.({data:JSON.stringify({type:'ap_room_joined',requestId:request.requestId,payload:{room,seatToken:session.seatToken}})}),0);}close(){this.readyState=3;}};
+    window.WebSocket=class{static OPEN=1;constructor(){socket=this;this.readyState=0;setTimeout(()=>{this.readyState=1;this.onopen?.();},0);}send(message){request=JSON.parse(message);requests.push(request.type);setTimeout(()=>this.onmessage?.({data:JSON.stringify({type:'ap_room_joined',requestId:request.requestId,payload:{room,seatToken:session.seatToken}})}),0);}close(){this.readyState=3;}};
   });t.after(()=>app.dom.window.close());const {document,button}=app;await settle();document.querySelector('.resume-table').click();await waitFor(()=>document.querySelector('.room-code'),'saved room opened');
   assert.equal(request.payload.seatToken,session.seatToken);assert.equal(request.payload.playerId,profile.id);
   room={...room,status:'playing',revision:3};socket.onmessage({data:JSON.stringify({type:'ap_room_update',payload:{room}})});await waitFor(()=>document.querySelector('.match-header'),'guest board opened');
   assert.equal(document.querySelectorAll('[data-cell]').length,81);
+  const requestsBefore=[...requests];
+  document.querySelector('[aria-label="Match options"]').click();await settle();button('How to playLessons, pieces and a separate free board').click();await waitFor(()=>document.querySelector('.how-to-play'),'school opened');
+  button('Free board').click();await waitFor(()=>document.querySelector('.free-board-section'),'independent free board opened');
+  const action=engine.actions('shogi',room.gameState)[0];room={...room,gameState:engine.apply('shogi',room.gameState,action.id),revision:4};
+  socket.onmessage({data:JSON.stringify({type:'ap_room_update',payload:{room}})});await settle();
+  assert.ok(document.querySelector('.free-board-section'),'a live move does not close school');
+  app.window.arcticBack();await waitFor(()=>document.querySelector('.match-header'),'return to live table');
+  assert.match(document.querySelector(`[data-cell="${action.target}"]`).getAttribute('aria-label'),/Red Pawn/);
+  assert.deepEqual(requests,requestsBefore,'learning sends no detach, resign, chat or game action');
+  assert.equal(JSON.parse(app.window.localStorage.getItem('arctic-play.v1.rooms')).ABC234.room.revision,4);
   document.querySelector('[aria-label="Match options"]').click();await settle();button('Private tableRoom ABC234').click();await settle();assert.ok(document.querySelector('.room-code'));
   room={...room,chat:[{id:randomUUID(),name:'Host',seat:'red',text:'Ready!',at:new Date().toISOString()}]};socket.onmessage({data:JSON.stringify({type:'ap_room_update',payload:{room}})});await settle();
   assert.ok(document.querySelector('.room-code'),'chat updates preserve a deliberately opened table screen');assert.equal(document.querySelector('.match-header'),null);assert.deepEqual(app.errors,[]);

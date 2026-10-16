@@ -41,6 +41,24 @@ Android's share sheet. There are no accounts, wallets, entry fees or purchases.
 Online play needs internet; practice and pass-the-phone games work offline.
 Android 7.0/API 24 or newer with an up-to-date Android System WebView is required.
 
+## What’s new in 2.2
+
+- **How to play → Little Flipper School** brings Polly, Pengu, Retsba and Abster
+  into every game’s lessons. Try a first move, a capture and a special action;
+  all 21 challenges use the existing rule engines. Only accepted moves save
+  lesson progress. The existing quick start and full rules remain available.
+- **Meet the pieces** explains all 52 starting piece types, with original art,
+  legal movement examples and game-specific special/promotion notes.
+- **Free board** lets you arrange every army freely, swap occupied points,
+  remove pieces, undo and reset. Setups save separately from real games and
+  show clearly that normal movement rules are off.
+- Teaching uses independent boards. Visiting school preserves an existing
+  practice game or online seat. Off hides teaching portraits; instructions,
+  controls and progress stay available. Quiet and reduced motion are respected.
+- Version 2.2.0 / code 8 keeps the original package and signing key. See
+  HOW_TO_PLAY.md for the curriculum, source baseline, decisions and checks.
+  The additional external practice URL is pending the user’s supplied link.
+
 ## What’s new in 2.0
 
 - Antarctic Kingdoms replaces Arctic Play as the visible app name; the umbrella
