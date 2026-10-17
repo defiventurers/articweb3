@@ -4,7 +4,7 @@ const path = require('node:path');
 const {Pool} = require('pg');
 function createCompanyStore({databaseUrl=process.env.DATABASE_URL,file,development=false}={}) {
   if(file&&!development) throw Error('File storage is restricted to tests and local development.');
-  const pool=databaseUrl?new Pool({connectionString:databaseUrl,ssl:process.env.DATABASE_SSL==='true'||/sslmode=require/.test(databaseUrl)?{rejectUnauthorized:false}:undefined}):null;
+  const pool=!file&&databaseUrl?new Pool({connectionString:databaseUrl,ssl:process.env.DATABASE_SSL==='true'||/sslmode=require/.test(databaseUrl)?{rejectUnauthorized:false}:undefined}):null;
   let ready,chain=Promise.resolve();
   const init=()=>ready||(ready=(async()=>{if(pool)await pool.query('CREATE TABLE IF NOT EXISTS ak_documents (kind TEXT NOT NULL, id TEXT NOT NULL, body JSONB NOT NULL, PRIMARY KEY(kind,id))');else if(file)await fs.mkdir(path.dirname(file),{recursive:true});else throw Object.assign(Error('Cloud features are not configured yet. Your offline games remain available.'),{status:503});})().catch(e=>{ready=null;throw e;}));
   async function transact(kind,id,fn){
