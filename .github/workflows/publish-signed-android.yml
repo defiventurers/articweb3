@@ -1,0 +1,49 @@
+name: Publish signed Android update
+on:
+  push:
+    branches: [arctic-play-releases]
+    paths: ['incoming/android-3.0.0/manifest.json']
+permissions:
+  contents: write
+concurrency:
+  group: android-release-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify the signed APK bytes and publish the update feed
+        run: |
+          python3 - <<'PY'
+          import base64, hashlib, json, pathlib, re
+          root = pathlib.Path('incoming/android-3.0.0')
+          manifest = json.loads((root/'manifest.json').read_text())
+          expected = 'b6dac97a7dbec0ab9767555fc05fdd4471bc9155d61a8db69cd4f1002aedaa9c'
+          assert manifest['sha256'] == expected
+          parts = manifest['parts']
+          assert len(parts) == 49 and parts == [f'part-{i:03}.b64' for i in range(49)]
+          data = base64.b64decode(''.join((root/name).read_text() for name in parts), validate=True)
+          assert len(data) == 9509243 and hashlib.sha256(data).hexdigest() == expected
+          release = pathlib.Path('releases')
+          current = json.loads((release/'latest.json').read_text())
+          assert current['packageName'] == 'xyz.arcticdominion.play'
+          assert current['versionCode'] < 17, 'A newer or equal update is already published.'
+          latest = manifest['latest']
+          assert latest['packageName'] == current['packageName']
+          assert latest['versionName'] == '3.0.0' and latest['versionCode'] == 17
+          assert latest['sha256'] == expected and latest['sizeBytes'] == len(data)
+          assert latest['downloadUrl'] == 'https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/ArcticPlay-v3.0.0.apk'
+          for name in ['ArcticPlay-v3.0.0.apk','AntarcticKingdoms-v3.0.0.apk']:
+              (release/name).write_bytes(data)
+              (release/(name+'.sha256')).write_text(expected+'  '+name+'\n')
+          (release/'latest.json').write_text(json.dumps(latest,indent=2)+'\n')
+          for name in parts:
+              (root/name).unlink()
+          print('Verified SHA-256, byte count, package and version. Ready to publish.')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add releases/ArcticPlay-v3.0.0.apk releases/AntarcticKingdoms-v3.0.0.apk releases/ArcticPlay-v3.0.0.apk.sha256 releases/AntarcticKingdoms-v3.0.0.apk.sha256 releases/latest.json incoming/android-3.0.0
+          git commit -m 'Publish verified Antarctic Kingdoms v3.0.0 signed APK and update feed'
+          git push origin HEAD:arctic-play-releases
