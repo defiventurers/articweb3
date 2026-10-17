@@ -1,32 +1,25 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import {ArrowLeft,ArrowRight,BookOpen,Check,ChevronRight,Hand,Lightbulb,Play,RotateCcw,Sparkles,Trash2,Undo2} from 'lucide-react';
+import {ArrowLeft,ArrowRight,BookOpen,Check,ChevronRight,Compass,Hand,Lightbulb,Play,RotateCcw,Sparkles,Trash2,Undo2} from 'lucide-react';
 import {GAME_LIST,game,create,pieces,hand,board,RULES,seatName} from './games.ts';
 import {GUIDES,GAME_HERITAGE} from './brand.js';
 import {MascotPortrait} from './Companions.jsx';
 import {Board} from './Board.jsx';
 import {RuleClient} from './ruleClient.js';
 import {Rulebook} from './Rulebook.jsx';
-import {GUIDE_TIPS,TURN_STEPS,LESSON_CUES} from './teaching.js';
+import {TURN_STEPS,LESSON_CUES} from './teaching.js';
+import {TeachingHost} from './TeachingHost.jsx';
+import {GameAdventure} from './GameAdventure.jsx';
+import {ADVENTURES} from './adventures.js';
 import {read,write} from './storage.js';
 import {LESSONS,PIECE_GUIDES,LEARNING_KEY,CHALLENGES,PRACTICE_LINKS,learningProgress,recordLesson,initialFreeBoard,freeBoardMove,rawUnits,unitRole} from './learning.js';
 
 const stepNames=['Welcome','First move','Capture','Special move','Ready'];
 const specialNames={shogi:'Bring a piece back',sannin:'A captured helper',sanguo:'One Cannon screen',sanyou:'Two steps for a Flag',yanyi:'Wake the Han army',xiangqi:'One Cannon screen',dominion:'An L-shaped leap'};
-function TeachingHost({host,preferences,children,success=false,compact=false}){
-  const enabled=preferences.mode!=='off',guide=GUIDES[host];
-  const [response,setResponse]=useState(''),[pulse,setPulse]=useState(0),[five,setFive]=useState(false);
-  useEffect(()=>{setResponse('');setFive(false);},[host,success]);
-  return <aside className={`teaching-host ${success?'success':''}`} style={{'--host':guide.color}} data-motion={preferences.motion?'on':'off'} aria-label={enabled?`${guide.name} guides you`:'Lesson instructions'}>
-    {enabled&&<button className="mentor-touch" aria-label={compact&&!success?`Ask ${guide.name} for a tiny tip`:`Flipper five with ${guide.name}`} onClick={()=>{setPulse(p=>p+1);setFive(!compact||success);setResponse(compact&&!success?GUIDE_TIPS[host][pulse%GUIDE_TIPS[host].length]:'Flippers up! A little cheer for your curiosity.');}}><MascotPortrait host={host} mood={success||five?'celebrate':'listening'} pulse={pulse} large motion={preferences.mode==='lively'&&preferences.motion}/>{compact&&!success&&<small>tap for a tip</small>}</button>}
-    <div><strong>{enabled?guide.name:success?'Nicely done':'One little idea'}<span>{success?'NICE LITTLE DISCOVERY':host==='pengu'?'ONE CLEAR STEP':host==='retsba'?'A FRIENDLY CHALLENGE':host==='abster'?'ROOM TO EXPLORE':'RIGHT HERE WITH YOU'}</span></strong><p>{children}</p>{enabled&&!compact&&<button className="mentor-tip" onClick={()=>{setFive(false);setPulse(p=>p+1);setResponse(GUIDE_TIPS[host][pulse%GUIDE_TIPS[host].length]);}}><Lightbulb size={13}/> A tiny tip</button>}{response&&enabled&&<p className="mentor-response" role="status" aria-live="polite">{response}</p>}</div>
-  </aside>;
-}
+export function LearningInvitation({onOpen,enabled=true}){return <button className="learning-invitation" onClick={onOpen}><span className="learning-flippers" aria-hidden="true">{enabled?['polly','pengu'].map(host=><img key={host} src={GUIDES[host].image} alt=""/>):<BookOpen size={28}/>}</span><span><strong>Little lessons. Big adventures.</strong><small>Your own game adventure · pieces · free boards</small></span><ChevronRight size={18}/></button>;}
 
-export function LearningInvitation({onOpen,enabled=true}){return <button className="learning-invitation" onClick={onOpen}><span className="learning-flippers" aria-hidden="true">{enabled?['polly','pengu'].map(host=><img key={host} src={GUIDES[host].image} alt=""/>):<BookOpen size={28}/>}</span><span><strong>Little lessons. Big adventures.</strong><small>How to play · piece guides · free boards</small></span><ChevronRight size={18}/></button>;}
-
-export function HowToPlay({id,onGame,onClose,onPractice,onDiscovery,preferences,initialTab='learn',initialRole,returnToGame=false}){
+export function HowToPlay({id,onGame,onClose,onPractice,onDiscovery,preferences,initialTab='journey',initialRole,initialMission,returnToGame=false}){
   const info=LESSONS[id],definition=game(id);
-  const [tab,setTab]=useState(initialTab),[step,setStep]=useState(0),[role,setRole]=useState(PIECE_GUIDES[id].some(p=>p[0]===initialRole)?initialRole:PIECE_GUIDES[id][0][0]);
+  const [tab,setTab]=useState(initialTab),[mission,setMission]=useState(initialMission),[step,setStep]=useState(0),[role,setRole]=useState(PIECE_GUIDES[id].some(p=>p[0]===initialRole)?initialRole:PIECE_GUIDES[id][0][0]);
   const [progress,setProgress]=useState(()=>learningProgress(read(LEARNING_KEY,{})));
   const [sample,setSample]=useState(null),[selected,setSelected]=useState(null),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
   const [success,setSuccess]=useState(false),[trail,setTrail]=useState(null),[hint,setHint]=useState(false),[replay,setReplay]=useState(0);
@@ -82,9 +75,9 @@ export function HowToPlay({id,onGame,onClose,onPractice,onDiscovery,preferences,
     <main className="academy-content">
       <label className="sr-only" htmlFor="learning-game">Learning game</label><select id="learning-game" value={id} onChange={e=>onGame(e.target.value)}>{GAME_LIST.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select>
       {returnToGame&&<p className="academy-return-note">Learning uses its own board. {onPractice?'Your practice game stays saved.':'Your live table continues while you learn.'}</p>}
-      <nav className="academy-tabs" aria-label="Learning sections">{[['learn','Little lessons',BookOpen],['pieces','Meet the pieces',Sparkles],['free','Free board',Hand]].map(([key,label,Icon])=><button key={key} aria-current={tab===key?'page':undefined} onClick={()=>setTab(key)}><Icon size={17}/><span>{label}</span></button>)}</nav>
-      <h2 ref={title} tabIndex={-1} className="academy-title">{tab==='learn'?(kind?(step===3?specialNames[id]:step===1?'One tiny move.':'A clever little capture.'):step===4?'Look how far you’ve come.':'Small steps. Happy flippers.'):tab==='pieces'?'Meet your little team.':'A board for your curiosity.'}</h2>
-      {tab==='free'?<FreeBoard id={id} preferences={preferences}/>:<>
+      <nav className="academy-tabs" aria-label="Learning sections">{[['journey','My adventure',Compass],['learn','Warm-up',BookOpen],['pieces','Pieces',Sparkles],['free','Free board',Hand]].map(([key,label,Icon])=><button key={key} aria-current={tab===key?'page':undefined} onClick={()=>setTab(key)}><Icon size={17}/><span>{label}</span></button>)}</nav>
+      {tab!=='journey'&&<h2 ref={title} tabIndex={-1} className="academy-title">{tab==='journey'?ADVENTURES[id].title:tab==='learn'?(kind?(step===3?specialNames[id]:step===1?'One tiny move.':'A clever little capture.'):step===4?'Look how far you’ve come.':'Small steps. Happy flippers.'):tab==='pieces'?'Meet your little team.':'A board for your curiosity.'}</h2>}
+      {tab==='journey'?<GameAdventure key={id} id={id} preferences={preferences} initialMission={mission} onDiscovery={onDiscovery} onPractice={onPractice} onFree={()=>setTab('free')} onPieces={()=>setTab('pieces')}/>:tab==='free'?<FreeBoard id={id} preferences={preferences}/>:<>
         {tab==='learn'?<>
           <div className="lesson-progress"><span>{done} / 3 little challenges tried</span><span>All lessons open</span></div><progress aria-label={`${done} of 3 ${definition.name} challenges tried`} value={done} max={3}/>
           <nav className="lesson-steps" aria-label="Lesson steps">{stepNames.map((name,index)=><button key={name} aria-label={name} className={step===index?'active':''} aria-current={step===index?'step':undefined} onClick={()=>setStep(index)}><span className="step-dot">{index>0&&index<4&&progress[id]?.[CHALLENGES[index-1]]?<Check size={14}/>:index+1}</span><small>{['Hello','Move','Capture','Special','Play'][index]}</small></button>)}</nav>
@@ -130,7 +123,7 @@ export function HowToPlay({id,onGame,onClose,onPractice,onDiscovery,preferences,
         </>}
       </>}
       {PRACTICE_LINKS[id]&&<a className="external-practice" href={PRACTICE_LINKS[id]} target="_blank" rel="noopener noreferrer">Open the extra practice board <ArrowRight size={16}/></a>}
-      <details className="school-pocket-rules"><summary><BookOpen size={18}/><span>Keep the rules nearby<small>Your pocket guide, pieces and full rules</small></span><ChevronRight size={16}/></summary><Rulebook key={id} id={id} preferences={preferences} initialView="full" compact onLearn={(nextTab,nextRole)=>{setTab(nextTab);if(nextRole)setRole(nextRole);if(nextTab==='learn')setStep(0);}}/></details>
+      <details className="school-pocket-rules"><summary><BookOpen size={18}/><span>Keep the rules nearby<small>Your pocket guide, pieces and full rules</small></span><ChevronRight size={16}/></summary><Rulebook key={id} id={id} preferences={preferences} initialView="full" compact onLearn={(nextTab,nextRole,nextMission)=>{setTab(nextTab);if(nextRole)setRole(nextRole);if(nextMission)setMission(nextMission);if(nextTab==='learn')setStep(0);}}/></details>
     </main>
   </div>;
 }

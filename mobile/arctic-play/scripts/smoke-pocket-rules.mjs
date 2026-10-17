@@ -35,10 +35,10 @@ try{
       await rule.getByRole('button',{name:'Show all chapters'}).click();assert.equal(await rule.locator('.rule-chapters>details').count(),engine.RULES[g.id].length);
       await rule.getByRole('button',{name:'Pieces',exact:true}).click();assert.equal(await rule.locator('.pocket-piece').count(),learning.PIECE_GUIDES[g.id].length);
       const [role,name]=learning.PIECE_GUIDES[g.id][2];await rule.getByRole('button',{name:`Try ${name}`,exact:true}).click();await page.locator('.lesson-tap-hint').waitFor();
-      assert.equal(await page.locator('.piece-roster button[aria-pressed=true]').innerText(),name);assert.equal(await page.locator('.academy-tabs [aria-current=page]').innerText(),'Meet the pieces');
+      assert.equal(await page.locator('.piece-roster button[aria-pressed=true]').innerText(),name);assert.equal(await page.locator('.academy-tabs [aria-current=page]').innerText(),'Pieces');
       await page.getByRole('button',{name:'Back from How to Play'}).click();checked++;
     }
-    await page.locator('.learning-invitation').click();await page.locator('.teaching-host').waitFor();assert.equal(await page.locator('.school-friends img').count(),4);
+    await page.locator('.learning-invitation').click();await page.locator('.academy-tabs').getByRole('button',{name:'Warm-up',exact:true}).click();await page.locator('.teaching-host').waitFor();assert.equal(await page.locator('.school-friends img').count(),4);
     assert.ok(await page.locator('.lesson-steps button').evaluateAll(nodes=>nodes.every(n=>{const r=n.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth;})),'all five lesson steps fit');
     await page.getByRole('button',{name:'Flipper five with Polly',exact:true}).click();await page.locator('.mentor-response').filter({hasText:'Flippers up!'}).waitFor();
     await page.getByRole('button',{name:'A tiny tip',exact:true}).click();assert.equal(await page.locator('progress').getAttribute('value'),'0');assert.equal(await page.locator('.curious-flipper').count(),0);

@@ -1,14 +1,14 @@
 import React,{useMemo,useRef,useState} from 'react';
 import {Plus,Minus} from 'lucide-react';
 import {board,pieces,COLORS,seatName} from './games.ts';
-export function Board({id,state,legal=[],selected=null,suggested=null,trail,onSelect,onTarget,canAct,positionPieces,spotlight,destinationLabel='legal destination'}){
+export function Board({id,state,legal=[],selected=null,suggested=null,trail,onSelect,onTarget,canAct,positionPieces,spotlight,destinationLabel='legal destination',inspectableSources=[],onMiss,annotations=[]}){
   const geometry=useMemo(()=>board(id),[id]);
   const units=useMemo(()=>positionPieces||pieces(id,state),[id,state,positionPieces]);
   const byCell=useMemo(()=>new Map(units.map(p=>[p.cell,p])),[units]);
   const destinations=useMemo(()=>new Set(legal.filter(a=>a.source===selected).map(a=>a.target)),[legal,selected]);
   const [zoom,setZoom]=useState(1),[pan,setPan]=useState({x:0,y:0});
   const pointers=useRef(new Map()),gesture=useRef(null),dragged=useRef(false),viewport=useRef(null);
-  const activate=cell=>{if(dragged.current||!canAct)return;if(destinations.has(cell.id)){onTarget(cell.id);return;}const unit=byCell.get(cell.id);if(unit&&legal.some(a=>a.source===unit.source))onSelect(unit.source);else onSelect(null);};
+  const activate=cell=>{if(dragged.current||!canAct)return;if(destinations.has(cell.id)){onTarget(cell.id);return;}const unit=byCell.get(cell.id);if(unit&&(legal.some(a=>a.source===unit.source)||inspectableSources.includes(unit.source)))onSelect(unit.source);else{onSelect(null);onMiss?.(cell.id);}};
   const start=e=>{
     pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});dragged.current=false;
     const points=[...pointers.current.values()];
@@ -36,7 +36,7 @@ export function Board({id,state,legal=[],selected=null,suggested=null,trail,onSe
         </>}
         {geometry.cells.map(cell=>{
           const unit=byCell.get(cell.id),isSelected=!!unit&&unit.source===selected,highlight=destinations.has(cell.id),inherited=unit&&unit.owner&&unit.origin!==unit.owner,half=geometry.size/2;
-          return <g key={cell.id} data-cell={cell.id} role="button" aria-label={`${cell.label}${unit?`, ${seatName(id,unit.owner||unit.origin)} ${unit.label}`:''}${highlight?`, ${destinationLabel}`:''}`} tabIndex={canAct&&(highlight||isSelected||unit&&legal.some(a=>a.source===unit.source))?0:-1} onClick={()=>activate(cell)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate(cell);}}}>
+          return <g key={cell.id} data-cell={cell.id} role="button" aria-label={`${cell.label}${unit?`, ${seatName(id,unit.owner||unit.origin)} ${unit.label}`:''}${highlight?`, ${destinationLabel}`:''}${annotations.some(n=>n.cell===cell.id)?`, ${annotations.find(n=>n.cell===cell.id).label}`:''}`} tabIndex={canAct&&(highlight||isSelected||unit&&(legal.some(a=>a.source===unit.source)||inspectableSources.includes(unit.source)))?0:-1} onClick={()=>activate(cell)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate(cell);}}}>
             <circle cx={cell.x} cy={cell.y} r={half*.95} fill="transparent"/>
             {(cell.id===trail?.from||cell.id===trail?.to)&&<circle className="last-move-ring" cx={cell.x} cy={cell.y} r={half*1.03} fill="#ffc85b22" stroke="#ffd477" strokeWidth="4" strokeDasharray={cell.id===trail?.from?'7 5':undefined} pointerEvents="none"/>}
             {unit?.source===suggested&&<circle className="suggested-piece" cx={cell.x} cy={cell.y} r={half*1.07} fill="#ffd47722" stroke="#ffe59e" strokeWidth="6" strokeDasharray="9 5" pointerEvents="none"/>}
@@ -47,6 +47,7 @@ export function Board({id,state,legal=[],selected=null,suggested=null,trail,onSe
               {inherited&&<circle cx={cell.x+half*.67} cy={cell.y+half*.65} r={half*.2} fill={COLORS[unit.owner]} stroke="white" strokeWidth="2"/>}
             </>}
             {highlight&&(unit?<circle cx={cell.x} cy={cell.y} r={half*.99} fill="#ff6e6322" stroke="#ff9a76" strokeWidth="6"/>:<circle cx={cell.x} cy={cell.y} r={half*.29} fill="#78d2ff" stroke="#fff" strokeWidth="3"/>)}
+            {annotations.map((n,i)=>n.cell===cell.id&&<g key={i} pointerEvents="none"><title>{n.label}</title><circle cx={cell.x+half*.8} cy={cell.y-half*.8} r={half*.32} fill="#efe3ff" stroke="#48345f" strokeWidth="2"/><text x={cell.x+half*.8} y={cell.y-half*.8} textAnchor="middle" dominantBaseline="central" fontSize={half*.5} fontWeight="800" fill="#382a50">{i+1}</text></g>)}
             <circle cx={cell.x} cy={cell.y} r={half*.95} fill="transparent"/>
           </g>;
         })}

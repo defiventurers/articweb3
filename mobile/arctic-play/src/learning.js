@@ -72,7 +72,7 @@ export const PIECE_GUIDES={
 const clone=value=>JSON.parse(JSON.stringify(value));
 export function rawUnits(id,state){return id==='shogi'?state.board.filter(Boolean):id==='dominion'?state.board.flat().filter(Boolean):state.pieces;}
 export function unitRole(id,piece){return id==='shogi'||id==='sannin'||id==='dominion'?piece.type:piece.role;}
-function owner(id,piece){return piece.owner||piece.controller||piece.side||piece.team;}
+export function owner(id,piece){return piece.owner||piece.controller||piece.side||piece.team;}
 function atCell(id,piece,cell){
   if(id==='sannin')return {...piece,cell,status:'board'};
   if(id==='sanyou')return {...piece,node:cell,status:'board'};
@@ -80,7 +80,7 @@ function atCell(id,piece,cell){
   if(id==='yanyi'){const [x,y]=cell.split(',').map(Number);return {...piece,x,y};}
   const [row,col]=cell.split(',').map(Number);return {...piece,row,col};
 }
-function relocate(id,state,pieceId,cell){
+export function relocate(id,state,pieceId,cell){
   const visible=pieces(id,state),original=rawUnits(id,state).find(p=>p.id===pieceId);
   const victim=visible.find(p=>p.cell===cell&&p.id!==pieceId);
   if(id==='shogi')state.board=state.board.map(p=>p?.id===pieceId||p?.id===victim?.id?null:p),state.board[+cell]=original;
@@ -88,7 +88,7 @@ function relocate(id,state,pieceId,cell){
   else state.pieces=state.pieces.filter(p=>p.id!==victim?.id).map(p=>p.id===pieceId?atCell(id,p,cell):p);
 }
 const pawnRole=id=>({sanguo:'scout',sanyou:'soldier',yanyi:'soldier',xiangqi:'soldier'})[id]||'pawn';
-function findUnit(id,state,role,side=state.turn){return rawUnits(id,state).find(p=>unitRole(id,p)===role&&owner(id,p)===side);}
+export function findUnit(id,state,role,side=state.turn){return rawUnits(id,state).find(p=>unitRole(id,p)===role&&owner(id,p)===side);}
 function describe(id,state,filter){
   const legal=actions(id,state).filter(filter);
   if(!legal.length)throw new Error('This teaching position has no matching legal move.');

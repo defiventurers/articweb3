@@ -1,15 +1,3 @@
-# Interactive companions in v2.1
-
-Polly, Retsba, Pengu and Abster now keep you company throughout the app. Tap
-a companion to visit the camp, greet each guide, share a high five, ask for
-encouragement or choose a favourite. **Profile → Mascot companions** offers
-Lively, Quiet, Off and gentle-motion controls. Preferences stay on this phone;
-all conversations work offline and remain separate from table chat.
-
-See [MASCOT_COMPANIONS.md](MASCOT_COMPANIONS.md) for the accepted direction,
-interaction behaviour and verification criteria. The full How to Play section
-is a later task; existing guides, rules and game modes remain available.
-
 # Antarctic Kingdoms for Android
 
 A separate, signed Android app containing seven games: Shogi, Sannin Shogi,
@@ -26,7 +14,7 @@ for the existing website rooms.
 
 ## Install and play
 
-1. Download `AntarcticKingdoms-v2.1.0.apk` onto an Android phone and open it. Install it
+1. Download `AntarcticKingdoms-v2.4.0.apk` onto an Android phone and open it. Install it
    over an earlier version to keep your profile, favorites, practice games and saved seats.
 2. If Android asks, allow the app that opened the APK to install from that source.
 3. Open Antarctic Kingdoms and choose your name/avatar in Profile.
@@ -40,6 +28,23 @@ The APK itself can be shared from **Profile → Share the Android app** through
 Android's share sheet. There are no accounts, wallets, entry fees or purchases.
 Online play needs internet; practice and pass-the-phone games work offline.
 Android 7.0/API 24 or newer with an up-to-date Android System WebView is required.
+
+## What’s new in 2.4
+
+Each of the seven games now has its own four-stop beginner adventure: 28
+engine-backed discoveries with game-specific mascot cues, manual hints,
+watch-then-try examples and reversible rule comparisons. Shogi teaches
+promotion and royal safety; Sannin explores rotated hex paths and a real Garden
+win; Sanguo teaches inheritance; San You explores Fire, Flags and terrain;
+Yan Yi teaches Han and alliances; Xiangqi explores its river, Horse and palace;
+Arctic Dominion teaches a complete two-dice turn and royal elimination.
+
+**Rules → Try a rule** opens the same interactive scenes directly inside the
+pocket guide. Each game keeps its own discovery stamps. Watching, switching
+setups and tapping a mascot never earn a stamp. All 21 earlier warm-ups, 52
+piece examples, seven free boards and full canonical chapters remain available.
+
+See [CURATED_ADVENTURES.md](CURATED_ADVENTURES.md) for the scope and validation.
 
 ## What’s new in 2.3
 

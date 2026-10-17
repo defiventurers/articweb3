@@ -1,0 +1,278 @@
+{
+  "file": "AntarcticKingdoms-v2.4.0.apk",
+  "updateFile": "ArcticPlay-v2.4.0.apk",
+  "bytes": 9068575,
+  "sha256": "f87c52beafef2a5efc8b394410b32e744c641db18fdcb0aa4eb17eb247cb7e16",
+  "package": "xyz.arcticdominion.play",
+  "version": "2.4.0",
+  "versionCode": 10,
+  "minSdk": 24,
+  "targetSdk": 35,
+  "games": [
+    "Shogi",
+    "Sannin Shogi",
+    "Sanguo Qi",
+    "San You Qi",
+    "Sanguo Yan Yi Qi",
+    "Xiangqi",
+    "Arctic Dominion"
+  ],
+  "verifiedAt": "2026-10-17T00:10:13.079116+00:00",
+  "certificateSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+  "matchesOriginalSigningIdentity": true,
+  "unchangedPackagedArtFiles": 221,
+  "mobileTests": 49,
+  "privateRoomTests": 10,
+  "discoveriesPerGame": 4,
+  "totalDiscoveries": 28,
+  "physicalDeviceTested": false,
+  "sourceBaseRemote": "e0a1dc1e1034858c991962d51b0a4f3dd9cc456e",
+  "sourceBaseLocal": "b5b657c4ff7abc8d4aaff273d55345bcb450fee3",
+  "sourceBranch": "codex/curated-game-adventures",
+  "websiteDeployed": false,
+  "updateFeedPublished": false,
+  "phoneChecks": {
+    "adventures": [
+      {
+        "viewport": "320x640",
+        "discoveries": 28,
+        "comparisonSetups": 42,
+        "watchDoesNotEarnStamps": true,
+        "ruleLabs": 7,
+        "errors": [],
+        "savedStampsPersist": true,
+        "simultaneousRuleProgress": true,
+        "currentSceneDeepLinks": true,
+        "realPracticePreserved": true,
+        "lightMode": true,
+        "offKeepsTeaching": true
+      },
+      {
+        "viewport": "360x800",
+        "discoveries": 28,
+        "comparisonSetups": 42,
+        "watchDoesNotEarnStamps": true,
+        "ruleLabs": 7,
+        "errors": [],
+        "savedStampsPersist": true,
+        "simultaneousRuleProgress": true,
+        "currentSceneDeepLinks": true,
+        "realPracticePreserved": true,
+        "lightMode": true,
+        "offKeepsTeaching": true
+      },
+      {
+        "viewport": "412x915",
+        "discoveries": 28,
+        "comparisonSetups": 42,
+        "watchDoesNotEarnStamps": true,
+        "ruleLabs": 7,
+        "errors": [],
+        "savedStampsPersist": true,
+        "simultaneousRuleProgress": true,
+        "currentSceneDeepLinks": true,
+        "realPracticePreserved": true,
+        "lightMode": true,
+        "offKeepsTeaching": true
+      },
+      {
+        "viewport": "800x360",
+        "discoveries": 28,
+        "comparisonSetups": 42,
+        "watchDoesNotEarnStamps": true,
+        "ruleLabs": 7,
+        "errors": [],
+        "savedStampsPersist": true,
+        "simultaneousRuleProgress": true,
+        "currentSceneDeepLinks": true,
+        "realPracticePreserved": true,
+        "lightMode": true,
+        "offKeepsTeaching": true
+      }
+    ],
+    "warmupsPiecesFreeBoards": [
+      {
+        "viewport": "320x640",
+        "lessons": 21,
+        "pieceExamples": 52,
+        "freeBoards": 7,
+        "errors": [],
+        "savedPracticePreserved": true,
+        "offPreservesTeaching": true
+      },
+      {
+        "viewport": "360x800",
+        "lessons": 21,
+        "pieceExamples": 52,
+        "freeBoards": 7,
+        "errors": [],
+        "savedPracticePreserved": true,
+        "offPreservesTeaching": true
+      },
+      {
+        "viewport": "412x915",
+        "lessons": 21,
+        "pieceExamples": 52,
+        "freeBoards": 7,
+        "errors": [],
+        "savedPracticePreserved": true,
+        "offPreservesTeaching": true
+      },
+      {
+        "viewport": "800x360",
+        "lessons": 21,
+        "pieceExamples": 52,
+        "freeBoards": 7,
+        "errors": [],
+        "savedPracticePreserved": true,
+        "offPreservesTeaching": true
+      }
+    ],
+    "pocketRules": [
+      {
+        "viewport": "320x640",
+        "allSevenRulebooks": 7,
+        "searchAndFullText": true,
+        "pieceToLessonLinks": true,
+        "allFiveStepsVisible": true,
+        "manualMascotTips": true,
+        "noFalseCompletion": true,
+        "lightMode": true,
+        "offKeepsRules": true,
+        "pageErrors": []
+      },
+      {
+        "viewport": "360x800",
+        "allSevenRulebooks": 7,
+        "searchAndFullText": true,
+        "pieceToLessonLinks": true,
+        "allFiveStepsVisible": true,
+        "manualMascotTips": true,
+        "noFalseCompletion": true,
+        "lightMode": true,
+        "offKeepsRules": true,
+        "pageErrors": []
+      },
+      {
+        "viewport": "412x915",
+        "allSevenRulebooks": 7,
+        "searchAndFullText": true,
+        "pieceToLessonLinks": true,
+        "allFiveStepsVisible": true,
+        "manualMascotTips": true,
+        "noFalseCompletion": true,
+        "lightMode": true,
+        "offKeepsRules": true,
+        "pageErrors": []
+      },
+      {
+        "viewport": "800x360",
+        "allSevenRulebooks": 7,
+        "searchAndFullText": true,
+        "pieceToLessonLinks": true,
+        "allFiveStepsVisible": true,
+        "manualMascotTips": true,
+        "noFalseCompletion": true,
+        "lightMode": true,
+        "offKeepsRules": true,
+        "pageErrors": []
+      }
+    ],
+    "phone": [
+      {
+        "viewport": "320x640",
+        "games": 7,
+        "guides": 4,
+        "guidedMoveRecorded": true,
+        "editionLabels": true,
+        "lightMode": true,
+        "updateHandoff": true,
+        "horizontalOverflow": false,
+        "pageErrors": []
+      },
+      {
+        "viewport": "360x800",
+        "games": 7,
+        "guides": 4,
+        "guidedMoveRecorded": true,
+        "editionLabels": true,
+        "lightMode": true,
+        "updateHandoff": true,
+        "horizontalOverflow": false,
+        "pageErrors": []
+      },
+      {
+        "viewport": "412x915",
+        "games": 7,
+        "guides": 4,
+        "guidedMoveRecorded": true,
+        "editionLabels": true,
+        "lightMode": true,
+        "updateHandoff": true,
+        "horizontalOverflow": false,
+        "pageErrors": []
+      },
+      {
+        "viewport": "800x360",
+        "games": 7,
+        "guides": 4,
+        "guidedMoveRecorded": true,
+        "editionLabels": true,
+        "lightMode": true,
+        "updateHandoff": true,
+        "horizontalOverflow": false,
+        "pageErrors": []
+      }
+    ],
+    "companions": [
+      {
+        "viewport": "320x640",
+        "allFourInteractive": true,
+        "preferredGuide": true,
+        "quietMode": true,
+        "offPersists": true,
+        "motionToggle": true,
+        "reducedMotion": true,
+        "boardPreserved": true,
+        "horizontalOverflow": false,
+        "pageErrors": []
+      },
+      {
+        "viewport": "360x800",
+        "allFourInteractive": true,
+        "preferredGuide": true,
+        "quietMode": true,
+        "offPersists": true,
+        "motionToggle": true,
+        "reducedMotion": true,
+        "boardPreserved": true,
+        "horizontalOverflow": false,
+        "pageErrors": []
+      },
+      {
+        "viewport": "412x915",
+        "allFourInteractive": true,
+        "preferredGuide": true,
+        "quietMode": true,
+        "offPersists": true,
+        "motionToggle": true,
+        "reducedMotion": true,
+        "boardPreserved": true,
+        "horizontalOverflow": false,
+        "pageErrors": []
+      },
+      {
+        "viewport": "800x360",
+        "allFourInteractive": true,
+        "preferredGuide": true,
+        "quietMode": true,
+        "offPersists": true,
+        "motionToggle": true,
+        "reducedMotion": true,
+        "boardPreserved": true,
+        "horizontalOverflow": false,
+        "pageErrors": []
+      }
+    ]
+  }
+}

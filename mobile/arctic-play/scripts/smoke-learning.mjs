@@ -22,13 +22,13 @@ try{
     page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
     const label=`${width}x${height}`,report={viewport:label,lessons:0,pieceExamples:0,freeBoards:0,errors};
     const capture=async name=>{await page.screenshot({path:path.join(output,`${label}-${name}.png`),animations:'disabled'});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${label} ${name}: horizontal overflow`);};
-    const nav=async tab=>{await page.locator('.academy-tabs button').nth(tab).click();};
+    const nav=async tab=>{await page.locator('.academy-tabs').getByRole('button',{name:['Warm-up','Pieces','Free board'][tab],exact:true}).click();};
     await page.goto(`http://127.0.0.1:${server.address().port}/`);
     await page.getByRole('button',{name:'Play Shogi',exact:true}).click();await page.locator('.learn-mode-row').click();
-    await page.locator('#learning-game').waitFor();assert.equal(await page.locator('.suggested-piece').count(),0,'the welcome board has no phantom suggestions');await capture('welcome');
+    await page.locator('#learning-game').waitFor();await nav(0);assert.equal(await page.locator('.suggested-piece').count(),0,'the welcome board has no phantom suggestions');await capture('welcome');
     for(const {id} of engine.GAME_LIST){
-      await page.locator('#learning-game').selectOption(id);
-      await page.waitForFunction(()=>document.querySelector('.academy-tabs [aria-current=page]')?.textContent.includes('Little lessons'));
+      await page.locator('#learning-game').selectOption(id);await nav(0);
+      await page.waitForFunction(()=>document.querySelector('.academy-tabs [aria-current=page]')?.textContent.includes('Warm-up'));
       assert.equal(await page.locator('progress').getAttribute('value'),'0','reading does not complete a challenge');
       for(const [index,kind] of learning.CHALLENGES.entries()){
         await page.locator('.lesson-steps button').nth(index+1).click();
@@ -83,10 +83,10 @@ try{
     report.savedPracticePreserved=true;
     await page.getByRole('button',{name:'Back to games',exact:true}).click();await page.getByRole('button',{name:'Profile',exact:true}).click();
     await page.getByRole('button').filter({hasText:'Mascot companions'}).click();await page.getByRole('radio',{name:/^Off/}).click();await page.getByRole('button',{name:'Close',exact:true}).click();
-    await page.getByRole('button',{name:'Games',exact:true}).click();await page.locator('.learning-invitation').click();await page.locator('.lesson-steps button').nth(1).click();await page.locator('.lesson-tap-hint').waitFor();
+    await page.getByRole('button',{name:'Games',exact:true}).click();await page.locator('.learning-invitation').click();await nav(0);await page.locator('.lesson-steps button').nth(1).click();await page.locator('.lesson-tap-hint').waitFor();
     assert.equal(await page.locator('.teaching-host .mascot-portrait').count(),0);assert.ok((await page.locator('.teaching-host').innerText()).length>20);
     await capture('mascots-off');report.offPreservesTeaching=true;
-    await page.reload();await page.locator('.learning-invitation').click();assert.equal(await page.locator('progress').getAttribute('value'),'3','progress survives reopening');
+    await page.reload();await page.locator('.learning-invitation').click();await nav(0);assert.equal(await page.locator('progress').getAttribute('value'),'3','progress survives reopening');
     await nav(2);await page.getByLabel('Select a free-board piece',{exact:true}).selectOption('piece:blue-lance-0');
     assert.equal(await page.locator('[data-cell="80"]').getAttribute('aria-label').then(s=>s.includes('Lance')),true,'free arrangement survives reopening');
     assert.deepEqual(errors,[]);results.push(report);console.log(JSON.stringify(report));await context.close();

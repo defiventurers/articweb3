@@ -1,5 +1,8 @@
 # Cuter companions and pocket rules · Android 2.3.0
 
+The next update, 2.4.0, adds four curated discoveries per game and interactive
+rule labs. See [CURATED_ADVENTURES.md](CURATED_ADVENTURES.md).
+
 User direction, 17 October 2026: use cuter versions of all four mascots and make
 the rules and How to Play experience sleek, cute and simple. Implement the
 changes and produce the APK. This explicitly permits new mascot proportions
