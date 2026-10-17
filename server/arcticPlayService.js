@@ -11,6 +11,7 @@ const publicPlayer = p => ({id:p.id,name:p.name,seat:p.seat,ready:p.ready,bot:!!
 function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},loadSavedRoom=async()=>null}) {
   const subscriptions = new Map(), bots = new Map(), writes = new Map(), rates = new WeakMap(), processing = new Set();
   const workers=createArcticPlayWorkerPool();
+  const company=require('./companyService').createCompanyService();
   function codeOf(value) { return String(value || '').toUpperCase().replace(/\s/g,''); }
   function getRoom(code) {
     const room=rooms.get(codeOf(code));
@@ -187,6 +188,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
   }
   function disconnected(ws) {const sub=subscriptions.get(ws);subscriptions.delete(ws);if(sub){const room=rooms.get(sub.roomCode);if(room)broadcast(room);} }
   function handleHttp(req,res) {
+    if(company.handleHttp(req,res))return true;
     const url=new URL(req.url,'https://articweb3.onrender.com');
     if(url.pathname==='/arctic-play/health') {res.writeHead(200,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,version:engine.VERSION,buildCommit:process.env.RENDER_GIT_COMMIT||null,games:engine.GAME_LIST.map(g=>({id:g.id,name:g.name,players:g.players}))}));return true;}
     if(url.pathname==='/arctic-play/join') {
@@ -196,7 +198,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
     }
     return false;
   }
-  function close(){for(const timer of bots.values())clearTimeout(timer);bots.clear();subscriptions.clear();workers.close();}
+  function close(){for(const timer of bots.values())clearTimeout(timer);bots.clear();subscriptions.clear();workers.close();company.close().catch(()=>{});}
   return {dispatch,restoreRoom,handleHttp,disconnected,close,view};
 }
 module.exports={createArcticPlayService,ROOM_GAME_ID};

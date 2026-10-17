@@ -1,0 +1,9312 @@
+if (!globalThis.crypto) globalThis.crypto = require("node:crypto").webcrypto;
+Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+//#region \0rolldown/runtime.js
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
+var __copyProps = (to, from, except, desc) => {
+	if (from && typeof from === "object" || typeof from === "function") {
+		for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
+			key = keys[i];
+			if (!__hasOwnProp.call(to, key) && key !== except) {
+				__defProp(to, key, {
+					get: ((k) => from[k]).bind(null, key),
+					enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+				});
+			}
+		}
+	}
+	return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", {
+	value: mod,
+	enumerable: true
+}) : target, mod));
+
+//#endregion
+
+//#region frontend/src/games/shogi-frozen-shogunate/rules.js
+const BOARD_SIZE = 9;
+const SIDES = Object.freeze(["red", "blue"]);
+const HAND_TYPES = Object.freeze([
+	"rook",
+	"bishop",
+	"gold",
+	"silver",
+	"knight",
+	"lance",
+	"pawn"
+]);
+const PIECE_NAMES$1 = Object.freeze({
+	king: "King",
+	rook: "Rook",
+	bishop: "Bishop",
+	gold: "Gold General",
+	silver: "Silver General",
+	knight: "Knight",
+	lance: "Lance",
+	pawn: "Pawn"
+});
+const PROMOTED_NAMES = Object.freeze({
+	rook: "Dragon King",
+	bishop: "Dragon Horse",
+	silver: "Promoted Silver",
+	knight: "Promoted Knight",
+	lance: "Promoted Lance",
+	pawn: "Tokin"
+});
+const SHOGI_RULESET = Object.freeze({
+	id: "standard-hon-shogi",
+	title: "Standard Shogi",
+	players: 2,
+	board: "9×9 squares",
+	pieces: 40,
+	randomizer: "None",
+	firstPlayer: "red",
+	promotionZoneRanks: 3,
+	repetitionCount: 4,
+	impasseThreshold: 24
+});
+const GOLD_STEPS = Object.freeze([
+	[-1, 1],
+	[0, 1],
+	[1, 1],
+	[-1, 0],
+	[1, 0],
+	[0, -1]
+]);
+const SILVER_STEPS = Object.freeze([
+	[-1, 1],
+	[0, 1],
+	[1, 1],
+	[-1, -1],
+	[1, -1]
+]);
+const KING_STEPS = Object.freeze([
+	[-1, -1],
+	[0, -1],
+	[1, -1],
+	[-1, 0],
+	[1, 0],
+	[-1, 1],
+	[0, 1],
+	[1, 1]
+]);
+function createShogiState(options = {}) {
+	const board = Array(9 * 9).fill(null);
+	let id = 0;
+	const place = (side, type, row, col) => {
+		board[indexOf(row, col)] = {
+			id: `${side}-${type}-${id++}`,
+			side,
+			type,
+			promoted: false
+		};
+	};
+	const backRank = [
+		"lance",
+		"knight",
+		"silver",
+		"gold",
+		"king",
+		"gold",
+		"silver",
+		"knight",
+		"lance"
+	];
+	backRank.forEach((type, col) => place("blue", type, 0, col));
+	place("blue", "rook", 1, 1);
+	place("blue", "bishop", 1, 7);
+	for (let col = 0; col < 9; col += 1) place("blue", "pawn", 2, col);
+	for (let col = 0; col < 9; col += 1) place("red", "pawn", 6, col);
+	place("red", "bishop", 7, 1);
+	place("red", "rook", 7, 7);
+	backRank.forEach((type, col) => place("red", type, 8, col));
+	const state = baseState({
+		board,
+		...options
+	});
+	state.positionHistory = [{
+		key: positionKey$2(state),
+		mover: null,
+		gaveCheck: false
+	}];
+	return state;
+}
+function baseState({ board, turn = "red", hands, mode = "hotseat" }) {
+	return {
+		board,
+		hands: hands || {
+			red: emptyHand(),
+			blue: emptyHand()
+		},
+		turn,
+		ply: 1,
+		mode,
+		winner: null,
+		draw: false,
+		result: null,
+		lastAction: null,
+		positionHistory: []
+	};
+}
+function emptyHand() {
+	return Object.fromEntries(HAND_TYPES.map((type) => [type, 0]));
+}
+function indexOf(row, col) {
+	return row * 9 + col;
+}
+function coordinatesOf(index) {
+	return {
+		row: Math.floor(index / 9),
+		col: index % 9
+	};
+}
+function inside(row, col) {
+	return row >= 0 && row < 9 && col >= 0 && col < 9;
+}
+function otherSide$1(side) {
+	return side === "red" ? "blue" : "red";
+}
+function sideName(side) {
+	return side === "red" ? "Crimson Shogunate" : "Sapphire Shogunate";
+}
+function isPromotionZone$1(side, row) {
+	return side === "red" ? row <= 2 : row >= 6;
+}
+function getLegalActions$2(state, side = state.turn, options = {}) {
+	if (state.winner || state.draw) return [];
+	const actions = [];
+	for (let from = 0; from < state.board.length; from += 1) {
+		const piece = state.board[from];
+		if (piece?.side !== side) continue;
+		for (const to of pseudoTargets(state.board, from, piece)) {
+			const variants = promotionVariants(piece, side, coordinatesOf(from).row, coordinatesOf(to).row);
+			for (const promote of variants) {
+				const action = {
+					kind: "move",
+					from,
+					to,
+					promote
+				};
+				if (leavesKingSafe(state, action, side)) actions.push(action);
+			}
+		}
+	}
+	for (const type of HAND_TYPES) {
+		if (!state.hands[side][type]) continue;
+		for (let to = 0; to < state.board.length; to += 1) {
+			if (state.board[to] || !dropDestinationAllowed(state, side, type, to)) continue;
+			const action = {
+				kind: "drop",
+				type,
+				to
+			};
+			if (!leavesKingSafe(state, action, side)) continue;
+			if (type === "pawn" && options.enforcePawnDropMate !== false && isIllegalPawnDropMate(state, action, side)) continue;
+			actions.push(action);
+		}
+	}
+	return actions;
+}
+function applyShogiAction(state, requested) {
+	if (state.winner || state.draw) return { error: "This match is already complete." };
+	const action = getLegalActions$2(state).find((candidate) => actionKey$1(candidate) === actionKey$1(requested));
+	if (!action) return { error: "That move is not legal in this position." };
+	const mover = state.turn;
+	const opponent = otherSide$1(mover);
+	const next = applyBare(state, action, mover);
+	next.turn = opponent;
+	next.ply = state.ply + 1;
+	const gaveCheck = isInCheck$3(next, opponent);
+	next.lastAction = describeAction(state, action, gaveCheck);
+	if (gaveCheck && getLegalActions$2(next, opponent).length === 0) {
+		next.winner = mover;
+		next.result = "checkmate";
+	} else if (!gaveCheck && getLegalActions$2(next, opponent).length === 0) {
+		next.winner = mover;
+		next.result = "no-legal-move";
+	}
+	const entry = {
+		key: positionKey$2(next),
+		mover,
+		gaveCheck
+	};
+	next.positionHistory = [...state.positionHistory, entry];
+	if (!next.winner) resolveRepetition(next);
+	return { state: next };
+}
+function isInCheck$3(state, side) {
+	const kingIndex = state.board.findIndex((piece) => piece?.side === side && piece.type === "king");
+	if (kingIndex < 0) return true;
+	return isSquareAttacked(state.board, kingIndex, otherSide$1(side));
+}
+function isSquareAttacked(board, target, bySide) {
+	for (let from = 0; from < board.length; from += 1) {
+		const piece = board[from];
+		if (piece?.side === bySide && pseudoTargets(board, from, piece, true).includes(target)) return true;
+	}
+	return false;
+}
+function positionKey$2(state) {
+	const board = state.board.map((piece) => piece ? `${piece.side[0]}:${piece.type}:${piece.promoted ? 1 : 0}` : "-").join("|");
+	const hands = SIDES.map((side) => HAND_TYPES.map((type) => state.hands[side][type]).join(",")).join("|");
+	return `${state.turn};${board};${hands}`;
+}
+function actionKey$1(action) {
+	if (!action) return "";
+	return action.kind === "drop" ? `d:${action.type}:${action.to}` : `m:${action.from}:${action.to}:${action.promote ? 1 : 0}`;
+}
+function assetRole$1(piece) {
+	if (!piece.promoted) return piece.type;
+	if (piece.type === "rook") return "dragon";
+	if (piece.type === "bishop") return "horse";
+	if (piece.type === "pawn") return "tokin";
+	return `promoted-${piece.type}`;
+}
+function displayPieceName(piece) {
+	return piece.promoted ? PROMOTED_NAMES[piece.type] || PIECE_NAMES$1[piece.type] : PIECE_NAMES$1[piece.type];
+}
+function pseudoTargets(board, from, piece) {
+	const { row, col } = coordinatesOf(from);
+	const targets = [];
+	const forward = piece.side === "red" ? -1 : 1;
+	const land = (nextRow, nextCol) => {
+		if (!inside(nextRow, nextCol)) return false;
+		const occupant = board[indexOf(nextRow, nextCol)];
+		if (occupant?.side === piece.side) return false;
+		targets.push(indexOf(nextRow, nextCol));
+		return !occupant;
+	};
+	const steps = (relative) => relative.forEach(([dc, df]) => land(row + df * forward, col + dc));
+	const rays = (directions) => directions.forEach(([dc, df]) => {
+		let distance = 1;
+		while (land(row + df * forward * distance, col + dc * distance)) distance += 1;
+	});
+	if (piece.type === "king") steps(KING_STEPS);
+	else if (piece.promoted && [
+		"pawn",
+		"lance",
+		"knight",
+		"silver"
+	].includes(piece.type)) steps(GOLD_STEPS);
+	else if (piece.type === "gold") steps(GOLD_STEPS);
+	else if (piece.type === "silver") steps(SILVER_STEPS);
+	else if (piece.type === "knight") steps([[-1, 2], [1, 2]]);
+	else if (piece.type === "lance") rays([[0, 1]]);
+	else if (piece.type === "pawn") steps([[0, 1]]);
+	else if (piece.type === "rook") {
+		rays([
+			[-1, 0],
+			[1, 0],
+			[0, 1],
+			[0, -1]
+		]);
+		if (piece.promoted) steps([
+			[-1, 1],
+			[1, 1],
+			[-1, -1],
+			[1, -1]
+		]);
+	} else if (piece.type === "bishop") {
+		rays([
+			[-1, 1],
+			[1, 1],
+			[-1, -1],
+			[1, -1]
+		]);
+		if (piece.promoted) steps([
+			[-1, 0],
+			[1, 0],
+			[0, 1],
+			[0, -1]
+		]);
+	}
+	return targets;
+}
+function promotionVariants(piece, side, fromRow, toRow) {
+	if (piece.promoted || piece.type === "king" || piece.type === "gold") return [false];
+	if (!(isPromotionZone$1(side, fromRow) || isPromotionZone$1(side, toRow))) return [false];
+	if (mustPromote(piece.type, side, toRow)) return [true];
+	return [false, true];
+}
+function mustPromote(type, side, row) {
+	const last = side === "red" ? 0 : 8;
+	return type === "pawn" || type === "lance" ? row === last : type === "knight" ? row === last || row === (side === "red" ? 1 : 7) : false;
+}
+function dropDestinationAllowed(state, side, type, to) {
+	const { row, col } = coordinatesOf(to);
+	if (mustPromote(type, side, row)) return false;
+	if (type === "pawn") for (let scanRow = 0; scanRow < 9; scanRow += 1) {
+		const piece = state.board[indexOf(scanRow, col)];
+		if (piece?.side === side && piece.type === "pawn" && !piece.promoted) return false;
+	}
+	return true;
+}
+function leavesKingSafe(state, action, side) {
+	return !isInCheck$3(applyBare(state, action, side), side);
+}
+function isIllegalPawnDropMate(state, action, side) {
+	const opponent = otherSide$1(side);
+	const next = applyBare(state, action, side);
+	next.turn = opponent;
+	return isInCheck$3(next, opponent) && getLegalActions$2(next, opponent, { enforcePawnDropMate: false }).length === 0;
+}
+function applyBare(state, action, side) {
+	const next = cloneState(state);
+	if (action.kind === "drop") {
+		next.hands[side][action.type] -= 1;
+		next.board[action.to] = {
+			id: `${side}-${action.type}-drop-${state.ply}-${action.to}`,
+			side,
+			type: action.type,
+			promoted: false
+		};
+		return next;
+	}
+	const piece = {
+		...next.board[action.from],
+		promoted: next.board[action.from].promoted || Boolean(action.promote)
+	};
+	const captured = next.board[action.to];
+	next.board[action.from] = null;
+	if (captured && captured.type !== "king") next.hands[side][captured.type] += 1;
+	next.board[action.to] = piece;
+	return next;
+}
+function resolveRepetition(state) {
+	const key = positionKey$2(state);
+	const occurrences = [];
+	state.positionHistory.forEach((entry, index) => {
+		if (entry.key === key) occurrences.push(index);
+	});
+	if (occurrences.length < 4) return;
+	const start = occurrences.at(-4);
+	const cycle = state.positionHistory.slice(start + 1);
+	const perpetualChecker = SIDES.find((side) => {
+		const turns = cycle.filter((entry) => entry.mover === side);
+		return turns.length > 0 && turns.every((entry) => entry.gaveCheck);
+	});
+	if (perpetualChecker) {
+		state.winner = otherSide$1(perpetualChecker);
+		state.result = "perpetual-check";
+	} else {
+		state.draw = true;
+		state.result = "repetition";
+	}
+}
+function describeAction(state, action, gaveCheck) {
+	if (action.kind === "drop") return {
+		...action,
+		text: `${sideName(state.turn)} dropped a ${PIECE_NAMES$1[action.type]}${gaveCheck ? " with check" : ""}.`
+	};
+	const piece = state.board[action.from];
+	const capture = state.board[action.to];
+	const promoted = action.promote ? ` and promoted to ${PROMOTED_NAMES[piece.type]}` : "";
+	return {
+		...action,
+		text: `${sideName(state.turn)} moved ${PIECE_NAMES$1[piece.type]}${capture ? ` and captured ${displayPieceName(capture)}` : ""}${promoted}${gaveCheck ? " — check" : ""}.`
+	};
+}
+function cloneState(state) {
+	return {
+		...state,
+		board: state.board.map((piece) => piece ? { ...piece } : null),
+		hands: {
+			red: { ...state.hands.red },
+			blue: { ...state.hands.blue }
+		},
+		positionHistory: [...state.positionHistory],
+		lastAction: state.lastAction ? { ...state.lastAction } : null
+	};
+}
+
+//#endregion
+//#region frontend/src/games/sannin-shogi/hex.js
+const HEX_RADIUS = 6;
+const AXIAL_DIRECTIONS = Object.freeze([
+	Object.freeze({
+		q: 1,
+		r: 0
+	}),
+	Object.freeze({
+		q: 1,
+		r: -1
+	}),
+	Object.freeze({
+		q: 0,
+		r: -1
+	}),
+	Object.freeze({
+		q: -1,
+		r: 0
+	}),
+	Object.freeze({
+		q: -1,
+		r: 1
+	}),
+	Object.freeze({
+		q: 0,
+		r: 1
+	})
+]);
+function cellKey(q, r) {
+	if (!Number.isInteger(q) || !Number.isInteger(r)) throw new TypeError("Axial coordinates must be integers.");
+	return `${q},${r}`;
+}
+function parseCellKey(id) {
+	if (typeof id !== "string") return null;
+	const match = /^(-?\d+),(-?\d+)$/.exec(id);
+	if (!match) return null;
+	const q = Number(match[1]);
+	const r = Number(match[2]);
+	if (!Number.isSafeInteger(q) || !Number.isSafeInteger(r)) return null;
+	return coordinate(q, r);
+}
+function isInsideHex(cell, radius = 6) {
+	const axial = tryAxial(cell);
+	return Boolean(axial) && Number.isInteger(radius) && radius >= 0 && hexDistance(axial) <= radius;
+}
+function hexDistance(a, b = ORIGIN) {
+	const from = axialOf(a);
+	const to = axialOf(b);
+	const dq = from.q - to.q;
+	const dr = from.r - to.r;
+	return Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr));
+}
+function addAxial(cell, delta, steps = 1) {
+	const start = axialOf(cell);
+	const vector = axialOf(delta);
+	if (!Number.isInteger(steps)) throw new TypeError("Axial step count must be an integer.");
+	return coordinate(start.q + vector.q * steps, start.r + vector.r * steps);
+}
+function rotateAxial(cell, steps = 1) {
+	const start = axialOf(cell);
+	if (!Number.isInteger(steps)) throw new TypeError("Rotation steps must be an integer.");
+	let q = start.q;
+	let r = start.r;
+	const turns = (steps % 6 + 6) % 6;
+	for (let turn = 0; turn < turns; turn += 1) [q, r] = [-r, q + r];
+	return coordinate(q, r);
+}
+function projectPointyTop(cell, size = 1) {
+	const { q, r } = axialOf(cell);
+	requirePositiveSize(size);
+	const horizontal = q + r / 2;
+	return Object.freeze({
+		x: horizontal === 0 ? 0 : Math.sqrt(3) * size * horizontal,
+		y: r === 0 ? 0 : 1.5 * size * r
+	});
+}
+function pointyTopCorners(cell, size = 1) {
+	const center = projectPointyTop(cell, size);
+	const halfWidth = Math.sqrt(3) * size / 2;
+	const halfHeight = size / 2;
+	return Object.freeze([
+		Object.freeze({
+			x: center.x,
+			y: center.y - size
+		}),
+		Object.freeze({
+			x: center.x + halfWidth,
+			y: center.y - halfHeight
+		}),
+		Object.freeze({
+			x: center.x + halfWidth,
+			y: center.y + halfHeight
+		}),
+		Object.freeze({
+			x: center.x,
+			y: center.y + size
+		}),
+		Object.freeze({
+			x: center.x - halfWidth,
+			y: center.y + halfHeight
+		}),
+		Object.freeze({
+			x: center.x - halfWidth,
+			y: center.y - halfHeight
+		})
+	].map(({ x, y }) => Object.freeze({
+		x: cleanZero(x),
+		y: cleanZero(y)
+	})));
+}
+const ORIGIN = Object.freeze({
+	q: 0,
+	r: 0,
+	s: 0
+});
+function coordinate(q, r) {
+	const cleanQ = cleanZero(q);
+	const cleanR = cleanZero(r);
+	return Object.freeze({
+		q: cleanQ,
+		r: cleanR,
+		s: cleanZero(-cleanQ - cleanR)
+	});
+}
+function cleanZero(value) {
+	return Math.abs(value) < 1e-12 ? 0 : value;
+}
+function tryAxial(value) {
+	if (typeof value === "string") return parseCellKey(value);
+	if (!value || !Number.isInteger(value.q) || !Number.isInteger(value.r)) return null;
+	return coordinate(value.q, value.r);
+}
+function axialOf(value) {
+	const axial = tryAxial(value);
+	if (!axial) throw new TypeError("Expected an axial coordinate or canonical cell ID.");
+	return axial;
+}
+function requirePositiveSize(size) {
+	if (!Number.isFinite(size) || size <= 0) throw new TypeError("Hex size must be positive.");
+}
+function buildCells(radius) {
+	const cells = [];
+	for (let r = -radius; r <= radius; r += 1) {
+		const minQ = Math.max(-radius, -r - radius);
+		const maxQ = Math.min(radius, -r + radius);
+		for (let q = minQ; q <= maxQ; q += 1) {
+			const axial = coordinate(q, r);
+			cells.push(Object.freeze({
+				id: cellKey(q, r),
+				...axial,
+				ring: hexDistance(axial)
+			}));
+		}
+	}
+	return cells;
+}
+function buildEdges(cells) {
+	const ids = new Set(cells.map((cell) => cell.id));
+	const edges = [];
+	for (const cell of cells) for (const direction of AXIAL_DIRECTIONS) {
+		const otherId = cellKey(cell.q + direction.q, cell.r + direction.r);
+		if (ids.has(otherId) && cell.id.localeCompare(otherId) < 0) edges.push(Object.freeze([cell.id, otherId]));
+	}
+	return edges;
+}
+const HEX_CELLS = Object.freeze(buildCells(6));
+const HEX_CELL_BY_ID = Object.freeze(Object.fromEntries(HEX_CELLS.map((cell) => [cell.id, cell])));
+const HEX_EDGES = Object.freeze(buildEdges(HEX_CELLS));
+
+//#endregion
+//#region frontend/src/games/sannin-shogi/rules.js
+const GAME_ID$1 = "sannin-shogi";
+const RULESET_VERSION$1 = "fairbairn-kapitan-digital-1.0.0";
+const FACTIONS$1 = Object.freeze([
+	"red",
+	"green",
+	"blue"
+]);
+const FACTION_LABELS$1 = Object.freeze({
+	red: "First",
+	green: "Middle",
+	blue: "Last"
+});
+const TYPES = Object.freeze([
+	"king",
+	"rook",
+	"bishop",
+	"gold",
+	"silver",
+	"knight",
+	"lance",
+	"pawn"
+]);
+const TYPE_LABELS = Object.freeze({
+	king: "King",
+	rook: "Rook",
+	bishop: "Bishop",
+	gold: "Gold General",
+	silver: "Silver General",
+	knight: "Knight",
+	lance: "Lance",
+	pawn: "Pawn"
+});
+const ROTATION = Object.freeze({
+	red: 4,
+	green: 0,
+	blue: 2
+});
+const PROMOTABLE = new Set([
+	"king",
+	"rook",
+	"bishop",
+	"silver",
+	"lance",
+	"pawn"
+]);
+const VALUE = Object.freeze({
+	king: 4,
+	rook: 3,
+	bishop: 3,
+	gold: 2,
+	silver: 2,
+	knight: 2,
+	lance: 2,
+	pawn: 1
+});
+const ORTH = Object.freeze({
+	1: {
+		q: 1,
+		r: -1
+	},
+	3: {
+		q: 1,
+		r: 0
+	},
+	5: {
+		q: 0,
+		r: 1
+	},
+	7: {
+		q: -1,
+		r: 1
+	},
+	9: {
+		q: -1,
+		r: 0
+	},
+	11: {
+		q: 0,
+		r: -1
+	}
+});
+const DIAG = Object.freeze({
+	12: {
+		q: 1,
+		r: -2
+	},
+	2: {
+		q: 2,
+		r: -1
+	},
+	4: {
+		q: 1,
+		r: 1
+	},
+	6: {
+		q: -1,
+		r: 2
+	},
+	8: {
+		q: -2,
+		r: 1
+	},
+	10: {
+		q: -1,
+		r: -1
+	}
+});
+const MOVE_CLOCKS = Object.freeze({
+	king: { stepOrth: [
+		1,
+		3,
+		5,
+		7,
+		9,
+		11
+	] },
+	rook: {
+		rayOrth: [
+			11,
+			1,
+			3,
+			9
+		],
+		rayDiag: [6]
+	},
+	bishop: { rayDiag: [
+		12,
+		2,
+		4,
+		6,
+		8,
+		10
+	] },
+	gold: {
+		stepOrth: [
+			11,
+			1,
+			3,
+			9
+		],
+		stepDiag: [12, 6]
+	},
+	knight: {
+		stepOrth: [3, 9],
+		stepDiag: [
+			2,
+			4,
+			8,
+			10
+		]
+	},
+	silver: {
+		stepOrth: [
+			11,
+			1,
+			5,
+			7
+		],
+		stepDiag: [10, 2]
+	},
+	lance: { rayOrth: [11, 1] },
+	pawn: { stepOrth: [11, 1] }
+});
+const MIDDLE_SETUP = Object.freeze([
+	[
+		"lance",
+		0,
+		6
+	],
+	[
+		"silver",
+		-1,
+		6
+	],
+	[
+		"gold",
+		-2,
+		6
+	],
+	[
+		"king",
+		-3,
+		6
+	],
+	[
+		"gold",
+		-4,
+		6
+	],
+	[
+		"silver",
+		-5,
+		6
+	],
+	[
+		"lance",
+		-6,
+		6
+	],
+	[
+		"rook",
+		0,
+		5
+	],
+	[
+		"bishop",
+		-5,
+		5
+	],
+	[
+		"knight",
+		-2,
+		4
+	],
+	[
+		"pawn",
+		2,
+		4
+	],
+	[
+		"pawn",
+		1,
+		4
+	],
+	[
+		"pawn",
+		0,
+		4
+	],
+	[
+		"pawn",
+		-1,
+		4
+	],
+	[
+		"pawn",
+		-3,
+		4
+	],
+	[
+		"pawn",
+		-4,
+		4
+	],
+	[
+		"pawn",
+		-5,
+		4
+	],
+	[
+		"pawn",
+		-6,
+		4
+	]
+]);
+function clone$4(value) {
+	return typeof structuredClone === "function" ? structuredClone(value) : JSON.parse(JSON.stringify(value));
+}
+function actionKey(action) {
+	const copy = { ...action };
+	if (copy.targets) copy.targets = [...copy.targets].sort();
+	return JSON.stringify(copy);
+}
+function rotateForFaction(vector, faction) {
+	return rotateAxial(vector, ROTATION[faction]);
+}
+function pieceAt$2(state, cell) {
+	return state.pieces.find((piece) => piece.status === "board" && piece.cell === cell) || null;
+}
+function kingOf(state, faction) {
+	return state.pieces.find((piece) => piece.owner === faction && piece.type === "king" && piece.status === "board") || null;
+}
+function areAllied(state, a, b) {
+	return Boolean(state.alliance?.includes(a) && state.alliance?.includes(b));
+}
+function activeOpponents$1(state, faction) {
+	return state.activeFactions.filter((candidate) => candidate !== faction);
+}
+function addTarget(targets, state, piece, axial, attacks) {
+	if (!isInsideHex(axial)) return false;
+	const id = cellKey(axial.q, axial.r);
+	const occupant = pieceAt$2(state, id);
+	if (!occupant || occupant.owner !== piece.owner || attacks) targets.push(id);
+	return !occupant;
+}
+function movementProfile(piece) {
+	if (!piece.promoted) return MOVE_CLOCKS[piece.type];
+	if (piece.type === "king") return {
+		rayOrth: [
+			1,
+			3,
+			5,
+			7,
+			9,
+			11
+		],
+		rayDiag: [
+			12,
+			2,
+			4,
+			6,
+			8,
+			10
+		]
+	};
+	if (piece.type === "rook") return { rayOrth: [
+		1,
+		3,
+		5,
+		7,
+		9,
+		11
+	] };
+	if (piece.type === "bishop") return {
+		...MOVE_CLOCKS.bishop,
+		stepOrth: [
+			1,
+			3,
+			5,
+			7,
+			9,
+			11
+		]
+	};
+	if (piece.type === "silver") return {
+		...MOVE_CLOCKS.silver,
+		rayDiag: [12, 6]
+	};
+	if (piece.type === "lance") return { rayOrth: [
+		11,
+		1,
+		5,
+		7
+	] };
+	if (piece.type === "pawn") return MOVE_CLOCKS.gold;
+	return MOVE_CLOCKS[piece.type];
+}
+function getPseudoTargets$1(state, pieceOrId, { attacks = false } = {}) {
+	const piece = typeof pieceOrId === "string" ? state.pieces.find((item) => item.id === pieceOrId) : pieceOrId;
+	if (!piece || piece.status !== "board") return [];
+	const start = parseCellKey(piece.cell);
+	const profile = movementProfile(piece);
+	const targets = [];
+	for (const [kind, clocks] of Object.entries(profile)) {
+		const diagonal = kind.endsWith("Diag");
+		const ranging = kind.startsWith("ray");
+		for (const clock of clocks) {
+			const vector = rotateForFaction((diagonal ? DIAG : ORTH)[clock], piece.owner);
+			if (!ranging) {
+				addTarget(targets, state, piece, addAxial(start, vector), attacks);
+				continue;
+			}
+			for (let step = 1;; step += 1) {
+				const axial = addAxial(start, vector, step);
+				if (!isInsideHex(axial)) break;
+				if (!addTarget(targets, state, piece, axial, attacks)) break;
+			}
+		}
+	}
+	return [...new Set(targets)];
+}
+function isHomeTerritory(cell, faction) {
+	const axial = parseCellKey(cell);
+	if (!axial || !FACTIONS$1.includes(faction)) return false;
+	return rotateAxial(axial, -ROTATION[faction]).r >= 4;
+}
+function isPromotionZone(cell, faction) {
+	return FACTIONS$1.some((owner) => owner !== faction && isHomeTerritory(cell, owner));
+}
+function isGeometricallyAttacked$1(state, cell, byFaction) {
+	return state.pieces.some((piece) => piece.status === "board" && piece.owner === byFaction && getPseudoTargets$1(state, piece, { attacks: true }).includes(cell));
+}
+function isInCheck$2(state, faction) {
+	const king = kingOf(state, faction);
+	if (!king) return false;
+	return activeOpponents$1(state, faction).some((owner) => isGeometricallyAttacked$1(state, king.cell, owner));
+}
+function futureBaseMoveExists(piece, cell) {
+	const start = parseCellKey(cell);
+	const profile = MOVE_CLOCKS[piece.type];
+	for (const [kind, clocks] of Object.entries(profile)) {
+		const vectors = kind.endsWith("Diag") ? DIAG : ORTH;
+		for (const clock of clocks) if (isInsideHex(addAxial(start, rotateForFaction(vectors[clock], piece.owner)))) return true;
+	}
+	return false;
+}
+function promotionChoices(state, piece, to) {
+	if (piece.promoted || !PROMOTABLE.has(piece.type) || state.alliance?.includes(piece.owner)) return [false];
+	if (!(piece.cell === "0,0" || to === "0,0" || isPromotionZone(piece.cell, piece.owner) || isPromotionZone(to, piece.owner))) return [false];
+	if ((piece.type === "pawn" || piece.type === "lance") && !futureBaseMoveExists(piece, to)) return [true];
+	return [false, true];
+}
+function baseMoveActions$1(state, faction) {
+	const actions = [];
+	for (const piece of state.pieces.filter((item) => item.owner === faction && item.status === "board")) for (const to of getPseudoTargets$1(state, piece)) {
+		if (pieceAt$2(state, to)?.type === "king") continue;
+		for (const promote of promotionChoices(state, piece, to)) actions.push({
+			type: "move",
+			pieceId: piece.id,
+			from: piece.cell,
+			to,
+			promote
+		});
+	}
+	return actions;
+}
+function castleActions(state, faction) {
+	const king = kingOf(state, faction);
+	if (!king || king.hasMoved || king.everChecked || state.castlingCancelled[faction] || isInCheck$2(state, faction)) return [];
+	const ordinaryDestinations = new Set(getPseudoTargets$1(state, king));
+	return HEX_CELLS.filter((cell) => isHomeTerritory(cell.id, faction) && cell.id !== king.cell).filter((cell) => !ordinaryDestinations.has(cell.id)).filter((cell) => {
+		const occupant = pieceAt$2(state, cell.id);
+		return !occupant || occupant.owner !== faction && occupant.type !== "king";
+	}).map((cell) => ({
+		type: "castle",
+		pieceId: king.id,
+		from: king.cell,
+		to: cell.id
+	}));
+}
+function dropActions(state, faction) {
+	const hand = state.pieces.filter((piece) => piece.owner === faction && piece.status === "hand");
+	const actions = [];
+	for (const piece of hand) for (const cell of HEX_CELLS) {
+		if (pieceAt$2(state, cell.id)) continue;
+		if ((piece.type === "pawn" || piece.type === "lance") && !futureBaseMoveExists(piece, cell.id)) continue;
+		actions.push({
+			type: "drop",
+			pieceId: piece.id,
+			to: cell.id
+		});
+	}
+	return actions;
+}
+function illuminatedTargets(state, king) {
+	const vectors = [...Object.values(ORTH), ...Object.values(DIAG)].map((vector) => rotateForFaction(vector, king.owner));
+	const victims = [];
+	for (const vector of vectors) {
+		const start = parseCellKey(king.cell);
+		for (let step = 1;; step += 1) {
+			const axial = addAxial(start, vector, step);
+			if (!isInsideHex(axial)) break;
+			const occupant = pieceAt$2(state, cellKey(axial.q, axial.r));
+			if (!occupant) continue;
+			if (occupant.owner !== king.owner && occupant.type !== "king") {
+				if (!activeOpponents$1(state, king.owner).some((owner) => state.pieces.some((piece) => piece.id !== occupant.id && piece.owner === owner && piece.status === "board" && getPseudoTargets$1(state, piece, { attacks: true }).includes(occupant.cell)))) victims.push(occupant.id);
+			}
+			break;
+		}
+	}
+	return [...new Set(victims)].sort();
+}
+function illuminationActions(state, faction) {
+	const king = kingOf(state, faction);
+	if (!king?.promoted || !king.illuminationReady) return [];
+	const targets = illuminatedTargets(state, king);
+	return targets.length ? [{
+		type: "illuminate",
+		pieceId: king.id,
+		targets
+	}] : [];
+}
+function captureIntoHand(next, victim, owner) {
+	victim.owner = owner;
+	victim.status = "hand";
+	victim.cell = null;
+	victim.promoted = false;
+	victim.hasMoved = false;
+	victim.everChecked = false;
+	victim.illuminationReady = true;
+}
+function executeRaw(state, action) {
+	const next = clone$4(state);
+	const piece = next.pieces.find((item) => item.id === action.pieceId);
+	if (action.type === "move" || action.type === "castle") {
+		const victim = pieceAt$2(next, action.to);
+		if (victim) captureIntoHand(next, victim, piece.owner);
+		piece.cell = action.to;
+		piece.status = "board";
+		piece.hasMoved = true;
+		if (action.promote) piece.promoted = true;
+	} else if (action.type === "drop") {
+		piece.cell = action.to;
+		piece.status = "board";
+		piece.promoted = false;
+		piece.hasMoved = true;
+	} else if (action.type === "illuminate") for (const id of action.targets) {
+		const victim = next.pieces.find((item) => item.id === id);
+		if (victim?.status === "board") captureIntoHand(next, victim, piece.owner);
+	}
+	return next;
+}
+function royalSafetyHolds(state, actor) {
+	return (state.alliance?.includes(actor) ? state.alliance : [actor]).every((faction) => !isInCheck$2(state, faction));
+}
+function isPawnDropMate(state, action, actor) {
+	if (action.type !== "drop") return false;
+	if (state.pieces.find((piece) => piece.id === action.pieceId)?.type !== "pawn") return false;
+	const preview = executeRaw(state, action);
+	return activeOpponents$1(preview, actor).some((faction) => isInCheck$2(preview, faction) && generateFor$1(preview, faction, {
+		skipPawnDropMate: true,
+		skipRepetition: true
+	}).length === 0);
+}
+function positionKey$1(state) {
+	const pieces = state.pieces.map(({ owner, type, promoted, status, cell, hasMoved, everChecked, illuminationReady }) => type === "king" ? [
+		owner,
+		type,
+		promoted ? 1 : 0,
+		status,
+		cell || "",
+		hasMoved ? 1 : 0,
+		everChecked ? 1 : 0,
+		illuminationReady ? 1 : 0
+	] : [
+		owner,
+		type,
+		promoted ? 1 : 0,
+		status,
+		cell || ""
+	]).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+	return JSON.stringify([
+		state.turn,
+		state.activeFactions,
+		state.alliance,
+		state.castlingCancelled,
+		state.pending,
+		pieces
+	]);
+}
+function generateFor$1(state, faction, options = {}) {
+	if (state.outcome || !state.activeFactions.includes(faction)) return [];
+	return [
+		...baseMoveActions$1(state, faction),
+		...castleActions(state, faction),
+		...dropActions(state, faction),
+		...illuminationActions(state, faction)
+	].filter((action) => {
+		const preview = executeRaw(state, action);
+		if (!royalSafetyHolds(preview, faction)) return false;
+		if (!options.skipPawnDropMate && isPawnDropMate(state, action, faction)) return false;
+		prepareCandidatePosition(state, preview, faction);
+		if (preview.pending.invalidAllianceCheck) return false;
+		if (!options.skipRepetition) {
+			if (state.repetition[positionKey$1(preview)]) return false;
+		}
+		return true;
+	});
+}
+function prepareCandidatePosition(before, preview, actor) {
+	delete preview.pending.invalidAllianceCheck;
+	if (isInCheck$2(before, actor)) {
+		const king = kingOf(preview, actor);
+		if (king) king.everChecked = true;
+	}
+	detectCompulsoryAlliance(before, preview, actor);
+	preview.turn = nextFaction$1(preview, actor);
+	const nextKing = kingOf(preview, preview.turn);
+	if (nextKing?.promoted && !nextKing.illuminationReady) nextKing.illuminationReady = true;
+	for (const faction of preview.activeFactions) if (isInCheck$2(preview, faction)) {
+		const checkedKing = kingOf(preview, faction);
+		if (checkedKing) checkedKing.everChecked = true;
+	}
+	return preview;
+}
+function getLegalActions$1(state) {
+	if (stateInvariantError$1(state) || state.phase !== "play" || state.outcome) return [];
+	return generateFor$1(state, state.turn);
+}
+function validateAction$1(state, action) {
+	const stateError = stateInvariantError$1(state);
+	if (stateError) return {
+		ok: false,
+		error: stateError
+	};
+	if (state.outcome) return {
+		ok: false,
+		error: {
+			code: "GAME_OVER",
+			message: "The match has already ended."
+		}
+	};
+	const wanted = actionKey(action);
+	const legal = getLegalActions$1(state).find((candidate) => actionKey(candidate) === wanted);
+	return legal ? {
+		ok: true,
+		action: legal
+	} : {
+		ok: false,
+		error: {
+			code: "ILLEGAL_ACTION",
+			message: "That action is not legal in the current position."
+		}
+	};
+}
+function stateInvariantError$1(state) {
+	if (!state || state.gameId !== "sannin-shogi") return {
+		code: "INVALID_STATE",
+		message: "This is not a Sannin Shogi state."
+	};
+	if (state.rulesetVersion !== "fairbairn-kapitan-digital-1.0.0") return {
+		code: "RULESET_MISMATCH",
+		message: `Expected Sannin ruleset ${RULESET_VERSION$1}.`
+	};
+	if (!FACTIONS$1.includes(state.turn) || !Array.isArray(state.activeFactions) || new Set(state.activeFactions).size !== state.activeFactions.length || state.activeFactions.some((faction) => !FACTIONS$1.includes(faction)) || !state.activeFactions.includes(state.turn)) return {
+		code: "INVALID_STATE",
+		message: "The active turn is malformed."
+	};
+	if (state.alliance !== null) {
+		if (!(Array.isArray(state.alliance) && state.alliance.length === 2 && new Set(state.alliance).size === 2 && state.alliance.every((faction) => state.activeFactions.includes(faction)))) return {
+			code: "INVALID_ALLIANCE",
+			message: "An alliance must contain exactly two distinct active factions."
+		};
+	}
+	if (!Array.isArray(state.pieces) || !state.pending || !state.repetition || Array.isArray(state.repetition) || typeof state.repetition !== "object" || !state.castlingCancelled || !FACTIONS$1.every((faction) => typeof state.castlingCancelled[faction] === "boolean")) return {
+		code: "INVALID_STATE",
+		message: "The serializable match state is incomplete."
+	};
+	const pieceIds = /* @__PURE__ */ new Set();
+	const occupiedCells = /* @__PURE__ */ new Set();
+	for (const piece of state.pieces) {
+		if (!piece || typeof piece.id !== "string" || pieceIds.has(piece.id) || !FACTIONS$1.includes(piece.owner) || !TYPES.includes(piece.type) || ![
+			"board",
+			"hand",
+			"eliminated"
+		].includes(piece.status)) return {
+			code: "INVALID_STATE",
+			message: "A piece record is malformed."
+		};
+		pieceIds.add(piece.id);
+		if (piece.status === "board") {
+			if (!HEX_CELL_BY_ID[piece.cell] || occupiedCells.has(piece.cell)) return {
+				code: "INVALID_STATE",
+				message: "Board occupancy is malformed."
+			};
+			occupiedCells.add(piece.cell);
+		} else if (piece.cell !== null) return {
+			code: "INVALID_STATE",
+			message: "Off-board pieces cannot retain a cell."
+		};
+	}
+	return null;
+}
+function nextFaction$1(state, actor) {
+	const start = FACTIONS$1.indexOf(actor);
+	for (let offset = 1; offset <= FACTIONS$1.length; offset += 1) {
+		const faction = FACTIONS$1[(start + offset) % FACTIONS$1.length];
+		if (state.activeFactions.includes(faction)) return faction;
+	}
+	return actor;
+}
+function eliminate(next, faction) {
+	for (const piece of next.pieces) if (piece.owner === faction) {
+		piece.status = "eliminated";
+		piece.cell = null;
+	}
+	next.activeFactions = next.activeFactions.filter((item) => item !== faction);
+}
+function dissolveAlliance(next) {
+	next.alliance = null;
+}
+function resolveMate(next, actor) {
+	const mated = activeOpponents$1(next, actor).filter((faction) => !areAllied(next, actor, faction)).filter((faction) => isInCheck$2(next, faction) && generateFor$1(next, faction, { skipPawnDropMate: true }).length === 0);
+	if (!mated.length) return false;
+	if (next.alliance && mated.some((faction) => next.alliance.includes(faction)) && !next.alliance.includes(actor)) {
+		next.outcome = {
+			type: "mate",
+			winner: actor,
+			losers: [...next.alliance],
+			message: `${FACTION_LABELS$1[actor]} defeats the alliance.`
+		};
+		next.phase = "complete";
+		return true;
+	}
+	for (const faction of mated) eliminate(next, faction);
+	if (next.alliance && mated.some((faction) => !next.alliance.includes(faction)) && next.alliance.includes(actor)) dissolveAlliance(next);
+	if (next.activeFactions.length === 1) {
+		next.outcome = {
+			type: "mate",
+			winner: next.activeFactions[0],
+			losers: FACTIONS$1.filter((f) => f !== next.activeFactions[0]),
+			message: `${FACTION_LABELS$1[next.activeFactions[0]]} wins by mate.`
+		};
+		next.phase = "complete";
+	}
+	return true;
+}
+function gardenWinner(next, actor) {
+	const king = kingOf(next, actor);
+	if (!king || king.cell !== "0,0" || next.alliance?.includes(actor) || isInCheck$2(next, actor)) return false;
+	next.outcome = {
+		type: "garden",
+		winner: actor,
+		losers: activeOpponents$1(next, actor),
+		message: `${FACTION_LABELS$1[actor]} reaches the Pleasure Garden safely.`
+	};
+	next.phase = "complete";
+	return true;
+}
+function threatSummary(state, actor) {
+	const map = {};
+	for (const target of activeOpponents$1(state, actor)) {
+		const threatened = /* @__PURE__ */ new Set();
+		for (const attacker of state.pieces.filter((piece) => piece.owner === actor && piece.status === "board")) for (const cell of getPseudoTargets$1(state, attacker, { attacks: true })) {
+			const victim = pieceAt$2(state, cell);
+			if (victim?.owner === target && (VALUE[victim.type] > VALUE[attacker.type] || !isGeometricallyAttacked$1(state, victim.cell, target))) threatened.add(victim.id);
+		}
+		if (threatened.size) map[target] = [...threatened].sort();
+	}
+	return map;
+}
+function formAlliance(next, allies) {
+	if (next.alliance || allies.length !== 2) return false;
+	const [first, second] = allies;
+	const firstKing = kingOf(next, first);
+	const secondKing = kingOf(next, second);
+	if (firstKing && isGeometricallyAttacked$1(next, firstKing.cell, second) || secondKing && isGeometricallyAttacked$1(next, secondKing.cell, first)) {
+		next.pending.invalidAllianceCheck = true;
+		return false;
+	}
+	next.alliance = [...allies].sort();
+	for (const faction of next.activeFactions) next.castlingCancelled[faction] = true;
+	const king = kingOf(next, next.activeFactions.find((faction) => !next.alliance.includes(faction)));
+	if (king) {
+		king.promoted = true;
+		king.illuminationReady = false;
+	}
+	return true;
+}
+function detectCompulsoryAlliance(before, next, actor) {
+	if (next.alliance || next.activeFactions.length !== 3) return;
+	const summary = threatSummary(next, actor);
+	const prior = before.pending?.attack;
+	if (prior) {
+		for (const [target, ids] of Object.entries(summary)) if (prior.actor !== actor && prior.target === target && ids.some((id) => !prior.targets.includes(id))) {
+			const formed = formAlliance(next, [prior.actor, actor]);
+			next.pending.attack = formed ? null : {
+				actor,
+				target,
+				targets: ids
+			};
+			return;
+		}
+	}
+	for (const [target, ids] of Object.entries(summary)) {
+		next.pending.attack = {
+			actor,
+			target,
+			targets: ids
+		};
+		return;
+	}
+	next.pending.attack = null;
+}
+function finalizeTurn(next, actor, hadMate) {
+	if (next.outcome) return;
+	next.turn = hadMate ? actor : nextFaction$1(next, actor);
+	if (!next.activeFactions.includes(next.turn)) next.turn = nextFaction$1(next, actor);
+	const king = kingOf(next, next.turn);
+	if (king?.promoted && !king.illuminationReady) king.illuminationReady = true;
+	for (const faction of next.activeFactions) if (isInCheck$2(next, faction)) {
+		const kingPiece = kingOf(next, faction);
+		if (kingPiece) kingPiece.everChecked = true;
+	}
+	const turnActions = generateFor$1(next, next.turn);
+	if (turnActions.length === 0 && next.alliance?.includes(next.turn)) {
+		const checkedAlly = next.alliance.find((faction) => faction !== next.turn && isInCheck$2(next, faction));
+		if (checkedAlly) {
+			if (generateFor$1(next, checkedAlly).length) {
+				next.turn = checkedAlly;
+				return;
+			}
+			next.outcome = {
+				type: "mate",
+				winner: actor,
+				losers: [...next.alliance],
+				message: `${FACTION_LABELS$1[actor]} defeats the alliance.`
+			};
+			next.phase = "complete";
+			return;
+		}
+	}
+	if (!isInCheck$2(next, next.turn) && turnActions.length === 0) {
+		next.outcome = {
+			type: "draw",
+			winner: null,
+			losers: [],
+			message: "Draw: the player to act has no legal action."
+		};
+		next.phase = "complete";
+	}
+}
+function applyAction$1(state, proposed) {
+	const validation = validateAction$1(state, proposed);
+	if (!validation.ok) return {
+		state,
+		error: validation.error
+	};
+	const action = validation.action;
+	const actor = state.turn;
+	const next = executeRaw(state, action);
+	if (isInCheck$2(state, actor)) {
+		const checkedKing = kingOf(next, actor);
+		if (checkedKing) checkedKing.everChecked = true;
+	}
+	next.ply += 1;
+	next.lastAction = {
+		...action,
+		actor,
+		ply: next.ply
+	};
+	detectCompulsoryAlliance(state, next, actor);
+	if (!gardenWinner(next, actor)) finalizeTurn(next, actor, resolveMate(next, actor));
+	if (!next.outcome) next.repetition[positionKey$1(next)] = actor;
+	return {
+		state: next,
+		error: null
+	};
+}
+function setupPieces$1() {
+	const pieces = [];
+	for (const faction of FACTIONS$1) {
+		const counts = {};
+		for (const [type, q, r] of MIDDLE_SETUP) {
+			counts[type] = (counts[type] || 0) + 1;
+			const axial = rotateAxial({
+				q,
+				r
+			}, ROTATION[faction]);
+			pieces.push({
+				id: `${faction}-${type}-${counts[type]}`,
+				owner: faction,
+				type,
+				promoted: false,
+				status: "board",
+				cell: cellKey(axial.q, axial.r),
+				hasMoved: false,
+				everChecked: false,
+				illuminationReady: true
+			});
+		}
+	}
+	return pieces;
+}
+function createInitialState$1({ alliance = null } = {}) {
+	const requestedAlliance = Array.isArray(alliance) ? [...new Set(alliance)].sort() : null;
+	const normalizedAlliance = JSON.stringify(requestedAlliance) === JSON.stringify(["blue", "green"]) ? requestedAlliance : null;
+	const state = {
+		gameId: GAME_ID$1,
+		rulesetVersion: RULESET_VERSION$1,
+		phase: "play",
+		turn: normalizedAlliance ? FACTIONS$1.find((faction) => !normalizedAlliance.includes(faction)) : "red",
+		activeFactions: [...FACTIONS$1],
+		alliance: normalizedAlliance,
+		castlingCancelled: {
+			red: Boolean(normalizedAlliance),
+			green: Boolean(normalizedAlliance),
+			blue: Boolean(normalizedAlliance)
+		},
+		pieces: setupPieces$1(),
+		pending: { attack: null },
+		outcome: null,
+		lastAction: null,
+		ply: 0,
+		repetition: {}
+	};
+	if (normalizedAlliance) {
+		const king = kingOf(state, state.turn);
+		king.promoted = true;
+		king.illuminationReady = true;
+	}
+	state.repetition[positionKey$1(state)] = "setup";
+	return state;
+}
+function assetRole(piece) {
+	if (!piece.promoted || piece.type === "king") return piece.type;
+	return {
+		rook: "dragon",
+		bishop: "horse",
+		silver: "promoted-silver",
+		lance: "promoted-lance",
+		pawn: "tokin"
+	}[piece.type] || piece.type;
+}
+const __testing$1 = Object.freeze({
+	positionKey: positionKey$1,
+	ROTATION,
+	MIDDLE_SETUP,
+	ORTH,
+	DIAG
+});
+
+//#endregion
+//#region frontend/src/games/sannin-shogi/boardGeometry.js
+const SIZE = 30;
+const BOARD_WIDTH = 1334;
+const BOARD_HEIGHT = 1179;
+const GRID_CENTER = Object.freeze({
+	x: 667,
+	y: 590
+});
+const GRID_SCALE = 1.3;
+const GRID_TRANSFORM = `translate(${GRID_CENTER.x} ${GRID_CENTER.y}) scale(${GRID_SCALE} ${GRID_SCALE})`;
+const ROW_OFFSETS = Object.freeze({
+	"-6": Object.freeze({
+		x: -94,
+		y: -77.81061692969872
+	}),
+	"-5": Object.freeze({
+		x: -94,
+		y: -76.11908177905309
+	}),
+	"-4": Object.freeze({
+		x: -94,
+		y: -74.42754662840747
+	}),
+	"-3": Object.freeze({
+		x: -94,
+		y: -71.04447632711621
+	}),
+	"-2": Object.freeze({
+		x: -93,
+		y: -67.66140602582497
+	}),
+	"-1": Object.freeze({
+		x: -94,
+		y: -65.96987087517934
+	}),
+	"0": Object.freeze({
+		x: -95,
+		y: -60.89526542324247
+	}),
+	"1": Object.freeze({
+		x: -93,
+		y: -59.20373027259685
+	}),
+	"2": Object.freeze({
+		x: -96,
+		y: -55.8206599713056
+	}),
+	"3": Object.freeze({
+		x: -94,
+		y: -54.129124820659975
+	}),
+	"4": Object.freeze({
+		x: -96,
+		y: -50.74605451936872
+	}),
+	"5": Object.freeze({
+		x: -93,
+		y: -49.0545193687231
+	}),
+	"6": Object.freeze({
+		x: -95,
+		y: -49.0545193687231
+	})
+});
+const ROW_SCALES = Object.freeze({
+	"-6": .972,
+	"-5": .992,
+	"-4": .996,
+	"-2": 1.01,
+	"-1": 1.02,
+	"0": 1.02,
+	"1": 1.016,
+	"2": 1.016,
+	"3": 1.026,
+	"4": 1.024,
+	"5": 1.014
+});
+const ROWS = Object.freeze(Array.from({ length: 13 }, (_, index) => index - 6));
+const CELLS_BY_ROW = Object.freeze(Object.fromEntries(ROWS.map((row) => [row, Object.freeze(HEX_CELLS.filter((cell) => cell.r === row))])));
+function artworkPoint(cell, offset = {
+	x: 0,
+	y: 0
+}) {
+	const point = projectPointyTop(cell, 30);
+	const row = ROW_OFFSETS[cell.r] || {
+		x: 0,
+		y: 0
+	};
+	return {
+		x: GRID_CENTER.x + row.x + (point.x + offset.x) * GRID_SCALE * (ROW_SCALES[cell.r] || 1),
+		y: GRID_CENTER.y + row.y + (point.y + offset.y) * GRID_SCALE
+	};
+}
+const bounds = HEX_CELLS.flatMap((cell) => pointyTopCorners(cell, 30).map((point) => {
+	const row = ROW_OFFSETS[cell.r];
+	return {
+		x: GRID_CENTER.x + row.x + point.x * GRID_SCALE * (ROW_SCALES[cell.r] || 1),
+		y: GRID_CENTER.y + row.y + point.y * GRID_SCALE
+	};
+}));
+const minX = Math.min(...bounds.map((p) => p.x)) - 32;
+const minY = Math.min(...bounds.map((p) => p.y)) - 32;
+const BATTLE_VIEWBOX = `${minX} ${minY} ${Math.max(...bounds.map((p) => p.x)) - minX + 32} ${Math.max(...bounds.map((p) => p.y)) - minY + 32}`;
+const FULL_VIEWBOX = `0 0 ${BOARD_WIDTH} ${BOARD_HEIGHT}`;
+const BATTLE_ASPECT = Number(BATTLE_VIEWBOX.split(" ")[2]) / Number(BATTLE_VIEWBOX.split(" ")[3]);
+
+//#endregion
+//#region frontend/src/games/sannin-shogi/publishedPiecePlacement.json
+var publishedPiecePlacement_default = {
+	"-1,-1": {
+		"x": 1.4688,
+		"y": .7491
+	},
+	"-1,-3": {
+		"x": -1,
+		"y": 0
+	},
+	"-1,-4": {
+		"x": 1,
+		"y": 0
+	},
+	"-1,-5": {
+		"x": 0,
+		"y": 0
+	},
+	"-1,0": {
+		"x": .7344,
+		"y": 0
+	},
+	"-1,2": {
+		"x": 1.4746,
+		"y": 0
+	},
+	"-1,3": {
+		"x": 0,
+		"y": .7491
+	},
+	"-1,4": {
+		"x": .7315,
+		"y": 0
+	},
+	"-1,5": {
+		"x": 0,
+		"y": 0
+	},
+	"-1,6": {
+		"x": 1.4981,
+		"y": 1.7491
+	},
+	"-2,-1": {
+		"x": 1.4688,
+		"y": 1.4982
+	},
+	"-2,-2": {
+		"x": 0,
+		"y": 0
+	},
+	"-2,-4": {
+		"x": 0,
+		"y": 1
+	},
+	"-2,0": {
+		"x": 1.4688,
+		"y": 0
+	},
+	"-2,2": {
+		"x": 1.4745,
+		"y": .749
+	},
+	"-2,3": {
+		"x": .7301,
+		"y": .7491
+	},
+	"-2,4": {
+		"x": 1.4631,
+		"y": 1
+	},
+	"-2,5": {
+		"x": -.7388,
+		"y": 0
+	},
+	"-2,6": {
+		"x": .7491,
+		"y": 1.7491
+	},
+	"-3,-1": {
+		"x": -.5312,
+		"y": .4982
+	},
+	"-3,-3": {
+		"x": -1,
+		"y": 0
+	},
+	"-3,0": {
+		"x": 1.4688,
+		"y": 0
+	},
+	"-3,2": {
+		"x": 1.4745,
+		"y": 0
+	},
+	"-3,3": {
+		"x": .7301,
+		"y": .7491
+	},
+	"-3,4": {
+		"x": 1.4631,
+		"y": .7491
+	},
+	"-3,6": {
+		"x": .7491,
+		"y": 1.7491
+	},
+	"-4,-1": {
+		"x": 1.4688,
+		"y": 1.251
+	},
+	"-4,-2": {
+		"x": -.2583,
+		"y": .0331
+	},
+	"-4,0": {
+		"x": -.5312,
+		"y": 0
+	},
+	"-4,2": {
+		"x": .7373,
+		"y": .749
+	},
+	"-4,3": {
+		"x": .7301,
+		"y": 0
+	},
+	"-4,4": {
+		"x": 1.463,
+		"y": 0
+	},
+	"-4,5": {
+		"x": -.7387,
+		"y": 0
+	},
+	"-4,6": {
+		"x": 0,
+		"y": 1.7491
+	},
+	"-5,-1": {
+		"x": -.5312,
+		"y": .4982
+	},
+	"-5,0": {
+		"x": .7344,
+		"y": 0
+	},
+	"-5,1": {
+		"x": -1,
+		"y": 0
+	},
+	"-5,2": {
+		"x": .7373,
+		"y": .7491
+	},
+	"-5,3": {
+		"x": 1.4602,
+		"y": .7491
+	},
+	"-5,4": {
+		"x": 2.1946,
+		"y": 0
+	},
+	"-5,5": {
+		"x": .2613,
+		"y": 1
+	},
+	"-5,6": {
+		"x": 0,
+		"y": 1.7491
+	},
+	"-6,0": {
+		"x": -.6676,
+		"y": 1
+	},
+	"-6,1": {
+		"x": -1.4746,
+		"y": .7491
+	},
+	"-6,2": {
+		"x": -1.2627,
+		"y": 0
+	},
+	"-6,3": {
+		"x": 1.4602,
+		"y": .7491
+	},
+	"-6,4": {
+		"x": 2.1945,
+		"y": 0
+	},
+	"-6,5": {
+		"x": -.7388,
+		"y": 0
+	},
+	"-6,6": {
+		"x": .2509,
+		"y": 1.7491
+	},
+	"0,-1": {
+		"x": .7344,
+		"y": .7491
+	},
+	"0,-4": {
+		"x": -1,
+		"y": -1
+	},
+	"0,-5": {
+		"x": .7552,
+		"y": 0
+	},
+	"0,-6": {
+		"x": -2,
+		"y": 0
+	},
+	"0,0": {
+		"x": .7344,
+		"y": 0
+	},
+	"0,2": {
+		"x": .7373,
+		"y": 0
+	},
+	"0,3": {
+		"x": 0,
+		"y": .7491
+	},
+	"0,4": {
+		"x": .7315,
+		"y": 0
+	},
+	"0,5": {
+		"x": .2612,
+		"y": 1
+	},
+	"0,6": {
+		"x": 2.2472,
+		"y": 1.7491
+	},
+	"1,-1": {
+		"x": 0,
+		"y": .7491
+	},
+	"1,-3": {
+		"x": 1,
+		"y": 0
+	},
+	"1,-4": {
+		"x": 1,
+		"y": 0
+	},
+	"1,-5": {
+		"x": -1,
+		"y": 0
+	},
+	"1,2": {
+		"x": .7373,
+		"y": 0
+	},
+	"1,3": {
+		"x": -.7301,
+		"y": .7491
+	},
+	"1,4": {
+		"x": 0,
+		"y": 0
+	},
+	"1,5": {
+		"x": -.7387,
+		"y": 0
+	},
+	"2,-1": {
+		"x": 0,
+		"y": .7491
+	},
+	"2,-5": {
+		"x": 1,
+		"y": 0
+	},
+	"2,-6": {
+		"x": -1,
+		"y": -1
+	},
+	"2,1": {
+		"x": -.2627,
+		"y": 0
+	},
+	"2,2": {
+		"x": .7373,
+		"y": 0
+	},
+	"2,3": {
+		"x": -.7301,
+		"y": .7491
+	},
+	"3,-1": {
+		"x": -.7344,
+		"y": .7491
+	},
+	"3,2": {
+		"x": 1,
+		"y": .2509
+	},
+	"3,3": {
+		"x": -1.4602,
+		"y": .7491
+	},
+	"4,-1": {
+		"x": -.7344,
+		"y": -.2509
+	},
+	"4,-2": {
+		"x": -1,
+		"y": 0
+	},
+	"4,-3": {
+		"x": 1,
+		"y": -1
+	},
+	"4,-4": {
+		"x": 0,
+		"y": -1
+	},
+	"4,-5": {
+		"x": 1,
+		"y": -1
+	},
+	"4,-6": {
+		"x": 1,
+		"y": -1
+	},
+	"4,0": {
+		"x": 0,
+		"y": -1
+	},
+	"4,2": {
+		"x": 1.4745,
+		"y": 0
+	},
+	"5,-1": {
+		"x": -.7344,
+		"y": .7491
+	},
+	"5,-5": {
+		"x": -.8216,
+		"y": -.815
+	},
+	"5,-6": {
+		"x": 1,
+		"y": 0
+	},
+	"5,1": {
+		"x": .7373,
+		"y": 0
+	},
+	"6,-1": {
+		"x": 0,
+		"y": -.2509
+	},
+	"6,-2": {
+		"x": 0,
+		"y": 0
+	},
+	"6,-3": {
+		"x": 0,
+		"y": -.6832
+	},
+	"6,-4": {
+		"x": 1,
+		"y": 0
+	},
+	"6,-5": {
+		"x": -1,
+		"y": 1
+	},
+	"6,-6": {
+		"x": 1,
+		"y": -1.185
+	},
+	"6,0": {
+		"x": .2033,
+		"y": -1.185
+	}
+};
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoRailGraph.ts
+const SOURCE_RAIL_EDGES = [
+	["blue-0-0", "blue-0-1"],
+	["blue-0-0", "blue-1-2"],
+	["blue-0-4", "blue-0-5"],
+	["blue-0-4", "blue-1-4"],
+	["blue-0-5", "blue-1-4"],
+	["blue-0-6", "blue-1-4"],
+	["blue-1-0", "blue-1-1"],
+	["blue-1-0", "blue-4-0"],
+	["blue-0-4", "green-0-4"],
+	["blue-1-1", "blue-1-2"],
+	["blue-1-1", "blue-2-1"],
+	["blue-1-2", "blue-1-3"],
+	["blue-1-2", "blue-4-2"],
+	["blue-1-3", "blue-1-4"],
+	["blue-1-3", "blue-3-3"],
+	["blue-1-4", "blue-1-5"],
+	["blue-1-4", "blue-2-4"],
+	["blue-1-6", "blue-4-6"],
+	["blue-1-7", "blue-1-8"],
+	["blue-1-7", "blue-2-7"],
+	["blue-1-8", "blue-4-8"],
+	["blue-0-4", "red-0-4"],
+	["blue-2-0", "blue-4-1"],
+	["blue-2-1", "blue-4-1"],
+	["blue-2-3", "blue-3-4"],
+	["blue-2-4", "blue-3-4"],
+	["blue-2-5", "blue-2-7"],
+	["blue-2-5", "blue-3-8"],
+	["blue-3-0", "blue-3-1"],
+	["blue-3-0", "blue-4-2"],
+	["blue-3-1", "blue-3-2"],
+	["blue-3-2", "blue-3-3"],
+	["blue-3-4", "blue-3-5"],
+	["blue-3-4", "blue-4-3"],
+	["blue-3-4", "blue-4-4"],
+	["blue-3-4", "blue-4-5"],
+	["blue-3-5", "blue-4-2"],
+	["blue-3-8", "blue-4-7"],
+	["blue-4-0", "blue-4-1"],
+	["blue-4-1", "blue-4-2"],
+	["blue-4-2", "blue-4-3"],
+	["blue-4-3", "blue-4-4"],
+	["blue-4-4", "blue-4-5"],
+	["blue-4-5", "blue-4-6"],
+	["blue-4-6", "blue-4-7"],
+	["blue-4-7", "blue-4-8"],
+	["green-0-0", "green-0-1"],
+	["green-0-0", "green-1-2"],
+	["green-0-1", "green-1-2"],
+	["green-0-4", "green-0-5"],
+	["green-0-4", "green-1-4"],
+	["green-0-5", "green-1-4"],
+	["green-0-6", "green-1-4"],
+	["green-1-0", "green-1-1"],
+	["green-1-0", "green-4-0"],
+	["green-1-1", "green-1-2"],
+	["green-1-1", "green-2-1"],
+	["green-1-2", "green-1-3"],
+	["green-1-2", "green-4-2"],
+	["green-1-3", "green-1-4"],
+	["green-1-3", "green-3-3"],
+	["green-1-4", "green-1-5"],
+	["green-1-4", "green-2-4"],
+	["green-1-6", "green-4-6"],
+	["green-1-7", "green-1-8"],
+	["green-1-7", "green-2-7"],
+	["green-1-8", "green-4-8"],
+	["green-0-4", "red-0-4"],
+	["green-2-0", "green-4-1"],
+	["green-2-1", "green-4-1"],
+	["green-2-3", "green-3-4"],
+	["green-2-4", "green-3-4"],
+	["green-2-5", "green-2-7"],
+	["green-3-0", "green-3-1"],
+	["green-3-0", "green-4-2"],
+	["green-3-1", "green-3-2"],
+	["green-3-2", "green-3-3"],
+	["green-3-4", "green-3-5"],
+	["green-3-4", "green-4-3"],
+	["green-3-4", "green-4-4"],
+	["green-3-4", "green-4-5"],
+	["green-3-8", "green-4-7"],
+	["green-4-0", "green-4-1"],
+	["green-4-1", "green-4-2"],
+	["green-4-2", "green-4-3"],
+	["green-4-3", "green-4-4"],
+	["green-4-4", "green-4-5"],
+	["green-4-5", "green-4-6"],
+	["green-4-6", "green-4-7"],
+	["green-4-7", "green-4-8"],
+	["red-0-0", "red-1-3"],
+	["red-0-3", "red-1-4"],
+	["red-0-4", "red-1-4"],
+	["red-0-5", "red-1-4"],
+	["red-0-8", "red-1-5"],
+	["red-1-0", "red-1-1"],
+	["red-1-1", "red-1-2"],
+	["red-1-1", "red-2-1"],
+	["red-1-2", "red-1-3"],
+	["red-1-2", "red-2-2"],
+	["red-1-3", "red-1-4"],
+	["red-1-3", "red-2-3"],
+	["red-1-4", "red-1-5"],
+	["red-1-4", "red-2-4"],
+	["red-1-5", "red-1-6"],
+	["red-1-5", "red-2-5"],
+	["red-1-6", "red-1-7"],
+	["red-1-6", "red-2-6"],
+	["red-1-7", "red-1-8"],
+	["red-1-7", "red-2-7"],
+	["red-1-8", "red-4-8"],
+	["red-2-0", "red-2-1"],
+	["red-2-1", "red-4-1"],
+	["red-2-2", "red-3-3"],
+	["red-2-3", "red-4-3"],
+	["red-2-4", "red-3-6"],
+	["red-2-5", "red-4-5"],
+	["red-2-6", "red-4-6"],
+	["red-2-7", "red-2-8"],
+	["red-2-7", "red-4-7"],
+	["red-3-0", "red-3-1"],
+	["red-3-1", "red-3-2"],
+	["red-3-2", "red-3-3"],
+	["red-3-6", "red-4-4"],
+	["red-4-0", "red-4-1"],
+	["red-4-1", "red-4-2"],
+	["red-4-2", "red-4-3"],
+	["red-4-3", "red-4-4"],
+	["red-4-4", "red-4-5"],
+	["red-4-5", "red-4-6"],
+	["red-4-6", "red-4-7"],
+	["red-4-7", "red-4-8"]
+];
+const SOURCE_RAIL_ADJACENCY = /* @__PURE__ */ new Map();
+for (const [from, to] of SOURCE_RAIL_EDGES) {
+	SOURCE_RAIL_ADJACENCY.set(from, [...SOURCE_RAIL_ADJACENCY.get(from) ?? [], to]);
+	SOURCE_RAIL_ADJACENCY.set(to, [...SOURCE_RAIL_ADJACENCY.get(to) ?? [], from]);
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoLogicalTopology.ts
+/**
+* Authoritative movement topology for Sanguo Qi.
+*
+* Rule logic lives on three identical logical Xiangqi half-boards:
+*   - ranks 0..4 (5 ranks)
+*   - files 0..8 (9 files)
+*
+* Rendering coordinates and the traced source-board rail graph are deliberately
+* not used here. Standard Xiangqi movement is calculated on these local 5x9
+* coordinates. Sanguo-specific behaviour is isolated to the river boundary and
+* the explicit three-way L5 junction below.
+*/
+const SANGUO_RANK_COUNT = 5;
+const SANGUO_FILE_COUNT = 9;
+const RIVER_RANK = 0;
+const HOME_RANK = 4;
+const CENTRAL_FILE = 4;
+const logicalNode = (sector, rank, file) => ({
+	sector,
+	rank,
+	file
+});
+const logicalNodeKey = (node) => `${node.sector}-${node.rank}-${node.file}`;
+/**
+* Non-visual river continuation table confirmed from the labelled board.
+* Human labels are L1..L9; code files are 0..8.
+*
+* R1-B9, R2-B8, R3-B7, R4-B6,
+* R5-B5-G5,
+* R6-G4, R7-G3, R8-G2, R9-G1,
+* B1-G9, B2-G8, B3-G7, B4-G6.
+*/
+const FILE_CONTINUATIONS = {
+	red: [
+		[{
+			sector: "blue",
+			file: 8
+		}],
+		[{
+			sector: "blue",
+			file: 7
+		}],
+		[{
+			sector: "blue",
+			file: 6
+		}],
+		[{
+			sector: "blue",
+			file: 5
+		}],
+		[{
+			sector: "blue",
+			file: 4
+		}, {
+			sector: "green",
+			file: 4
+		}],
+		[{
+			sector: "green",
+			file: 3
+		}],
+		[{
+			sector: "green",
+			file: 2
+		}],
+		[{
+			sector: "green",
+			file: 1
+		}],
+		[{
+			sector: "green",
+			file: 0
+		}]
+	],
+	blue: [
+		[{
+			sector: "green",
+			file: 8
+		}],
+		[{
+			sector: "green",
+			file: 7
+		}],
+		[{
+			sector: "green",
+			file: 6
+		}],
+		[{
+			sector: "green",
+			file: 5
+		}],
+		[{
+			sector: "red",
+			file: 4
+		}, {
+			sector: "green",
+			file: 4
+		}],
+		[{
+			sector: "red",
+			file: 3
+		}],
+		[{
+			sector: "red",
+			file: 2
+		}],
+		[{
+			sector: "red",
+			file: 1
+		}],
+		[{
+			sector: "red",
+			file: 0
+		}]
+	],
+	green: [
+		[{
+			sector: "red",
+			file: 8
+		}],
+		[{
+			sector: "red",
+			file: 7
+		}],
+		[{
+			sector: "red",
+			file: 6
+		}],
+		[{
+			sector: "red",
+			file: 5
+		}],
+		[{
+			sector: "red",
+			file: 4
+		}, {
+			sector: "blue",
+			file: 4
+		}],
+		[{
+			sector: "blue",
+			file: 3
+		}],
+		[{
+			sector: "blue",
+			file: 2
+		}],
+		[{
+			sector: "blue",
+			file: 1
+		}],
+		[{
+			sector: "blue",
+			file: 0
+		}]
+	]
+};
+/**
+* The only genuinely three-way movement junction.
+*
+* Each kingdom's (rank 0, file 4) is its L5 river endpoint. Reaching that
+* endpoint presents two straight continuations: the L5 endpoint of each other
+* kingdom. A piece may choose one branch; a single move never turns from one
+* foreign branch into the other after choosing it.
+*/
+const CENTRAL_VERTEX_EXITS = {
+	red: ["blue", "green"],
+	blue: ["red", "green"],
+	green: ["red", "blue"]
+};
+const isCentralVertexEndpoint = (node) => node.rank === 0 && node.file === 4;
+/** Direct one-step river exits from a rank-0 endpoint. */
+function riverExits(node) {
+	if (node.rank !== 0) return [];
+	if (isCentralVertexEndpoint(node)) return CENTRAL_VERTEX_EXITS[node.sector].map((sector) => logicalNode(sector, 0, 4));
+	return (FILE_CONTINUATIONS[node.sector][node.file] ?? []).map((continuation) => logicalNode(continuation.sector, 0, continuation.file));
+}
+/** Standard Xiangqi horizontal rays inside one logical 5x9 sector. */
+function rankRays(node) {
+	const { sector, rank, file } = node;
+	return [Array.from({ length: file }, (_, offset) => logicalNode(sector, rank, file - offset - 1)), Array.from({ length: 9 - file - 1 }, (_, offset) => logicalNode(sector, rank, file + offset + 1))].filter((ray) => ray.length > 0);
+}
+/**
+* Xiangqi vertical rays plus one Sanguo boundary operation.
+*
+* Inside a sector this is ordinary file movement. When the inward ray reaches
+* rank 0, it may continue through exactly one river exit. The chosen foreign
+* file then continues from rank 0 toward rank 4 as an ordinary Xiangqi file.
+* L5 simply produces two candidate rays because its river endpoint is the
+* explicit three-way junction defined above.
+*/
+function fileRays(node) {
+	const { sector, rank, file } = node;
+	const outward = Array.from({ length: 4 - rank }, (_, offset) => logicalNode(sector, rank + offset + 1, file));
+	const toRiver = Array.from({ length: rank }, (_, offset) => logicalNode(sector, rank - offset - 1, file));
+	const exits = riverExits(logicalNode(sector, 0, file));
+	return [outward, ...exits.length ? exits.map((exit) => [...toRiver, ...Array.from({ length: 5 }, (_, foreignRank) => logicalNode(exit.sector, foreignRank, exit.file))]) : [toRiver]].filter((ray) => ray.length > 0);
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoHorseMoves.ts
+const sameNode$7 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
+const occupant$8 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$7(piece.node, node));
+const unique$2 = (nodes) => [...new Map(nodes.map((node) => [`${node.sector}-${node.rank}-${node.file}`, node])).values()];
+const landable$2 = (piece, pieces, node) => {
+	const hit = occupant$8(pieces, node);
+	return !hit || hit.controller !== piece.controller;
+};
+const insideFile$2 = (file) => file >= 0 && file <= 8;
+const insideRank = (rank) => rank >= 0 && rank <= 4;
+const HORSE_DELTAS = [
+	[-2, -1],
+	[-2, 1],
+	[-1, -2],
+	[-1, 2],
+	[1, -2],
+	[1, 2],
+	[2, -1],
+	[2, 1]
+];
+/** Standard same-sector Xiangqi Horse geometry on the logical 5x9 grid. */
+function appendLocalHorseTargets(piece, pieces, output) {
+	const { sector, rank, file } = piece.node;
+	for (const [rankDelta, fileDelta] of HORSE_DELTAS) {
+		const destinationRank = rank + rankDelta;
+		const destinationFile = file + fileDelta;
+		if (!insideRank(destinationRank) || !insideFile$2(destinationFile)) continue;
+		if (occupant$8(pieces, Math.abs(rankDelta) === 2 ? {
+			sector,
+			rank: rank + Math.sign(rankDelta),
+			file
+		} : {
+			sector,
+			rank,
+			file: file + Math.sign(fileDelta)
+		})) continue;
+		const destination = logicalNode(sector, destinationRank, destinationFile);
+		if (landable$2(piece, pieces, destination)) output.push(destination);
+	}
+}
+/**
+* Xiangqi Horse movement with only the river boundary adapted for Sanguo.
+* Local moves are the ordinary eight (±2,±1)/(±1,±2) possibilities. If an L
+* reaches across rank 0, the final geometry uses the explicit river exit of the
+* logical board; L5 may therefore choose either branch of the central junction.
+*/
+function sanguoHorseTargets(piece, pieces) {
+	if (piece.captured) return [];
+	const output = [];
+	appendLocalHorseTargets(piece, pieces, output);
+	for (const ray of fileRays(piece.node)) {
+		if (ray.length < 2) continue;
+		const leg = ray[0];
+		const second = ray[1];
+		if (occupant$8(pieces, leg)) continue;
+		if (second.sector === piece.node.sector) continue;
+		for (const side of [-1, 1]) {
+			const destinationFile = second.file + side;
+			if (!insideFile$2(destinationFile)) continue;
+			const destination = logicalNode(second.sector, second.rank, destinationFile);
+			if (landable$2(piece, pieces, destination)) output.push(destination);
+		}
+	}
+	for (const ray of rankRays(piece.node)) {
+		if (ray.length < 2) continue;
+		const leg = ray[0];
+		const second = ray[1];
+		if (occupant$8(pieces, leg)) continue;
+		for (const perpendicular of fileRays(second)) {
+			const destination = perpendicular[0];
+			if (!destination || destination.sector === piece.node.sector) continue;
+			if (landable$2(piece, pieces, destination)) output.push(destination);
+		}
+	}
+	return unique$2(output);
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoElephantMoves.ts
+const sameNode$6 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
+const occupant$7 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$6(piece.node, node));
+const insideHalfBoard = (rank, file) => rank >= 0 && rank <= 4 && file >= 0 && file <= 8;
+const ELEPHANT_DELTAS = [
+	[-2, -2],
+	[-2, 2],
+	[2, -2],
+	[2, 2]
+];
+/**
+* Exact Xiangqi Elephant movement on a Sanguo kingdom half-board.
+*
+* The Elephant moves exactly two points diagonally in one move. It cannot jump:
+* the diagonal midpoint (the elephant eye) must be empty. As in Xiangqi, an
+* Elephant may not cross the river, so every destination remains in the
+* Elephant's current Sanguo sector. A friendly destination is forbidden; an
+* enemy destination may be captured.
+*/
+function sanguoElephantTargets(piece, pieces) {
+	if (piece.captured) return [];
+	const output = [];
+	const { sector, rank, file } = piece.node;
+	for (const [rankDelta, fileDelta] of ELEPHANT_DELTAS) {
+		const destinationRank = rank + rankDelta;
+		const destinationFile = file + fileDelta;
+		if (!insideHalfBoard(destinationRank, destinationFile)) continue;
+		if (occupant$7(pieces, {
+			sector,
+			rank: rank + rankDelta / 2,
+			file: file + fileDelta / 2
+		})) continue;
+		const destination = {
+			sector,
+			rank: destinationRank,
+			file: destinationFile
+		};
+		const hit = occupant$7(pieces, destination);
+		if (!hit || hit.controller !== piece.controller) output.push(destination);
+	}
+	return output;
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoAdvisorMoves.ts
+const key$1 = (node) => `${node.sector}-${node.rank}-${node.file}`;
+const sameNode$5 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
+const occupant$6 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$5(piece.node, node));
+const PALACE_CORNERS = [
+	{
+		rank: 2,
+		file: 3
+	},
+	{
+		rank: 2,
+		file: 5
+	},
+	{
+		rank: 4,
+		file: 3
+	},
+	{
+		rank: 4,
+		file: 5
+	}
+];
+const PALACE_CENTER = {
+	rank: 3,
+	file: 4
+};
+/**
+* Exact Xiangqi Advisor rule for one Sanguo kingdom palace.
+*
+* The Advisor moves exactly one diagonal palace step and may never leave its
+* original kingdom's 3x3 palace. The palace has the normal Xiangqi X: the four
+* corners connect only to the centre, and the centre connects to all four
+* corners. Mid-edge palace points are not Advisor destinations because no
+* diagonal palace rail reaches them.
+*
+* Appropriation changes controller, not the piece's original sector, so an
+* appropriated Advisor remains confined to the palace printed in its own
+* sector. It may capture an enemy-controlled coin on a legal destination but
+* may not land on a friendly-controlled coin.
+*/
+function sanguoAdvisorTargets(piece, pieces) {
+	if (piece.captured || piece.node.sector !== piece.sector) return [];
+	const { sector, rank, file } = piece.node;
+	const isCenter = rank === PALACE_CENTER.rank && file === PALACE_CENTER.file;
+	const isCorner = PALACE_CORNERS.some((corner) => corner.rank === rank && corner.file === file);
+	let candidates = [];
+	if (isCenter) candidates = PALACE_CORNERS.map((corner) => ({
+		sector,
+		rank: corner.rank,
+		file: corner.file
+	}));
+	else if (isCorner) candidates = [{
+		sector,
+		rank: PALACE_CENTER.rank,
+		file: PALACE_CENTER.file
+	}];
+	else return [];
+	return [...new Map(candidates.map((node) => [key$1(node), node])).values()].filter((node) => {
+		const hit = occupant$6(pieces, node);
+		return !hit || hit.controller !== piece.controller;
+	});
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoGeneralMoves.ts
+const sameNode$4 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
+const occupant$5 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$4(piece.node, node));
+const insidePalace$1 = (piece, node) => node.sector === piece.sector && node.rank >= 2 && node.rank <= 4 && node.file >= 3 && node.file <= 5;
+const ORTHOGONAL_STEPS = [
+	[-1, 0],
+	[1, 0],
+	[0, -1],
+	[0, 1]
+];
+/**
+* Exact Xiangqi General rule for a Sanguo kingdom palace.
+*
+* The General moves exactly one point orthogonally and may never leave its
+* original 3x3 palace. It never moves diagonally and never uses any of the
+* cross-kingdom continuation lines.
+*
+* Friendly pieces block the destination. Enemy pieces may be captured there.
+* Check, flying-General exposure, and moving into attack are enforced by the
+* higher-level legal-move filter in sanguoRules.ts, so this function returns
+* only the General's geometric pseudo-legal destinations.
+*/
+function sanguoGeneralTargets(piece, pieces) {
+	if (piece.captured) return [];
+	if (!insidePalace$1(piece, piece.node)) return [];
+	return ORTHOGONAL_STEPS.map(([rankDelta, fileDelta]) => ({
+		sector: piece.sector,
+		rank: piece.node.rank + rankDelta,
+		file: piece.node.file + fileDelta
+	})).filter((node) => insidePalace$1(piece, node)).filter((node) => {
+		const hit = occupant$5(pieces, node);
+		return !hit || hit.controller !== piece.controller;
+	});
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoSoldierMoves.ts
+const sameNode$3 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
+const occupant$4 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$3(piece.node, node));
+const insideFile$1 = (file) => file >= 0 && file <= 8;
+const landable$1 = (piece, pieces, node) => {
+	const hit = occupant$4(pieces, node);
+	return !hit || hit.controller !== piece.controller;
+};
+/**
+* Standard Xiangqi Soldier rule on a logical Sanguo sector.
+*
+* Home sector:
+*   - exactly one point forward (rank - 1)
+*   - at rank 0, forward means cross through the explicit river exit
+*
+* Foreign sector (river already crossed):
+*   - one point forward deeper into that sector (rank + 1)
+*   - or one point sideways (file ± 1)
+*   - never backward
+*
+* The only Sanguo-specific case is rank-0 crossing. On L5, riverExits()
+* explicitly returns both branches of the central three-way junction.
+*/
+function sanguoSoldierTargets(piece, pieces) {
+	if (piece.captured) return [];
+	const { sector: currentSector, rank, file } = piece.node;
+	const crossedRiver = currentSector !== piece.sector;
+	const candidates = [];
+	if (!crossedRiver) if (rank > 0) candidates.push(logicalNode(currentSector, rank - 1, file));
+	else candidates.push(...riverExits(piece.node));
+	else {
+		if (rank < 4) candidates.push(logicalNode(currentSector, rank + 1, file));
+		if (insideFile$1(file - 1)) candidates.push(logicalNode(currentSector, rank, file - 1));
+		if (insideFile$1(file + 1)) candidates.push(logicalNode(currentSector, rank, file + 1));
+	}
+	return candidates.filter((node) => landable$1(piece, pieces, node));
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoBannermanMoves.ts
+const sameNode$2 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
+const occupant$3 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$2(piece.node, node));
+const unique$1 = (nodes) => [...new Map(nodes.map((node) => [`${node.sector}-${node.rank}-${node.file}`, node])).values()];
+const landable = (piece, pieces, node) => {
+	const hit = occupant$3(pieces, node);
+	return !hit || hit.controller !== piece.controller;
+};
+const insideFile = (file) => file >= 0 && file <= 8;
+/**
+* Optional Sanguo Bannerman rule on logical coordinates.
+* Two clear orthogonal transit points, then one outward diagonal finish.
+* The only non-Xiangqi geometry is a river-boundary continuation supplied by
+* sanguoLogicalTopology; no pixel/rail tracing participates in the rule.
+*/
+function sanguoBannermanTargets(piece, pieces) {
+	if (piece.captured) return [];
+	const output = [];
+	for (const ray of fileRays(piece.node)) {
+		if (ray.length < 3) continue;
+		const first = ray[0];
+		const second = ray[1];
+		const longEndpoint = ray[2];
+		if (occupant$3(pieces, first) || occupant$3(pieces, second)) continue;
+		for (const side of [-1, 1]) {
+			const destinationFile = longEndpoint.file + side;
+			if (!insideFile(destinationFile)) continue;
+			const destination = logicalNode(longEndpoint.sector, longEndpoint.rank, destinationFile);
+			if (landable(piece, pieces, destination)) output.push(destination);
+		}
+	}
+	for (const ray of rankRays(piece.node)) {
+		if (ray.length < 3) continue;
+		const first = ray[0];
+		const second = ray[1];
+		const longEndpoint = ray[2];
+		if (occupant$3(pieces, first) || occupant$3(pieces, second)) continue;
+		for (const perpendicular of fileRays(longEndpoint)) {
+			const destination = perpendicular[0];
+			if (destination && landable(piece, pieces, destination)) output.push(destination);
+		}
+	}
+	return unique$1(output);
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoGraphMoves.ts
+const key = (node) => `${node.sector}-${node.rank}-${node.file}`;
+const same = (left, right) => key(left) === key(right);
+const occupant$2 = (pieces, node) => pieces.find((piece) => !piece.captured && same(piece.node, node));
+const unique = (nodes) => [...new Map(nodes.map((node) => [key(node), node])).values()];
+function appendChariotRay(piece, pieces, ray, output) {
+	for (const node of ray) {
+		const hit = occupant$2(pieces, node);
+		if (!hit) {
+			output.push(node);
+			continue;
+		}
+		if (hit.controller !== piece.controller) output.push(node);
+		break;
+	}
+}
+/** Xiangqi Chariot rays on logical coordinates, extended only at a Sanguo river boundary. */
+function chariotTargets$1(piece, pieces) {
+	const output = [];
+	for (const ray of [...rankRays(piece.node), ...fileRays(piece.node)]) appendChariotRay(piece, pieces, ray, output);
+	return unique(output);
+}
+function appendCannonRay(piece, pieces, ray, output) {
+	let screened = false;
+	for (const node of ray) {
+		const hit = occupant$2(pieces, node);
+		if (!screened) {
+			if (!hit) {
+				output.push(node);
+				continue;
+			}
+			screened = true;
+			continue;
+		}
+		if (!hit) continue;
+		if (hit.controller !== piece.controller) output.push(node);
+		break;
+	}
+}
+/** Xiangqi Cannon rule on the same logical straight rays as the Chariot. */
+function cannonTargets$2(piece, pieces) {
+	const output = [];
+	for (const ray of [...rankRays(piece.node), ...fileRays(piece.node)]) appendCannonRay(piece, pieces, ray, output);
+	return unique(output);
+}
+/** Authoritative pseudo-legal resolver. */
+function logicalPseudoTargets(piece, pieces) {
+	if (piece.captured) return [];
+	if (piece.role === "icebreaker") return chariotTargets$1(piece, pieces);
+	if (piece.role === "cannon") return cannonTargets$2(piece, pieces);
+	if (piece.role === "king") return sanguoGeneralTargets(piece, pieces);
+	if (piece.role === "guard") return sanguoAdvisorTargets(piece, pieces);
+	if (piece.role === "seer") return sanguoElephantTargets(piece, pieces);
+	if (piece.role === "rider") return sanguoHorseTargets(piece, pieces);
+	if (piece.role === "runner") return sanguoBannermanTargets(piece, pieces);
+	return sanguoSoldierTargets(piece, pieces);
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoSpecialRules.ts
+const sameNode$1 = (left, right) => left.sector === right.sector && left.rank === right.rank && left.file === right.file;
+const occupant$1 = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode$1(piece.node, node));
+/**
+* Xiangqi flying-General prohibition on logical straight files.
+*
+* Within a sector this is the ordinary Xiangqi file test. If the sightline
+* reaches rank 0, the Sanguo river layer may continue it into one foreign file.
+* At L5 there are exactly two separately-tested branches from the explicit
+* central three-way junction. Any intervening coin blocks that branch.
+*/
+function generalsFacingOnLogicalFiles(pieces) {
+	const generals = pieces.filter((piece) => !piece.captured && piece.role === "king");
+	for (const general of generals) for (const ray of fileRays(general.node)) for (const node of ray) {
+		const hit = occupant$1(pieces, node);
+		if (!hit) continue;
+		if (hit.role === "king" && hit.id !== general.id) return true;
+		break;
+	}
+	return false;
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoRules.ts
+const sanguoFactions = [
+	"red",
+	"green",
+	"blue"
+];
+const roleLabels = {
+	king: "General",
+	guard: "Advisor",
+	seer: "Elephant",
+	rider: "Horse",
+	runner: "Bannerman",
+	icebreaker: "Chariot",
+	cannon: "Cannon",
+	scout: "Soldier"
+};
+const nodeId = (node) => logicalNodeKey(node);
+const sameNode = (left, right) => nodeId(left) === nodeId(right);
+const sanguoNodeIds = () => sanguoFactions.flatMap((sector) => Array.from({ length: 45 }, (_, index) => logicalNodeKey({
+	sector,
+	rank: Math.floor(index / 9),
+	file: index % 9
+})));
+const railNodeIds = new Set(sanguoNodeIds());
+const occupant = (pieces, node) => pieces.find((piece) => !piece.captured && sameNode(piece.node, node));
+/** Public pseudo-target resolver: logical Xiangqi geometry + explicit Sanguo boundary rules. */
+const pseudoSanguoTargets = (piece, pieces) => logicalPseudoTargets(piece, pieces);
+/** Xiangqi flying-General rule on logical files, including explicit L5 branching. */
+function generalsFacing$1(pieces) {
+	return generalsFacingOnLogicalFiles(pieces);
+}
+function generalIsAttacked(controller, pieces) {
+	const general = pieces.find((piece) => !piece.captured && piece.sector === controller && piece.role === "king");
+	return Boolean(general && pieces.some((piece) => !piece.captured && piece.controller !== controller && pseudoSanguoTargets(piece, pieces).some((target) => sameNode(target, general.node))));
+}
+const checkingPiecesAgainst = (defeated, victor, pieces) => {
+	const general = pieces.find((piece) => !piece.captured && piece.sector === defeated && piece.role === "king");
+	if (!general) return [];
+	return pieces.filter((piece) => !piece.captured && piece.controller === victor && pseudoSanguoTargets(piece, pieces).some((target) => sameNode(target, general.node)));
+};
+const relocate$2 = (pieces, piece, destination) => {
+	const victim = occupant(pieces, destination);
+	return pieces.map((candidate) => candidate.id === piece.id ? {
+		...candidate,
+		node: destination
+	} : victim && candidate.id === victim.id ? {
+		...candidate,
+		captured: true
+	} : candidate);
+};
+/**
+* A legal move may not capture a General directly. Instead it must leave the
+* opposing General with no legal reply; Sanguo then resolves that army in the
+* documented separate appropriation turn.
+*/
+const legalSanguoTargets = (piece, pieces) => pseudoSanguoTargets(piece, pieces).filter((target) => {
+	if (occupant(pieces, target)?.role === "king") return false;
+	const next = relocate$2(pieces, piece, target);
+	return !generalsFacing$1(next) && !generalIsAttacked(piece.controller, next);
+});
+const hasSanguoLegalMove = (controller, pieces) => pieces.some((piece) => !piece.captured && piece.controller === controller && legalSanguoTargets(piece, pieces).length > 0);
+function initialSanguoPieces(includeBannermen = false) {
+	const pieces = [];
+	sanguoFactions.forEach((sector) => {
+		const add = (role, rank, file, index) => pieces.push({
+			id: `${sector}-${role}-${index}`,
+			sector,
+			controller: sector,
+			role,
+			node: {
+				sector,
+				rank,
+				file
+			}
+		});
+		[
+			"icebreaker",
+			"rider",
+			"seer",
+			"guard",
+			"king",
+			"guard",
+			"seer",
+			"rider",
+			"icebreaker"
+		].forEach((role, file) => add(role, 4, file, file));
+		add("cannon", 2, 1, 0);
+		add("cannon", 2, 7, 1);
+		[
+			0,
+			2,
+			4,
+			6,
+			8
+		].forEach((file, index) => add("scout", 1, file, index));
+		if (includeBannermen) {
+			add("runner", 2, 3, 0);
+			add("runner", 2, 5, 1);
+		}
+	});
+	return pieces;
+}
+const initialSanguoState = (includeBannermen = false) => ({
+	pieces: initialSanguoPieces(includeBannermen),
+	turn: "red",
+	defeated: [],
+	winner: null,
+	pending: null,
+	note: "Shu / Red opens. Turns then proceed counterclockwise: Red → Green → Blue.",
+	moveNumber: 1,
+	lastMove: null
+});
+/** Shu/Red first, then counterclockwise Red → Green → Blue, skipping eliminated kingdoms. */
+function nextSanguoTurn(current, defeated) {
+	for (let offset = 1; offset <= sanguoFactions.length; offset += 1) {
+		const candidate = sanguoFactions[(sanguoFactions.indexOf(current) + offset) % sanguoFactions.length];
+		if (!defeated.includes(candidate)) return candidate;
+	}
+	return current;
+}
+const winnerFromDefeats = (defeated) => {
+	const survivors = sanguoFactions.filter((faction) => !defeated.includes(faction));
+	return survivors.length === 1 ? survivors[0] : null;
+};
+const removeGeneralAndAppropriate = (pieces, resolution) => pieces.map((piece) => piece.controller !== resolution.defeated ? piece : piece.role === "king" ? {
+	...piece,
+	captured: true
+} : piece.captured ? piece : {
+	...piece,
+	controller: resolution.victor
+});
+function applySanguoMove(state, pieceId, destination) {
+	if (state.winner || state.draw || state.pending) return null;
+	const piece = state.pieces.find((candidate) => candidate.id === pieceId);
+	if (!piece || piece.captured || piece.controller !== state.turn || !legalSanguoTargets(piece, state.pieces).some((target) => sameNode(target, destination))) return null;
+	const victim = occupant(state.pieces, destination);
+	const pieces = relocate$2(state.pieces, piece, destination);
+	const nextTurn = nextSanguoTurn(state.turn, state.defeated);
+	const lastMove = {
+		pieceId,
+		from: piece.node,
+		to: destination,
+		controller: state.turn,
+		role: piece.role,
+		captured: victim?.role
+	};
+	const action = `${roleLabels[piece.role]} ${victim ? `captures ${roleLabels[victim.role]}` : "advances"}`;
+	const nextInCheck = generalIsAttacked(nextTurn, pieces);
+	if (!hasSanguoLegalMove(nextTurn, pieces)) {
+		const reason = nextInCheck ? "checkmate" : "stalemate";
+		const checkers = reason === "checkmate" ? checkingPiecesAgainst(nextTurn, state.turn, pieces) : [];
+		const matingPieceId = checkers.some((checker) => checker.id === piece.id) ? piece.id : checkers[0]?.id;
+		return {
+			...state,
+			pieces,
+			pending: {
+				defeated: nextTurn,
+				victor: state.turn,
+				reason,
+				matingPieceId
+			},
+			note: `${action}. ${nextTurn} has no legal reply: resolve ${reason} appropriation.`,
+			moveNumber: state.moveNumber + 1,
+			lastMove
+		};
+	}
+	return trackSanguoPosition({
+		...state,
+		pieces,
+		turn: nextTurn,
+		note: nextInCheck ? `${action}. ${nextTurn} is in check and must answer it.` : `${action}. ${nextTurn} to move.`,
+		moveNumber: state.moveNumber + 1,
+		lastMove,
+		positions: state.positions ?? [sanguoPositionKey(state)],
+		quietMoves: victim || piece.role === "scout" ? 0 : (state.quietMoves ?? 0) + 1
+	});
+}
+/** Arctic completion rules: three identical positions, or 120 quiet plies, draw. */
+function sanguoPositionKey(state) {
+	const roleCode = {
+		king: "k",
+		guard: "g",
+		seer: "e",
+		rider: "h",
+		runner: "b",
+		icebreaker: "r",
+		cannon: "c",
+		scout: "s"
+	};
+	return state.turn + ":" + state.pieces.filter((p) => !p.captured).map((p) => `${p.sector[0]}${p.controller[0]}${roleCode[p.role]}${p.node.sector[0]}${p.node.rank}${p.node.file}`).sort().join("");
+}
+function trackSanguoPosition(state) {
+	const key = sanguoPositionKey(state);
+	const positions = [...state.positions ?? [], key].slice(-121);
+	const draw = positions.filter((p) => p === key).length >= 3 ? "repetition" : (state.quietMoves ?? 0) >= 120 ? "no-progress" : void 0;
+	return {
+		...state,
+		positions,
+		...draw ? {
+			draw,
+			note: draw === "repetition" ? "Draw: the same position occurred three times." : "Draw: 120 moves without a capture or Soldier move."
+		} : {}
+	};
+}
+const placeMatingPieceOnGeneral = (pieces, resolution) => {
+	if (resolution.reason !== "checkmate" || !resolution.matingPieceId) return pieces;
+	const general = pieces.find((piece) => !piece.captured && piece.sector === resolution.defeated && piece.role === "king");
+	const matingPiece = pieces.find((piece) => !piece.captured && piece.id === resolution.matingPieceId && piece.controller === resolution.victor);
+	if (!general || !matingPiece) return pieces;
+	return pieces.map((piece) => piece.id === matingPiece.id ? {
+		...piece,
+		node: general.node
+	} : piece);
+};
+function resolveSanguoAppropriation(state) {
+	if (!state.pending) return null;
+	const defeated = [...state.defeated, state.pending.defeated];
+	const pieces = removeGeneralAndAppropriate(placeMatingPieceOnGeneral(state.pieces, state.pending), state.pending);
+	const winner = winnerFromDefeats(defeated);
+	if (winner) return {
+		...state,
+		pieces,
+		defeated,
+		winner,
+		pending: null,
+		note: `${winner} is the last surviving kingdom.`,
+		lastMove: state.lastMove
+	};
+	const turn = nextSanguoTurn(state.turn, defeated);
+	const next = {
+		...state,
+		pieces,
+		defeated,
+		turn,
+		pending: null,
+		note: `${state.pending.victor} appropriates the ${state.pending.defeated} army. ${turn} to move.`,
+		lastMove: state.lastMove,
+		positions: [],
+		quietMoves: 0
+	};
+	if (!hasSanguoLegalMove(turn, pieces)) {
+		const check = generalIsAttacked(turn, pieces);
+		next.pending = {
+			defeated: turn,
+			victor: state.pending.victor,
+			reason: check ? "checkmate" : "stalemate",
+			matingPieceId: checkingPiecesAgainst(turn, state.pending.victor, pieces)[0]?.id
+		};
+		next.turn = state.pending.victor;
+		next.note = `${turn} has no legal reply after appropriation. Resolve its army.`;
+	}
+	return next;
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoReferenceCoordinates.ts
+const REFERENCE_FILE_LABELS = {
+	red: [
+		"W",
+		"X",
+		"Y",
+		"Z",
+		"A",
+		"B",
+		"C",
+		"D",
+		"E"
+	],
+	blue: [
+		"9",
+		"8",
+		"7",
+		"6",
+		"5",
+		"4",
+		"3",
+		"2",
+		"1"
+	],
+	green: [
+		"10",
+		"11",
+		"12",
+		"13",
+		"14",
+		"15",
+		"16",
+		"17",
+		"18"
+	]
+};
+const referenceCoordinate = (node) => {
+	const axis = REFERENCE_FILE_LABELS[node.sector][node.file] ?? `F${node.file}`;
+	const depth = Math.max(0, Math.min(4, node.rank));
+	return {
+		sector: node.sector,
+		axis,
+		depth,
+		id: `${node.sector[0].toUpperCase()}-${axis}-${depth}`
+	};
+};
+const referenceNodeId = (node) => referenceCoordinate(node).id;
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoTopology.ts
+const RED_FIELD = [
+	[
+		{
+			x: 548,
+			y: 718
+		},
+		{
+			x: 571,
+			y: 703
+		},
+		{
+			x: 594,
+			y: 691
+		},
+		{
+			x: 617,
+			y: 683
+		},
+		{
+			x: 640,
+			y: 680
+		},
+		{
+			x: 663,
+			y: 683
+		},
+		{
+			x: 686,
+			y: 691
+		},
+		{
+			x: 709,
+			y: 703
+		},
+		{
+			x: 732,
+			y: 718
+		}
+	],
+	[
+		{
+			x: 260,
+			y: 886
+		},
+		{
+			x: 350,
+			y: 850
+		},
+		{
+			x: 450,
+			y: 809
+		},
+		{
+			x: 544,
+			y: 770
+		},
+		{
+			x: 640,
+			y: 731
+		},
+		{
+			x: 735,
+			y: 770
+		},
+		{
+			x: 829,
+			y: 809
+		},
+		{
+			x: 930,
+			y: 850
+		},
+		{
+			x: 1018,
+			y: 886
+		}
+	],
+	[
+		{
+			x: 319,
+			y: 925
+		},
+		{
+			x: 379,
+			y: 917
+		},
+		{
+			x: 470,
+			y: 900
+		},
+		{
+			x: 555,
+			y: 880
+		},
+		{
+			x: 640,
+			y: 865
+		},
+		{
+			x: 725,
+			y: 880
+		},
+		{
+			x: 810,
+			y: 900
+		},
+		{
+			x: 899,
+			y: 918
+		},
+		{
+			x: 960,
+			y: 925
+		}
+	],
+	[
+		{
+			x: 338,
+			y: 994
+		},
+		{
+			x: 389,
+			y: 985
+		},
+		{
+			x: 440,
+			y: 978
+		},
+		{
+			x: 491,
+			y: 973
+		},
+		{
+			x: 542,
+			y: 970
+		},
+		{
+			x: 593,
+			y: 973
+		},
+		{
+			x: 644,
+			y: 978
+		},
+		{
+			x: 695,
+			y: 985
+		},
+		{
+			x: 746,
+			y: 994
+		}
+	],
+	[
+		{
+			x: 354,
+			y: 1047
+		},
+		{
+			x: 425,
+			y: 1047
+		},
+		{
+			x: 496,
+			y: 1047
+		},
+		{
+			x: 568,
+			y: 1047
+		},
+		{
+			x: 640,
+			y: 1047
+		},
+		{
+			x: 712,
+			y: 1047
+		},
+		{
+			x: 784,
+			y: 1047
+		},
+		{
+			x: 855,
+			y: 1047
+		},
+		{
+			x: 926,
+			y: 1047
+		}
+	]
+];
+const BLUE_FIELD = [
+	[
+		{
+			x: 545,
+			y: 265
+		},
+		{
+			x: 540,
+			y: 315
+		},
+		{
+			x: 535,
+			y: 365
+		},
+		{
+			x: 530,
+			y: 415
+		},
+		{
+			x: 525,
+			y: 465
+		},
+		{
+			x: 520,
+			y: 500
+		},
+		{
+			x: 505,
+			y: 525
+		},
+		{
+			x: 470,
+			y: 545
+		},
+		{
+			x: 400,
+			y: 565
+		}
+	],
+	[
+		{
+			x: 544,
+			y: 70
+		},
+		{
+			x: 530,
+			y: 165
+		},
+		{
+			x: 519,
+			y: 276
+		},
+		{
+			x: 510,
+			y: 370
+		},
+		{
+			x: 493,
+			y: 476
+		},
+		{
+			x: 420,
+			y: 540
+		},
+		{
+			x: 329,
+			y: 602
+		},
+		{
+			x: 250,
+			y: 660
+		},
+		{
+			x: 167,
+			y: 724
+		}
+	],
+	[
+		{
+			x: 450,
+			y: 170
+		},
+		{
+			x: 460,
+			y: 159
+		},
+		{
+			x: 410,
+			y: 290
+		},
+		{
+			x: 390,
+			y: 350
+		},
+		{
+			x: 370,
+			y: 410
+		},
+		{
+			x: 350,
+			y: 470
+		},
+		{
+			x: 330,
+			y: 530
+		},
+		{
+			x: 201,
+			y: 609
+		},
+		{
+			x: 270,
+			y: 630
+		}
+	],
+	[
+		{
+			x: 400,
+			y: 120
+		},
+		{
+			x: 375,
+			y: 180
+		},
+		{
+			x: 350,
+			y: 245
+		},
+		{
+			x: 325,
+			y: 305
+		},
+		{
+			x: 300,
+			y: 365
+		},
+		{
+			x: 275,
+			y: 425
+		},
+		{
+			x: 250,
+			y: 485
+		},
+		{
+			x: 225,
+			y: 545
+		},
+		{
+			x: 190,
+			y: 600
+		}
+	],
+	[
+		{
+			x: 350,
+			y: 70
+		},
+		{
+			x: 315,
+			y: 130
+		},
+		{
+			x: 280,
+			y: 190
+		},
+		{
+			x: 245,
+			y: 255
+		},
+		{
+			x: 210,
+			y: 315
+		},
+		{
+			x: 175,
+			y: 375
+		},
+		{
+			x: 145,
+			y: 435
+		},
+		{
+			x: 110,
+			y: 495
+		},
+		{
+			x: 70,
+			y: 560
+		}
+	]
+];
+const GREEN_FIELD = BLUE_FIELD.map((rank) => rank.map(({ x, y }) => ({
+	x: 1280 - x,
+	y
+})));
+const SOURCE_NODES = {
+	red: RED_FIELD,
+	blue: BLUE_FIELD,
+	green: GREEN_FIELD
+};
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoArcticBoardGraph.ts
+/**
+* Arctic board presentation graph. Coordinates are the user-approved positions;
+* the optional debug overlay displays logical rank/file and river connections.
+* The old traced rails are not an authority for movement or connectivity.
+*
+* User coordinate mapping: L{file+1}-{depth}, where source rank 4 is depth 1
+* (the outer starting rank) and source rank 0 is depth 5 (toward the centre).
+*/
+const APPROVED_POSITIONS = {
+	red: [
+		[.297273, .806],
+		[.270364, .758727],
+		[.25, .719455],
+		[.231091, .679455],
+		[.215818, .648909],
+		[.354, .805273],
+		[.336545, .736182],
+		[.324909, .686],
+		[.313273, .636545],
+		[.302364, .592909],
+		[.407818, .804545],
+		[.391091, .720182],
+		[.382364, .661273],
+		[.372182, .605273],
+		[.362, .553],
+		[.455091, .805273],
+		[.447818, .707091],
+		[.443455, .635818],
+		[.438364, .572545],
+		[.432, .508],
+		[.500909, .806727],
+		[.500909, .696909],
+		[.499455, .612545],
+		[.499455, .541273],
+		[.501636, .461273],
+		[.545273, .805273],
+		[.553273, .706364],
+		[.558364, .635818],
+		[.564182, .568909],
+		[.571, .507],
+		[.594, .804545],
+		[.608545, .718727],
+		[.618727, .660545],
+		[.628182, .604546],
+		[.64, .552],
+		[.645636, .805273],
+		[.662364, .736182],
+		[.676182, .682364],
+		[.687818, .634364],
+		[.698, .592182],
+		[.698, .806],
+		[.727818, .757273],
+		[.751091, .717273],
+		[.767091, .679455],
+		[.780909, .649636]
+	],
+	green: [
+		[.916909, .416909],
+		[.892909, .465636],
+		[.865273, .51],
+		[.839091, .552909],
+		[.818727, .591455],
+		[.89, .364546],
+		[.848545, .414727],
+		[.81, .455455],
+		[.773636, .499091],
+		[.742364, .535455],
+		[.866727, .319455],
+		[.807818, .367455],
+		[.759818, .406727],
+		[.713273, .449636],
+		[.674727, .485273],
+		[.840545, .280909],
+		[.772182, .324546],
+		[.714, .362364],
+		[.658, .403091],
+		[.607818, .442364],
+		[.813636, .232909],
+		[.733636, .280182],
+		[.668909, .317273],
+		[.602, .355818],
+		[.538727, .39],
+		[.786, .187818],
+		[.716182, .225636],
+		[.655818, .253273],
+		[.592545, .284545],
+		[.535818, .31],
+		[.761273, .148545],
+		[.697273, .171091],
+		[.641273, .193636],
+		[.584444, .212114],
+		[.533535, .231153],
+		[.732909, .102],
+		[.675455, .116545],
+		[.628909, .129636],
+		[.576545, .142],
+		[.532909, .152909],
+		[.710364, .061273],
+		[.653939, .058889],
+		[.610303, .059795],
+		[.566667, .059795],
+		[.523838, .059795]
+	],
+	blue: [
+		[.288384, .061169],
+		[.342364, .062727],
+		[.389636, .062727],
+		[.431091, .062],
+		[.471091, .061273],
+		[.264545, .106364],
+		[.324182, .119455],
+		[.373636, .130364],
+		[.424545, .141273],
+		[.468182, .152909],
+		[.236182, .152909],
+		[.301636, .175455],
+		[.357636, .195091],
+		[.416545, .213273],
+		[.468182, .231455],
+		[.216545, .193636],
+		[.284909, .223455],
+		[.343818, .250364],
+		[.408545, .283818],
+		[.468182, .312909],
+		[.190364, .236545],
+		[.266, .278],
+		[.331455, .315818],
+		[.397636, .356545],
+		[.465273, .395091],
+		[.164182, .284545],
+		[.228182, .323091],
+		[.284909, .360182],
+		[.342364, .403818],
+		[.395455, .441636],
+		[.138727, .323091],
+		[.191818, .366],
+		[.239091, .407455],
+		[.285636, .448909],
+		[.325636, .486],
+		[.112545, .365273],
+		[.153273, .411091],
+		[.188182, .456909],
+		[.225273, .500545],
+		[.255091, .534727],
+		[.084909, .418364],
+		[.108909, .466364],
+		[.135091, .508545],
+		[.160545, .554364],
+		[.178, .591455]
+	]
+};
+const sourceId = (sector, rank, file) => `${sector}-${rank}-${file}`;
+const approvedPosition = (sector, rank, file) => {
+	const depthIndex = 4 - rank;
+	const position = APPROVED_POSITIONS[sector][file * 5 + depthIndex];
+	if (!position) throw new Error(`Missing approved Arctic position for ${sector}-${rank}-${file}`);
+	return {
+		x: position[0],
+		y: position[1]
+	};
+};
+const nodes = {};
+Object.keys(SOURCE_NODES).forEach((region) => {
+	SOURCE_NODES[region].forEach((rank, rankIndex) => rank.forEach((_point, file) => {
+		const id = sourceId(region, rankIndex, file);
+		const normalized = approvedPosition(region, rankIndex, file);
+		nodes[id] = {
+			id,
+			coordinate: referenceNodeId({
+				sector: region,
+				rank: rankIndex,
+				file
+			}),
+			...normalized,
+			region,
+			connections: []
+		};
+	}));
+});
+const connect = (from, to) => {
+	if (!nodes[from] || !nodes[to]) return;
+	if (!nodes[from].connections.includes(to)) nodes[from].connections.push(to);
+	if (!nodes[to].connections.includes(from)) nodes[to].connections.push(from);
+};
+for (const sector of Object.keys(SOURCE_NODES)) {
+	for (let rank = 0; rank < 5; rank++) for (let file = 0; file < 9; file++) {
+		const from = sourceId(sector, rank, file);
+		if (rank < 4) connect(from, sourceId(sector, rank + 1, file));
+		if (file < 8) connect(from, sourceId(sector, rank, file + 1));
+		for (const exit of riverExits({
+			sector,
+			rank,
+			file
+		})) connect(from, sourceId(exit.sector, exit.rank, exit.file));
+	}
+	for (const rank of [2, 4]) for (const file of [3, 5]) connect(sourceId(sector, rank, file), sourceId(sector, 3, 4));
+}
+const ARCTIC_BOARD_GRAPH = { nodes };
+const arcticBoardNodeId = (sector, rank, file) => sourceId(sector, rank, file);
+const arcticBoardNode = (sector, rank, file) => ARCTIC_BOARD_GRAPH.nodes[arcticBoardNodeId(sector, rank, file)];
+
+//#endregion
+//#region frontend/src/games/san-you-qi/topology.js
+const SANYOU_FACTIONS = Object.freeze([
+	"red",
+	"green",
+	"blue"
+]);
+const ARM_COORDS = Object.freeze({
+	"red": [
+		[.325114, .754632],
+		[.326265, .716023],
+		[.326265, .673419],
+		[.328566, .626821],
+		[.329717, .578892],
+		[.366541, .758626],
+		[.366541, .71336],
+		[.366541, .672088],
+		[.367692, .624159],
+		[.368842, .57623],
+		[.406817, .759958],
+		[.406817, .714691],
+		[.406817, .672088],
+		[.407968, .624159],
+		[.407968, .57623],
+		[.451696, .757295],
+		[.451696, .71336],
+		[.449395, .670756],
+		[.450545, .62549],
+		[.450545, .577561],
+		[.493274, .757295],
+		[.494274, .712029],
+		[.493123, .670756],
+		[.494274, .62549],
+		[.494274, .578892],
+		[.536002, .756295],
+		[.538002, .712029],
+		[.536852, .669425],
+		[.536852, .626821],
+		[.536852, .577561],
+		[.58058, .758626],
+		[.578429, .714691],
+		[.579429, .672088],
+		[.579429, .626821],
+		[.578278, .577561],
+		[.621158, .757626],
+		[.621158, .713691],
+		[.620007, .672088],
+		[.620856, .62549],
+		[.618555, .57623],
+		[.663434, .759958],
+		[.661132, .71336],
+		[.662283, .672088],
+		[.659982, .626821],
+		[.658831, .577561]
+	],
+	"green": [
+		[.850061, .426779],
+		[.810196, .453106],
+		[.77069, .481397],
+		[.729761, .512469],
+		[.688347, .540235],
+		[.829891, .388694],
+		[.790229, .412252],
+		[.749802, .442909],
+		[.709389, .470675],
+		[.668976, .498441],
+		[.805159, .350937],
+		[.768496, .373496],
+		[.728991, .400787],
+		[.687578, .428553],
+		[.646759, .457379],
+		[.782813, .309841],
+		[.74823, .334766],
+		[.705913, .358177],
+		[.666657, .386676],
+		[.625838, .413503],
+		[.763814, .270598],
+		[.721152, .294156],
+		[.688319, .315874],
+		[.645062, .346372],
+		[.605321, .373564],
+		[.748219, .236294],
+		[.709558, .257853],
+		[.671646, .281203],
+		[.62414, .307494],
+		[.584243, .334955],
+		[.720297, .189417],
+		[.688308, .216402],
+		[.647803, .242692],
+		[.602141, .267251],
+		[.562839, .294773],
+		[.699297, .150173],
+		[.665714, .176098],
+		[.627803, .203449],
+		[.581657, .230702],
+		[.54395, .257284],
+		[.677566, .117417],
+		[.641015, .141731],
+		[.601993, .167327],
+		[.564519, .194007],
+		[.525217, .220528]
+	],
+	"blue": [
+		[.316891, .117748],
+		[.351762, .140623],
+		[.390485, .16829],
+		[.429271, .193905],
+		[.467737, .221083],
+		[.296154, .153813],
+		[.331048, .176709],
+		[.368685, .20176],
+		[.409152, .228938],
+		[.447619, .256115],
+		[.274184, .192055],
+		[.309078, .21495],
+		[.347801, .240616],
+		[.386267, .267794],
+		[.427331, .291919],
+		[.249083, .236352],
+		[.286892, .258633],
+		[.322808, .280194],
+		[.365105, .308141],
+		[.406168, .334266],
+		[.231005, .271315],
+		[.267898, .29221],
+		[.302134, .320209],
+		[.34443, .346157],
+		[.384409, .373668],
+		[.21033, .30933],
+		[.245224, .334225],
+		[.280543, .358839],
+		[.321267, .386506],
+		[.363415, .415245],
+		[.189167, .353678],
+		[.221573, .374906],
+		[.260295, .400572],
+		[.299189, .429468],
+		[.341934, .457153],
+		[.169089, .392641],
+		[.198897, .414922],
+		[.238217, .443535],
+		[.276792, .471991],
+		[.320134, .496625],
+		[.147119, .426882],
+		[.180291, .450286],
+		[.217332, .480391],
+		[.257419, .509181],
+		[.298165, .538866]
+	]
+});
+const CENTER_COORDS = Object.freeze({
+	"C1": [.367515, .525993],
+	"C2": [.411515, .529941],
+	"C3": [.451667, .528696],
+	"C4": [.494485, .527593],
+	"C5": [.536303, .528696],
+	"C6": [.579515, .528941],
+	"C7": [.621424, .527096],
+	"C8": [.611212, .485573],
+	"C9": [.589303, .443553],
+	"C10": [.566485, .403534],
+	"C11": [.548303, .362514],
+	"C12": [.527576, .319391],
+	"C13": [.496212, .276372],
+	"C14": [.470121, .320443],
+	"C15": [.449212, .362514],
+	"C16": [.427394, .40143],
+	"C17": [.40797, .443046],
+	"C18": [.384242, .483117],
+	"C20": [.49397, .479048],
+	"C22": [.525061, .428617],
+	"C24": [.463424, .428472]
+});
+const armNodeId = (faction, lane, rank) => `${faction}:L${lane}-${rank}`;
+function parseArmNode(id) {
+	const match = /^(red|green|blue):L([1-9])-([1-5])$/.exec(id);
+	if (!match) return null;
+	return {
+		faction: match[1],
+		lane: Number(match[2]),
+		rank: Number(match[3])
+	};
+}
+function isCenterNode(id) {
+	return Object.prototype.hasOwnProperty.call(CENTER_COORDS, id);
+}
+function boardPoint(id) {
+	const arm = parseArmNode(id);
+	if (arm) return ARM_COORDS[arm.faction][(arm.lane - 1) * 5 + (arm.rank - 1)];
+	return CENTER_COORDS[id] || null;
+}
+function nodeLabel(id) {
+	const arm = parseArmNode(id);
+	return arm ? `${arm.faction.toUpperCase()} L${arm.lane}-${arm.rank}` : id;
+}
+const ALL_NODE_IDS = Object.freeze([...SANYOU_FACTIONS.flatMap((faction) => Array.from({ length: 9 }, (_, laneIndex) => Array.from({ length: 5 }, (_, rankIndex) => armNodeId(faction, laneIndex + 1, rankIndex + 1))).flat()), ...Object.keys(CENTER_COORDS)]);
+const armPath = (faction, lane) => Object.freeze(Array.from({ length: 5 }, (_, index) => armNodeId(faction, lane, index + 1)));
+const reverseArmPath = (faction, lane) => [...armPath(faction, lane)].reverse();
+const line = (id, nodes, kind = "continuation") => Object.freeze({
+	id,
+	kind,
+	nodes: Object.freeze(nodes)
+});
+const CONTINUATION_LINES = Object.freeze([
+	line("RB-1", [...armPath("red", 1), ...reverseArmPath("blue", 9)]),
+	line("RB-2", [
+		...armPath("red", 2),
+		"C1",
+		...reverseArmPath("blue", 8)
+	]),
+	line("RB-3", [
+		...armPath("red", 3),
+		"C2",
+		"C18",
+		...reverseArmPath("blue", 7)
+	]),
+	line("RB-4", [
+		...armPath("red", 4),
+		"C3",
+		"C17",
+		...reverseArmPath("blue", 6)
+	]),
+	line("RB-5", [
+		...armPath("red", 5),
+		"C4",
+		"C20",
+		"C24",
+		"C16",
+		...reverseArmPath("blue", 5)
+	]),
+	line("RG-5", [
+		...armPath("red", 5),
+		"C4",
+		"C20",
+		"C22",
+		"C10",
+		...reverseArmPath("green", 5)
+	]),
+	line("RG-6", [
+		...armPath("red", 6),
+		"C5",
+		"C9",
+		...reverseArmPath("green", 4)
+	]),
+	line("RG-7", [
+		...armPath("red", 7),
+		"C6",
+		"C8",
+		...reverseArmPath("green", 3)
+	]),
+	line("RG-8", [
+		...armPath("red", 8),
+		"C7",
+		...reverseArmPath("green", 2)
+	]),
+	line("RG-9", [...armPath("red", 9), ...reverseArmPath("green", 1)]),
+	line("BG-5", [
+		...armPath("blue", 5),
+		"C16",
+		"C24",
+		"C22",
+		"C10",
+		...reverseArmPath("green", 5)
+	]),
+	line("BG-4", [
+		...armPath("blue", 4),
+		"C15",
+		"C11",
+		...reverseArmPath("green", 6)
+	]),
+	line("BG-3", [
+		...armPath("blue", 3),
+		"C14",
+		"C12",
+		...reverseArmPath("green", 7)
+	]),
+	line("BG-2", [
+		...armPath("blue", 2),
+		"C13",
+		...reverseArmPath("green", 8)
+	]),
+	line("BG-1", [...armPath("blue", 1), ...reverseArmPath("green", 9)])
+]);
+const CENTER_HORIZONTAL_LINES = Object.freeze([
+	line("H1", [
+		"C1",
+		"C2",
+		"C3",
+		"C4",
+		"C5",
+		"C6",
+		"C7"
+	], "horizontal"),
+	line("H2", [
+		"C13",
+		"C14",
+		"C15",
+		"C16",
+		"C17",
+		"C18",
+		"C1"
+	], "horizontal"),
+	line("H3", [
+		"C7",
+		"C8",
+		"C9",
+		"C10",
+		"C11",
+		"C12",
+		"C13"
+	], "horizontal")
+]);
+const ARM_FILE_LINES = Object.freeze(SANYOU_FACTIONS.flatMap((faction) => Array.from({ length: 9 }, (_, index) => line(`${faction}-F${index + 1}`, [...armPath(faction, index + 1)], "file"))));
+const ARM_RANK_LINES = Object.freeze(SANYOU_FACTIONS.flatMap((faction) => Array.from({ length: 5 }, (_, rankIndex) => line(`${faction}-R${rankIndex + 1}`, Array.from({ length: 9 }, (_, laneIndex) => armNodeId(faction, laneIndex + 1, rankIndex + 1)), "horizontal"))));
+const SLIDING_LINES = Object.freeze([
+	...ARM_FILE_LINES,
+	...ARM_RANK_LINES,
+	...CONTINUATION_LINES,
+	...CENTER_HORIZONTAL_LINES
+]);
+const SIDEWAYS_LINES = Object.freeze([...ARM_RANK_LINES, ...CENTER_HORIZONTAL_LINES]);
+const edgeKey = (a, b) => [a, b].sort().join("|");
+const directedEdgeKey = (a, b) => `${a}>${b}`;
+const SEA_EDGES = new Set([
+	edgeKey("C3", "C17"),
+	edgeKey("C5", "C9"),
+	edgeKey("C15", "C11"),
+	edgeKey("C4", "C20"),
+	edgeKey("C20", "C22"),
+	edgeKey("C20", "C24"),
+	edgeKey("C24", "C22")
+]);
+const SEA_HORSE_CHARIOT_BLOCKS = new Set([
+	edgeKey("C3", "C17"),
+	edgeKey("C5", "C9"),
+	edgeKey("C15", "C11")
+]);
+const MOUNTAIN_EDGES = new Set([
+	edgeKey("C2", "C18"),
+	edgeKey("C6", "C8"),
+	edgeKey("C14", "C12")
+]);
+const CITY_EDGES = new Set([
+	edgeKey(armNodeId("red", 1, 5), armNodeId("blue", 9, 5)),
+	edgeKey(armNodeId("red", 2, 5), "C1"),
+	edgeKey("C1", armNodeId("blue", 8, 5)),
+	edgeKey(armNodeId("red", 8, 5), "C7"),
+	edgeKey("C7", armNodeId("green", 2, 5)),
+	edgeKey(armNodeId("red", 9, 5), armNodeId("green", 1, 5)),
+	edgeKey(armNodeId("blue", 2, 5), "C13"),
+	edgeKey("C13", armNodeId("green", 8, 5)),
+	edgeKey(armNodeId("blue", 1, 5), armNodeId("green", 9, 5))
+]);
+const FORT_DIRECT_CANNON_BLOCKS = new Set([
+	edgeKey(armNodeId("red", 1, 5), armNodeId("blue", 9, 5)),
+	edgeKey(armNodeId("red", 9, 5), armNodeId("green", 1, 5)),
+	edgeKey(armNodeId("blue", 1, 5), armNodeId("green", 9, 5))
+]);
+const FORT_CANNON_EXIT_BLOCKS = Object.freeze({
+	red: new Set([directedEdgeKey("C1", armNodeId("blue", 8, 5)), directedEdgeKey("C7", armNodeId("green", 2, 5))]),
+	blue: new Set([directedEdgeKey("C1", armNodeId("red", 2, 5)), directedEdgeKey("C13", armNodeId("green", 8, 5))]),
+	green: new Set([directedEdgeKey("C7", armNodeId("red", 8, 5)), directedEdgeKey("C13", armNodeId("blue", 2, 5))])
+});
+function terrainBetween(a, b) {
+	const key = edgeKey(a, b);
+	if (SEA_EDGES.has(key)) return "sea";
+	if (MOUNTAIN_EDGES.has(key)) return "mountain";
+	if (CITY_EDGES.has(key)) return "city";
+	return null;
+}
+const lineMembership = /* @__PURE__ */ new Map();
+for (const entry of SLIDING_LINES) entry.nodes.forEach((node) => {
+	if (!lineMembership.has(node)) lineMembership.set(node, []);
+	lineMembership.get(node).push(entry);
+});
+function linesThrough(node) {
+	return lineMembership.get(node) || [];
+}
+function lineRaysFrom(node) {
+	const rays = [];
+	for (const entry of linesThrough(node)) {
+		const indexes = [];
+		entry.nodes.forEach((id, index) => {
+			if (id === node) indexes.push(index);
+		});
+		for (const index of indexes) {
+			const before = entry.nodes.slice(0, index).reverse();
+			const after = entry.nodes.slice(index + 1);
+			if (before.length) rays.push({
+				lineId: entry.id,
+				kind: entry.kind,
+				nodes: before
+			});
+			if (after.length) rays.push({
+				lineId: entry.id,
+				kind: entry.kind,
+				nodes: after
+			});
+		}
+	}
+	return rays;
+}
+const sideMembership = /* @__PURE__ */ new Map();
+for (const entry of SIDEWAYS_LINES) entry.nodes.forEach((node, index) => {
+	if (!sideMembership.has(node)) sideMembership.set(node, /* @__PURE__ */ new Set());
+	if (index > 0) sideMembership.get(node).add(entry.nodes[index - 1]);
+	if (index < entry.nodes.length - 1) sideMembership.get(node).add(entry.nodes[index + 1]);
+});
+function sidewaysNeighbors(node) {
+	return [...sideMembership.get(node) || []];
+}
+const directNeighbors = /* @__PURE__ */ new Map();
+for (const entry of SLIDING_LINES) for (let index = 0; index < entry.nodes.length - 1; index += 1) {
+	const a = entry.nodes[index];
+	const b = entry.nodes[index + 1];
+	if (!directNeighbors.has(a)) directNeighbors.set(a, /* @__PURE__ */ new Set());
+	if (!directNeighbors.has(b)) directNeighbors.set(b, /* @__PURE__ */ new Set());
+	directNeighbors.get(a).add(b);
+	directNeighbors.get(b).add(a);
+}
+const forwardMaps = Object.fromEntries(SANYOU_FACTIONS.map((faction) => [faction, /* @__PURE__ */ new Map()]));
+for (const faction of SANYOU_FACTIONS) for (const entry of CONTINUATION_LINES) {
+	const first = parseArmNode(entry.nodes[0]);
+	const last = parseArmNode(entry.nodes[entry.nodes.length - 1]);
+	let oriented = null;
+	if (first?.faction === faction && first.rank === 1) oriented = entry.nodes;
+	else if (last?.faction === faction && last.rank === 1) oriented = [...entry.nodes].reverse();
+	if (!oriented) continue;
+	for (let index = 0; index < oriented.length - 1; index += 1) {
+		const from = oriented[index];
+		const to = oriented[index + 1];
+		if (!forwardMaps[faction].has(from)) forwardMaps[faction].set(from, /* @__PURE__ */ new Set());
+		forwardMaps[faction].get(from).add(to);
+	}
+}
+function forwardNeighbors(faction, node) {
+	return [...forwardMaps[faction]?.get(node) || []];
+}
+function backwardNeighbors(faction, node) {
+	const result = /* @__PURE__ */ new Set();
+	const map = forwardMaps[faction];
+	if (!map) return [];
+	for (const [from, tos] of map.entries()) if (tos.has(node)) result.add(from);
+	return [...result];
+}
+const CENTER_TERRITORY_CAMPS = Object.freeze({
+	C1: Object.freeze(["red", "blue"]),
+	C2: Object.freeze(["red"]),
+	C3: Object.freeze(["red"]),
+	C4: Object.freeze(["red"]),
+	C5: Object.freeze(["red"]),
+	C6: Object.freeze(["red"]),
+	C7: Object.freeze(["red", "green"]),
+	C8: Object.freeze(["green"]),
+	C9: Object.freeze(["green"]),
+	C10: Object.freeze(["green"]),
+	C11: Object.freeze(["green"]),
+	C12: Object.freeze(["green"]),
+	C13: Object.freeze(["green", "blue"]),
+	C14: Object.freeze(["blue"]),
+	C15: Object.freeze(["blue"]),
+	C16: Object.freeze(["blue"]),
+	C17: Object.freeze(["blue"]),
+	C18: Object.freeze(["blue"]),
+	C20: Object.freeze(["red"]),
+	C22: Object.freeze(["green"]),
+	C24: Object.freeze(["blue"])
+});
+function territoryCamps(node) {
+	const arm = parseArmNode(node);
+	if (arm) return [arm.faction];
+	return CENTER_TERRITORY_CAMPS[node] || [];
+}
+function isOwnTerritory(faction, node) {
+	return territoryCamps(node).includes(faction);
+}
+function isSharedTerritory(node) {
+	return territoryCamps(node).length > 1;
+}
+const ENEMY_CENTER_POINTS = Object.freeze(Object.fromEntries(SANYOU_FACTIONS.map((faction) => [faction, new Set(Object.entries(CENTER_TERRITORY_CAMPS).filter(([, camps]) => !camps.includes(faction)).map(([node]) => node))])));
+function isEnemyTerritory(faction, node) {
+	const camps = territoryCamps(node);
+	return camps.length > 0 && !camps.includes(faction);
+}
+function isArmNode(node) {
+	return Boolean(parseArmNode(node));
+}
+function pathEdgeAllowedForRole(role, from, to, faction = null) {
+	const key = edgeKey(from, to);
+	if ((role === "chariot" || role === "horse") && SEA_HORSE_CHARIOT_BLOCKS.has(key)) return false;
+	if (role === "cannon") {
+		if (MOUNTAIN_EDGES.has(key)) return false;
+		if (FORT_DIRECT_CANNON_BLOCKS.has(key)) return false;
+		if (faction && FORT_CANNON_EXIT_BLOCKS[faction]?.has(directedEdgeKey(from, to))) return false;
+	}
+	return true;
+}
+const SANYOU_TOPOLOGY_DEBUG = Object.freeze({
+	CENTER_TERRITORY_CAMPS,
+	SEA_EDGES,
+	SEA_HORSE_CHARIOT_BLOCKS,
+	MOUNTAIN_EDGES,
+	CITY_EDGES,
+	FORT_DIRECT_CANNON_BLOCKS,
+	FORT_CANNON_EXIT_BLOCKS
+});
+
+//#endregion
+//#region frontend/src/games/san-you-qi/rules.js
+const GAME_ID = "san-you-qi";
+const RULESET_VERSION = "arctic-final-156-node-3.3.6";
+const FACTIONS = Object.freeze([...SANYOU_FACTIONS]);
+const FACTION_LABELS = Object.freeze({
+	red: "Shu / Red",
+	green: "Wu / Green",
+	blue: "Wei / Blue"
+});
+const FACTION_COLORS = Object.freeze({
+	red: "#ef5a4d",
+	green: "#43b86a",
+	blue: "#318eed"
+});
+const ROLES = Object.freeze([
+	"general",
+	"advisor",
+	"elephant",
+	"horse",
+	"chariot",
+	"cannon",
+	"soldier",
+	"fire",
+	"flag"
+]);
+const ROLE_LABELS$1 = Object.freeze({
+	general: "General",
+	advisor: "Guard",
+	elephant: "Elephant",
+	horse: "Horse",
+	chariot: "Chariot",
+	cannon: "Cannon",
+	soldier: "Soldier",
+	fire: "Fire",
+	flag: "Flag"
+});
+const TURN_ORDER = Object.freeze([
+	"red",
+	"green",
+	"blue"
+]);
+const PALACE_LANES = new Set([
+	4,
+	5,
+	6
+]);
+const PALACE_RANKS = new Set([
+	1,
+	2,
+	3
+]);
+const PALACE_DIAGONAL_NEIGHBORS = Object.freeze({
+	"L4-1": ["L5-2"],
+	"L6-1": ["L5-2"],
+	"L5-2": [
+		"L4-1",
+		"L6-1",
+		"L4-3",
+		"L6-3"
+	],
+	"L4-3": ["L5-2"],
+	"L6-3": ["L5-2"]
+});
+const STANDARD_OPENING = Object.freeze([
+	[
+		"chariot",
+		1,
+		1
+	],
+	[
+		"horse",
+		2,
+		1
+	],
+	[
+		"elephant",
+		3,
+		1
+	],
+	[
+		"advisor",
+		4,
+		1
+	],
+	[
+		"general",
+		5,
+		1
+	],
+	[
+		"advisor",
+		6,
+		1
+	],
+	[
+		"elephant",
+		7,
+		1
+	],
+	[
+		"horse",
+		8,
+		1
+	],
+	[
+		"chariot",
+		9,
+		1
+	],
+	[
+		"cannon",
+		2,
+		3
+	],
+	[
+		"flag",
+		4,
+		3
+	],
+	[
+		"flag",
+		6,
+		3
+	],
+	[
+		"cannon",
+		8,
+		3
+	],
+	[
+		"soldier",
+		1,
+		4
+	],
+	[
+		"fire",
+		3,
+		4
+	],
+	[
+		"soldier",
+		5,
+		4
+	],
+	[
+		"fire",
+		7,
+		4
+	],
+	[
+		"soldier",
+		9,
+		4
+	]
+]);
+function clone$3(value) {
+	return typeof structuredClone === "function" ? structuredClone(value) : JSON.parse(JSON.stringify(value));
+}
+function territoryOf(node, faction) {
+	if (isOwnTerritory(faction, node)) return isSharedTerritory(node) ? "shared-own" : "own";
+	if (isEnemyTerritory(faction, node)) return "enemy";
+	return "neutral";
+}
+function pieceAtUnchecked(pieces, node) {
+	return pieces.find((piece) => piece.status === "board" && piece.node === node) || null;
+}
+function destinationOpenFor(piece, pieces, node) {
+	const hit = pieceAtUnchecked(pieces, node);
+	return !hit || hit.owner !== piece.owner;
+}
+function insidePalace(node, faction) {
+	const arm = parseArmNode(node);
+	return Boolean(arm && arm.faction === faction && PALACE_LANES.has(arm.lane) && PALACE_RANKS.has(arm.rank));
+}
+function localArmTarget(node, dRank, dLane) {
+	const arm = parseArmNode(node);
+	if (!arm) return null;
+	const lane = arm.lane + dLane;
+	const rank = arm.rank + dRank;
+	if (lane < 1 || lane > 9 || rank < 1 || rank > 5) return null;
+	return armNodeId(arm.faction, lane, rank);
+}
+function dedupeNodes(nodes) {
+	return [...new Set(nodes)];
+}
+function rayTargets$1(piece, pieces, mode) {
+	const out = /* @__PURE__ */ new Set();
+	for (const ray of lineRaysFrom(piece.node)) {
+		let previous = piece.node;
+		let screened = false;
+		for (const node of ray.nodes) {
+			if (!pathEdgeAllowedForRole(piece.role, previous, node, piece.faction)) break;
+			const hit = pieceAtUnchecked(pieces, node);
+			if (mode === "chariot") if (!hit) out.add(node);
+			else {
+				if (hit.owner !== piece.owner) out.add(node);
+				break;
+			}
+			else if (!screened) if (hit) screened = true;
+			else out.add(node);
+			else if (hit) {
+				if (hit.owner !== piece.owner) out.add(node);
+				break;
+			}
+			previous = node;
+		}
+	}
+	return [...out];
+}
+function chariotTargets(piece, pieces) {
+	return rayTargets$1(piece, pieces, "chariot");
+}
+function cannonTargets$1(piece, pieces) {
+	return rayTargets$1(piece, pieces, "cannon");
+}
+function generalTargets(piece, pieces) {
+	if (!parseArmNode(piece.node) || !insidePalace(piece.node, piece.faction)) return [];
+	const out = [];
+	for (const [dRank, dLane] of [
+		[-1, 0],
+		[1, 0],
+		[0, -1],
+		[0, 1]
+	]) {
+		const target = localArmTarget(piece.node, dRank, dLane);
+		if (!target || !insidePalace(target, piece.faction)) continue;
+		if (destinationOpenFor(piece, pieces, target)) out.push(target);
+	}
+	return out;
+}
+function advisorTargets(piece, pieces) {
+	if (!insidePalace(piece.node, piece.faction)) return [];
+	const arm = parseArmNode(piece.node);
+	return (PALACE_DIAGONAL_NEIGHBORS[`L${arm.lane}-${arm.rank}`] || []).map((label) => `${piece.faction}:${label}`).filter((target) => destinationOpenFor(piece, pieces, target));
+}
+function elephantTargets(piece, pieces) {
+	const arm = parseArmNode(piece.node);
+	if (!arm || arm.faction !== piece.faction) return [];
+	const out = [];
+	for (const dRank of [-2, 2]) for (const dLane of [-2, 2]) {
+		const target = localArmTarget(piece.node, dRank, dLane);
+		if (!target) continue;
+		const targetArm = parseArmNode(target);
+		if (!targetArm || targetArm.faction !== piece.faction) continue;
+		const eye = localArmTarget(piece.node, dRank / 2, dLane / 2);
+		if (!eye || pieceAtUnchecked(pieces, eye)) continue;
+		if (destinationOpenFor(piece, pieces, target)) out.push(target);
+	}
+	return out;
+}
+function normalizedVector(a, b) {
+	const pa = boardPoint(a);
+	const pb = boardPoint(b);
+	if (!pa || !pb) return null;
+	const dx = pb[0] - pa[0];
+	const dy = pb[1] - pa[1];
+	const length = Math.hypot(dx, dy);
+	if (!length) return null;
+	return [dx / length, dy / length];
+}
+function roughlyPerpendicular(a, b, c) {
+	const first = normalizedVector(a, b);
+	const second = normalizedVector(b, c);
+	if (!first || !second) return false;
+	return Math.abs(first[0] * second[0] + first[1] * second[1]) < .58;
+}
+const HORSE_CENTER_JUMPS = Object.freeze({
+	[armNodeId("red", 4, 5)]: Object.freeze([{
+		target: "C20",
+		leg: "C3"
+	}]),
+	[armNodeId("red", 6, 5)]: Object.freeze([{
+		target: "C20",
+		leg: "C5"
+	}]),
+	C20: Object.freeze([{
+		target: armNodeId("red", 4, 5),
+		leg: "C4"
+	}, {
+		target: armNodeId("red", 6, 5),
+		leg: "C4"
+	}]),
+	[armNodeId("green", 4, 5)]: Object.freeze([{
+		target: "C22",
+		leg: "C9"
+	}]),
+	[armNodeId("green", 6, 5)]: Object.freeze([{
+		target: "C22",
+		leg: "C11"
+	}]),
+	C22: Object.freeze([{
+		target: armNodeId("green", 4, 5),
+		leg: "C10"
+	}, {
+		target: armNodeId("green", 6, 5),
+		leg: "C10"
+	}]),
+	[armNodeId("blue", 4, 5)]: Object.freeze([{
+		target: "C24",
+		leg: "C15"
+	}]),
+	[armNodeId("blue", 6, 5)]: Object.freeze([{
+		target: "C24",
+		leg: "C17"
+	}]),
+	C24: Object.freeze([{
+		target: armNodeId("blue", 4, 5),
+		leg: "C16"
+	}, {
+		target: armNodeId("blue", 6, 5),
+		leg: "C16"
+	}])
+});
+function horseTargets(piece, pieces) {
+	const out = /* @__PURE__ */ new Set();
+	for (const ray of lineRaysFrom(piece.node)) {
+		if (ray.nodes.length < 2) continue;
+		const leg = ray.nodes[0];
+		const second = ray.nodes[1];
+		if (pieceAtUnchecked(pieces, leg)) continue;
+		if (!pathEdgeAllowedForRole("horse", piece.node, leg, piece.faction)) continue;
+		for (const turnLine of linesThrough(second)) for (const direction of [-1, 1]) {
+			const index = turnLine.nodes.indexOf(second);
+			if (index < 0) continue;
+			const target = turnLine.nodes[index + direction];
+			if (!target || target === leg || target === piece.node) continue;
+			if (!roughlyPerpendicular(leg, second, target)) continue;
+			if (destinationOpenFor(piece, pieces, target)) out.add(target);
+		}
+	}
+	for (const jump of HORSE_CENTER_JUMPS[piece.node] || []) {
+		if (pieceAtUnchecked(pieces, jump.leg)) continue;
+		if (!pathEdgeAllowedForRole("horse", piece.node, jump.leg, piece.faction)) continue;
+		if (destinationOpenFor(piece, pieces, jump.target)) out.add(jump.target);
+	}
+	return [...out];
+}
+function diagonalForwardTargets(piece, pieces) {
+	const byForwardThenSide = /* @__PURE__ */ new Set();
+	const bySideThenForward = /* @__PURE__ */ new Set();
+	for (const forward of forwardNeighbors(piece.faction, piece.node)) for (const target of sidewaysNeighbors(forward)) if (target !== piece.node) byForwardThenSide.add(target);
+	for (const side of sidewaysNeighbors(piece.node)) for (const target of forwardNeighbors(piece.faction, side)) if (target !== piece.node) bySideThenForward.add(target);
+	const intersection = [...byForwardThenSide].filter((node) => bySideThenForward.has(node));
+	return (intersection.length ? intersection : [...new Set([...byForwardThenSide, ...bySideThenForward])]).filter((target) => destinationOpenFor(piece, pieces, target));
+}
+const FIRE_FORT_EXTRA_DIAGONALS = Object.freeze({
+	red: Object.freeze({
+		[armNodeId("red", 2, 5)]: Object.freeze([armNodeId("blue", 9, 5)]),
+		[armNodeId("red", 8, 5)]: Object.freeze([armNodeId("green", 1, 5)])
+	}),
+	green: Object.freeze({
+		[armNodeId("green", 2, 5)]: Object.freeze([armNodeId("red", 9, 5)]),
+		[armNodeId("green", 8, 5)]: Object.freeze([armNodeId("blue", 1, 5)])
+	}),
+	blue: Object.freeze({
+		[armNodeId("blue", 2, 5)]: Object.freeze([armNodeId("green", 9, 5)]),
+		[armNodeId("blue", 8, 5)]: Object.freeze([armNodeId("red", 1, 5)])
+	})
+});
+const FIRE_CENTER_EXACT_DIAGONALS = Object.freeze({
+	red: Object.freeze({
+		C2: Object.freeze(["C1", "C17"]),
+		C6: Object.freeze(["C7", "C9"])
+	}),
+	green: Object.freeze({
+		C8: Object.freeze(["C5", "C7"]),
+		C12: Object.freeze(["C13", "C15"])
+	}),
+	blue: Object.freeze({
+		C14: Object.freeze(["C13", "C11"]),
+		C18: Object.freeze(["C1", "C3"])
+	})
+});
+function fireTargets(piece, pieces) {
+	const exactCenterTargets = FIRE_CENTER_EXACT_DIAGONALS[piece.faction]?.[piece.node];
+	if (exactCenterTargets) return exactCenterTargets.filter((target) => destinationOpenFor(piece, pieces, target));
+	const out = new Set(diagonalForwardTargets(piece, pieces));
+	for (const target of FIRE_FORT_EXTRA_DIAGONALS[piece.faction]?.[piece.node] || []) if (destinationOpenFor(piece, pieces, target)) out.add(target);
+	return [...out];
+}
+function soldierTargets(piece, pieces) {
+	const out = /* @__PURE__ */ new Set();
+	for (const target of forwardNeighbors(piece.faction, piece.node)) if (destinationOpenFor(piece, pieces, target)) out.add(target);
+	if (piece.promoted) {
+		for (const target of sidewaysNeighbors(piece.node)) if (destinationOpenFor(piece, pieces, target)) out.add(target);
+	}
+	return [...out];
+}
+function twoStepForwardTargets(piece, pieces) {
+	const out = /* @__PURE__ */ new Set();
+	const firstSteps = forwardNeighbors(piece.faction, piece.node);
+	for (const middle of firstSteps) {
+		if (pieceAtUnchecked(pieces, middle)) continue;
+		for (const target of forwardNeighbors(piece.faction, middle)) {
+			if (target === piece.node) continue;
+			if (destinationOpenFor(piece, pieces, target)) out.add(target);
+		}
+	}
+	return [...out];
+}
+function foreignFlagTargets(piece, pieces) {
+	const out = /* @__PURE__ */ new Set();
+	for (const ray of lineRaysFrom(piece.node)) for (const node of ray.nodes) {
+		const ownTerritory = isOwnTerritory(piece.faction, node);
+		const sharedHomeGate = ownTerritory && isSharedTerritory(node);
+		if (ownTerritory && !sharedHomeGate) break;
+		const hit = pieceAtUnchecked(pieces, node);
+		if (!hit) out.add(node);
+		else {
+			if (hit.owner !== piece.owner) out.add(node);
+			break;
+		}
+		if (sharedHomeGate) break;
+	}
+	return [...out];
+}
+function flagTargets(piece, pieces) {
+	return piece.leftHome ? foreignFlagTargets(piece, pieces) : twoStepForwardTargets(piece, pieces);
+}
+function pseudoTargetsFor(piece, state) {
+	if (!piece || piece.status !== "board") return [];
+	switch (piece.role) {
+		case "general": return generalTargets(piece, state.pieces);
+		case "advisor": return advisorTargets(piece, state.pieces);
+		case "elephant": return elephantTargets(piece, state.pieces);
+		case "horse": return horseTargets(piece, state.pieces);
+		case "chariot": return chariotTargets(piece, state.pieces);
+		case "cannon": return cannonTargets$1(piece, state.pieces);
+		case "soldier": return soldierTargets(piece, state.pieces);
+		case "fire": return fireTargets(piece, state.pieces);
+		case "flag": return flagTargets(piece, state.pieces);
+		default: return [];
+	}
+}
+function getPseudoTargets(state, pieceOrId) {
+	return pseudoTargetsFor(typeof pieceOrId === "string" ? state.pieces.find((item) => item.id === pieceOrId) : pieceOrId, state);
+}
+function pieceAt$1(state, node) {
+	return pieceAtUnchecked(state.pieces, node);
+}
+function generalOf(state, faction) {
+	return state.pieces.find((piece) => piece.faction === faction && piece.role === "general" && piece.status === "board") || null;
+}
+function activeOpponents(state, faction) {
+	return state.activeFactions.filter((candidate) => candidate !== faction);
+}
+function flyingGeneralAttacksNode(state, node, byFaction) {
+	const defender = pieceAt$1(state, node);
+	if (!defender || defender.role !== "general" || defender.owner === byFaction) return false;
+	return state.pieces.some((piece) => {
+		if (piece.status !== "board" || piece.owner !== byFaction || piece.role !== "general") return false;
+		for (const ray of lineRaysFrom(piece.node)) {
+			if (ray.kind === "horizontal") continue;
+			for (const rayNode of ray.nodes) {
+				const hit = pieceAtUnchecked(state.pieces, rayNode);
+				if (!hit) continue;
+				return hit.node === node && hit.role === "general" && hit.owner !== piece.owner;
+			}
+		}
+		return false;
+	});
+}
+function isGeometricallyAttacked(state, node, byFaction) {
+	if (flyingGeneralAttacksNode(state, node, byFaction)) return true;
+	return state.pieces.some((piece) => piece.status === "board" && piece.owner === byFaction && pseudoTargetsFor(piece, state).some((target) => target === node));
+}
+function checkingFactions(state, faction) {
+	const general = generalOf(state, faction);
+	if (!general) return [];
+	return activeOpponents(state, faction).filter((opponent) => isGeometricallyAttacked(state, general.node, opponent));
+}
+function isInCheck$1(state, faction) {
+	return checkingFactions(state, faction).length > 0;
+}
+function previewMove(state, piece, target) {
+	const next = clone$3(state);
+	const moving = next.pieces.find((candidate) => candidate.id === piece.id);
+	const victim = next.pieces.find((candidate) => candidate.status === "board" && candidate.node === target);
+	if (victim) {
+		victim.status = "captured";
+		victim.node = null;
+	}
+	moving.lastMoveFrom = moving.node;
+	moving.node = target;
+	moving.hasMoved = true;
+	if (isEnemyTerritory(moving.faction, target)) moving.leftHome = true;
+	if (moving.role === "soldier" && isEnemyTerritory(moving.faction, target)) moving.promoted = true;
+	return next;
+}
+function legalTargetsFor(piece, state) {
+	const out = [];
+	for (const target of pseudoTargetsFor(piece, state)) {
+		const victim = pieceAt$1(state, target);
+		if (victim?.owner === piece.owner) continue;
+		if (victim?.role === "general" && victim.owner !== piece.owner) continue;
+		if (isInCheck$1(previewMove(state, piece, target), piece.owner)) continue;
+		out.push(target);
+	}
+	return dedupeNodes(out);
+}
+function baseMoveActions(state, faction) {
+	const actions = [];
+	for (const piece of state.pieces.filter((candidate) => candidate.owner === faction && candidate.status === "board")) for (const target of legalTargetsFor(piece, state)) {
+		const victim = pieceAt$1(state, target);
+		actions.push({
+			type: "move",
+			pieceId: piece.id,
+			from: piece.node,
+			to: target,
+			captured: victim?.id || null
+		});
+	}
+	return actions;
+}
+function positionKey(state) {
+	const pieces = state.pieces.map((piece) => [
+		piece.id,
+		piece.faction,
+		piece.owner,
+		piece.role,
+		piece.status,
+		piece.node || "",
+		piece.promoted ? 1 : 0,
+		piece.leftHome ? 1 : 0
+	]).sort((a, b) => a[0].localeCompare(b[0]));
+	return JSON.stringify([
+		state.turn,
+		state.resumeTurn || "",
+		[...state.activeFactions].sort(),
+		pieces
+	]);
+}
+function generateFor(state, faction, options = {}) {
+	if (state.phase !== "play" || state.outcome) return [];
+	const candidates = baseMoveActions(state, faction);
+	if (options.skipRepetition) return candidates;
+	return candidates.filter((action) => {
+		const preview = previewMove(state, state.pieces.find((piece) => piece.id === action.pieceId), action.to);
+		return !state.repetition[positionKey(preview)];
+	});
+}
+function getLegalActions(state) {
+	if (stateInvariantError(state) || state.phase !== "play" || state.outcome) return [];
+	return generateFor(state, state.turn);
+}
+function resolveStalemate(state) {
+	if (stateInvariantError(state) || state.phase !== "play" || state.outcome) return state;
+	if (isInCheck$1(state, state.turn) || generateFor(state, state.turn).length) return state;
+	const next = clone$3(state);
+	const stalled = next.turn;
+	next.phase = "complete";
+	next.resumeTurn = null;
+	next.outcome = {
+		type: "draw",
+		reason: "stalemate",
+		winner: null,
+		losers: [],
+		stalemated: stalled,
+		message: `Stalemate — ${FACTION_LABELS[stalled]} has no legal moves. Draw.`
+	};
+	next.note = next.outcome.message;
+	return next;
+}
+function hasLegalMove$1(state, faction) {
+	return generateFor(state, faction, { skipRepetition: true }).length > 0;
+}
+function nextFaction(state, actor) {
+	const start = TURN_ORDER.indexOf(actor);
+	for (let offset = 1; offset <= TURN_ORDER.length; offset += 1) {
+		const faction = TURN_ORDER[(start + offset) % TURN_ORDER.length];
+		if (state.activeFactions.includes(faction)) return faction;
+	}
+	return actor;
+}
+function stateInvariantError(state) {
+	if (!state || state.gameId !== "san-you-qi") return {
+		code: "INVALID_STATE",
+		message: "This is not a San You Qi state."
+	};
+	if (state.rulesetVersion !== "arctic-final-156-node-3.3.6") return {
+		code: "RULESET_MISMATCH",
+		message: `Expected San You Qi ruleset ${RULESET_VERSION}.`
+	};
+	if (!FACTIONS.includes(state.turn) || !Array.isArray(state.activeFactions) || !state.activeFactions.includes(state.turn)) return {
+		code: "INVALID_STATE",
+		message: "The active turn is malformed."
+	};
+	if (!Array.isArray(state.pieces) || !state.repetition) return {
+		code: "INVALID_STATE",
+		message: "The match state is incomplete."
+	};
+	if (state.resumeTurn != null && (!FACTIONS.includes(state.resumeTurn) || !state.activeFactions.includes(state.resumeTurn))) return {
+		code: "INVALID_STATE",
+		message: "The interrupted turn state is malformed."
+	};
+	const pieceIds = /* @__PURE__ */ new Set();
+	const occupied = /* @__PURE__ */ new Set();
+	for (const piece of state.pieces) {
+		if (!piece || typeof piece.id !== "string" || pieceIds.has(piece.id) || !FACTIONS.includes(piece.faction) || !FACTIONS.includes(piece.owner) || !ROLES.includes(piece.role) || ![
+			"board",
+			"captured",
+			"eliminated"
+		].includes(piece.status)) return {
+			code: "INVALID_STATE",
+			message: "A piece record is malformed."
+		};
+		pieceIds.add(piece.id);
+		if (piece.status === "board") {
+			if (!ALL_NODE_IDS.includes(piece.node) || occupied.has(piece.node)) return {
+				code: "INVALID_STATE",
+				message: "Board occupancy is malformed."
+			};
+			occupied.add(piece.node);
+		}
+	}
+	return null;
+}
+function validateAction(state, action) {
+	const error = stateInvariantError(state);
+	if (error) return {
+		ok: false,
+		error
+	};
+	if (state.outcome) return {
+		ok: false,
+		error: {
+			code: "GAME_OVER",
+			message: "The match has already ended."
+		}
+	};
+	const match = getLegalActions(state).find((candidate) => candidate.type === action?.type && candidate.pieceId === action?.pieceId && candidate.from === action?.from && candidate.to === action?.to);
+	return match ? {
+		ok: true,
+		action: match
+	} : {
+		ok: false,
+		error: {
+			code: "ILLEGAL_ACTION",
+			message: "That action is not legal in the current position."
+		}
+	};
+}
+function applyAction(state, proposed) {
+	const validation = validateAction(state, proposed);
+	if (!validation.ok) return {
+		state,
+		error: validation.error
+	};
+	const action = validation.action;
+	const actor = state.turn;
+	const next = previewMove(state, state.pieces.find((piece) => piece.id === action.pieceId), action.to);
+	next.ply += 1;
+	const movedPiece = next.pieces.find((piece) => piece.id === action.pieceId);
+	if (movedPiece) {
+		movedPiece.lastMovedPly = next.ply;
+		movedPiece.lastMovedBy = actor;
+	}
+	next.lastAction = {
+		...action,
+		actor,
+		ply: next.ply
+	};
+	const checked = next.activeFactions.filter((faction) => faction !== actor && isInCheck$1(next, faction));
+	const mated = checked.filter((faction) => !hasLegalMove$1(next, faction));
+	if (mated.length) {
+		const mateWinners = /* @__PURE__ */ new Map();
+		for (const defeated of mated) {
+			const checkers = checkingFactions(next, defeated);
+			const victor = checkers.includes(actor) ? actor : checkers[0] || actor;
+			mateWinners.set(defeated, victor);
+			const general = generalOf(next, defeated);
+			if (general) {
+				general.status = "eliminated";
+				general.node = null;
+			}
+			for (const piece of next.pieces) if (piece.faction === defeated && piece.status === "board" && piece.role !== "general") piece.owner = victor;
+			next.activeFactions = next.activeFactions.filter((faction) => faction !== defeated);
+		}
+		next.resumeTurn = null;
+		if (next.activeFactions.length <= 1) {
+			const winner = next.activeFactions[0] || mateWinners.values().next().value || actor;
+			next.outcome = {
+				type: "mate",
+				winner,
+				losers: mated,
+				message: `${FACTION_LABELS[winner]} wins — last surviving General.`
+			};
+			next.phase = "complete";
+		} else {
+			next.turn = [...new Set(mated.map((faction) => mateWinners.get(faction)))].find((faction) => next.activeFactions.includes(faction)) || nextFaction(next, actor);
+			next.note = mated.map((faction) => `${FACTION_LABELS[mateWinners.get(faction)]} checkmates ${FACTION_LABELS[faction]}`).join(" · ");
+		}
+	} else if (checked.length) {
+		const ordinaryNext = state.resumeTurn && next.activeFactions.includes(state.resumeTurn) ? state.resumeTurn : nextFaction(next, actor);
+		const checkedSet = new Set(checked);
+		let responder = ordinaryNext;
+		if (!checkedSet.has(responder)) {
+			const start = TURN_ORDER.indexOf(actor);
+			responder = null;
+			for (let offset = 1; offset <= TURN_ORDER.length; offset += 1) {
+				const candidate = TURN_ORDER[(start + offset) % TURN_ORDER.length];
+				if (checkedSet.has(candidate)) {
+					responder = candidate;
+					break;
+				}
+			}
+			responder ||= checked[0];
+		}
+		next.turn = responder;
+		next.resumeTurn = responder === ordinaryNext ? null : ordinaryNext;
+		const checkers = checkingFactions(next, responder);
+		next.note = `${FACTION_LABELS[responder]} is in check${checkers.length ? ` by ${checkers.map((faction) => FACTION_LABELS[faction]).join(" and ")}` : ""} — respond immediately.`;
+	} else {
+		next.turn = (state.resumeTurn && next.activeFactions.includes(state.resumeTurn) ? state.resumeTurn : null) || nextFaction(next, actor);
+		next.resumeTurn = null;
+		next.note = `${FACTION_LABELS[next.turn]} to move.`;
+	}
+	next.repetition[positionKey(next)] = actor;
+	return {
+		state: resolveStalemate(next),
+		error: null
+	};
+}
+function setupPieces() {
+	const pieces = [];
+	for (const faction of FACTIONS) {
+		const counts = {};
+		for (const [role, lane, rank] of STANDARD_OPENING) {
+			counts[role] = (counts[role] || 0) + 1;
+			pieces.push({
+				id: `${faction}-${role}-${counts[role]}`,
+				faction,
+				owner: faction,
+				role,
+				node: armNodeId(faction, lane, rank),
+				status: "board",
+				promoted: false,
+				leftHome: false,
+				hasMoved: false,
+				lastMoveFrom: null,
+				lastMovedPly: null,
+				lastMovedBy: null
+			});
+		}
+	}
+	return pieces;
+}
+function createInitialState() {
+	const state = {
+		gameId: GAME_ID,
+		rulesetVersion: RULESET_VERSION,
+		phase: "play",
+		turn: "red",
+		activeFactions: [...FACTIONS],
+		pieces: setupPieces(),
+		outcome: null,
+		lastAction: null,
+		note: "Shu / Red opens. Turns proceed Red → Green → Blue.",
+		ply: 0,
+		resumeTurn: null,
+		repetition: {}
+	};
+	state.repetition[positionKey(state)] = "initial";
+	return state;
+}
+function allNodes() {
+	return [...ALL_NODE_IDS];
+}
+function getNodeLabel(node) {
+	return nodeLabel(node);
+}
+function getNodePoint(node) {
+	return boardPoint(node);
+}
+const __testing = Object.freeze({
+	TURN_ORDER,
+	STANDARD_OPENING,
+	PALACE_LANES,
+	PALACE_RANKS,
+	CONTINUATION_LINES,
+	SIDEWAYS_LINES,
+	pieceAtUnchecked,
+	insidePalace,
+	parseArmNode,
+	forwardNeighbors,
+	backwardNeighbors,
+	sidewaysNeighbors,
+	terrainBetween,
+	pathEdgeAllowedForRole,
+	checkingFactions,
+	isEnemyTerritory,
+	isOwnTerritory,
+	isSharedTerritory,
+	territoryCamps,
+	FIRE_FORT_EXTRA_DIAGONALS,
+	FIRE_CENTER_EXACT_DIAGONALS,
+	isCenterNode,
+	isArmNode
+});
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoYanYiRules.ts
+/** Sanguo Yan Yi Qi, tutorial Free Play edition. Independent of the Y-board Sanguo engine.
+* Authority: the user-supplied 36:52 tutorial; disagreements with the 2020 article
+* are documented in the accompanying rulebook. No Xiangqi flying-General rule.
+*/
+const YAN_YI_VERSION = "sanguo-yan-yi-free-play-1";
+const YAN_YI_FACTIONS = [
+	"green",
+	"blue",
+	"red"
+];
+const YAN_YI_NAMES = {
+	blue: "Wei / Pengu Order",
+	green: "Wu / Abster Tribe",
+	red: "Shu / Retsba Legion"
+};
+const YAN_YI_ROLE_SHORT = {
+	king: "King",
+	advisor: "Advisor",
+	elephant: "Elephant",
+	horse: "Horse",
+	chariot: "Chariot",
+	cannon: "Cannon",
+	soldier: "Soldier",
+	emperor: "Emperor"
+};
+const YAN_YI_ALLIANCE_POINTS = [
+	{
+		faction: "red",
+		point: {
+			x: 0,
+			y: 7
+		}
+	},
+	{
+		faction: "green",
+		point: {
+			x: 1,
+			y: 8
+		}
+	},
+	{
+		faction: "blue",
+		point: {
+			x: 0,
+			y: 9
+		}
+	}
+];
+const sameYanYiPoint = (a, b) => a.x === b.x && a.y === b.y;
+const inYanYiBoard = (p) => Number.isInteger(p.x) && Number.isInteger(p.y) && p.x >= 0 && p.x <= 16 && p.y >= 0 && p.y <= 16 && (p.x >= 4 && p.x <= 12 || p.y >= 4 && p.y <= 12);
+const inCross = (x, y) => x >= 0 && x <= 16 && y >= 0 && y <= 16 && (x >= 4 && x <= 12 || y >= 4 && y <= 12);
+const YAN_YI_POINTS = Array.from({ length: 289 }, (_, i) => ({
+	x: i % 17,
+	y: Math.floor(i / 17)
+})).filter(inYanYiBoard);
+const yanYiPieceAt = (state, p) => state.pieces.find((piece) => sameYanYiPoint(piece, p));
+const yanYiAllied = (state, a, b) => Boolean(a && b && (a === b || state.alliance?.includes(a) && state.alliance.includes(b)));
+function yanYiLocalPoint(faction, file, depth) {
+	if (faction === "blue") return {
+		x: file + 4,
+		y: depth
+	};
+	if (faction === "red") return {
+		x: 12 - file,
+		y: 16 - depth
+	};
+	if (faction === "green") return {
+		x: 16 - depth,
+		y: file + 4
+	};
+	return {
+		x: depth,
+		y: 12 - file
+	};
+}
+const homeDepth = (faction, p) => faction === "blue" ? p.y : faction === "red" ? 16 - p.y : 16 - p.x;
+const yanYiFile = (faction, p) => faction === "blue" ? 17 - p.x : faction === "red" ? p.x + 1 : 17 - p.y;
+const yanYiCoordinate = (faction, p) => `file ${yanYiFile(faction, p)} / depth ${homeDepth(faction, p) + 1}`;
+const palacePoints = (faction) => [
+	0,
+	1,
+	2
+].flatMap((depth) => [
+	3,
+	4,
+	5
+].map((file) => yanYiLocalPoint(faction, file, depth)));
+const yanYiAdvisorPoints = (faction) => [
+	[3, 0],
+	[5, 0],
+	[4, 1],
+	[3, 2],
+	[5, 2]
+].map(([file, depth]) => yanYiLocalPoint(faction, file, depth));
+const yanYiElephantPoints = (faction) => [
+	[2, 0],
+	[6, 0],
+	[0, 2],
+	[4, 2],
+	[8, 2],
+	[2, 4],
+	[6, 4]
+].map(([file, depth]) => yanYiLocalPoint(faction, file, depth));
+const inPoints = (point, points) => points.some((p) => sameYanYiPoint(p, point));
+const directions = [
+	[1, 0],
+	[-1, 0],
+	[0, 1],
+	[0, -1]
+];
+function createYanYiState(options = {}) {
+	const pieces = [];
+	for (const faction of YAN_YI_FACTIONS) {
+		const add = (role, file, depth) => pieces.push({
+			id: `${faction}-${role}-${file}`,
+			origin: faction,
+			owner: faction,
+			role,
+			...yanYiLocalPoint(faction, file, depth)
+		});
+		[
+			"chariot",
+			"horse",
+			"elephant",
+			"advisor",
+			"king",
+			"advisor",
+			"elephant",
+			"horse",
+			"chariot"
+		].forEach((role, file) => add(role, file, 0));
+		add("cannon", 1, 2);
+		add("cannon", 7, 2);
+		[
+			0,
+			2,
+			4,
+			6,
+			8
+		].forEach((file) => add("soldier", file, 3));
+	}
+	[
+		6,
+		8,
+		10
+	].forEach((y) => pieces.push({
+		id: `han-chariot-${y}`,
+		origin: "han",
+		owner: null,
+		role: "chariot",
+		x: 3,
+		y
+	}));
+	pieces.push({
+		id: "han-cannon",
+		origin: "han",
+		owner: null,
+		role: "cannon",
+		x: 2,
+		y: 8
+	}, {
+		id: "han-emperor",
+		origin: "han",
+		owner: null,
+		role: "emperor",
+		x: 0,
+		y: 8
+	});
+	return {
+		version: YAN_YI_VERSION,
+		pieces,
+		turn: "green",
+		defeated: [],
+		alliance: null,
+		hanOwner: null,
+		activationUsed: false,
+		claims: {
+			blue: "blue",
+			green: "green",
+			red: "red"
+		},
+		opening: {
+			blue: false,
+			green: false,
+			red: false
+		},
+		checks: {
+			blue: {
+				target: null,
+				count: 0
+			},
+			green: {
+				target: null,
+				count: 0
+			},
+			red: {
+				target: null,
+				count: 0
+			}
+		},
+		winner: null,
+		draw: false,
+		options: {
+			checkLimit: options.checkLimit === 9 ? 9 : 6,
+			balanceHan: options.balanceHan ?? false
+		},
+		ply: 0,
+		note: "Wu opens. Normal order: Wu → Wei → Shu. A single checked king answers immediately.",
+		events: []
+	};
+}
+function canLand$1(state, piece, point) {
+	if (!inYanYiBoard(point)) return false;
+	const victim = yanYiPieceAt(state, point);
+	if (!victim) return true;
+	if (victim.inactive) return true;
+	if (victim.origin === "han" && victim.owner === null) return victim.role === "emperor" && piece.role === "horse" && !state.activationUsed;
+	return !yanYiAllied(state, piece.owner, victim.owner);
+}
+/** Horse legs are NOT blocked by pieces; the complete straight + diagonal route must stay on the cross. */
+function yanYiHorseRoute(from, to) {
+	const dx = to.x - from.x, dy = to.y - from.y;
+	if (!(Math.abs(dx) === 2 && Math.abs(dy) === 1 || Math.abs(dx) === 1 && Math.abs(dy) === 2)) return false;
+	const leg = {
+		x: from.x + (Math.abs(dx) === 2 ? Math.sign(dx) : 0),
+		y: from.y + (Math.abs(dy) === 2 ? Math.sign(dy) : 0)
+	};
+	return inYanYiBoard(to) && inYanYiBoard(leg) && [
+		.25,
+		.5,
+		.75
+	].every((t) => inCross(leg.x + (to.x - leg.x) * t, leg.y + (to.y - leg.y) * t));
+}
+function pseudoYanYiTargets(state, piece) {
+	if (!piece.owner || piece.inactive || piece.role === "emperor") return [];
+	const targets = [];
+	const add = (p) => {
+		if (canLand$1(state, piece, p)) targets.push(p);
+	};
+	if (piece.role === "chariot" || piece.role === "cannon") {
+		for (const [dx, dy] of directions) {
+			let screen = false;
+			for (let distance = 1; distance <= 16; distance++) {
+				const p = {
+					x: piece.x + dx * distance,
+					y: piece.y + dy * distance
+				};
+				if (!inYanYiBoard(p)) break;
+				const victim = yanYiPieceAt(state, p);
+				if (piece.role === "chariot") {
+					add(p);
+					if (victim) break;
+				} else if (!screen) if (victim) screen = true;
+				else add(p);
+				else if (victim) {
+					add(p);
+					break;
+				}
+			}
+		}
+		return piece.role === "cannon" && !state.opening[piece.owner] && state.ply < 3 ? targets.filter((p) => homeDepth(piece.owner, p) <= 3) : targets;
+	}
+	if (piece.role === "horse") for (const [dx, dy] of [
+		[2, 1],
+		[2, -1],
+		[-2, 1],
+		[-2, -1],
+		[1, 2],
+		[1, -2],
+		[-1, 2],
+		[-1, -2]
+	]) {
+		const p = {
+			x: piece.x + dx,
+			y: piece.y + dy
+		};
+		if (yanYiHorseRoute(piece, p)) add(p);
+	}
+	else if (piece.role === "king") for (const [dx, dy] of directions) {
+		const p = {
+			x: piece.x + dx,
+			y: piece.y + dy
+		};
+		if (inPoints(p, palacePoints(piece.owner))) add(p);
+	}
+	else if (piece.role === "advisor") {
+		const points = YAN_YI_FACTIONS.filter((f) => state.claims[f] === piece.owner).flatMap(yanYiAdvisorPoints);
+		for (const dx of [-1, 1]) for (const dy of [-1, 1]) {
+			const p = {
+				x: piece.x + dx,
+				y: piece.y + dy
+			};
+			if (inPoints(p, points)) add(p);
+		}
+		if (piece.origin !== piece.owner) {
+			for (const p of yanYiAdvisorPoints(piece.owner)) if (!sameYanYiPoint(piece, p) && !yanYiPieceAt(state, p) && !inPoints(p, targets)) targets.push(p);
+		}
+	} else if (piece.role === "elephant") {
+		const camps = YAN_YI_FACTIONS.filter((f) => state.claims[f] === piece.owner);
+		if (state.hanOwner === piece.owner) camps.push("han");
+		const points = camps.flatMap(yanYiElephantPoints);
+		for (const dx of [-2, 2]) for (const dy of [-2, 2]) {
+			const p = {
+				x: piece.x + dx,
+				y: piece.y + dy
+			};
+			if (inPoints(p, points) && inYanYiBoard({
+				x: piece.x + dx / 2,
+				y: piece.y + dy / 2
+			})) add(p);
+		}
+	} else if (piece.role === "soldier") {
+		const depth = homeDepth(piece.owner, piece);
+		for (const [dx, dy] of directions) {
+			const p = {
+				x: piece.x + dx,
+				y: piece.y + dy
+			}, destinationDepth = homeDepth(piece.owner, p);
+			if (depth <= 4 ? destinationDepth >= depth : destinationDepth >= 4) add(p);
+		}
+	}
+	return targets;
+}
+function activateHan(state, owner, alliance) {
+	return {
+		...state,
+		activationUsed: true,
+		hanOwner: owner,
+		alliance,
+		pieces: state.pieces.filter((p) => p.role !== "emperor").map((p) => p.origin === "han" && p.owner === null ? {
+			...p,
+			owner
+		} : p)
+	};
+}
+function simulateYanYiMove(state, piece, to) {
+	const victim = yanYiPieceAt(state, to);
+	let next = {
+		...state,
+		pieces: state.pieces.filter((p) => !victim || p.id !== victim.id).map((p) => p.id === piece.id ? {
+			...p,
+			x: to.x,
+			y: to.y
+		} : p)
+	};
+	if (piece.role === "horse" && !state.activationUsed) {
+		const survivors = YAN_YI_FACTIONS.filter((f) => !state.defeated.includes(f));
+		if (victim?.role === "emperor") {
+			const opponents = survivors.filter((f) => f !== piece.owner);
+			next = activateHan(next, piece.owner, opponents.length === 2 ? opponents : null);
+		} else {
+			const point = YAN_YI_ALLIANCE_POINTS.find((p) => sameYanYiPoint(p.point, to));
+			if (point && point.faction !== piece.owner && survivors.length === 3) next = activateHan(next, survivors.find((f) => f !== piece.owner && f !== point.faction), [piece.owner, point.faction]);
+		}
+	}
+	return next;
+}
+function yanYiIsInCheck(state, faction) {
+	if (state.defeated.includes(faction)) return false;
+	const king = state.pieces.find((p) => p.role === "king" && p.owner === faction && !p.inactive);
+	return Boolean(king && state.pieces.some((p) => p.owner && !p.inactive && !yanYiAllied(state, faction, p.owner) && pseudoYanYiTargets(state, p).some((to) => sameYanYiPoint(to, king))));
+}
+function legalYanYiTargets(state, piece) {
+	if (!piece.owner || piece.inactive || state.winner || state.draw || state.defeated.includes(piece.owner)) return [];
+	return pseudoYanYiTargets(state, piece).filter((to) => {
+		const victim = yanYiPieceAt(state, to);
+		if (victim?.role === "king" && !victim.inactive) return false;
+		const next = simulateYanYiMove(state, piece, to);
+		return YAN_YI_FACTIONS.filter((f) => yanYiAllied(next, piece.owner, f) && !next.defeated.includes(f)).every((f) => !yanYiIsInCheck(next, f));
+	});
+}
+const yanYiHasMove = (state, faction) => state.pieces.some((p) => p.owner === faction && !p.inactive && legalYanYiTargets(state, p).length > 0);
+const yanYiPositionKey = (state) => `${state.alliance?.join("+") || "none"}:${state.hanOwner || "none"}:` + state.pieces.map((p) => `${p.id}:${p.owner}:${p.x},${p.y}:${p.inactive ? 1 : 0}`).sort().join(";");
+function nextYanYiFaction(current, defeated) {
+	for (let n = 1; n <= 3; n++) {
+		const f = YAN_YI_FACTIONS[(YAN_YI_FACTIONS.indexOf(current) + n) % 3];
+		if (!defeated.includes(f)) return f;
+	}
+	return current;
+}
+function checkingOwners(state, faction) {
+	const king = state.pieces.find((p) => p.role === "king" && p.owner === faction && !p.inactive);
+	return king ? YAN_YI_FACTIONS.filter((owner) => !yanYiAllied(state, owner, faction) && state.pieces.some((p) => p.owner === owner && !p.inactive && pseudoYanYiTargets(state, p).some((to) => sameYanYiPoint(to, king)))) : [];
+}
+function annex(state, loser, victor) {
+	const defeated = [...new Set([...state.defeated, loser])];
+	const survivors = YAN_YI_FACTIONS.filter((f) => !defeated.includes(f));
+	let next = {
+		...state,
+		defeated,
+		alliance: state.alliance && survivors.length === 3 ? state.alliance : null,
+		hanOwner: state.hanOwner === loser ? victor : state.hanOwner,
+		claims: Object.fromEntries(YAN_YI_FACTIONS.map((f) => [f, state.claims[f] === loser ? victor : state.claims[f]])),
+		pieces: state.pieces.filter((p) => !(p.owner === loser && p.role === "king")).map((p) => p.owner === loser && !p.inactive ? {
+			...p,
+			owner: victor
+		} : p),
+		winner: survivors.length === 1 ? survivors[0] : null
+	};
+	if (state.options.balanceHan && !state.activationUsed && survivors.length === 2) next = activateHan(next, survivors.find((f) => f !== victor), null);
+	return next;
+}
+function finishTurn(state, actor, messages) {
+	let next = state;
+	for (let iteration = 0; iteration < 3; iteration++) {
+		const loser = YAN_YI_FACTIONS.find((f) => !next.defeated.includes(f) && yanYiIsInCheck(next, f) && !yanYiHasMove(next, f));
+		if (!loser) break;
+		const checkers = checkingOwners(next, loser), victor = checkers.includes(actor) ? actor : checkers[0];
+		if (!victor) break;
+		next = annex(next, loser, victor);
+		messages.push(`${YAN_YI_NAMES[victor]} checkmates ${YAN_YI_NAMES[loser]} and inherits its surviving army.`);
+		if (next.winner) break;
+	}
+	if (next.winner) return {
+		...next,
+		note: `${messages.join(" ")} ${YAN_YI_NAMES[next.winner]} unifies the kingdoms.`
+	};
+	const checked = YAN_YI_FACTIONS.filter((f) => !next.defeated.includes(f) && yanYiIsInCheck(next, f));
+	let turn = checked.length === 1 ? checked[0] : nextYanYiFaction(actor, next.defeated);
+	let skipped = 0;
+	while (!yanYiHasMove(next, turn) && !yanYiIsInCheck(next, turn) && skipped < 3) {
+		messages.push(`${YAN_YI_NAMES[turn]} has no legal move and passes.`);
+		turn = nextYanYiFaction(turn, next.defeated);
+		skipped++;
+	}
+	const noOffense = !next.pieces.some((p) => p.owner && !p.inactive && [
+		"horse",
+		"chariot",
+		"cannon",
+		"soldier"
+	].includes(p.role));
+	const draw = skipped >= 3 || noOffense;
+	return {
+		...next,
+		turn,
+		draw,
+		note: `${messages.join(" ")} ${draw ? "Draw: no remaining mating force or legal continuation." : `${YAN_YI_NAMES[turn]} to move${checked.includes(turn) ? "; answer check immediately" : ""}.`}`
+	};
+}
+function applyYanYiMove(state, pieceId, to) {
+	const piece = state.pieces.find((p) => p.id === pieceId);
+	if (!piece || piece.owner !== state.turn || !legalYanYiTargets(state, piece).some((p) => sameYanYiPoint(p, to))) return null;
+	const victim = yanYiPieceAt(state, to), actor = state.turn;
+	let next = simulateYanYiMove(state, piece, to);
+	next = {
+		...next,
+		ply: state.ply + 1,
+		opening: {
+			...state.opening,
+			[actor]: true
+		},
+		checks: { ...state.checks }
+	};
+	const transfer = piece.role === "advisor" && Math.max(Math.abs(to.x - piece.x), Math.abs(to.y - piece.y)) > 1;
+	const messages = [`${YAN_YI_NAMES[actor]}: ${transfer ? "palace transfer" : YAN_YI_ROLE_SHORT[piece.role]} ${yanYiCoordinate(actor, piece)} → ${yanYiCoordinate(actor, to)}${victim ? `; captures ${YAN_YI_ROLE_SHORT[victim.role]}` : ""}.`];
+	if (!state.activationUsed && next.activationUsed) messages.push(victim?.role === "emperor" ? `${YAN_YI_NAMES[actor]} takes Han. The other surviving kingdoms unite.` : `${next.alliance.map((f) => YAN_YI_NAMES[f]).join(" + ")} form an irreversible alliance. Han joins ${YAN_YI_NAMES[next.hanOwner]}.`);
+	const previous = YAN_YI_FACTIONS[(YAN_YI_FACTIONS.indexOf(actor) + 2) % 3];
+	const checkingPrevious = !next.defeated.includes(previous) && yanYiIsInCheck(next, previous) && checkingOwners(next, previous).includes(actor);
+	const prior = state.checks[actor], positionKey = yanYiPositionKey(next);
+	const continuous = checkingPrevious && prior.target === previous && !victim;
+	const positions = checkingPrevious ? [...continuous ? prior.positions ?? [] : [], positionKey].slice(-40) : [];
+	const count = checkingPrevious ? continuous && prior.positions?.includes(positionKey) ? prior.count + 1 : 1 : 0;
+	next.checks[actor] = {
+		target: checkingPrevious ? previous : null,
+		count,
+		positions
+	};
+	if (count > state.options.checkLimit && yanYiHasMove(next, previous)) {
+		next = annex(next, actor, previous);
+		messages.push(`Perpetual check: ${YAN_YI_NAMES[actor]} continued after the ${state.options.checkLimit}-check limit and forfeits its army to ${YAN_YI_NAMES[previous]}.`);
+	} else if (count === state.options.checkLimit) messages.push(`Perpetual-check warning: change on your next move or forfeit to ${YAN_YI_NAMES[previous]}.`);
+	next = finishTurn(next, actor, messages);
+	const event = {
+		number: next.ply,
+		actor,
+		text: next.note,
+		from: {
+			x: piece.x,
+			y: piece.y
+		},
+		to: {
+			x: to.x,
+			y: to.y
+		},
+		pieceId,
+		...victim ? { capture: victim.role } : {}
+	};
+	return {
+		...next,
+		events: [...state.events, event].slice(-2e3)
+	};
+}
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/sanguoYanYiPresentation.ts
+const YAN_YI_ASSET_ROOT = "/assets/heritage-arcade/sanguo-yan-yi";
+const YAN_YI_BOARD = `${YAN_YI_ASSET_ROOT}/yan-yi-arctic-board.webp`;
+const YAN_YI_X = [
+	96,
+	171,
+	246,
+	321,
+	415,
+	503,
+	592,
+	681,
+	768,
+	855,
+	944,
+	1034,
+	1122,
+	1208,
+	1283,
+	1362,
+	1441
+];
+const YAN_YI_Y = [
+	75,
+	165,
+	249,
+	327,
+	417,
+	506,
+	594,
+	684,
+	769,
+	856,
+	946,
+	1034,
+	1122,
+	1200,
+	1284,
+	1364,
+	1446
+];
+const yanYiPixelPoint = (point) => ({
+	x: YAN_YI_X[point.x],
+	y: YAN_YI_Y[point.y]
+});
+const yanYiSprite = (origin, role) => `${YAN_YI_ASSET_ROOT}/pieces/${origin}-${role}.webp`;
+const YAN_YI_HAN_ARTWORK = [
+	{
+		id: "han-emperor",
+		filename: "han-emperor.webp",
+		displayName: "Han Golden Emperor",
+		role: "emperor",
+		count: 1,
+		pieceIds: ["han-emperor"]
+	},
+	{
+		id: "han-chariot-imperial",
+		filename: "han-chariot-imperial.webp",
+		displayName: "Han Imperial Chariot",
+		role: "chariot",
+		count: 2,
+		pieceIds: ["han-chariot-6", "han-chariot-10"]
+	},
+	{
+		id: "han-chariot-vanguard",
+		filename: "han-chariot-vanguard.webp",
+		displayName: "Han Vanguard Chariot",
+		role: "chariot",
+		count: 1,
+		pieceIds: ["han-chariot-8"]
+	},
+	{
+		id: "han-cannon",
+		filename: "han-cannon.webp",
+		displayName: "Han Golden Cannon",
+		role: "cannon",
+		count: 1,
+		pieceIds: ["han-cannon"]
+	}
+];
+const yanYiHanArtwork = (piece) => piece.origin === "han" ? YAN_YI_HAN_ARTWORK.find((art) => art.pieceIds.some((id) => id === piece.id)) || YAN_YI_HAN_ARTWORK.find((art) => art.role === piece.role) : void 0;
+const yanYiPieceSprite = (piece) => {
+	if (piece.origin !== "han") return yanYiSprite(piece.origin, piece.role);
+	const art = yanYiHanArtwork(piece);
+	return art ? `${YAN_YI_ASSET_ROOT}/pieces/${art.filename}` : null;
+};
+const YAN_YI_ROLE_HELP = {
+	king: "One point horizontally or vertically inside its 3×3 palace. Wei and Shu kings may face each other in this Free Play edition.",
+	advisor: "One diagonal step along its five palace points. An inherited Advisor may transfer to an empty Advisor point in your palace, using the entire move.",
+	elephant: "Two points diagonally, with no blocked eye. Seven home points; inherited Elephants may use connected territories you control. The route must stay on the board.",
+	horse: "An L-shaped jump: two along one axis and one along the other. Pieces do not block the leg. The full route must stay on the cross. Horses alone form alliances or capture the inactive Han Emperor.",
+	chariot: "Any clear distance horizontally or vertically. Capture the first enemy on the line; never jump over a piece.",
+	cannon: "Move on clear orthogonal lines. To capture, jump exactly one intervening piece of any faction. During the first full round, stay on or behind your soldier defensive line.",
+	soldier: "One point forward or sideways at home. Beyond your own national boundary, move in any orthogonal direction; retreat only as far as that boundary. Inherited Soldiers use their new controller's direction.",
+	emperor: "Initially immobile at Luoyang. Only a Horse may capture him. Alliance or regicide activates the three Han Chariots and Cannon. In the tutorial's marker convention, the Emperor becomes the receiving kingdom's royal marker."
+};
+const YAN_YI_CHAPTERS = [
+	{
+		title: "Board and armies",
+		time: "00:48–03:19",
+		paragraphs: [
+			"Wei is blue at the top, Shu is red at the bottom, Wu is green at the right, and Han is gold at the left. Pieces occupy intersections: 225 playable points on a 17×17 cross. The four blank corners and the decorative outside border are never playable.",
+			"Each player has 16 pieces: King ×1; Advisor, Elephant, Horse, Chariot and Cannon ×2 each; Soldier ×5. Han adds one Emperor, three Chariots and one Cannon. Total: 53 physical pieces, illustrated by 21 player-army designs and four yellow Han designs. The two outer Han Chariots share artwork; all three Chariots follow the same rules.",
+			"Wu moves first, then Wei, then Shu. Your defensive line is the starting Soldier rank. Your national boundary is the next line toward the center."
+		]
+	},
+	{
+		title: "Movement and capture",
+		time: "03:22–09:34",
+		paragraphs: [
+			"Move one controlled piece to a highlighted intersection. Friendly and allied destinations are blocked. A capture removes the enemy occupying your destination. Active kings are checkmated rather than captured directly.",
+			"Horse legs and Elephant eyes cannot be blocked. A valid destination is insufficient if the Horse's or Elephant's route cuts across a missing corner. All routes must remain on the cross.",
+			"The tutorial's first-round Cannon restriction stops at the defensive line. The 2020 written article instead permits the national boundary. This table follows the video."
+		]
+	},
+	{
+		title: "Check and turn order",
+		time: "09:40–10:59; 20:33–22:20",
+		paragraphs: [
+			"A single checked faction responds immediately, even out of turn. Continue from that faction's next seat after its response. If multiple factions are checked, use normal Wu → Wei → Shu order. A mated king is removed immediately.",
+			"Checking your previous seat may give you another move after its response. Repeating that check without changing the cycle is restricted. Choose six or nine checks before a warning; continuing the cycle forfeits your army to that previous seat. Checking the next seat is allowed.",
+			"Protect your own king. In this tutorial edition, you must also protect your ally's king: you cannot move away a shielding piece and expose it. Allied pieces do not check one another. Wei and Shu may face directly; the ordinary Xiangqi flying-General restriction does not apply."
+		]
+	},
+	{
+		title: "Alliance and Han",
+		time: "11:01–15:39",
+		paragraphs: [
+			"Move a Horse to the Shu, Wu or Wei alliance point beside the Emperor. Landing on another faction's point automatically allies you with it, even accidentally or without its consent. Your own point has no effect. The remaining faction immediately controls the three Han Chariots and Cannon.",
+			"Alternatively, a Horse captures the inactive Emperor at Luoyang. The Horse's controller gains Han; the other two surviving factions automatically ally against it. The Han royal marker still represents its recipient's own King, with the same palace and identity.",
+			"Allies cannot capture or check one another. No player may voluntarily cancel or replace an alliance. It ends when any participating kingdom is eliminated. Han activation is a one-time event; the receiving side keeps the reserve unless its army is inherited by a victor.",
+			"The speaker proposes giving Han to the third kingdom when an early checkmate creates a large imbalance. It was only proposed to the designers. The separate 'Early-conquest Han balance' option is off by default."
+		]
+	},
+	{
+		title: "Inheritance and the ending",
+		time: "15:46–20:26; 25:20–26:16",
+		paragraphs: [
+			"Checkmate defeats a kingdom and transfers all its surviving pieces to the direct checking faction. If the moving faction and another faction both directly checkmate it, prefer the moving faction. If only the other faction directly checks, that faction inherits. Han pieces already owned by the defeated kingdom transfer too.",
+			"Inherited artwork keeps its original faction color. A new owner ring and label show who controls it. Soldiers use the new controller's boundary. Inherited Advisors can transfer into the controller's palace, one Advisor per whole move. Elephants can travel through the seven-point networks of controlled neighboring kingdoms; Wei–Shu transfers need the Han route because enemy Wu territory is unavailable.",
+			"Resignation leaves the army where it stands, inactive and capturable; it is not inherited. The king is face down. Inactive pieces remain obstacles and Cannon screens. Defeated seats are skipped.",
+			"The final surviving king wins. If the survivors cannot mate, they may agree to draw. The table automatically recognizes no remaining offensive force. The video omits stalemate adjudication; this edition explicitly uses the original patent's pass rule for a seat with no legal move and no check."
+		]
+	},
+	{
+		title: "Notation and tactics",
+		time: "26:28–36:18",
+		paragraphs: [
+			"Files are numbered 1–17 from each controller's right to left. The central King file is 9; starting Chariots are on files 5 and 13. Han has no independent notation: inherited Han units use their controller's files.",
+			"When identical pieces share a file, use front/rear for two, front/middle/rear for three, and ordinal numbers from the front for larger groups. 'Fourth Chariot to file 9' is different from 'Chariot on file 4 to file 9.' The game journal also records both source and destination coordinates.",
+			"The narrator favors one full round as one historical year from AD 184, instead of the official AD 189 start or suggested monthly/seasonal scales. This is storytelling, not a move timer.",
+			"Watch for borrowed-knife captures and Horse forks near Han. A Chariot can stop some Horse approaches using the four-square pattern, but other approaches need two Chariots. After an alliance, protect the newly activated Han Chariots from an immediate fork. The exact tutorial setups remain in the timestamped transcript; they are examples, not universal guarantees."
+		]
+	}
+];
+
+//#endregion
+//#region frontend/src/games/heritage-arcade/ported/game/xiangqiRules.ts
+const ROLE_LABELS = {
+	general: "General",
+	advisor: "Advisor",
+	elephant: "Elephant",
+	horse: "Horse",
+	chariot: "Chariot",
+	cannon: "Cannon",
+	soldier: "Soldier"
+};
+const SIDE_LABELS = {
+	red: "Red / Shu",
+	black: "Blue / Wei"
+};
+const otherSide = (side) => side === "red" ? "black" : "red";
+const sameSquare = (a, b) => a.row === b.row && a.col === b.col;
+const inBoard = ({ row, col }) => row >= 0 && row < 10 && col >= 0 && col < 9;
+const isInPalace = (side, { row, col }) => col >= 3 && col <= 5 && (side === "red" ? row >= 7 && row <= 9 : row >= 0 && row <= 2);
+const isHomeSide = (side, row) => side === "red" ? row >= 5 : row <= 4;
+const pieceAt = (pieces, square) => pieces.find((piece) => sameSquare(piece, square));
+const canLand = (piece, square, pieces) => inBoard(square) && pieceAt(pieces, square)?.side !== piece.side;
+const candidate = (piece, square, pieces, targets) => {
+	if (canLand(piece, square, pieces)) targets.push(square);
+};
+const rayTargets = (piece, pieces) => {
+	const targets = [];
+	for (const [dr, dc] of [
+		[-1, 0],
+		[1, 0],
+		[0, -1],
+		[0, 1]
+	]) for (let step = 1; step < 10; step += 1) {
+		const square = {
+			row: piece.row + dr * step,
+			col: piece.col + dc * step
+		};
+		if (!inBoard(square)) break;
+		const blocker = pieceAt(pieces, square);
+		if (!blocker) targets.push(square);
+		else {
+			if (blocker.side !== piece.side) targets.push(square);
+			break;
+		}
+	}
+	return targets;
+};
+const cannonTargets = (piece, pieces) => {
+	const targets = [];
+	for (const [dr, dc] of [
+		[-1, 0],
+		[1, 0],
+		[0, -1],
+		[0, 1]
+	]) {
+		let screened = false;
+		for (let step = 1; step < 10; step += 1) {
+			const square = {
+				row: piece.row + dr * step,
+				col: piece.col + dc * step
+			};
+			if (!inBoard(square)) break;
+			const blocker = pieceAt(pieces, square);
+			if (!screened) {
+				if (!blocker) targets.push(square);
+				else screened = true;
+				continue;
+			}
+			if (!blocker) continue;
+			if (blocker.side !== piece.side) targets.push(square);
+			break;
+		}
+	}
+	return targets;
+};
+function pseudoLegalTargets(piece, pieces) {
+	const targets = [];
+	if (piece.role === "chariot") return rayTargets(piece, pieces);
+	if (piece.role === "cannon") return cannonTargets(piece, pieces);
+	if (piece.role === "general") {
+		[
+			[-1, 0],
+			[1, 0],
+			[0, -1],
+			[0, 1]
+		].forEach(([dr, dc]) => {
+			const square = {
+				row: piece.row + dr,
+				col: piece.col + dc
+			};
+			if (isInPalace(piece.side, square)) candidate(piece, square, pieces, targets);
+		});
+		return targets;
+	}
+	if (piece.role === "advisor") {
+		[
+			[-1, -1],
+			[-1, 1],
+			[1, -1],
+			[1, 1]
+		].forEach(([dr, dc]) => {
+			const square = {
+				row: piece.row + dr,
+				col: piece.col + dc
+			};
+			if (isInPalace(piece.side, square)) candidate(piece, square, pieces, targets);
+		});
+		return targets;
+	}
+	if (piece.role === "elephant") {
+		[
+			[-2, -2],
+			[-2, 2],
+			[2, -2],
+			[2, 2]
+		].forEach(([dr, dc]) => {
+			const square = {
+				row: piece.row + dr,
+				col: piece.col + dc
+			};
+			const eye = {
+				row: piece.row + dr / 2,
+				col: piece.col + dc / 2
+			};
+			if (inBoard(square) && isHomeSide(piece.side, square.row) && !pieceAt(pieces, eye)) candidate(piece, square, pieces, targets);
+		});
+		return targets;
+	}
+	if (piece.role === "horse") {
+		[
+			{
+				dr: -2,
+				dc: -1,
+				legRow: -1,
+				legCol: 0
+			},
+			{
+				dr: -2,
+				dc: 1,
+				legRow: -1,
+				legCol: 0
+			},
+			{
+				dr: 2,
+				dc: -1,
+				legRow: 1,
+				legCol: 0
+			},
+			{
+				dr: 2,
+				dc: 1,
+				legRow: 1,
+				legCol: 0
+			},
+			{
+				dr: -1,
+				dc: -2,
+				legRow: 0,
+				legCol: -1
+			},
+			{
+				dr: 1,
+				dc: -2,
+				legRow: 0,
+				legCol: -1
+			},
+			{
+				dr: -1,
+				dc: 2,
+				legRow: 0,
+				legCol: 1
+			},
+			{
+				dr: 1,
+				dc: 2,
+				legRow: 0,
+				legCol: 1
+			}
+		].forEach(({ dr, dc, legRow, legCol }) => {
+			if (!pieceAt(pieces, {
+				row: piece.row + legRow,
+				col: piece.col + legCol
+			})) candidate(piece, {
+				row: piece.row + dr,
+				col: piece.col + dc
+			}, pieces, targets);
+		});
+		return targets;
+	}
+	const forward = piece.side === "red" ? -1 : 1;
+	candidate(piece, {
+		row: piece.row + forward,
+		col: piece.col
+	}, pieces, targets);
+	if (piece.side === "red" ? piece.row <= 4 : piece.row >= 5) {
+		candidate(piece, {
+			row: piece.row,
+			col: piece.col - 1
+		}, pieces, targets);
+		candidate(piece, {
+			row: piece.row,
+			col: piece.col + 1
+		}, pieces, targets);
+	}
+	return targets;
+}
+const generalsFacing = (pieces) => {
+	const red = pieces.find((piece) => piece.side === "red" && piece.role === "general");
+	const black = pieces.find((piece) => piece.side === "black" && piece.role === "general");
+	if (!red || !black || red.col !== black.col) return false;
+	const start = Math.min(red.row, black.row) + 1;
+	const end = Math.max(red.row, black.row);
+	return !pieces.some((piece) => piece.col === red.col && piece.row >= start && piece.row < end);
+};
+const isInCheck = (side, pieces) => {
+	const general = pieces.find((piece) => piece.side === side && piece.role === "general");
+	if (!general) return true;
+	return generalsFacing(pieces) || pieces.some((piece) => piece.side !== side && pseudoLegalTargets(piece, pieces).some((target) => sameSquare(target, general)));
+};
+const relocate$1 = (pieces, piece, destination) => {
+	const captured = pieceAt(pieces, destination);
+	return pieces.filter((candidatePiece) => candidatePiece.id !== captured?.id).map((candidatePiece) => candidatePiece.id === piece.id ? {
+		...candidatePiece,
+		...destination
+	} : candidatePiece);
+};
+function legalTargets(piece, pieces) {
+	return pseudoLegalTargets(piece, pieces).filter((target) => {
+		if (pieceAt(pieces, target)?.role === "general") return false;
+		const nextPieces = relocate$1(pieces, piece, target);
+		return !isInCheck(piece.side, nextPieces) && !generalsFacing(nextPieces);
+	});
+}
+const hasLegalMove = (side, pieces) => pieces.some((piece) => piece.side === side && legalTargets(piece, pieces).length > 0);
+const homeRank = (side) => side === "red" ? 9 : 0;
+const cannonRank = (side) => side === "red" ? 7 : 2;
+const soldierRank = (side) => side === "red" ? 6 : 3;
+function initialXiangqiState() {
+	const pieces = [];
+	["red", "black"].forEach((side) => {
+		const add = (role, row, col, index) => pieces.push({
+			id: `${side}-${role}-${index}`,
+			side,
+			role,
+			row,
+			col
+		});
+		[
+			"chariot",
+			"horse",
+			"elephant",
+			"advisor",
+			"general",
+			"advisor",
+			"elephant",
+			"horse",
+			"chariot"
+		].forEach((role, col) => add(role, homeRank(side), col, col));
+		add("cannon", cannonRank(side), 1, 0);
+		add("cannon", cannonRank(side), 7, 1);
+		[
+			0,
+			2,
+			4,
+			6,
+			8
+		].forEach((col, index) => add("soldier", soldierRank(side), col, index));
+	});
+	return {
+		pieces,
+		turn: "red",
+		winner: null,
+		result: null,
+		note: "Red / Shu opens. Select a coin to reveal legal intersections.",
+		moveNumber: 1,
+		lastMove: null
+	};
+}
+function applyXiangqiMove(state, pieceId, destination) {
+	if (state.winner) return null;
+	const piece = state.pieces.find((candidatePiece) => candidatePiece.id === pieceId);
+	if (!piece || piece.side !== state.turn || !legalTargets(piece, state.pieces).some((target) => sameSquare(target, destination))) return null;
+	const captured = pieceAt(state.pieces, destination);
+	const pieces = relocate$1(state.pieces, piece, destination);
+	const nextTurn = otherSide(piece.side);
+	const checked = isInCheck(nextTurn, pieces);
+	const noReply = !hasLegalMove(nextTurn, pieces);
+	const action = `${SIDE_LABELS[piece.side]} ${ROLE_LABELS[piece.role]} ${captured ? `captures ${SIDE_LABELS[captured.side]} ${ROLE_LABELS[captured.role]}` : "advances"}`;
+	const lastMove = {
+		from: {
+			row: piece.row,
+			col: piece.col
+		},
+		to: destination,
+		side: piece.side,
+		role: piece.role,
+		captured: captured?.role
+	};
+	if (noReply) {
+		const result = checked ? "checkmate" : "stalemate";
+		return {
+			pieces,
+			turn: nextTurn,
+			winner: piece.side,
+			result,
+			note: `${action}. ${result === "checkmate" ? "Checkmate" : "Stalemate"} — ${SIDE_LABELS[piece.side]} wins.`,
+			moveNumber: state.moveNumber + 1,
+			lastMove
+		};
+	}
+	return {
+		pieces,
+		turn: nextTurn,
+		winner: null,
+		result: null,
+		note: `${action}.${checked ? ` Check — ${SIDE_LABELS[nextTurn]} must answer.` : ` ${SIDE_LABELS[nextTurn]} to move.`}`,
+		moveNumber: state.moveNumber + 1,
+		lastMove
+	};
+}
+
+//#endregion
+//#region server/gameRules.js
+var require_gameRules = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	const ROWS = 8;
+	const COLS = 8;
+	const PLAYERS = [
+		"green",
+		"red",
+		"blue",
+		"yellow"
+	];
+	const TEAM_LABEL = {
+		green: "Green",
+		red: "Red",
+		blue: "Blue",
+		yellow: "Pink"
+	};
+	const PIECE_NAME = {
+		king: "Frost King",
+		elephant: "War Mammoth",
+		horse: "Aurora Unicorn",
+		ship: "Icebreaker",
+		pawn: "Snow Guard"
+	};
+	const DICE_ROLLS = {
+		1: ["pawn", "king"],
+		2: ["elephant"],
+		3: ["horse"],
+		4: ["ship"],
+		5: ["pawn", "king"],
+		6: ["ship"]
+	};
+	const PROMOTION_PIECES = {
+		yellow: {
+			"7,0": "ship",
+			"7,1": "horse",
+			"7,2": "elephant",
+			"7,3": "king",
+			"7,4": "king",
+			"7,5": "elephant",
+			"7,6": "horse",
+			"7,7": "ship"
+		},
+		red: {
+			"7,7": "ship",
+			"6,7": "elephant",
+			"5,7": "horse",
+			"4,7": "king",
+			"3,7": "king",
+			"2,7": "horse",
+			"1,7": "elephant",
+			"0,7": "ship"
+		},
+		green: {
+			"0,0": "ship",
+			"0,1": "horse",
+			"0,2": "elephant",
+			"0,3": "king",
+			"0,4": "king",
+			"0,5": "elephant",
+			"0,6": "horse",
+			"0,7": "ship"
+		},
+		blue: {
+			"7,0": "ship",
+			"6,0": "horse",
+			"5,0": "elephant",
+			"4,0": "king",
+			"3,0": "king",
+			"2,0": "elephant",
+			"1,0": "horse",
+			"0,0": "ship"
+		}
+	};
+	function createInitialGameState() {
+		return {
+			board: createStartingBoard(),
+			currentPlayerIndex: 0,
+			selected: null,
+			legalMoves: [],
+			dice: {
+				values: [null, null],
+				used: [false, false],
+				rolled: false
+			},
+			moveLog: [],
+			eliminatedTeams: [],
+			gameOver: false,
+			winner: null,
+			updatedAt: Date.now()
+		};
+	}
+	function createEmptyBoard() {
+		return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+	}
+	function createStartingBoard() {
+		const board = createEmptyBoard();
+		board[0][0] = makePiece("yellow", "ship");
+		board[0][1] = makePiece("yellow", "horse");
+		board[0][2] = makePiece("yellow", "elephant");
+		board[0][3] = makePiece("yellow", "king", true);
+		board[1][0] = makePiece("yellow", "pawn");
+		board[1][1] = makePiece("yellow", "pawn");
+		board[1][2] = makePiece("yellow", "pawn");
+		board[1][3] = makePiece("yellow", "pawn");
+		board[7][0] = makePiece("red", "ship");
+		board[6][0] = makePiece("red", "horse");
+		board[5][0] = makePiece("red", "elephant");
+		board[4][0] = makePiece("red", "king", true);
+		board[7][1] = makePiece("red", "pawn");
+		board[6][1] = makePiece("red", "pawn");
+		board[5][1] = makePiece("red", "pawn");
+		board[4][1] = makePiece("red", "pawn");
+		board[7][4] = makePiece("green", "king", true);
+		board[7][5] = makePiece("green", "elephant");
+		board[7][6] = makePiece("green", "horse");
+		board[7][7] = makePiece("green", "ship");
+		board[6][4] = makePiece("green", "pawn");
+		board[6][5] = makePiece("green", "pawn");
+		board[6][6] = makePiece("green", "pawn");
+		board[6][7] = makePiece("green", "pawn");
+		board[3][7] = makePiece("blue", "king", true);
+		board[2][7] = makePiece("blue", "elephant");
+		board[1][7] = makePiece("blue", "horse");
+		board[0][7] = makePiece("blue", "ship");
+		board[3][6] = makePiece("blue", "pawn");
+		board[2][6] = makePiece("blue", "pawn");
+		board[1][6] = makePiece("blue", "pawn");
+		board[0][6] = makePiece("blue", "pawn");
+		return board;
+	}
+	function makePiece(team, type, isRoyal = false) {
+		return {
+			team,
+			type,
+			isRoyal
+		};
+	}
+	function currentTeam(state) {
+		return PLAYERS[state.currentPlayerIndex];
+	}
+	function rollDiceForState(state, forcedValues = null) {
+		if (state.gameOver || state.dice.rolled) return state;
+		const values = normalizeDiceValues(forcedValues) || [rollD6(), rollD6()];
+		return touch({
+			...state,
+			selected: null,
+			legalMoves: [],
+			dice: {
+				values,
+				used: [false, false],
+				rolled: true
+			}
+		});
+	}
+	function normalizeDiceValues(values) {
+		if (!Array.isArray(values) || values.length !== 2) return null;
+		const normalized = values.map((value) => Number(value));
+		if (normalized.some((value) => !Number.isInteger(value) || value < 1 || value > 6)) return null;
+		return normalized;
+	}
+	function selectSquare(state, row, col) {
+		if (state.gameOver || !state.dice.rolled) return state;
+		const chosenMove = state.legalMoves.find((move) => move.toRow === row && move.toCol === col);
+		if (chosenMove) return applyMove(state, chosenMove);
+		const team = currentTeam(state);
+		const piece = state.board[row]?.[col];
+		if (!piece || piece.team !== team) return touch({
+			...state,
+			selected: null,
+			legalMoves: []
+		});
+		const legalMoves = getLegalMovesForPiece(state, row, col);
+		if (!legalMoves.length) return touch({
+			...state,
+			selected: null,
+			legalMoves: []
+		});
+		return touch({
+			...state,
+			selected: {
+				row,
+				col
+			},
+			legalMoves
+		});
+	}
+	function getLegalMovesForPiece(state, row, col) {
+		const piece = state.board[row]?.[col];
+		if (!piece || state.gameOver || !state.dice.rolled) return [];
+		const activeDieIndexes = [0, 1].filter((dieIndex) => {
+			const value = state.dice.values[dieIndex];
+			return value && !state.dice.used[dieIndex] && DICE_ROLLS[value].includes(piece.type);
+		});
+		if (!activeDieIndexes.length) return [];
+		const moves = [];
+		activeDieIndexes.forEach((dieIndex) => {
+			getPossibleTargets(state, row, col, piece).forEach(([toRow, toCol]) => {
+				const target = state.board[toRow][toCol];
+				if (target && target.team === piece.team) return;
+				moves.push({
+					fromRow: row,
+					fromCol: col,
+					toRow,
+					toCol,
+					dieIndex,
+					captured: target || null
+				});
+			});
+		});
+		return dedupeMoves(moves);
+	}
+	function getAllLegalMovesForTeam(state, team = currentTeam(state)) {
+		const moves = [];
+		for (let row = 0; row < ROWS; row += 1) for (let col = 0; col < COLS; col += 1) {
+			const piece = state.board[row][col];
+			if (piece && piece.team === team) moves.push(...getLegalMovesForPiece(state, row, col));
+		}
+		return moves;
+	}
+	function hasAnyLegalMoveForTeam(state, team = currentTeam(state)) {
+		return getAllLegalMovesForTeam(state, team).length > 0;
+	}
+	function applyMove(state, move) {
+		const board = cloneBoard(state.board);
+		const piece = board[move.fromRow][move.fromCol];
+		if (!piece) return state;
+		const captured = board[move.toRow][move.toCol];
+		board[move.toRow][move.toCol] = { ...piece };
+		board[move.fromRow][move.fromCol] = null;
+		const dice = {
+			values: [...state.dice.values],
+			used: [...state.dice.used],
+			rolled: state.dice.rolled
+		};
+		dice.used[move.dieIndex] = true;
+		const moveLog = [...state.moveLog];
+		const eliminatedTeams = [...state.eliminatedTeams || []];
+		if (captured) moveLog.unshift(`${TEAM_LABEL[piece.team]} captured ${TEAM_LABEL[captured.team]} ${PIECE_NAME[captured.type]}`);
+		else moveLog.unshift(`${TEAM_LABEL[piece.team]} moved ${PIECE_NAME[piece.type]}`);
+		maybePromotePawn(board[move.toRow][move.toCol], move.toRow, move.toCol, moveLog);
+		if (isRoyalKing(captured)) {
+			removeTeamPieces(board, captured.team);
+			if (!eliminatedTeams.includes(captured.team)) eliminatedTeams.push(captured.team);
+			moveLog.unshift(`${TEAM_LABEL[captured.team]} eliminated`);
+		}
+		let next = touch({
+			...state,
+			board,
+			dice,
+			selected: null,
+			legalMoves: [],
+			eliminatedTeams,
+			moveLog: moveLog.slice(0, 8)
+		});
+		next = checkWinner(next);
+		if (next.gameOver) return next;
+		const team = currentTeam(next);
+		if (next.dice.used.every(Boolean) || !hasAnyLegalMoveForTeam(next, team)) return endTurn(next);
+		return next;
+	}
+	function endTurn(state) {
+		let nextIndex = state.currentPlayerIndex;
+		for (let i = 0; i < PLAYERS.length; i += 1) {
+			nextIndex = (nextIndex + 1) % PLAYERS.length;
+			if (teamHasKing(state.board, PLAYERS[nextIndex])) break;
+		}
+		return touch({
+			...state,
+			currentPlayerIndex: nextIndex,
+			selected: null,
+			legalMoves: [],
+			dice: {
+				values: [null, null],
+				used: [false, false],
+				rolled: false
+			}
+		});
+	}
+	function pickBotMove(state) {
+		const moves = getAllLegalMovesForTeam(state, currentTeam(state));
+		if (!moves.length) return null;
+		const captures = moves.filter((move) => move.captured);
+		const options = captures.length ? captures : moves;
+		return options[Math.floor(Math.random() * options.length)];
+	}
+	function getPossibleTargets(state, row, col, piece) {
+		if (piece.type === "king") return kingMoves(row, col);
+		if (piece.type === "pawn") return pawnMoves(state, row, col, piece.team);
+		if (piece.type === "ship") return shipMoves(row, col);
+		if (piece.type === "horse") return horseMoves(row, col);
+		if (piece.type === "elephant") return slideMoves(state, row, col, [
+			[1, 0],
+			[-1, 0],
+			[0, 1],
+			[0, -1]
+		]);
+		return [];
+	}
+	function pawnMoves(state, row, col, team) {
+		const spec = {
+			yellow: {
+				forward: [1, 0],
+				captures: [[1, -1], [1, 1]]
+			},
+			red: {
+				forward: [0, 1],
+				captures: [[-1, 1], [1, 1]]
+			},
+			green: {
+				forward: [-1, 0],
+				captures: [[-1, -1], [-1, 1]]
+			},
+			blue: {
+				forward: [0, -1],
+				captures: [[-1, -1], [1, -1]]
+			}
+		}[team];
+		if (!spec) return [];
+		const out = [];
+		const [fr, fc] = spec.forward;
+		const fRow = row + fr;
+		const fCol = col + fc;
+		if (inBounds(fRow, fCol) && !state.board[fRow][fCol]) out.push([fRow, fCol]);
+		spec.captures.forEach(([dr, dc]) => {
+			const r = row + dr;
+			const c = col + dc;
+			if (!inBounds(r, c)) return;
+			const target = state.board[r][c];
+			if (target && target.team !== team) out.push([r, c]);
+		});
+		return out;
+	}
+	function kingMoves(row, col) {
+		return oneStepMoves(row, col, [
+			[1, 0],
+			[-1, 0],
+			[0, 1],
+			[0, -1],
+			[1, 1],
+			[1, -1],
+			[-1, 1],
+			[-1, -1]
+		]);
+	}
+	function horseMoves(row, col) {
+		return [
+			[2, 1],
+			[2, -1],
+			[-2, 1],
+			[-2, -1],
+			[1, 2],
+			[1, -2],
+			[-1, 2],
+			[-1, -2]
+		].map(([dr, dc]) => [row + dr, col + dc]).filter(([r, c]) => inBounds(r, c));
+	}
+	function shipMoves(row, col) {
+		return [
+			[2, 2],
+			[2, -2],
+			[-2, 2],
+			[-2, -2]
+		].map(([dr, dc]) => [row + dr, col + dc]).filter(([r, c]) => inBounds(r, c));
+	}
+	function oneStepMoves(row, col, dirs) {
+		return dirs.map(([dr, dc]) => [row + dr, col + dc]).filter(([r, c]) => inBounds(r, c));
+	}
+	function slideMoves(state, row, col, dirs) {
+		const out = [];
+		for (const [dr, dc] of dirs) for (let step = 1; step < 8; step += 1) {
+			const r = row + dr * step;
+			const c = col + dc * step;
+			if (!inBounds(r, c)) break;
+			out.push([r, c]);
+			if (state.board[r][c]) break;
+		}
+		return out;
+	}
+	function maybePromotePawn(piece, row, col, moveLog) {
+		if (!piece || piece.type !== "pawn") return;
+		const promotionType = PROMOTION_PIECES[piece.team]?.[`${row},${col}`];
+		if (!promotionType) return;
+		piece.type = promotionType;
+		piece.isRoyal = false;
+		moveLog.unshift(`${TEAM_LABEL[piece.team]} pawn promoted to ${PIECE_NAME[promotionType]}`);
+	}
+	function removeTeamPieces(board, team) {
+		for (let row = 0; row < ROWS; row += 1) for (let col = 0; col < COLS; col += 1) if (board[row][col]?.team === team) board[row][col] = null;
+	}
+	function checkWinner(state) {
+		const alive = PLAYERS.filter((team) => teamHasKing(state.board, team));
+		if (alive.length > 1) return state;
+		return touch({
+			...state,
+			gameOver: true,
+			winner: alive[0] || null,
+			selected: null,
+			legalMoves: []
+		});
+	}
+	function getPlacements(state) {
+		const eliminated = state.eliminatedTeams || [];
+		const alive = PLAYERS.filter((team) => teamHasKing(state.board, team));
+		const winner = state.winner || alive[0] || null;
+		const ordered = [];
+		if (winner) ordered.push(winner);
+		[...eliminated].reverse().forEach((team) => {
+			if (!ordered.includes(team)) ordered.push(team);
+		});
+		PLAYERS.forEach((team) => {
+			if (!ordered.includes(team)) ordered.push(team);
+		});
+		return ordered.slice(0, 4);
+	}
+	function isRoyalKing(piece) {
+		return piece?.type === "king" && piece.isRoyal !== false;
+	}
+	function teamHasKing(board, team) {
+		return board.some((row) => row.some((piece) => piece && piece.team === team && isRoyalKing(piece)));
+	}
+	function inBounds(row, col) {
+		return row >= 0 && row < ROWS && col >= 0 && col < COLS;
+	}
+	function dedupeMoves(moves) {
+		const seen = /* @__PURE__ */ new Set();
+		return moves.filter((move) => {
+			const key = `${move.fromRow},${move.fromCol},${move.toRow},${move.toCol},${move.dieIndex}`;
+			if (seen.has(key)) return false;
+			seen.add(key);
+			return true;
+		});
+	}
+	function cloneBoard(board) {
+		return board.map((row) => row.map((piece) => piece ? { ...piece } : null));
+	}
+	function rollD6() {
+		return Math.floor(Math.random() * 6) + 1;
+	}
+	function touch(state) {
+		return {
+			...state,
+			updatedAt: Date.now()
+		};
+	}
+	module.exports = {
+		DICE_ROLLS,
+		PLAYERS,
+		TEAM_LABEL,
+		PIECE_NAME,
+		createInitialGameState,
+		currentTeam,
+		rollDiceForState,
+		selectSquare,
+		endTurn,
+		applyMove,
+		hasAnyLegalMoveForTeam,
+		pickBotMove,
+		getPlacements
+	};
+}));
+
+//#endregion
+//#region mobile/arctic-play/src/dominion.js
+var import_gameRules = /* @__PURE__ */ __toESM(require_gameRules(), 1);
+const PIECE_NAMES = import_gameRules.default.PIECE_NAME;
+const DICE_ROLES = import_gameRules.default.DICE_ROLLS;
+const pieceArt = (team, type) => `dominion/${team === "yellow" ? "pink" : team}-${{
+	king: "frost-king",
+	horse: "aurora-unicorn",
+	elephant: "war-mammoth",
+	ship: "icebreaker",
+	pawn: "snow-guard"
+}[type]}.webp`;
+const normalize = (state) => {
+	const { updatedAt, ...position } = state;
+	return {
+		...position,
+		turn: import_gameRules.default.currentTeam(state),
+		selected: null,
+		legalMoves: []
+	};
+};
+function createDominion() {
+	const state = import_gameRules.default.createInitialGameState();
+	state.board = state.board.map((row, r) => row.map((piece, c) => piece ? {
+		...piece,
+		id: `${piece.team}-${piece.type}-${r}-${c}`
+	} : null));
+	return normalize(state);
+}
+function dominionActions(state) {
+	if (state.gameOver || state.mobileResult) return [];
+	if (!state.dice.rolled) return [{
+		id: "roll|control:roll",
+		kind: "roll",
+		source: "control:roll",
+		target: null,
+		promote: false,
+		raw: { kind: "roll" }
+	}];
+	const moves = [];
+	for (let row = 0; row < 8; row++) for (let col = 0; col < 8; col++) {
+		const piece = state.board[row][col];
+		if (piece?.team !== import_gameRules.default.currentTeam(state)) continue;
+		for (const move of import_gameRules.default.selectSquare({
+			...state,
+			selected: null,
+			legalMoves: []
+		}, row, col).legalMoves) {
+			const source = `piece:${piece.id}`, target = `${move.toRow},${move.toCol}`;
+			moves.push({
+				id: `move|${source}|${target}|die:${move.dieIndex}`,
+				source,
+				target,
+				kind: "move",
+				promote: false,
+				raw: move
+			});
+		}
+	}
+	return moves.length ? moves : [{
+		id: "end|control:end",
+		kind: "end",
+		source: "control:end",
+		target: null,
+		promote: false,
+		raw: { kind: "end" }
+	}];
+}
+function rollD6() {
+	const byte = new Uint8Array(1);
+	do
+		globalThis.crypto.getRandomValues(byte);
+	while (byte[0] >= 252);
+	return byte[0] % 6 + 1;
+}
+function applyDominion(state, action) {
+	if (action.kind === "roll") {
+		const values = [rollD6(), rollD6()];
+		let next = import_gameRules.default.rollDiceForState(state, values);
+		const skipped = !import_gameRules.default.hasAnyLegalMoveForTeam(next);
+		if (skipped) next = import_gameRules.default.endTurn(next);
+		return normalize({
+			...next,
+			mobileLastRoll: {
+				team: import_gameRules.default.currentTeam(state),
+				values,
+				skipped
+			}
+		});
+	}
+	if (action.kind === "end") return normalize(import_gameRules.default.endTurn(state));
+	return normalize(import_gameRules.default.applyMove(state, action.raw));
+}
+
+//#endregion
+//#region mobile/arctic-play/src/games.ts
+const VERSION = "arctic-play-1.0.0";
+const GAME_LIST = [
+	{
+		id: "shogi",
+		name: "Shogi",
+		subtitle: "Every capture is a new possibility",
+		seats: ["red", "blue"],
+		players: 2,
+		tag: "Japanese chess",
+		accent: "#b8693c",
+		icon: "shogi/red-king.webp"
+	},
+	{
+		id: "sannin",
+		name: "Sannin Shogi",
+		subtitle: "Three kingdoms. One hexagonal board.",
+		seats: [
+			"red",
+			"green",
+			"blue"
+		],
+		players: 3,
+		tag: "Three-player shogi",
+		accent: "#82714d",
+		icon: "sannin/red-king.webp"
+	},
+	{
+		id: "sanguo",
+		name: "Sanguo Qi",
+		subtitle: "Make your move across three kingdoms",
+		seats: [
+			"red",
+			"green",
+			"blue"
+		],
+		players: 3,
+		tag: "Three-player chess",
+		accent: "#087c98",
+		icon: "tokens/token-sanguo-blue-general.webp"
+	},
+	{
+		id: "sanyou",
+		name: "San You Qi",
+		subtitle: "A world of fire, flags and strategy",
+		seats: [
+			"red",
+			"green",
+			"blue"
+		],
+		players: 3,
+		tag: "Three-player chess",
+		accent: "#199b82",
+		icon: "sanyou/green_team_SWfacing_general.webp"
+	},
+	{
+		id: "yanyi",
+		name: "Sanguo Yan Yi Qi",
+		subtitle: "Alliances, the Han Emperor and conquest",
+		seats: [
+			"green",
+			"blue",
+			"red"
+		],
+		players: 3,
+		tag: "Three Kingdoms",
+		accent: "#7653a6",
+		icon: "yanyi/pieces/han-emperor.webp"
+	},
+	{
+		id: "xiangqi",
+		name: "Xiangqi",
+		subtitle: "The classic battle across the river",
+		seats: ["red", "black"],
+		players: 2,
+		tag: "Chinese chess",
+		accent: "#ad454b",
+		icon: "tokens/token-sanguo-red-general.webp"
+	},
+	{
+		id: "dominion",
+		name: "Arctic Dominion",
+		subtitle: "Four kingdoms. Roll, plan, conquer.",
+		seats: [
+			"green",
+			"red",
+			"blue",
+			"yellow"
+		],
+		players: 4,
+		tag: "Chaturanga",
+		accent: "#215888",
+		icon: "dominion/green-frost-king.webp"
+	}
+];
+const game = (id) => GAME_LIST.find((item) => item.id === id);
+const asset = (path) => `art/${path}`;
+const tokenRoot = "tokens/token-sanguo-";
+const sanguoRoles = {
+	king: "general",
+	guard: "advisor",
+	seer: "elephant",
+	rider: "horse",
+	runner: "bannerman",
+	icebreaker: "chariot",
+	cannon: "cannon",
+	scout: "soldier"
+};
+const title = (value) => String(value || "").replace(/-/g, " ").replace(/^./, (x) => x.toUpperCase());
+const sgKey = (n) => `${n.sector}-${n.rank}-${n.file}`;
+const yyKey = (n) => `${n.x},${n.y}`;
+const xqKey = (n) => `${n.row},${n.col}`;
+function create(id) {
+	switch (id) {
+		case "shogi": return createShogiState();
+		case "sannin": return createInitialState$1();
+		case "sanguo": return initialSanguoState();
+		case "sanyou": return createInitialState();
+		case "yanyi": return createYanYiState();
+		case "xiangqi": return initialXiangqiState();
+		case "dominion": return createDominion();
+		default: throw new Error("Choose a game from Arctic Play.");
+	}
+}
+function result(state) {
+	if (state.mobileResult) return state.mobileResult;
+	if (state.gameOver) return {
+		winner: state.winner || null,
+		draw: !state.winner,
+		reason: state.winner ? "Last surviving royal kingdom" : "No royal kingdom remains"
+	};
+	if (state.outcome) return {
+		winner: state.outcome.winner || state.outcome.winners?.join(" + ") || null,
+		reason: state.outcome.reason || state.outcome.type || "Game over",
+		draw: state.outcome.type === "draw"
+	};
+	if (state.winner || state.draw) return {
+		winner: state.winner || null,
+		draw: !!state.draw,
+		reason: state.result || (typeof state.draw === "string" ? state.draw : state.draw ? "Draw" : "Last surviving kingdom")
+	};
+	return null;
+}
+function actions(id, state) {
+	if (result(state)) return [];
+	if (id === "dominion") return dominionActions(state);
+	let raw = [];
+	if (id === "shogi") raw = getLegalActions$2(state);
+	if (id === "sannin") raw = getLegalActions$1(state);
+	if (id === "sanyou") raw = getLegalActions(state);
+	if (id === "sanguo") if (state.pending) raw = [{ kind: "claim" }];
+	else raw = state.pieces.filter((p) => !p.captured && p.controller === state.turn).flatMap((p) => legalSanguoTargets(p, state.pieces).map((to) => ({
+		kind: "move",
+		pieceId: p.id,
+		to
+	})));
+	if (id === "yanyi") raw = state.pieces.filter((p) => !p.inactive && p.owner === state.turn).flatMap((p) => legalYanYiTargets(state, p).map((to) => ({
+		kind: "move",
+		pieceId: p.id,
+		to: {
+			x: to.x,
+			y: to.y
+		}
+	})));
+	if (id === "xiangqi") raw = state.pieces.filter((p) => p.side === state.turn).flatMap((p) => legalTargets(p, state.pieces).map((to) => ({
+		kind: "move",
+		pieceId: p.id,
+		to: {
+			row: to.row,
+			col: to.col
+		}
+	})));
+	return raw.map((a) => {
+		const kind = a.kind || a.type;
+		const source = kind === "drop" ? `hand:${a.pieceId || a.type}` : id === "shogi" ? `piece:${state.board[a.from]?.id}` : `piece:${a.pieceId || "claim"}`;
+		const target = a.to == null ? null : id === "sanguo" ? sgKey(a.to) : id === "yanyi" ? yyKey(a.to) : id === "xiangqi" ? xqKey(a.to) : String(a.to);
+		return {
+			id: `${kind}|${source}|${target ?? ""}|${a.promote ? 1 : 0}`,
+			source,
+			target,
+			kind,
+			promote: !!a.promote,
+			raw: a
+		};
+	});
+}
+function apply(id, state, actionId) {
+	const action = actions(id, state).find((a) => a.id === actionId);
+	if (!action) throw new Error("That move is no longer legal. The board has been refreshed.");
+	const a = action.raw;
+	let next;
+	if (id === "dominion") next = applyDominion(state, action);
+	if (id === "shogi") {
+		const r = applyShogiAction(state, a);
+		if (r.error) throw new Error(r.error);
+		next = r.state;
+	}
+	if (id === "sannin") {
+		const r = applyAction$1(state, a);
+		if (r.error) throw new Error(r.error.message);
+		next = r.state;
+	}
+	if (id === "sanyou") {
+		const r = applyAction(state, a);
+		if (r.error) throw new Error(r.error.message);
+		next = resolveStalemate(r.state);
+	}
+	if (id === "sanguo") {
+		next = a.kind === "claim" ? resolveSanguoAppropriation(state) : applySanguoMove(state, a.pieceId, a.to);
+		for (let i = 0; next?.pending && i < 3; i++) next = resolveSanguoAppropriation(next);
+	}
+	if (id === "yanyi") next = applyYanYiMove(state, a.pieceId, {
+		x: a.to.x,
+		y: a.to.y
+	});
+	if (id === "xiangqi") next = applyXiangqiMove(state, a.pieceId, {
+		row: a.to.row,
+		col: a.to.col
+	});
+	if (!next) throw new Error("The rules rejected this move.");
+	return next;
+}
+function board(id) {
+	if (id === "dominion") return {
+		viewBox: "0 0 1000 1000",
+		image: asset("dominion/board.webp"),
+		imageWidth: 1e3,
+		imageHeight: 1e3,
+		size: 110,
+		cells: Array.from({ length: 64 }, (_, i) => ({
+			id: `${Math.floor(i / 8)},${i % 8}`,
+			x: 62.5 + i % 8 * 125,
+			y: 62.5 + Math.floor(i / 8) * 125,
+			label: `File ${String.fromCharCode(65 + i % 8)}, rank ${8 - Math.floor(i / 8)}`
+		}))
+	};
+	if (id === "shogi") return {
+		viewBox: "0 0 900 1000",
+		width: 900,
+		height: 1e3,
+		size: 88,
+		grid: true,
+		cells: Array.from({ length: 81 }, (_, i) => ({
+			id: String(i),
+			x: 90 + i % 9 * 90,
+			y: 140 + Math.floor(i / 9) * 90,
+			label: `File ${9 - i % 9}, rank ${Math.floor(i / 9) + 1}`
+		}))
+	};
+	if (id === "sannin") return {
+		viewBox: BATTLE_VIEWBOX,
+		image: asset("sannin/board.webp"),
+		imageWidth: 1334,
+		imageHeight: 1179,
+		size: 56,
+		cells: HEX_CELLS.map((c) => ({
+			id: c.id,
+			...artworkPoint(c, publishedPiecePlacement_default[c.id]),
+			label: `Hex ${c.id}`
+		}))
+	};
+	if (id === "sanguo") return {
+		viewBox: "65 20 1160 1055",
+		image: asset("boards/sanguo.webp"),
+		imageWidth: 1280,
+		imageHeight: 1280,
+		size: 56,
+		cells: [
+			"red",
+			"green",
+			"blue"
+		].flatMap((sector) => Array.from({ length: 45 }, (_, i) => {
+			const n = {
+				sector,
+				rank: Math.floor(i / 9),
+				file: i % 9
+			};
+			const p = arcticBoardNode(sector, n.rank, n.file);
+			return {
+				id: sgKey(n),
+				x: p.x * 1280,
+				y: p.y * 1280,
+				label: `${title(sector)}, file ${n.file + 1}, rank ${n.rank + 1}`
+			};
+		}))
+	};
+	if (id === "sanyou") return {
+		viewBox: "110 65 780 625",
+		image: asset("boards/sanyou.webp"),
+		imageWidth: 1e3,
+		imageHeight: 857.46,
+		size: 43,
+		cells: allNodes().map((n) => {
+			const p = getNodePoint(n);
+			return {
+				id: n,
+				x: p[0] * 1e3,
+				y: p[1] * 857.46,
+				label: getNodeLabel(n)
+			};
+		})
+	};
+	if (id === "yanyi") return {
+		viewBox: "45 25 1440 1460",
+		image: asset("yanyi/yan-yi-arctic-board.webp"),
+		imageWidth: 1536,
+		imageHeight: 1536,
+		size: 70,
+		cells: YAN_YI_POINTS.map((n) => ({
+			id: yyKey(n),
+			...yanYiPixelPoint(n),
+			label: `Column ${n.x + 1}, row ${n.y + 1}`
+		}))
+	};
+	const xs = [
+		105.6842,
+		187.2919,
+		269.563,
+		353.8246,
+		453.3461,
+		556.8485,
+		641.11,
+		723.3812,
+		804.3254
+	];
+	const ys = [
+		87.0335,
+		169.5933,
+		256.3158,
+		337.488,
+		416.5789,
+		507.4641,
+		584.4737,
+		662.177,
+		746.1244,
+		831.4593
+	];
+	return {
+		viewBox: "40 35 832 870",
+		image: asset("boards/xiangqi.webp"),
+		imageX: 40,
+		imageY: 35,
+		imageWidth: 832,
+		imageHeight: 870,
+		size: 73,
+		cells: Array.from({ length: 90 }, (_, i) => ({
+			id: `${Math.floor(i / 9)},${i % 9}`,
+			x: xs[i % 9],
+			y: ys[Math.floor(i / 9)],
+			label: `File ${i % 9 + 1}, rank ${Math.floor(i / 9) + 1}`
+		}))
+	};
+}
+function pieces(id, state) {
+	if (id === "dominion") return state.board.flatMap((row, r) => row.flatMap((p, c) => p ? [{
+		id: p.id,
+		source: `piece:${p.id}`,
+		cell: `${r},${c}`,
+		owner: p.team,
+		origin: p.team,
+		label: PIECE_NAMES[p.type] + (p.type === "king" && p.isRoyal === false ? " (promoted fighter)" : p.isRoyal ? " (royal)" : ""),
+		sprite: asset(pieceArt(p.team, p.type))
+	}] : []));
+	if (id === "shogi") return state.board.flatMap((p, i) => p ? [{
+		id: p.id,
+		source: `piece:${p.id}`,
+		cell: String(i),
+		owner: p.side,
+		origin: p.side,
+		label: displayPieceName(p),
+		sprite: asset(`shogi/${p.side}-${assetRole$1(p)}.webp`),
+		rotation: p.side === "blue" ? 180 : 0
+	}] : []);
+	if (id === "sannin") return state.pieces.filter((p) => p.status === "board").map((p) => ({
+		id: p.id,
+		source: `piece:${p.id}`,
+		cell: p.cell,
+		owner: p.owner,
+		origin: p.owner,
+		label: title(p.type) + (p.promoted ? " (promoted)" : ""),
+		sprite: asset(`sannin/${p.owner}-${assetRole(p)}.webp`),
+		rotation: {
+			red: -120,
+			green: 0,
+			blue: 120
+		}[p.owner]
+	}));
+	if (id === "sanguo") return state.pieces.filter((p) => !p.captured).map((p) => ({
+		id: p.id,
+		source: `piece:${p.id}`,
+		cell: sgKey(p.node),
+		owner: p.controller,
+		origin: p.sector,
+		label: roleLabels[p.role],
+		sprite: asset(`${tokenRoot}${p.sector}-${sanguoRoles[p.role]}.webp`)
+	}));
+	if (id === "sanyou") return state.pieces.filter((p) => p.status === "board").map((p) => {
+		const arm = parseArmNode(p.node);
+		const pt = getNodePoint(p.node);
+		const facing = p.faction === "blue" ? "SEfacing" : p.faction === "green" ? "SWfacing" : arm?.faction === "red" ? arm.lane < 5 ? "NWfacing" : arm.lane > 5 ? "NEfacing" : "backfacing" : arm?.faction === "blue" ? "NWfacing" : arm?.faction === "green" ? "NEfacing" : pt[0] < .485 ? "NWfacing" : pt[0] > .515 ? "NEfacing" : "backfacing";
+		return {
+			id: p.id,
+			source: `piece:${p.id}`,
+			cell: p.node,
+			owner: p.owner,
+			origin: p.faction,
+			label: ROLE_LABELS$1[p.role] + (p.promoted ? " (promoted)" : ""),
+			sprite: asset(`sanyou/${p.faction}_team_${facing}_${p.role === "advisor" ? "guard" : p.role}.webp`)
+		};
+	});
+	if (id === "yanyi") return state.pieces.map((p) => ({
+		id: p.id,
+		source: `piece:${p.id}`,
+		cell: yyKey(p),
+		owner: p.owner,
+		origin: p.origin,
+		inactive: !!p.inactive,
+		label: YAN_YI_ROLE_SHORT[p.role],
+		sprite: asset(yanYiPieceSprite(p).replace("/assets/heritage-arcade/sanguo-yan-yi", "yanyi"))
+	}));
+	return state.pieces.map((p) => ({
+		id: p.id,
+		source: `piece:${p.id}`,
+		cell: xqKey(p),
+		owner: p.side,
+		origin: p.side,
+		label: ROLE_LABELS[p.role],
+		sprite: asset(`${tokenRoot}${p.side === "black" ? "blue" : "red"}-${p.role}.webp`)
+	}));
+}
+const RULES = {
+	dominion: [
+		{
+			title: "Four kingdoms",
+			paragraphs: ["Arctic Dominion is the existing Chaturanga-inspired Arctic game on an 8 × 8 board. Green, Red, Blue and Pink take turns in that order. Each begins with a royal Frost King, War Mammoth, Aurora Unicorn, Icebreaker and four Snow Guards. Green opens. Capture opposing royal Kings and become the last surviving kingdom."]
+		},
+		{
+			title: "Roll, then move",
+			paragraphs: ["Roll two six-sided dice once at the start of your turn. Each die permits one move: 1 or 5 activates a Snow Guard or Frost King; 2 a War Mammoth; 3 an Aurora Unicorn; 4 or 6 an Icebreaker. Use the two dice in either order. When both activate the same piece, choose which die to spend; that piece may move again with the other die if legal.", "A used die cannot be reused. Your turn ends automatically once both dice are spent or no remaining die has a legal move. An entirely unusable roll automatically passes to the next surviving kingdom."]
+		},
+		{
+			title: "Piece movement",
+			paragraphs: ["Frost King: one square in any direction. War Mammoth: any clear orthogonal distance, stopping at the first occupied square. Aurora Unicorn: a knight’s L-shaped jump, two squares along one axis and one along the other. Icebreaker: jumps exactly two squares diagonally, over any intervening piece.", "Snow Guard: one empty square forward, or one forward diagonal to capture. Green advances up, Red right, Blue left and Pink down. A piece may capture an enemy on its destination but cannot land on a friendly piece."]
+		},
+		{
+			title: "Promotion",
+			paragraphs: ["A Snow Guard reaching its far edge promotes automatically according to the landing square. Green and Pink, across that edge from left to right: Icebreaker, Unicorn, Mammoth, King, King, Mammoth, Unicorn, Icebreaker. Red, from top to bottom: Icebreaker, Mammoth, Unicorn, King, King, Unicorn, Mammoth, Icebreaker. Blue, from top to bottom: Icebreaker, Unicorn, Mammoth, King, King, Mammoth, Unicorn, Icebreaker.", "A promoted King is a fighting piece, not a royal King. Capturing that fighter does not eliminate its kingdom."]
+		},
+		{
+			title: "Royal capture and victory",
+			paragraphs: ["There is no check or checkmate restriction in this game. Protect your original royal Frost King: its capture removes your entire army, including promoted Kings, and eliminates your kingdom. Turns skip eliminated kingdoms. The final surviving royal kingdom wins."]
+		},
+		{
+			title: "Play with friends",
+			paragraphs: ["Create a private four-seat table and share its invitation. Invite three friends, or fill empty seats with casual bots. All phones use the same original rules; the server rolls the dice and validates online actions. Offline practice and pass-the-phone play also support all four kingdoms. Leaving a live online match hands your seat to a bot."]
+		}
+	],
+	shogi: [
+		{
+			title: "The goal",
+			paragraphs: ["Two players take turns on a 9 × 9 board. Red opens. Checkmate the opposing King. You must answer check and may not expose your own King. A side with no legal move loses."]
+		},
+		{
+			title: "Movement",
+			paragraphs: ["King: one square in any direction. Rook: any clear orthogonal distance. Bishop: any clear diagonal distance. Gold: one forward, sideways, backward straight or forward diagonal. Silver: one forward or any diagonal. Knight: two forward and one sideways. Lance: any clear distance forward. Pawn: one square forward."]
+		},
+		{
+			title: "Promotion and drops",
+			paragraphs: ["Moving into, out of or within the farthest three ranks permits eligible pieces to promote. Promoted Rook adds one-step diagonal movement; promoted Bishop adds one-step orthogonal movement. Promoted Silver, Knight, Lance and Pawn move as Gold. Promotion is mandatory when a Pawn, Lance or Knight would have no future unpromoted move.", "Captured pieces return to your hand unpromoted. On your turn, drop one onto an empty square. Never drop a Pawn in a file already containing your unpromoted Pawn, or deliver immediate checkmate with a Pawn drop. Pawns and Lances cannot drop on the last rank; Knights cannot drop on the last two. Fourfold repetition draws except perpetual check, which loses for the checking side."]
+		}
+	],
+	sannin: [
+		{
+			title: "Three-player Shogi",
+			paragraphs: ["A 127-cell hexagonal board with Red, Green and Blue taking turns. Each army starts with 18 pieces. Win by safely moving your unallied King into the central Pleasure Garden, or by becoming the final surviving player. The table follows the Fairbairn–Kapitan digital rules used by Heritage Arcade."]
+		},
+		{
+			title: "Movement",
+			paragraphs: [
+				"King: one adjacent hex. An illuminated King ranges along all twelve main and radian lines. Rook: four main lines and the directly rear radian; a promoted Rook uses all six main lines. Bishop: all six radian lines; a promoted Bishop also steps to all adjacent cells.",
+				"Gold: six steps, using four main directions and forward/rear radian directions; it never promotes. Silver: four diagonal forward/rear main steps and two forward radian steps; promotion adds forward/rear radian ranges. Knight: two sideways main steps and four sideways radian steps; it neither jumps nor promotes. Lance: ranges on two forward main lines; promotion adds two rear main ranges. Pawn: one step on either forward main line; promotion gives Gold movement.",
+				"Radian landing cells are two hexes apart. Rays pass between the two flanking cells; pieces in those flanking cells do not block them. Directions are relative to each army’s seat. Tap a piece to see every legal destination."
+			]
+		},
+		{
+			title: "Captures, drops and promotion",
+			paragraphs: ["A captured piece changes owner, demotes and enters the captor’s hand. A drop uses your whole turn. There is no two-Pawns-on-a-file rule. Dead Pawn/Lance drops and immediate Pawn-drop mate are forbidden.", "King, Rook, Bishop, Silver, Lance and Pawn may promote when entering, leaving or staying in an opponent’s territory, or entering/leaving the Garden. Promotion is mandatory for a Pawn or Lance that would otherwise have no future move. Choose Promote or Keep when both are legal."]
+		},
+		{
+			title: "Royal powers and alliances",
+			paragraphs: ["Before moving or ever being checked, a King may castle-jump to a legal point anywhere in its own three-rank territory. Castling destinations are offered separately from ordinary moves. A promoted King may illuminate all twelve rays: it captures the first enemy on each eligible ray only if neither opponent protects that enemy. The Illuminate button appears when this action is legal.", "Certain consecutive material-winning attacks compel an alliance. Allies may capture each other’s nonroyal pieces, but cannot check one another. They lose promotion and Garden rights; unused castling ends, and the lone King illuminates. Mating either ally defeats both. If the allies mate the lone player, that army leaves play and the alliance dissolves. This app starts with three independent armies."]
+		},
+		{
+			title: "Repetition and draws",
+			paragraphs: ["A move recreating an earlier full position is illegal; the initiator must vary. A player with no legal action while not checked causes a draw."]
+		}
+	],
+	sanguo: [{
+		title: "Three kingdoms",
+		paragraphs: ["Red, Green and Blue each begin with 16 pieces on three 5 × 9 sectors: General, two Advisors, Elephants, Horses, Chariots and Cannons, and five Soldiers. Red opens. The river and junction connections determine how moves continue into other sectors."]
+	}, {
+		title: "Movement and capture",
+		paragraphs: ["General and Advisors stay within their palace. Elephant eyes and Horse legs can block movement. Chariots slide on clear logical ranks and files; Cannons need exactly one intervening screen to capture. Soldiers retain the forward routes of their original sector, even after inheritance, and gain sideways moves after crossing its river.", "You may not expose your own General or leave facing Generals on an open logical file. Checkmate or stalemate defeats a kingdom. The victor receives its surviving army; the defeated General leaves play. The mobile table completes this mandatory appropriation automatically. Original colors remain visible, and an owner ring identifies inherited pieces. The last surviving kingdom wins; repeated positions or the engine’s no-progress rule can draw."]
+	}],
+	sanyou: [
+		{
+			title: "The finalized Arctic board",
+			paragraphs: ["Three armies play on 156 intersections: 135 arm points and 21 approved central points. Each has 18 pieces. Red opens, then Green and Blue. A checked kingdom answers immediately; an interrupted turn resumes when check is cleared."]
+		},
+		{
+			title: "Pieces and special units",
+			paragraphs: ["General, Advisor, Elephant, Horse, Chariot and Cannon use the Xiangqi movement adapted to this board’s legal lines. Tap any piece for every legal destination; a central junction never lets a sliding piece turn arbitrarily. Fire moves one diagonal step forward and never retreats.", "Flag moves exactly two clear forward steps in its own camp. After entering enemy territory it becomes Chariot-like and cannot return to exclusive home territory. It may return to its original camp’s shared gate at C1, C7 or C13, but stops there. Soldier always moves one forward; first entry into enemy territory promotes it and adds sideways movement."]
+		},
+		{
+			title: "Terrain and territories",
+			paragraphs: ["Extended-river crossings C3–C17, C5–C9 and C15–C11 block Chariots. They block Horses only when used for the first orthogonal leg. Cannons may cross. Mountain crossings C2–C18, C6–C8 and C14–C12 block Cannons. At Forts, a Cannon may stop on C1, C7 or C13 from its own side, but cannot continue through into the opposite kingdom.", "C20, C22 and C24 are legal stopping points on continuation routes; they are not horizontal H-lines. Red’s camp owns C2–C6 and C20; Green owns C8–C12 and C22; Blue owns C14–C18 and C24. C1 is shared Red/Blue, C7 Red/Green, C13 Green/Blue. Shared gates are home for both owning camps and do not trigger promotion."]
+		},
+		{
+			title: "Victory and online seats",
+			paragraphs: ["Check safety, repetition, checkmate, stalemate and army inheritance use the same rules as Heritage Arcade. Inherited pieces keep their faction art and show the controlling player’s ring. The last surviving kingdom wins. A player leaving an online room hands the seat to a casual bot."]
+		}
+	],
+	yanyi: [...YAN_YI_CHAPTERS, {
+		title: "Piece guide",
+		paragraphs: Object.entries(YAN_YI_ROLE_HELP).map(([role, text]) => `${title(role)}: ${text}`)
+	}],
+	xiangqi: [{
+		title: "The goal",
+		paragraphs: ["Two armies of 16 pieces use the 90 intersections of a 9-file, 10-rank board. Red opens; Blue represents the traditional Black side. Win by checkmate or stalemate. The two Generals may never face one another along an empty file."]
+	}, {
+		title: "Piece movement",
+		paragraphs: ["General: one orthogonal point in its 3 × 3 palace. Advisor: one diagonal point in the palace. Elephant: two diagonal points with an empty eye, and may not cross the river. Horse: an L-shaped move with an empty orthogonal leg. Chariot: any clear orthogonal distance. Cannon: clear orthogonal movement; captures over exactly one screen. Soldier: one forward; after the river it also moves one sideways, never backward.", "Moves that fail to answer check or expose your General are illegal. This table preserves the Heritage Arcade edition; it does not adjudicate tournament perpetual chase or repetition."]
+	}]
+};
+RULES.sannin[4].paragraphs.push("In this digital edition, two successive different attackers threatening the same third kingdom are forced to ally if the second creates a new material-winning target. A target qualifies if it is more valuable than its attacker or is unprotected. The alliance cannot form while either proposed ally attacks the other King.", "After an alliance forms, all unused castling is cancelled. The lone King is promoted and becomes ready to illuminate on its next turn. If your allied King is in check, your move must also leave that King safe.");
+RULES.sanguo[1].paragraphs.push("This edition draws after three identical complete positions, or 120 consecutive individual moves without a capture or a Soldier move. A capture or Soldier move resets that quiet-move counter.");
+RULES.sanyou[3].paragraphs.push("A move recreating a prior complete position is illegal. A player who is not checked but has no legal action causes a stalemate draw; that army is not awarded to an opponent.", "Checkmate eliminates the defeated General and transfers the surviving army. Inherited pieces retain their original faction’s movement routes; the owner ring identifies the player who may move them.");
+RULES.dominion[2].paragraphs[1] = "Snow Guard: one empty square forward, or one forward diagonal to capture. In the Red-at-bottom view, Red advances up, Green left, Blue down and Pink right. A piece may capture an enemy on its destination but cannot land on a friendly piece.";
+RULES.dominion[3].paragraphs[0] = "A Snow Guard reaching its far edge promotes automatically according to the landing square. With each kingdom viewed from its own bottom edge, read its far edge from left to right. Green, Blue and Pink: Icebreaker, Unicorn, Mammoth, King, King, Mammoth, Unicorn, Icebreaker. Red: Icebreaker, Mammoth, Unicorn, King, King, Unicorn, Mammoth, Icebreaker.";
+
+//#endregion
+//#region mobile/arctic-play/src/learning.js
+const CHALLENGES = [
+	"move",
+	"capture",
+	"special"
+];
+const LESSONS = {
+	shogi: {
+		board: "Two armies · 9 × 9 squares · Red moves first",
+		goal: "Checkmate the other King: attack it so it has no safe reply.",
+		turn: "Take one move, or drop one captured piece. Always keep your King safe.",
+		move: "Tap the glowing Pawn, then a blue dot. A Pawn takes one step straight forward, even when it captures.",
+		capture: "The rival Pawn is one step ahead. Land on its orange ring to capture it. It joins your hand!",
+		special: "Your captured Pawn is waiting in hand. Tap it, then a blue dot to drop it back for your side.",
+		cheer: [
+			"A tiny step, a lovely start!",
+			"A capture and a new helper in your hand.",
+			"Back on the board, now on your side!"
+		],
+		remember: [
+			"Your far three ranks are the promotion zone. Entering, leaving or moving within it can offer promotion.",
+			"Captured pieces demote before joining your hand. Pawn drops have extra restrictions; blue dots already include them.",
+			"Check must be answered. Checkmate wins; a side with no legal move loses. See the full rules for repetition."
+		]
+	},
+	sannin: {
+		board: "Three armies · 127 hexes · Red → Green → Blue",
+		goal: "Move your unallied King safely into the central Pleasure Garden, or be the last surviving player.",
+		turn: "Take one legal action. Your army’s forward directions rotate with its seat.",
+		move: "Tap the glowing Pawn. Its two forward directions follow Red’s seat. Choose a blue dot for one little hex step.",
+		capture: "An enemy Pawn is on one of your Pawn’s paths. Tap your Pawn, then the orange ring. The captured piece joins your hand.",
+		special: "Let’s return a captured Pawn to play. Tap the piece in hand, then an empty blue dot. A drop uses your turn.",
+		cheer: [
+			"One hex closer to understanding!",
+			"Caught it! Captured pieces can return for you.",
+			"A little helper rejoins your army."
+		],
+		remember: [
+			"This Knight does not jump, and it does not promote. Do not use ordinary Shogi movement on this hex board.",
+			"Promotion, one-time castling, illuminated Kings and forced alliances have their own rules. Open the royal-powers chapter before a full game.",
+			"Allies lose Garden and promotion rights. Mating either ally defeats both. Legal highlights handle these restrictions."
+		]
+	},
+	sanguo: {
+		board: "Three sectors · 135 intersections · Red → Green → Blue",
+		goal: "Defeat the other kingdoms and become the last surviving one.",
+		turn: "Move one controlled piece along this board’s logical routes. Keep your General safe.",
+		move: "Tap the glowing Soldier, then a blue dot. Forward follows your army’s sector; crossing the river adds sideways moves.",
+		capture: "An enemy Soldier is on your path. Tap your Soldier, then its orange ring. Captures happen on the destination.",
+		special: "A Cannon needs one piece in between to capture. Tap the Cannon, then the enemy beyond the single screen.",
+		cheer: [
+			"A first step across your kingdom!",
+			"A clean capture. Well spotted!",
+			"One screen, one Cannon capture. Nicely done!"
+		],
+		remember: [
+			"Horses have blockable legs. Elephants have blockable eyes. Generals and Advisors stay in their palaces.",
+			"A Cannon moves through clear space, but needs exactly one screen to capture. It cannot jump a second screen.",
+			"Checkmate or stalemate defeats a kingdom. Its surviving army transfers automatically; an owner ring shows who controls it."
+		]
+	},
+	sanyou: {
+		board: "Three arms · 156 intersections · Red → Green → Blue",
+		goal: "Keep your General safe and become the last surviving kingdom.",
+		turn: "Follow the connected lines. A checked kingdom answers immediately, then an interrupted turn resumes.",
+		move: "Tap the glowing Soldier, then a blue dot. Your first step follows your army’s forward route.",
+		capture: "The enemy is on your Soldier’s route. Tap your Soldier, then the orange ring to try a capture.",
+		special: "This is a Flag. At home it travels exactly two clear forward steps. Tap it and choose a blue dot.",
+		cheer: [
+			"A tiny step on a very special board!",
+			"You found the capture route!",
+			"Two clear steps. Your Flag is on its way!"
+		],
+		remember: [
+			"Fire takes one forward diagonal step and never retreats. An enemy-territory Flag becomes Chariot-like; Soldiers gain sideways movement.",
+			"Rivers block Chariots and some Horse legs; mountains block Cannons. A Cannon cannot pass through a fort into the opposite kingdom.",
+			"A junction is not permission to turn. Use the legal highlights for the approved central routes, gates and terrain."
+		]
+	},
+	yanyi: {
+		board: "Three kingdoms + yellow Han · 225 cross intersections",
+		goal: "Checkmate rival kingdoms and finish with the last surviving King.",
+		turn: "Wu (Green) → Wei (Blue) → Shu (Red). A single checked kingdom answers immediately.",
+		move: "Tap the glowing Soldier, then a blue dot. Soldiers here can step sideways at home; this is not ordinary Xiangqi.",
+		capture: "An enemy Soldier is on your path. Tap your Soldier, then the orange ring. Active Kings are checkmated, not captured directly.",
+		special: "We placed Shu’s Red Horse beside Han. Tap it, then the yellow Emperor. Shu gains Han; Wu and Wei ally.",
+		cheer: [
+			"One little step on the cross!",
+			"A capture, with your own King still safe.",
+			"Han is awake! Yellow art stays yellow; the owner ring shows control."
+		],
+		remember: [
+			"Horse legs and Elephant eyes are not blocked by pieces in this edition. Their whole routes must still stay on the cross.",
+			"A Horse at another kingdom’s alliance point allies with it; the third kingdom gets Han. Capturing the Emperor is the other activation route.",
+			"Allies cannot capture or check each other. Checkmate transfers surviving armies. First-round Cannons stop at the starting Soldier line."
+		]
+	},
+	xiangqi: {
+		board: "Two armies · 90 intersections · Red moves first",
+		goal: "Checkmate or stalemate the other General.",
+		turn: "Move one piece per turn, on intersections. Keep your own General safe.",
+		move: "Tap the glowing Soldier, then a blue dot. It moves one point forward. After the river, it can also step sideways.",
+		capture: "An enemy Soldier is straight ahead. Tap your Soldier, then the orange ring to capture it.",
+		special: "A Cannon captures over exactly one screen. Tap your Cannon, then the enemy behind the single piece between them.",
+		cheer: [
+			"Your first step across the board!",
+			"You found the capture. Flippers up!",
+			"One screen is just right for a Cannon!"
+		],
+		remember: [
+			"General and Advisors stay in the palace. Elephants cannot cross the river, and a piece can block their eyes.",
+			"A blocked Horse leg stops that L-shaped move. The two Generals cannot face each other on an empty file.",
+			"Blue represents traditional Black. This edition does not adjudicate tournament perpetual chase or repetition."
+		]
+	},
+	dominion: {
+		board: "Four kingdoms · 8 × 8 squares · Green → Red → Blue → Pink",
+		goal: "Capture the other original royal Frost Kings. Be the last kingdom standing.",
+		turn: "Roll two dice, then spend each die on one move. Use either die first.",
+		move: "These practice dice are fixed at 1 and 3. The 1 wakes a Guard or King. Tap the glowing Guard, then a blue dot.",
+		capture: "Your Guard captures one diagonal step forward. Tap it, then the orange ring. This uses the practice die showing 1.",
+		special: "A 3 wakes the Aurora Unicorn. Tap it, then a blue dot to jump two squares one way and one across: an L!",
+		cheer: [
+			"One die, one tiny move!",
+			"A diagonal capture. Your Guard has it!",
+			"A lovely L-shaped leap!"
+		],
+		remember: [
+			"Dice: 1 or 5 = Guard or King; 2 = Mammoth; 3 = Unicorn; 4 or 6 = Icebreaker. Each die buys one move.",
+			"There is no check or checkmate restriction. Losing your original royal King removes your whole army.",
+			"Guards promote at the far edge according to the landing square. Promoted Kings are fighters; losing one does not eliminate the kingdom."
+		]
+	}
+};
+const shogiPieces = [
+	[
+		"king",
+		"King",
+		"One square in any direction. Keep it safe from check.",
+		"It never promotes."
+	],
+	[
+		"rook",
+		"Rook",
+		"Slide along a clear row or column. Stop at the first piece.",
+		"Promoted: Dragon King adds one-step diagonals."
+	],
+	[
+		"bishop",
+		"Bishop",
+		"Slide along a clear diagonal.",
+		"Promoted: Dragon Horse adds one-step straight moves."
+	],
+	[
+		"gold",
+		"Gold General",
+		"One step forward, sideways, straight back or diagonally forward.",
+		"No backward diagonals; never promotes."
+	],
+	[
+		"silver",
+		"Silver General",
+		"One step forward or on any diagonal.",
+		"Promoted: moves like a Gold General."
+	],
+	[
+		"knight",
+		"Knight",
+		"Jump two squares forward and one sideways.",
+		"Promoted: moves like a Gold General."
+	],
+	[
+		"lance",
+		"Lance",
+		"Slide any clear distance straight forward.",
+		"Promoted: moves like a Gold General."
+	],
+	[
+		"pawn",
+		"Pawn",
+		"One square straight forward, for moving and capturing.",
+		"Promoted Pawn (Tokin): moves like a Gold General."
+	]
+];
+const xiangqiPieces = [
+	[
+		"general",
+		"General",
+		"One straight step inside its 3 × 3 palace.",
+		"Always answer check and avoid facing the opposing General."
+	],
+	[
+		"advisor",
+		"Advisor",
+		"One diagonal step inside the palace.",
+		"Its job is to help shelter the General."
+	],
+	[
+		"elephant",
+		"Elephant",
+		"Exactly two diagonal steps. A piece on the middle eye blocks it.",
+		"In Xiangqi, it stays on its own side of the river."
+	],
+	[
+		"horse",
+		"Horse",
+		"One straight step, then one diagonal step out: an L.",
+		"A piece on the first straight step blocks that route."
+	],
+	[
+		"chariot",
+		"Chariot",
+		"Slide along a clear row or column.",
+		"Capture the first enemy on the route; never jump a piece."
+	],
+	[
+		"cannon",
+		"Cannon",
+		"Move straight through clear space.",
+		"To capture, jump exactly one screen and land on the enemy."
+	],
+	[
+		"soldier",
+		"Soldier",
+		"One forward step; after the river, also one sideways.",
+		"Never move backward."
+	]
+];
+const PIECE_GUIDES = {
+	shogi: shogiPieces,
+	sannin: [
+		[
+			"king",
+			"King",
+			"One adjacent hex.",
+			"Promoted: ranges on all twelve main and radian lines. See royal powers for castling and illumination."
+		],
+		[
+			"rook",
+			"Rook",
+			"Four main rays and the directly rear radian ray.",
+			"Promoted: all six main rays."
+		],
+		[
+			"bishop",
+			"Bishop",
+			"Slide on all six radian rays.",
+			"Promoted: also steps to any adjacent hex."
+		],
+		[
+			"gold",
+			"Gold General",
+			"Four main steps and forward/rear radian steps.",
+			"Six choices relative to your seat; never promotes."
+		],
+		[
+			"silver",
+			"Silver General",
+			"Four forward/rear diagonal main steps and two forward radian steps.",
+			"Promoted: adds forward/rear radian ranges."
+		],
+		[
+			"knight",
+			"Knight",
+			"Two sideways main steps and four sideways radian steps.",
+			"It does not jump and never promotes."
+		],
+		[
+			"lance",
+			"Lance",
+			"Slide on the two forward main rays.",
+			"Promoted: also ranges on the two rear main rays."
+		],
+		[
+			"pawn",
+			"Pawn",
+			"One step on either forward main line.",
+			"Promoted: moves like a Gold. Radian rays pass between the flanking hexes."
+		]
+	],
+	xiangqi: xiangqiPieces,
+	sanguo: xiangqiPieces.map(([role, name, move, note]) => [
+		{
+			general: "king",
+			advisor: "guard",
+			elephant: "seer",
+			horse: "rider",
+			chariot: "icebreaker",
+			soldier: "scout"
+		}[role] || role,
+		name,
+		move,
+		role === "elephant" ? "Uses its home-sector Elephant network; the middle eye can block it." : role === "general" ? "Palace safety and open-file facing restrictions apply across logical routes." : role === "soldier" ? "Forward follows its original sector. After crossing its river, sideways movement is allowed." : note
+	]),
+	sanyou: [
+		...xiangqiPieces.map(([role, name, move, note]) => [
+			role,
+			name,
+			role === "chariot" ? "Slide along a clear approved line; never turn at a junction." : role === "soldier" ? "One forward step. Entry into enemy territory promotes it and adds sideways moves." : move,
+			role === "elephant" ? "Uses its approved home-camp Elephant points; an occupied eye blocks the route." : role === "horse" ? "A blocked first leg stops the Horse. Some river legs also block it." : role === "cannon" ? "One screen to capture. Mountains and forts also restrict Cannon routes." : role === "general" ? "Stay in your palace and answer check immediately." : role === "soldier" ? "Shared home gates do not trigger promotion." : note
+		]),
+		[
+			"fire",
+			"Fire",
+			"One forward diagonal step.",
+			"Never retreats. Look for the highlighted forward routes."
+		],
+		[
+			"flag",
+			"Flag",
+			"Exactly two clear forward steps in its own camp.",
+			"In enemy territory it becomes Chariot-like and cannot re-enter exclusive home territory."
+		]
+	],
+	yanyi: [
+		[
+			"king",
+			"King",
+			"One straight step within its own palace.",
+			"You also protect an allied King. The ordinary flying-General rule is not used."
+		],
+		[
+			"advisor",
+			"Advisor",
+			"One diagonal step on its palace points.",
+			"Inherited Advisors may transfer to the controller’s palace, one Advisor per whole move."
+		],
+		[
+			"elephant",
+			"Elephant",
+			"Exactly two diagonal steps on the controlled seven-point networks.",
+			"Pieces do not block its eye; the route must stay on the cross. Inheritance can open neighboring networks."
+		],
+		[
+			"horse",
+			"Horse",
+			"An L-shaped move: two along one axis, one across.",
+			"Pieces do not block its leg. The whole route stays on the cross; Horses can activate Han."
+		],
+		[
+			"chariot",
+			"Chariot",
+			"Any clear straight distance across the cross.",
+			"Stop at the first piece. Friendly and allied destinations are blocked."
+		],
+		[
+			"cannon",
+			"Cannon",
+			"Clear straight moves; exactly one screen to capture.",
+			"During the first full round, it cannot pass its starting Soldier line."
+		],
+		[
+			"soldier",
+			"Soldier",
+			"One straight point. At home: forward or sideways.",
+			"Beyond the national boundary it may retreat, but not behind that boundary. Direction follows the controller."
+		],
+		[
+			"emperor",
+			"Han Emperor",
+			"The inactive Emperor does not move.",
+			"A Horse captures it to activate Han. The three yellow Chariots and Cannon then show their new owner’s ring."
+		]
+	],
+	dominion: [
+		[
+			"king",
+			"Frost King",
+			"One square in any direction.",
+			"Die 1 or 5. Your original royal King is vital; a promoted fighting King is not royal."
+		],
+		[
+			"elephant",
+			"War Mammoth",
+			"Slide any clear distance along a row or column.",
+			"Die 2. This Mammoth moves like a rook, not a Xiangqi Elephant."
+		],
+		[
+			"horse",
+			"Aurora Unicorn",
+			"Jump two squares one way and one across: an L.",
+			"Die 3. It can jump over intervening pieces."
+		],
+		[
+			"ship",
+			"Icebreaker",
+			"Jump exactly two squares diagonally.",
+			"Die 4 or 6. The middle square may be occupied."
+		],
+		[
+			"pawn",
+			"Snow Guard",
+			"One empty square forward; capture one diagonal step forward.",
+			"Die 1 or 5. Promotes automatically on the far edge. Forward rotates with your kingdom."
+		]
+	]
+};
+const clone$2 = (value) => JSON.parse(JSON.stringify(value));
+function rawUnits(id, state) {
+	return id === "shogi" ? state.board.filter(Boolean) : id === "dominion" ? state.board.flat().filter(Boolean) : state.pieces;
+}
+function unitRole(id, piece) {
+	return id === "shogi" || id === "sannin" || id === "dominion" ? piece.type : piece.role;
+}
+function owner(id, piece) {
+	return piece.owner || piece.controller || piece.side || piece.team;
+}
+function atCell(id, piece, cell) {
+	if (id === "sannin") return {
+		...piece,
+		cell,
+		status: "board"
+	};
+	if (id === "sanyou") return {
+		...piece,
+		node: cell,
+		status: "board"
+	};
+	if (id === "sanguo") {
+		const [sector, rank, file] = cell.split("-");
+		return {
+			...piece,
+			node: {
+				sector,
+				rank: +rank,
+				file: +file
+			}
+		};
+	}
+	if (id === "yanyi") {
+		const [x, y] = cell.split(",").map(Number);
+		return {
+			...piece,
+			x,
+			y
+		};
+	}
+	const [row, col] = cell.split(",").map(Number);
+	return {
+		...piece,
+		row,
+		col
+	};
+}
+function relocate(id, state, pieceId, cell) {
+	const visible = pieces(id, state), original = rawUnits(id, state).find((p) => p.id === pieceId);
+	const victim = visible.find((p) => p.cell === cell && p.id !== pieceId);
+	if (id === "shogi") state.board = state.board.map((p) => p?.id === pieceId || p?.id === victim?.id ? null : p), state.board[+cell] = original;
+	else if (id === "dominion") {
+		state.board = state.board.map((row) => row.map((p) => p?.id === pieceId || p?.id === victim?.id ? null : p));
+		const [r, c] = cell.split(",").map(Number);
+		state.board[r][c] = original;
+	} else state.pieces = state.pieces.filter((p) => p.id !== victim?.id).map((p) => p.id === pieceId ? atCell(id, p, cell) : p);
+}
+const pawnRole = (id) => ({
+	sanguo: "scout",
+	sanyou: "soldier",
+	yanyi: "soldier",
+	xiangqi: "soldier"
+})[id] || "pawn";
+function findUnit(id, state, role, side = state.turn) {
+	return rawUnits(id, state).find((p) => unitRole(id, p) === role && owner(id, p) === side);
+}
+function describe(id, state, filter) {
+	const legal = actions(id, state).filter(filter);
+	if (!legal.length) throw new Error("This teaching position has no matching legal move.");
+	const focus = legal[0].source;
+	return {
+		state,
+		legal: legal.filter((a) => a.source === focus),
+		focus
+	};
+}
+function fewDropSpots(id, position) {
+	const cells = board(id).cells, byId = new Map(cells.map((c) => [c.id, c]));
+	const royal = pieces(id, position.state).find((p) => p.owner === position.state.turn && p.label === "King"), anchor = byId.get(royal?.cell) || cells[0];
+	return {
+		...position,
+		legal: [...position.legal].sort((a, b) => {
+			const x = byId.get(a.target), y = byId.get(b.target);
+			return Math.hypot(x.x - anchor.x, x.y - anchor.y) - Math.hypot(y.x - anchor.x, y.y - anchor.y);
+		}).slice(0, 4)
+	};
+}
+function teachingState(id) {
+	const state = create(id);
+	state.turn = "red";
+	if (id === "dominion") state.currentPlayerIndex = 1;
+	return state;
+}
+function lessonPosition(id, kind) {
+	if (!Object.hasOwn(LESSONS, id) || !CHALLENGES.includes(kind)) throw new Error("Choose a lesson from this game.");
+	const state = teachingState(id), pawn = findUnit(id, state, pawnRole(id));
+	if (id === "dominion") state.dice = {
+		rolled: true,
+		values: kind === "special" ? [3, 4] : [1, 3],
+		used: [false, false]
+	};
+	if (kind === "move") return describe(id, state, (a) => a.source === `piece:${pawn.id}` && a.kind === "move" && !a.promote);
+	if (kind === "capture") {
+		const foe = GAME_LIST.find((g) => g.id === id).seats.find((s) => s !== state.turn);
+		const enemy = findUnit(id, state, pawnRole(id), foe);
+		let candidates;
+		if (id === "dominion") {
+			const [r, c] = pieces(id, state).find((p) => p.id === pawn.id).cell.split(",").map(Number);
+			candidates = [`${r - 1},${c + 1}`, `${r + 1},${c + 1}`].filter((cell) => board(id).cells.some((c) => c.id === cell) && !pieces(id, state).some((p) => p.cell === cell));
+		} else candidates = actions(id, state).filter((a) => a.source === `piece:${pawn.id}` && a.kind === "move").map((a) => a.target);
+		for (const cell of candidates) {
+			const sample = clone$2(state);
+			relocate(id, sample, enemy.id, cell);
+			try {
+				return {
+					...describe(id, sample, (a) => a.source === `piece:${pawn.id}` && a.target === cell && !a.promote),
+					victim: enemy.id
+				};
+			} catch {}
+		}
+		throw new Error("The capture lesson needs a valid teaching position.");
+	}
+	if (id === "shogi") {
+		state.board = state.board.map((p) => p?.id === pawn.id ? null : p);
+		state.hands.red.pawn = 1;
+		return fewDropSpots(id, describe(id, state, (a) => a.kind === "drop" && a.source === "hand:pawn"));
+	}
+	if (id === "sannin") {
+		const captive = findUnit(id, state, "pawn", "green");
+		Object.assign(captive, {
+			owner: "red",
+			status: "hand",
+			cell: null,
+			promoted: false
+		});
+		return fewDropSpots(id, describe(id, state, (a) => a.kind === "drop" && a.source === `hand:${captive.id}`));
+	}
+	if (id === "sanyou") {
+		const flag = findUnit(id, state, "flag");
+		return describe(id, state, (a) => a.source === `piece:${flag.id}` && a.kind === "move");
+	}
+	if (id === "yanyi") {
+		const horse = findUnit(id, state, "horse");
+		relocate(id, state, horse.id, "2,7");
+		return describe(id, state, (a) => a.source === `piece:${horse.id}` && a.target === "0,8");
+	}
+	if (id === "dominion") {
+		const horse = findUnit(id, state, "horse");
+		return describe(id, state, (a) => a.source === `piece:${horse.id}` && a.kind === "move");
+	}
+	const cannon = findUnit(id, state, "cannon"), screen = findUnit(id, state, pawnRole(id));
+	const enemy = findUnit(id, state, pawnRole(id), id === "xiangqi" ? "black" : "green");
+	const screenCell = id === "xiangqi" ? "5,1" : "red-2-3", target = id === "xiangqi" ? "3,1" : "red-2-5";
+	relocate(id, state, screen.id, screenCell);
+	relocate(id, state, enemy.id, target);
+	return {
+		...describe(id, state, (a) => a.source === `piece:${cannon.id}` && a.target === target),
+		victim: enemy.id
+	};
+}
+function piecePosition(id, role) {
+	const state = teachingState(id), chosen = findUnit(id, state, role) || (id === "yanyi" && role === "emperor" ? state.pieces.find((p) => p.role === "emperor") : null);
+	if (!chosen) throw new Error("Choose a piece from the guide.");
+	if (id === "dominion") {
+		state.dice = {
+			rolled: true,
+			values: [{
+				king: 1,
+				pawn: 1,
+				elephant: 2,
+				horse: 3,
+				ship: 4
+			}[role], 6],
+			used: [false, true]
+		};
+		state.board = state.board.map((row) => row.map((p) => p && p.team === state.turn && !p.isRoyal && p.id !== chosen.id ? null : p));
+	} else if (id === "shogi") state.board = state.board.map((p) => p && p.side === state.turn && p.type !== "king" && p.id !== chosen.id ? null : p);
+	else state.pieces = state.pieces.filter((p) => owner(id, p) !== state.turn || ["king", "general"].includes(unitRole(id, p)) || p.id === chosen.id);
+	if (id === "sanguo" || id === "xiangqi") {
+		const original = create(id);
+		for (const p of original.pieces) if (owner(id, p) === state.turn && unitRole(id, p) === pawnRole(id) && !state.pieces.some((q) => q.id === p.id)) state.pieces.push(p);
+	}
+	return {
+		state,
+		legal: actions(id, state).filter((a) => a.source === `piece:${chosen.id}` && a.kind === "move"),
+		focus: `piece:${chosen.id}`
+	};
+}
+
+//#endregion
+//#region mobile/arctic-play/src/curriculum.js
+const seats = {
+	shogi: "You are Red at the bottom. Red moves first. Your pieces advance up the board.",
+	sannin: "You are Red at the bottom. Turns go Red, Green, Blue. Your two forward paths point away from your home.",
+	sanguo: "You are Red at the bottom. Red opens, then Green and Blue. Forward follows Red’s connected sector routes.",
+	sanyou: "You are Red at the bottom. Red opens, then Green and Blue. Forward follows Red’s arm and its approved central paths.",
+	yanyi: "You are Shu, the Red kingdom at the bottom. Wu (Green) starts, then Wei (Blue), then you. Your home-forward direction is up.",
+	xiangqi: "You are Red at the bottom and move first. Blue represents the traditional Black side at the top.",
+	dominion: "You are Red at the bottom. Green rolls first, then Red, Blue and Pink. Your Guards advance up in this view."
+};
+function voice(title) {
+	return /check|captur|ending|victory/i.test(title) ? "retsba" : /allian|terrain|royal|inherit|notation/i.test(title) ? "abster" : /goal|board|kingdom/i.test(title) ? "polly" : "pengu";
+}
+function courseCards(id) {
+	if (!RULES[id]) throw Error("Choose a game from the collection.");
+	const cards = [{
+		key: "red-seat",
+		title: "Your side of the board",
+		chapter: "Start here",
+		cue: seats[id],
+		host: "polly",
+		sources: []
+	}];
+	const add = (card) => {
+		const same = cards.find((c) => c.cue === card.cue);
+		if (same) {
+			same.sources.push(...card.sources);
+			return;
+		}
+		cards.push({
+			...card,
+			host: card.host || voice(card.chapter)
+		});
+	};
+	for (const [ci, chapter] of RULES[id].entries()) {
+		if (ci === 1) for (const [role, name, move, note] of PIECE_GUIDES[id]) add({
+			key: "piece-" + role,
+			title: name,
+			chapter: "Meet every piece",
+			cue: move,
+			detail: note,
+			role,
+			sources: [],
+			host: "pengu"
+		});
+		for (const [pi, paragraph] of chapter.paragraphs.entries()) {
+			const sentences = paragraph.split(/(?<=[.!?])\s+(?=[A-Z0-9“‘])/u).filter(Boolean), groups = [];
+			let chunk = [];
+			for (const [si, text] of sentences.entries()) {
+				if (chunk.length && chunk.map((s) => s.text).join(" ").length + text.length > 230) {
+					groups.push(chunk);
+					chunk = [];
+				}
+				chunk.push({
+					si,
+					text
+				});
+			}
+			if (chunk.length) groups.push(chunk);
+			for (const group of groups) {
+				const cue = group.map((s) => s.text).join(" ");
+				add({
+					key: `rule-${ci}-${pi}-${group[0].si}`,
+					title: chapter.title,
+					chapter: chapter.title,
+					cue,
+					detail: paragraph,
+					sources: group.map((s) => ({
+						chapter: ci,
+						paragraph: pi,
+						sentence: s.si
+					})),
+					role: PIECE_GUIDES[id].find(([, name]) => cue.toLowerCase().startsWith(name.toLowerCase() + ":"))?.[0]
+				});
+			}
+		}
+	}
+	return cards;
+}
+
+//#endregion
+//#region mobile/arctic-play/src/adventures.js
+const ADVENTURES = {
+	shogi: {
+		title: "The little comeback club",
+		subtitle: "Capture a helper. Bring it home. Discover its new powers.",
+		stamp: "Comeback Flipper",
+		accent: "#d98cac",
+		welcome: "In Shogi, a capture can become a friendship. Let’s meet your pieces, one little surprise at a time.",
+		missions: [
+			{
+				key: "pawn-catch",
+				short: "A catch",
+				title: "A capture becomes a helper",
+				host: "polly",
+				task: "Move your Pawn straight onto the rival Pawn.",
+				why: "A Shogi Pawn captures the same way it moves: one square straight forward.",
+				after: "The rival Pawn left the board and joined your hand. You may use it on a later turn.",
+				hint: "Find the gold-ringed Pawn. Its rival is one square straight ahead."
+			},
+			{
+				key: "helper-drop",
+				short: "Come back",
+				title: "A helper returns on your side",
+				host: "abster",
+				task: "Choose the Pawn in hand, then an empty blue spot.",
+				why: "A drop uses your turn. The captured piece returns unpromoted, under your control.",
+				after: "Your hand has one fewer Pawn, and your army has a new helper on the board.",
+				hint: "Your helper is in the little hand button below the board. Tap it first."
+			},
+			{
+				key: "golden-pawn",
+				short: "Grow",
+				title: "A tiny Pawn grows up",
+				host: "pengu",
+				task: "Enter the far promotion zone and choose the promoted move.",
+				why: "Entering, leaving or moving within the far three ranks can offer promotion. This Pawn can become a Tokin, which moves like a Gold.",
+				after: "Your Pawn is now a Tokin. Promotion changes its movement; it does not turn into a royal King.",
+				hint: "Choose the destination marked “Promote”. This arranged Pawn is one step from the zone."
+			},
+			{
+				key: "king-shelter",
+				short: "Stay safe",
+				title: "A safe little step for the King",
+				host: "retsba",
+				task: "Your King is in check. Move it to a safe blue spot.",
+				why: "Check means the King is attacked. Your next action must remove that attack.",
+				after: "Your King is safe from the Rook’s line. Capturing is optional; answering check is essential.",
+				hint: "Step sideways out of the attacking Rook’s file. The blue choices are safe replies."
+			}
+		]
+	},
+	sannin: {
+		title: "Three homes, one little Garden",
+		subtitle: "Follow a hex path, meet a walking Knight and visit the centre.",
+		stamp: "Garden Flipper",
+		accent: "#aa9bdc",
+		welcome: "This hex board has its own directions and royal surprises. Ordinary Shogi habits need a tiny reset here.",
+		missions: [
+			{
+				key: "two-forwards",
+				short: "Two paths",
+				title: "Forward comes in pairs",
+				host: "pengu",
+				task: "Choose a home colour, then take one forward hex step.",
+				why: "A Sannin Pawn has two forward main directions. They rotate with its army’s home.",
+				after: "One small hex step! Change the home colour to see how the two forward paths rotate.",
+				hint: "Tap the glowing Pawn, then either blue hex.",
+				variants: [
+					[
+						"red",
+						"Red home",
+						"Red’s forward paths point away from its own home."
+					],
+					[
+						"green",
+						"Green home",
+						"Green has the same rule, rotated around this hex board."
+					],
+					[
+						"blue",
+						"Blue home",
+						"Blue’s forward paths rotate too. “Up the screen” is not every army’s forward."
+					]
+				]
+			},
+			{
+				key: "walking-knight",
+				short: "A walker",
+				title: "This Knight walks",
+				host: "retsba",
+				task: "Try one of this Knight’s sideways paths.",
+				why: "The Sannin Knight does not jump and never promotes. Its main and radian paths differ from ordinary Shogi’s forward leap.",
+				after: "That was a Sannin Knight move. The board’s highlights follow its own hex rules.",
+				hint: "Choose the glowing Knight. The short blue paths are this edition’s legal routes."
+			},
+			{
+				key: "returning-helper",
+				short: "A helper",
+				title: "A helper finds a new home",
+				host: "polly",
+				task: "Drop the captured Pawn onto an empty blue hex.",
+				why: "A captured piece can return from your hand. A drop takes one action and must meet this hex game’s restrictions.",
+				after: "Your captured helper has returned. Captures and drops belong to this three-player game too.",
+				hint: "Tap the Pawn in hand, then a blue hex near your home."
+			},
+			{
+				key: "garden-visit",
+				short: "The Garden",
+				title: "A safe visit to the Pleasure Garden",
+				host: "abster",
+				task: "Move the unallied King onto the marked centre hex.",
+				why: "A safe, unallied King reaching the Pleasure Garden wins. Allied Kings cannot use this victory route.",
+				after: "The engine awarded the Garden win! A real journey also needs care around promotion, illumination, castling and alliances.",
+				hint: "The Garden is the centre hex, 0,0. It is the only destination in this small snapshot."
+			}
+		]
+	},
+	sanguo: {
+		title: "A postcard from three kingdoms",
+		subtitle: "Read the river, build a Cannon screen and follow the owner ring.",
+		stamp: "Three-Shore Flipper",
+		accent: "#66b9cc",
+		welcome: "Three kingdoms share connected routes. We’ll explore the little rules that make this board its own.",
+		missions: [
+			{
+				key: "river-soldier",
+				short: "New shores",
+				title: "A Soldier on a new shore",
+				host: "polly",
+				task: "Try a sideways move with the Soldier beyond its home river.",
+				why: "A Soldier gains sideways movement after crossing its river. Its forward direction still follows its original sector.",
+				after: "Your Soldier used a sideways route beyond its home river. It still cannot move backward.",
+				hint: "This arranged Soldier is already across the river. Choose a sideways blue point."
+			},
+			{
+				key: "one-screen",
+				short: "One screen",
+				title: "A tiny bridge for a Cannon",
+				host: "pengu",
+				task: "Find the screen count that lets your Cannon capture the marked rival.",
+				why: "A Cannon captures over exactly one intervening piece. Zero or two screens will not do.",
+				after: "Exactly one screen made the capture possible. The screen stays where it was.",
+				hint: "Choose “One screen”, tap the Cannon, then the orange-ringed rival.",
+				variants: [
+					[
+						"zero",
+						"No screen",
+						"The rival is visible, but there is no screen to jump."
+					],
+					[
+						"one",
+						"One screen",
+						"One intervening piece creates a legal Cannon capture."
+					],
+					[
+						"two",
+						"Two screens",
+						"The extra piece closes this capture route. A Cannon cannot jump two screens."
+					]
+				]
+			},
+			{
+				key: "clear-leg",
+				short: "Clear a leg",
+				title: "Give the Horse a little doorway",
+				host: "retsba",
+				task: "Clear the Horse’s first leg, then try the marked L-shaped route.",
+				why: "In Sanguo Qi, an occupied first leg blocks the Horse. A clear leg opens that particular L-shaped route.",
+				after: "The first leg was clear, so the Horse could finish its L. Other routes may have different legs.",
+				hint: "Switch to “Leg clear”. Tap the Horse, then the blue destination.",
+				variants: [[
+					"blocked",
+					"Leg occupied",
+					"The small piece is on this route’s first leg, so this destination is unavailable."
+				], [
+					"clear",
+					"Leg clear",
+					"The first leg is empty. This L-shaped route is now available."
+				]]
+			},
+			{
+				key: "owner-ring",
+				short: "New owner",
+				title: "The colour outside tells a story",
+				host: "abster",
+				task: "Move the green-art Soldier controlled by Red.",
+				why: "After a kingdom is defeated, surviving pieces can transfer. Their original artwork stays; the outer ring shows the controller.",
+				after: "Red moved a green-art piece. Read the owner ring when an army has been inherited.",
+				hint: "The arranged inherited Soldier has green artwork and a red control ring."
+			}
+		]
+	},
+	sanyou: {
+		title: "The Fire and Flag expedition",
+		subtitle: "Two unusual helpers and a landscape full of little decisions.",
+		stamp: "Trailfinder Flipper",
+		accent: "#72c5a2",
+		welcome: "San You Qi has Fire, Flags and special terrain. Let’s learn those first, instead of treating it like a familiar chess board.",
+		missions: [
+			{
+				key: "fire-spark",
+				short: "A spark",
+				title: "A little spark moves forward",
+				host: "polly",
+				task: "Move Fire one step diagonally forward.",
+				why: "Fire advances one forward diagonal step. It never retreats.",
+				after: "A small diagonal spark! Fire follows the army’s forward routes, not every diagonal around it.",
+				hint: "Tap Fire. Choose one of its forward blue points."
+			},
+			{
+				key: "flag-path",
+				short: "Two steps",
+				title: "A Flag needs two clear steps",
+				host: "pengu",
+				task: "Clear the middle point and move the Flag exactly two forward steps.",
+				why: "At home, a Flag moves exactly two forward points. It cannot stop on the middle point or jump a blocker there.",
+				after: "Two clear steps, one Flag move. The middle point was a path, not a landing choice.",
+				hint: "Choose “Path clear”, then tap the Flag and its blue destination.",
+				variants: [[
+					"blocked",
+					"Middle occupied",
+					"The Flag cannot jump the piece on its first step."
+				], [
+					"clear",
+					"Path clear",
+					"Both steps are clear. The Flag may finish exactly two points ahead."
+				]]
+			},
+			{
+				key: "travelling-flag",
+				short: "Far from home",
+				title: "A Flag away from home",
+				host: "abster",
+				task: "Slide the crossed Flag along a clear approved line.",
+				why: "In enemy territory, a Flag becomes Chariot-like. It can return to shared home gates, but cannot re-enter exclusive home territory.",
+				after: "Away from home, the Flag can slide farther. Its home boundary still matters.",
+				hint: "This arranged Flag has already left home. Choose a blue point on its clear line."
+			},
+			{
+				key: "terrain-lines",
+				short: "Read the sea",
+				title: "The same edge, two different helpers",
+				host: "retsba",
+				task: "Compare the Chariot and Cannon, then move the Cannon across the marked Sea edge.",
+				why: "On this specific Sea connection, a Chariot is blocked and a Cannon may cross. Other terrain has its own rules: mountains block Cannon routes, and forts restrict passage.",
+				after: "The Cannon crossed this Sea edge. Terrain belongs to the connection between points, not just the destination.",
+				hint: "Choose “Cannon”, then the marked blue destination. The Chariot cannot use this same edge.",
+				variants: [[
+					"chariot",
+					"Chariot",
+					"This Sea edge blocks the Chariot’s route."
+				], [
+					"cannon",
+					"Cannon",
+					"The Cannon may cross this Sea connection when the path is clear."
+				]]
+			}
+		]
+	},
+	yanyi: {
+		title: "Wake the little Han court",
+		subtitle: "Explore the cross, meet Han and learn who is on your side.",
+		stamp: "Han Explorer",
+		accent: "#ba93dc",
+		welcome: "This cross-board game has its own Soldiers, leaping Horses and alliances. We’ll discover them in four tiny scenes.",
+		missions: [
+			{
+				key: "sideways-start",
+				short: "Sideways too",
+				title: "A Soldier has room to wiggle",
+				host: "polly",
+				task: "Move Shu’s Red Soldier one point sideways, even at home.",
+				why: "Yan Yi Soldiers may move sideways from the opening. Do not wait for a Xiangqi-style river crossing.",
+				after: "A sideways step at home was legal. Inside the home boundary, the Soldier still cannot retreat.",
+				hint: "Find Shu’s Red Soldier, then choose a sideways point beside it."
+			},
+			{
+				key: "leaping-horse",
+				short: "A true leap",
+				title: "This Horse does leap",
+				host: "retsba",
+				task: "Try the marked L-shaped move. Compare an occupied and a clear leg.",
+				why: "In this edition of Yan Yi, pieces do not block Horse legs. The entire route must still remain on the cross.",
+				after: "The Horse used its L-shaped leap. An occupied leg would not block it; Sanguo Qi and Xiangqi handle this differently.",
+				hint: "The occupied leg is intentional. The blue destination remains legal.",
+				variants: [[
+					"occupied",
+					"Leg occupied",
+					"This piece does not block the Yan Yi Horse’s leg. The L-shaped route is legal."
+				], [
+					"clear",
+					"Leg clear",
+					"Removing the piece leaves the same L-shaped destination legal."
+				]]
+			},
+			{
+				key: "wake-han",
+				short: "Hello, Han",
+				title: "A little Horse wakes Han",
+				host: "pengu",
+				task: "Move Shu’s Red Horse onto the yellow Han Emperor.",
+				why: "This is one activation route: a Horse captures the Emperor. Red gains Han’s surviving forces; Green and Blue become allies.",
+				after: "Red controls the four yellow Han fighters. Their artwork stays yellow; their owner rings are Red. Green and Blue are now allied.",
+				hint: "Find Shu’s Red Horse near the Emperor. The orange ring is the activation destination."
+			},
+			{
+				key: "allied-colours",
+				short: "Who is a friend?",
+				title: "Different colours can be friends",
+				host: "abster",
+				task: "Blue and Red are allied. Capture the Green rival with Red’s Chariot.",
+				why: "Allies cannot capture or check each other. A different artwork colour is not enough to make a piece a legal target.",
+				after: "Red captured the Green rival and left its Blue ally alone. Protect both allied Kings.",
+				hint: "The Blue piece is an ally. The Green piece on the Chariot’s row is the capture target."
+			}
+		]
+	},
+	xiangqi: {
+		title: "A little journey across the river",
+		subtitle: "A Soldier’s new paths, a Cannon bridge and a Horse’s doorway.",
+		stamp: "River Flipper",
+		accent: "#df9b81",
+		welcome: "Start with the river and palace. Then the Cannon and Horse will feel much less mysterious.",
+		missions: [
+			{
+				key: "river-passport",
+				short: "The river",
+				title: "A river changes a Soldier’s choices",
+				host: "polly",
+				task: "Move the Soldier sideways after it has crossed the river.",
+				why: "Before crossing, a Soldier moves only forward. After crossing, it gains sideways steps. It never retreats.",
+				after: "A sideways step is now allowed. The river added choices without adding backward moves.",
+				hint: "Choose “Across the river”, then the sideways blue destination.",
+				variants: [[
+					"home",
+					"Before crossing",
+					"On its home side, this Soldier has a forward move but no sideways move."
+				], [
+					"across",
+					"Across the river",
+					"Across the river, a sideways step is available."
+				]]
+			},
+			{
+				key: "cannon-bridge",
+				short: "A bridge",
+				title: "One little screen is just right",
+				host: "pengu",
+				task: "Give the Cannon one screen, then capture the rival behind it.",
+				why: "A Cannon moves through clear space without jumping. To capture, it jumps exactly one piece of either colour.",
+				after: "One screen let the Cannon capture the rival. Zero screens and two screens both close that capture.",
+				hint: "Choose “One screen”, tap your Cannon, then the rival with an orange ring.",
+				variants: [
+					[
+						"zero",
+						"No screen",
+						"No screen means no capture on this occupied target."
+					],
+					[
+						"one",
+						"One screen",
+						"Exactly one piece lies between Cannon and target. The capture is legal."
+					],
+					[
+						"two",
+						"Two screens",
+						"Two intervening pieces are too many. This capture is unavailable."
+					]
+				]
+			},
+			{
+				key: "horse-door",
+				short: "A doorway",
+				title: "A Horse needs a clear first step",
+				host: "retsba",
+				task: "Open the Horse’s doorway, then take its L-shaped route.",
+				why: "A Xiangqi Horse first steps straight, then diagonally outward. A piece on that first step blocks this route.",
+				after: "The clear first step let the Horse move. It cannot jump a blocked leg.",
+				hint: "Choose “Leg clear”. The marked destination will become blue.",
+				variants: [[
+					"blocked",
+					"Leg occupied",
+					"This route is closed by the occupied first leg."
+				], [
+					"clear",
+					"Leg clear",
+					"The first leg is clear, so this L-shaped destination is legal."
+				]]
+			},
+			{
+				key: "palace-home",
+				short: "A safe palace",
+				title: "The Generals need a little privacy",
+				host: "abster",
+				task: "Step the General safely sideways. Compare what opening the central file changes.",
+				why: "The Generals cannot face each other on an empty file. Your General also stays inside its own 3 × 3 palace.",
+				after: "Your General stayed inside its palace and out of an open facing line. When that file is open, answering the attack is essential.",
+				hint: "With “File open”, Red is in check. A sideways blue point is a safe reply.",
+				variants: [[
+					"open",
+					"File open",
+					"With both screens removed, the Generals face each other. Red must answer check."
+				], [
+					"closed",
+					"File screened",
+					"The central Soldiers keep the Generals from facing each other."
+				]]
+			}
+		]
+	},
+	dominion: {
+		title: "A two-dice snow day",
+		subtitle: "Wake your team, spend two dice and watch the royal Kings.",
+		stamp: "Snow-Day Flipper",
+		accent: "#79bce0",
+		welcome: "This is four-player Chaturanga. Dice wake specific helpers, and royal Kings can be captured. Let’s try one whole little turn.",
+		missions: [
+			{
+				key: "two-dice",
+				short: "Two dice",
+				title: "Two dice, two little moves",
+				host: "polly",
+				task: "Spend practice die 1 on a Guard, then die 3 on a Unicorn.",
+				why: "Each die buys one move by a piece it activates. Either die may go first in a match; this guided example starts with 1.",
+				after: "You spent both dice in Red’s turn. Now the next kingdom can roll.",
+				hint: "First move the glowing Guard. The next gold ring will guide you to the Unicorn."
+			},
+			{
+				key: "guard-nibble",
+				short: "A nibble",
+				title: "A Guard captures at an angle",
+				host: "retsba",
+				task: "Use die 1 to capture the rival diagonally forward.",
+				why: "A Snow Guard walks straight into an empty square, but captures one square diagonally forward. Its forward rotates with its kingdom.",
+				after: "Your Guard made a diagonal capture. A straight step and a capture have different shapes here.",
+				hint: "The rival’s orange ring is diagonally ahead of your Guard."
+			},
+			{
+				key: "icebreaker-hop",
+				short: "A hop",
+				title: "An Icebreaker hops over the middle",
+				host: "pengu",
+				task: "Jump exactly two squares diagonally. Try an occupied and a clear middle square.",
+				why: "Die 4 or 6 activates the Icebreaker. It jumps exactly two diagonal squares and may hop over a piece in the middle.",
+				after: "That was a two-square diagonal jump. A middle piece would stay where it was; only the landing square matters for a capture.",
+				hint: "The blue destination is exactly two diagonal squares away.",
+				variants: [[
+					"occupied",
+					"Middle occupied",
+					"The Icebreaker can jump over this piece."
+				], [
+					"clear",
+					"Middle clear",
+					"An empty middle square permits the same two-square jump."
+				]]
+			},
+			{
+				key: "royal-watch",
+				short: "Royal watch",
+				title: "One royal King holds a kingdom together",
+				host: "abster",
+				task: "Use die 3 to capture Green’s original royal Frost King.",
+				why: "There is no check restriction here. Capturing an original royal King eliminates its whole kingdom. Promoted fighting Kings are different.",
+				after: "Green’s original royal King was captured, so Green’s remaining army was removed. Other kingdoms continue.",
+				hint: "Your Unicorn can make an L-shaped capture onto Green’s royal King."
+			}
+		]
+	}
+};
+const clone$1 = (x) => JSON.parse(JSON.stringify(x));
+const source = (p) => `piece:${p.id}`;
+function keep(id, state, ids) {
+	const wanted = new Set(ids);
+	if (id === "shogi") state.board = state.board.map((p) => p && (p.type === "king" || wanted.has(p.id)) ? p : null);
+	else if (id === "dominion") state.board = state.board.map((row) => row.map((p) => p && (p.isRoyal || wanted.has(p.id)) ? p : null));
+	else if (id === "sannin") {
+		for (const p of state.pieces) if (p.type !== "king" && !wanted.has(p.id)) {
+			p.status = "eliminated";
+			p.cell = null;
+		}
+	} else if (id === "sanyou") {
+		for (const p of state.pieces) if (p.role !== "general" && !(p.role === "soldier" && p.node?.endsWith(":L5-4")) && !wanted.has(p.id)) {
+			p.status = "captured";
+			p.node = null;
+		}
+	} else state.pieces = state.pieces.filter((p) => ["king", "general"].includes(unitRole(id, p)) || wanted.has(p.id));
+}
+function remove(id, state, pieceId) {
+	if (id === "shogi") state.board = state.board.map((p) => p?.id === pieceId ? null : p);
+	else if (id === "dominion") state.board = state.board.map((row) => row.map((p) => p?.id === pieceId ? null : p));
+	else if (id === "sannin") Object.assign(state.pieces.find((p) => p.id === pieceId), {
+		status: "eliminated",
+		cell: null
+	});
+	else if (id === "sanyou") Object.assign(state.pieces.find((p) => p.id === pieceId), {
+		status: "captured",
+		node: null
+	});
+	else state.pieces = state.pieces.filter((p) => p.id !== pieceId);
+}
+function choose(state, focus, filter = () => true, extra = {}) {
+	return {
+		state,
+		focus,
+		legal: actions(extra.id, state).filter((a) => a.source === focus && filter(a)),
+		...extra
+	};
+}
+function fixture(id, key, variant) {
+	let p, state = teachingState(id), unit, target;
+	const finish = (piece, filter = () => true, extra = {}) => choose(state, source(piece), filter, {
+		id,
+		...extra
+	});
+	if (["pawn-catch", "guard-nibble"].includes(key)) return {
+		...lessonPosition(id, "capture"),
+		id
+	};
+	if (["helper-drop", "returning-helper"].includes(key)) return {
+		...lessonPosition(id, "special"),
+		id
+	};
+	if (["one-screen", "cannon-bridge"].includes(key)) {
+		p = lessonPosition(id, "special");
+		state = clone$1(p.state);
+		const screen = state.pieces.find((q) => id === "xiangqi" ? q.row === 5 && q.col === 1 : q.node.sector === "red" && q.node.rank === 2 && q.node.file === 3);
+		const target = p.legal[0].target;
+		if (variant === "zero") remove(id, state, screen.id);
+		if (variant === "two") {
+			const extra = rawUnits(id, state).find((q) => owner(id, q) !== state.turn && !["king", "general"].includes(unitRole(id, q)) && q.id !== p.victim);
+			relocate(id, state, extra.id, id === "xiangqi" ? "4,1" : "red-2-4");
+		}
+		return choose(state, p.focus, (a) => a.target === target, {
+			id,
+			notice: [{
+				cell: target,
+				label: "Rival target"
+			}]
+		});
+	}
+	if (key === "golden-pawn") {
+		unit = findUnit(id, state, "pawn");
+		keep(id, state, [unit.id]);
+		relocate(id, state, unit.id, "31");
+		return finish(unit, (a) => a.promote, { notice: [{
+			cell: "22",
+			label: "Promotion zone"
+		}] });
+	}
+	if (key === "king-shelter") {
+		unit = findUnit(id, state, "king");
+		const enemy = findUnit(id, state, "rook", "blue");
+		keep(id, state, [enemy.id]);
+		relocate(id, state, unit.id, "67");
+		relocate(id, state, enemy.id, "40");
+		return finish(unit);
+	}
+	if (key === "two-forwards") {
+		state.turn = variant;
+		unit = findUnit(id, state, "pawn", variant);
+		return finish(unit, (a) => a.kind === "move" && !a.promote);
+	}
+	if (key === "walking-knight") return {
+		...piecePosition(id, "knight"),
+		id
+	};
+	if (key === "garden-visit") {
+		unit = findUnit(id, state, "king");
+		keep(id, state, []);
+		relocate(id, state, unit.id, "1,0");
+		return finish(unit, (a) => a.target === "0,0" && !a.promote, { notice: [{
+			cell: "0,0",
+			label: "Pleasure Garden"
+		}] });
+	}
+	if (key === "river-soldier") {
+		unit = findUnit(id, state, "scout");
+		relocate(id, state, unit.id, "green-1-4");
+		return finish(unit, (a) => a.target === "green-1-3" || a.target === "green-1-5");
+	}
+	if (key === "clear-leg" || key === "horse-door") {
+		unit = findUnit(id, state, id === "sanguo" ? "rider" : "horse");
+		target = id === "sanguo" ? "red-2-0" : "7,0";
+		const blocker = findUnit(id, state, id === "sanguo" ? "scout" : "soldier");
+		if (variant === "blocked") relocate(id, state, blocker.id, id === "sanguo" ? "red-3-1" : "8,1");
+		return finish(unit, (a) => a.target === target, { notice: [{
+			cell: target,
+			label: "L-shaped destination"
+		}] });
+	}
+	if (key === "owner-ring") {
+		unit = findUnit(id, state, "scout", "green");
+		state.pieces = removeGeneralAndAppropriate(state.pieces, {
+			defeated: "green",
+			victor: "red"
+		});
+		state.defeated = ["green"];
+		return finish(unit);
+	}
+	if (key === "fire-spark") return {
+		...piecePosition(id, "fire"),
+		id
+	};
+	if (key === "flag-path") {
+		p = lessonPosition(id, "special");
+		state = clone$1(p.state);
+		unit = state.pieces.find((q) => source(q) === p.focus);
+		if (variant === "blocked") {
+			const blocker = findUnit(id, state, "soldier");
+			relocate(id, state, blocker.id, "red:L4-4");
+		}
+		return finish(unit, (a) => a.target === "red:L4-5", { notice: [{
+			cell: "red:L4-5",
+			label: "Two steps ahead"
+		}] });
+	}
+	if (key === "travelling-flag") {
+		unit = findUnit(id, state, "flag");
+		keep(id, state, [unit.id]);
+		relocate(id, state, unit.id, "blue:L5-4");
+		unit = state.pieces.find((p) => p.id === unit.id);
+		unit.leftHome = true;
+		return finish(unit, (a) => [
+			"blue:L4-4",
+			"blue:L6-4",
+			"blue:L7-4",
+			"blue:L8-4"
+		].includes(a.target));
+	}
+	if (key === "terrain-lines") {
+		unit = findUnit(id, state, variant);
+		keep(id, state, [unit.id]);
+		relocate(id, state, unit.id, "C3");
+		return finish(unit, (a) => a.target === "C17", { notice: [{
+			cell: "C3",
+			label: "Sea edge start"
+		}, {
+			cell: "C17",
+			label: "Across the Sea edge"
+		}] });
+	}
+	if (key === "sideways-start") {
+		unit = findUnit(id, state, "soldier");
+		return finish(unit, (a) => a.raw.to.x === unit.x);
+	}
+	if (key === "leaping-horse") {
+		unit = findUnit(id, state, "horse");
+		const blocker = findUnit(id, state, "soldier", "red");
+		keep(id, state, [unit.id, blocker.id]);
+		relocate(id, state, unit.id, "8,8");
+		if (variant === "occupied") relocate(id, state, blocker.id, "9,8");
+		else remove(id, state, blocker.id);
+		return finish(unit, (a) => a.target === "10,9", { notice: [{
+			cell: "10,9",
+			label: "Legal L-shaped destination"
+		}] });
+	}
+	if (key === "wake-han") return {
+		...lessonPosition(id, "special"),
+		id
+	};
+	if (key === "allied-colours") {
+		state.turn = "red";
+		state.alliance = ["blue", "red"];
+		state.hanOwner = "green";
+		state.activationUsed = true;
+		state.opening = {
+			red: true,
+			green: true,
+			blue: true
+		};
+		state.ply = 6;
+		unit = findUnit(id, state, "chariot", "red");
+		const ally = findUnit(id, state, "soldier", "blue"), rival = findUnit(id, state, "soldier", "green");
+		keep(id, state, [
+			unit.id,
+			ally.id,
+			rival.id
+		]);
+		relocate(id, state, unit.id, "8,8");
+		relocate(id, state, ally.id, "8,9");
+		relocate(id, state, rival.id, "10,8");
+		return finish(unit, (a) => a.target === "10,8", { notice: [{
+			cell: "8,9",
+			label: "Blue ally: not a target"
+		}, {
+			cell: "10,8",
+			label: "Green rival"
+		}] });
+	}
+	if (key === "river-passport") {
+		unit = findUnit(id, state, "soldier");
+		relocate(id, state, unit.id, variant === "home" ? "5,0" : "4,0");
+		return finish(unit, (a) => a.target === "4,1", { notice: [{
+			cell: "4,1",
+			label: "Sideways destination"
+		}] });
+	}
+	if (key === "palace-home") {
+		p = piecePosition(id, "general");
+		state = clone$1(p.state);
+		unit = findUnit(id, state, "general");
+		if (variant === "open") {
+			for (const piece of [...state.pieces]) if (piece.role === "soldier" && piece.col === 4) remove(id, state, piece.id);
+		}
+		return finish(unit, (a) => a.target === "9,3" || a.target === "9,5");
+	}
+	if (key === "two-dice") {
+		state.dice = {
+			rolled: true,
+			values: [1, 3],
+			used: [false, false]
+		};
+		unit = findUnit(id, state, "pawn");
+		return finish(unit, (a) => a.raw.dieIndex === 0, { stageCount: 2 });
+	}
+	if (key === "icebreaker-hop") {
+		unit = findUnit(id, state, "ship");
+		const middle = findUnit(id, state, "pawn");
+		keep(id, state, [unit.id, middle.id]);
+		relocate(id, state, unit.id, "4,2");
+		if (variant === "occupied") relocate(id, state, middle.id, "3,3");
+		else remove(id, state, middle.id);
+		state.dice = {
+			rolled: true,
+			values: [4, 6],
+			used: [false, true]
+		};
+		return finish(unit, (a) => a.target === "2,4", { notice: [{
+			cell: "3,3",
+			label: "Middle square"
+		}, {
+			cell: "2,4",
+			label: "Two-square landing"
+		}] });
+	}
+	if (key === "royal-watch") {
+		unit = findUnit(id, state, "horse");
+		relocate(id, state, unit.id, "5,3");
+		state.dice = {
+			rolled: true,
+			values: [3, 6],
+			used: [false, true]
+		};
+		return finish(unit, (a) => a.target === "7,4", { notice: [{
+			cell: "7,4",
+			label: "Green original royal King"
+		}] });
+	}
+	if (key === "pawn-file") {
+		p = lessonPosition(id, "special");
+		state = clone$1(p.state);
+		unit = findUnit(id, state, "pawn");
+		if (variant === "blocked") state.board[+p.legal[0].target % 9 + 54] = {
+			...unit,
+			id: "file-blocker"
+		};
+		return choose(state, p.focus, (a) => a.target === p.legal[0].target, { id });
+	}
+	if (key === "forced-pawn") {
+		unit = findUnit(id, state, "pawn");
+		keep(id, state, [unit.id]);
+		relocate(id, state, unit.id, "13");
+		return finish(unit, (a) => a.target === "4" && a.promote);
+	}
+	if (key === "royal-castle") {
+		unit = findUnit(id, state, "king");
+		keep(id, state, []);
+		return finish(unit, (a) => a.kind === "castle");
+	}
+	if (key === "royal-light") {
+		unit = findUnit(id, state, "king");
+		const enemy = findUnit(id, state, "pawn", "green");
+		keep(id, state, [enemy.id]);
+		relocate(id, state, unit.id, "1,0");
+		unit = state.pieces.find((p) => p.id === unit.id);
+		unit.promoted = true;
+		unit.illuminationReady = true;
+		relocate(id, state, enemy.id, "2,0");
+		return finish(unit, (a) => a.kind === "illuminate");
+	}
+	if (key === "elephant-door") {
+		unit = findUnit(id, state, id === "sanguo" ? "seer" : "elephant");
+		const target = id === "sanguo" ? "red-2-4" : "7,4";
+		if (variant === "blocked") {
+			const blocker = findUnit(id, state, id === "sanguo" ? "scout" : "soldier");
+			relocate(id, state, blocker.id, id === "sanguo" ? "red-1-3" : "8,3");
+		}
+		return finish(unit, (a) => a.target === target);
+	}
+	if (key === "mountain-route") {
+		unit = findUnit(id, state, variant);
+		keep(id, state, [unit.id]);
+		relocate(id, state, unit.id, "C2");
+		return finish(unit, (a) => a.target === "C18", { notice: [{
+			cell: "C2",
+			label: "Mountain edge start"
+		}, {
+			cell: "C18",
+			label: "Across the Mountain edge"
+		}] });
+	}
+	if (key === "cannon-opening") {
+		unit = findUnit(id, state, "cannon");
+		keep(id, state, [unit.id]);
+		relocate(id, state, unit.id, "10,14");
+		state.opening = {
+			red: variant === "later",
+			green: true,
+			blue: true
+		};
+		state.ply = variant === "later" ? 3 : 2;
+		return finish(unit, (a) => a.target === "10,12");
+	}
+	if (key === "horse-alliance") {
+		unit = findUnit(id, state, "horse");
+		keep(id, state, [unit.id, ...state.pieces.filter((p) => p.origin === "han").map((p) => p.id)]);
+		relocate(id, state, unit.id, "2,8");
+		return finish(unit, (a) => a.target === "0,9");
+	}
+	if (key === "advisor-transfer") {
+		unit = findUnit(id, state, "advisor", "blue");
+		keep(id, state, [unit.id]);
+		unit = state.pieces.find((p) => p.id === unit.id);
+		unit.owner = "red";
+		return finish(unit, (a) => a.raw.to.y >= 14);
+	}
+	if (key === "soldier-retreat") {
+		unit = findUnit(id, state, "soldier");
+		keep(id, state, [unit.id]);
+		relocate(id, state, unit.id, variant === "outside" ? "8,10" : "8,13");
+		return finish(unit, (a) => a.target === (variant === "outside" ? "8,11" : "8,14"));
+	}
+	if (key === "king-facing") {
+		unit = findUnit(id, state, "king");
+		keep(id, state, []);
+		return finish(unit, (a) => a.target === "8,15");
+	}
+	if (key === "guard-crown") {
+		unit = findUnit(id, state, "pawn");
+		keep(id, state, [unit.id]);
+		relocate(id, state, unit.id, "3,6");
+		relocate(id, state, findUnit(id, state, "king", "blue").id, "2,7");
+		state.dice = {
+			rolled: true,
+			values: [1, 6],
+			used: [false, true]
+		};
+		return finish(unit, (a) => a.target === "3,7");
+	}
+	throw new Error("Choose a discovery from this game.");
+}
+function missionFor(id, key) {
+	const m = [...ADVENTURES[id]?.missions || [], ...RULE_SCENES[id] || []].find((m) => m.key === key);
+	if (!m) throw new Error("Choose a discovery from this game.");
+	return m;
+}
+function adventurePosition(id, key, variant, actionIds = []) {
+	const options = missionFor(id, key).variants?.map((v) => v[0]) || ["default"];
+	variant = variant || options[0];
+	if (!options.includes(variant)) throw new Error("Choose one of this discovery’s setups.");
+	if (!Array.isArray(actionIds) || actionIds.length > (key === "two-dice" ? 2 : 1)) throw new Error("Replay this little discovery.");
+	const initial = fixture(id, key, variant);
+	let position = {
+		...initial,
+		missionKey: key,
+		practiceDice: id === "dominion" ? clone$1(initial.state.dice) : null,
+		variant,
+		stage: 0,
+		stageCount: key === "two-dice" ? 2 : 1,
+		complete: false
+	};
+	for (const actionId of actionIds) {
+		if (position.complete || !position.legal.some((a) => a.id === actionId)) throw new Error("Try the glowing piece and a highlighted destination.");
+		const state = apply(id, position.state, actionId), stage = position.stage + 1, complete = stage === position.stageCount;
+		let legal = [], focus = position.focus;
+		if (!complete) {
+			focus = source(findUnit(id, state, "horse"));
+			legal = actions(id, state).filter((a) => a.source === focus && a.raw.dieIndex === 1);
+			if (!legal.length) throw new Error("This example needs a second legal dice move.");
+		}
+		position = {
+			...position,
+			state,
+			legal,
+			focus,
+			stage,
+			complete
+		};
+	}
+	return position;
+}
+const RULE_SCENES = {
+	"shogi": [{
+		"key": "pawn-file",
+		"short": "A clear file for a Pawn",
+		"title": "A clear file for a Pawn",
+		"task": "Choose the Pawn in hand, then drop it on the clear file.",
+		"after": "The file was clear, so this Pawn drop was legal.",
+		"why": "The file was clear, so this Pawn drop was legal.",
+		"hint": "Choose the Pawn in hand, then drop it on the clear file.",
+		"host": "abster",
+		"variants": [[
+			"clear",
+			"File clear",
+			"Your unpromoted Pawn is removed from this file."
+		], [
+			"blocked",
+			"Pawn on file",
+			"Your unpromoted Pawn makes this drop illegal."
+		]]
+	}, {
+		"key": "forced-pawn",
+		"short": "A Pawn must grow",
+		"title": "A Pawn must grow",
+		"task": "Move the Pawn onto the last rank. It must promote.",
+		"after": "Your Pawn became a Tokin, with Gold movement.",
+		"why": "Your Pawn became a Tokin, with Gold movement.",
+		"hint": "Move the Pawn onto the last rank. It must promote.",
+		"host": "pengu"
+	}],
+	"sannin": [{
+		"key": "royal-castle",
+		"short": "A one-time castle-jump",
+		"title": "A one-time castle-jump",
+		"task": "Try one offered castle-jump inside Red’s home territory.",
+		"after": "The King used its one-time castle action.",
+		"why": "The King used its one-time castle action.",
+		"hint": "Try one offered castle-jump inside Red’s home territory.",
+		"host": "pengu"
+	}, {
+		"key": "royal-light",
+		"short": "Light along the rays",
+		"title": "Light along the rays",
+		"task": "Use Illuminate to capture the unprotected piece on your promoted King’s ray.",
+		"after": "The unprotected rival was removed by the King’s illumination.",
+		"why": "The unprotected rival was removed by the King’s illumination.",
+		"hint": "Use Illuminate to capture the unprotected piece on your promoted King’s ray.",
+		"host": "abster"
+	}],
+	"sanguo": [{
+		"key": "elephant-door",
+		"short": "Open the Elephant eye",
+		"title": "Open the Elephant eye",
+		"task": "Make the two-point diagonal move through the clear eye.",
+		"after": "The eye was clear, so the Elephant completed its diagonal.",
+		"why": "The eye was clear, so the Elephant completed its diagonal.",
+		"hint": "Make the two-point diagonal move through the clear eye.",
+		"host": "pengu",
+		"variants": [[
+			"clear",
+			"Eye clear",
+			"The middle point is empty."
+		], [
+			"blocked",
+			"Eye occupied",
+			"The piece on the middle eye closes this route."
+		]]
+	}],
+	"sanyou": [{
+		"key": "mountain-route",
+		"short": "A Mountain route",
+		"title": "A Mountain route",
+		"task": "Move the Chariot across the marked Mountain edge. Compare the Cannon.",
+		"after": "The Chariot crossed; the same edge remains closed to the Cannon.",
+		"why": "The Chariot crossed; the same edge remains closed to the Cannon.",
+		"hint": "Move the Chariot across the marked Mountain edge. Compare the Cannon.",
+		"host": "abster",
+		"variants": [[
+			"chariot",
+			"Chariot",
+			"This clear route is open to the Chariot."
+		], [
+			"cannon",
+			"Cannon",
+			"The Mountain edge blocks this Cannon route."
+		]]
+	}],
+	"yanyi": [
+		{
+			"key": "cannon-opening",
+			"short": "The opening Cannon boundary",
+			"title": "The opening Cannon boundary",
+			"task": "Move your Red Cannon beyond the Soldier line after the first round. Compare the opening.",
+			"after": "After the opening round, that defensive-line restriction no longer applies.",
+			"why": "After the opening round, that defensive-line restriction no longer applies.",
+			"hint": "Move your Red Cannon beyond the Soldier line after the first round. Compare the opening.",
+			"host": "pengu",
+			"variants": [[
+				"later",
+				"After first round",
+				"This normal Cannon route is available."
+			], [
+				"opening",
+				"First round",
+				"The starting Soldier line closes this move during the first full round."
+			]]
+		},
+		{
+			"key": "horse-alliance",
+			"short": "A Horse makes an alliance",
+			"title": "A Horse makes an alliance",
+			"task": "Move your Red Horse onto Wei’s Blue alliance point.",
+			"after": "Red and Blue are now allies. Green controls the four yellow Han fighters.",
+			"why": "Red and Blue are now allies. Green controls the four yellow Han fighters.",
+			"hint": "Move your Red Horse onto Wei’s Blue alliance point.",
+			"host": "retsba"
+		},
+		{
+			"key": "advisor-transfer",
+			"short": "An inherited Advisor",
+			"title": "An inherited Advisor",
+			"task": "Transfer the blue-art Advisor you control into Red’s palace.",
+			"after": "The inherited Advisor reached Red’s palace. Its artwork remains Blue.",
+			"why": "The inherited Advisor reached Red’s palace. Its artwork remains Blue.",
+			"hint": "Transfer the blue-art Advisor you control into Red’s palace.",
+			"host": "abster"
+		},
+		{
+			"key": "soldier-retreat",
+			"short": "A Soldier beyond the boundary",
+			"title": "A Soldier beyond the boundary",
+			"task": "Move the crossed Red Soldier one step back toward its boundary. Compare home.",
+			"after": "The crossed Soldier retreated legally without going behind its boundary.",
+			"why": "The crossed Soldier retreated legally without going behind its boundary.",
+			"hint": "Move the crossed Red Soldier one step back toward its boundary. Compare home.",
+			"host": "pengu",
+			"variants": [[
+				"outside",
+				"Beyond boundary",
+				"This retreat remains beyond the Red boundary."
+			], [
+				"home",
+				"At home",
+				"A Soldier at home cannot make this backward step."
+			]]
+		},
+		{
+			"key": "king-facing",
+			"short": "Facing Kings in this edition",
+			"title": "Facing Kings in this edition",
+			"task": "Move Red’s King forward inside its palace while the two Kings share an open file.",
+			"after": "Red stayed in its palace. An open King file alone did not forbid this move.",
+			"why": "Red stayed in its palace. An open King file alone did not forbid this move.",
+			"hint": "Move Red’s King forward inside its palace while the two Kings share an open file.",
+			"host": "retsba"
+		}
+	],
+	"xiangqi": [{
+		"key": "elephant-door",
+		"short": "The Elephant eye",
+		"title": "The Elephant eye",
+		"task": "Move your Elephant diagonally through its clear eye.",
+		"after": "Your Elephant completed the diagonal on its own side of the river.",
+		"why": "Your Elephant completed the diagonal on its own side of the river.",
+		"hint": "Move your Elephant diagonally through its clear eye.",
+		"host": "pengu",
+		"variants": [[
+			"clear",
+			"Eye clear",
+			"The eye is empty, so the move is legal."
+		], [
+			"blocked",
+			"Eye occupied",
+			"The occupied eye blocks this move."
+		]]
+	}],
+	"dominion": [{
+		"key": "guard-crown",
+		"short": "A fighting King",
+		"title": "A fighting King",
+		"task": "Move your Red Guard onto the far edge’s King square.",
+		"after": "The Guard became a nonroyal fighting King. Your original royal King still holds the kingdom together.",
+		"why": "The Guard became a nonroyal fighting King. Your original royal King still holds the kingdom together.",
+		"hint": "Move your Red Guard onto the far edge’s King square.",
+		"host": "polly"
+	}]
+};
+
+//#endregion
+//#region mobile/arctic-play/src/soloPractice.js
+const FIRST_PIECE = {
+	shogi: "pawn",
+	sannin: "pawn",
+	sanguo: "scout",
+	sanyou: "soldier",
+	yanyi: "soldier",
+	xiangqi: "soldier",
+	dominion: "pawn"
+};
+const clone = (x) => JSON.parse(JSON.stringify(x));
+function prepare(id, role, opening) {
+	if (!PIECE_GUIDES[id]?.some((p) => p[0] === role)) throw Error("Choose a piece from this game.");
+	const state = create(id), piece = clone(findUnit(id, {
+		...state,
+		turn: "red"
+	}, role, "red") || (role === "emperor" ? state.pieces.find((p) => p.role === "emperor") : null));
+	if (!piece) throw Error("This piece is unavailable.");
+	state.turn = "red";
+	if (id === "shogi") {
+		state.board = state.board.map((p) => p?.id === piece.id ? piece : null);
+		state.hands = {
+			red: emptyHand(),
+			blue: emptyHand()
+		};
+	} else if (id === "dominion") {
+		state.board = state.board.map((row) => row.map((p) => p?.id === piece.id ? piece : null));
+		state.currentPlayerIndex = 1;
+	} else state.pieces = [piece];
+	if (id === "yanyi") {
+		state.opening = {
+			red: !opening,
+			green: true,
+			blue: true
+		};
+		state.ply = opening ? 2 : 3;
+	}
+	return state;
+}
+const movable = (id, state) => rawUnits(id, state)[0], dieFor = (type) => ({
+	king: 1,
+	pawn: 1,
+	elephant: 2,
+	horse: 3,
+	ship: 4
+})[type];
+function choices(id, state) {
+	const piece = movable(id, state), unit = pieces(id, state)[0];
+	let targets = [];
+	if (id === "shogi") targets = board(id).cells.filter((c) => isSquareAttacked(state.board, +c.id, "red")).map((c) => c.id);
+	if (id === "sannin") targets = getPseudoTargets$1(state, piece);
+	if (id === "sanguo") targets = pseudoSanguoTargets(piece, state.pieces).map((n) => `${n.sector}-${n.rank}-${n.file}`);
+	if (id === "sanyou") targets = getPseudoTargets(state, piece);
+	if (id === "yanyi") targets = pseudoYanYiTargets(state, piece).map((n) => `${n.x},${n.y}`);
+	if (id === "xiangqi") targets = pseudoLegalTargets(piece, state.pieces).map((n) => `${n.row},${n.col}`);
+	if (id === "dominion") {
+		state.dice = {
+			rolled: true,
+			values: [dieFor(piece.type), 6],
+			used: [false, true]
+		};
+		const [r, c] = unit.cell.split(",").map(Number);
+		return import_gameRules.default.selectSquare({
+			...state,
+			selected: null,
+			legalMoves: []
+		}, r, c).legalMoves.map((raw) => ({
+			id: `solo|${raw.toRow},${raw.toCol}|0`,
+			source: unit.source,
+			target: `${raw.toRow},${raw.toCol}`,
+			promote: false,
+			raw
+		}));
+	}
+	return [...new Set(targets)].flatMap((target) => {
+		let options = [false];
+		if (id === "shogi" && !piece.promoted && !["king", "gold"].includes(piece.type) && (isPromotionZone$1("red", Math.floor(+unit.cell / 9)) || isPromotionZone$1("red", Math.floor(+target / 9)))) {
+			const row = Math.floor(+target / 9);
+			options = (["pawn", "lance"].includes(piece.type) ? row === 0 : piece.type === "knight" && row <= 1) ? [true] : [false, true];
+		}
+		if (id === "sannin" && !piece.promoted && !["gold", "knight"].includes(piece.type) && (isPromotionZone(unit.cell, "red") || isPromotionZone(target, "red") || unit.cell === "0,0" || target === "0,0")) {
+			const test = clone(state);
+			relocate(id, test, piece.id, target);
+			options = ["pawn", "lance"].includes(piece.type) && !getPseudoTargets$1(test, movable(id, test)).length ? [true] : [false, true];
+		}
+		return options.map((promote) => ({
+			id: `solo|${target}|${promote ? 1 : 0}`,
+			source: unit.source,
+			target,
+			promote
+		}));
+	});
+}
+function advance(id, state, action) {
+	if (id === "dominion") {
+		const { updatedAt, ...position } = import_gameRules.default.applyMove(state, action.raw);
+		return {
+			...position,
+			turn: "red",
+			currentPlayerIndex: 1,
+			gameOver: false,
+			winner: null,
+			eliminatedTeams: []
+		};
+	}
+	const next = clone(state);
+	relocate(id, next, movable(id, next).id, action.target);
+	const moved = movable(id, next);
+	if (action.promote) moved.promoted = true;
+	if (id === "sanyou" && territoryOf(moved.node, moved.faction) === "enemy") {
+		if (moved.role === "soldier") moved.promoted = true;
+		if (moved.role === "flag") moved.leftHome = true;
+	}
+	return next;
+}
+function soloPosition(id, role, path = [], opening = false) {
+	if (!Array.isArray(path) || path.length > 2048 || path.some((p) => typeof p !== "string")) throw Error("Reset this piece to continue.");
+	let state = prepare(id, role, !!opening), last = null;
+	for (const actionId of path) {
+		const action = choices(id, state).find((a) => a.id === actionId);
+		if (!action) throw Error("Use a highlighted legal destination.");
+		last = {
+			from: pieces(id, state)[0].cell,
+			to: action.target
+		};
+		state = advance(id, state, action);
+	}
+	const legal = choices(id, state), unit = pieces(id, state)[0], piece = movable(id, state), currentRole = piece.type || piece.role;
+	let movementNote = PIECE_GUIDES[id].find((p) => p[0] === currentRole)?.[2];
+	if (id === "shogi" && piece.promoted) movementNote = piece.type === "rook" ? "Promoted Rook: clear rows or columns, plus one diagonal step." : piece.type === "bishop" ? "Promoted Bishop: clear diagonals, plus one straight step." : "Promoted piece: move one step like a Gold General.";
+	if (id === "sannin" && piece.promoted) movementNote = PIECE_GUIDES[id].find((p) => p[0] === piece.type)?.[3];
+	if (id === "dominion" && piece.type === "king" && piece.isRoyal === false) movementNote = "Promoted fighting King: one square in any direction. It is not a royal King.";
+	if (id === "sanyou" && piece.role === "soldier" && piece.promoted) movementNote = "Promoted Soldier: one forward or sideways step. Never backward.";
+	if (id === "sanyou" && piece.role === "flag" && piece.leftHome) movementNote = "Travelling Flag: slide along a legal line. Exclusive home territory is closed; shared home gates are stopping boundaries.";
+	if (id === "yanyi" && piece.role === "soldier" && piece.y < 12) movementNote = "Beyond Red’s boundary: one straight step in any direction, but no retreat behind the boundary.";
+	return {
+		state,
+		legal,
+		focus: unit.source,
+		path: [...path],
+		role,
+		currentRole,
+		movementNote,
+		opening: !!opening,
+		trail: last,
+		solo: true
+	};
+}
+
+//#endregion
+//#region mobile/arctic-play/src/minimalLearning.js
+const START = {
+	sanguo: {
+		"one-screen": "one",
+		"clear-leg": "clear"
+	},
+	sanyou: {
+		"flag-path": "clear",
+		"terrain-lines": "cannon"
+	},
+	xiangqi: {
+		"river-passport": "across",
+		"cannon-bridge": "one",
+		"horse-door": "clear",
+		"palace-home": "open"
+	}
+};
+function preferredSetup(id, key) {
+	const mission = missionFor(id, key);
+	return START[id]?.[key] || mission.variants?.[0][0] || "default";
+}
+
+//#endregion
+//#region mobile/arctic-play/src/courseActivities.js
+const scenes = {
+	shogi: {
+		"rule-0-0-0": "king-shelter",
+		"rule-2-0-0": "golden-pawn",
+		"rule-2-0-2": "forced-pawn",
+		"rule-2-1-0": "pawn-file",
+		"rule-2-1-3": "helper-drop"
+	},
+	sannin: {
+		"rule-0-0-0": "garden-visit",
+		"rule-1-0-0": "royal-light",
+		"rule-1-1-2": "walking-knight",
+		"rule-1-2-0": "two-forwards",
+		"rule-2-0-0": "returning-helper",
+		"rule-3-0-0": "royal-castle",
+		"rule-3-0-2": "royal-light"
+	},
+	sanguo: {
+		"rule-0-0-2": "river-soldier",
+		"rule-1-0-0": "one-screen",
+		"rule-1-0-3": "owner-ring",
+		"rule-1-1-3": "owner-ring"
+	},
+	sanyou: {
+		"rule-1-0-2": "fire-spark",
+		"rule-1-1-0": "travelling-flag",
+		"rule-2-0-0": "mountain-route",
+		"rule-2-0-4": "terrain-lines"
+	},
+	yanyi: {
+		"rule-0-2-0": "cannon-opening",
+		"piece-emperor": "wake-han",
+		"rule-1-0-0": "allied-colours",
+		"rule-1-1-0": "leaping-horse",
+		"rule-1-2-0": "cannon-opening",
+		"rule-2-2-0": "allied-colours",
+		"rule-2-2-3": "king-facing",
+		"rule-3-0-0": "horse-alliance",
+		"rule-3-0-3": "horse-alliance",
+		"rule-3-1-0": "wake-han",
+		"rule-3-1-2": "wake-han",
+		"rule-3-2-0": "allied-colours",
+		"rule-4-1-0": "sideways-start",
+		"rule-4-1-3": "advisor-transfer",
+		"rule-6-0-0": "king-facing",
+		"rule-6-1-0": "advisor-transfer",
+		"rule-6-3-0": "leaping-horse",
+		"rule-6-5-0": "cannon-opening",
+		"rule-6-6-0": "soldier-retreat",
+		"rule-6-7-0": "wake-han"
+	},
+	xiangqi: {
+		"rule-0-0-0": "palace-home",
+		"rule-1-0-0": "elephant-door",
+		"rule-1-0-4": "cannon-bridge",
+		"rule-1-1-0": "palace-home"
+	},
+	dominion: {
+		"rule-0-0-2": "royal-watch",
+		"rule-1-0-0": "two-dice",
+		"rule-1-0-3": "two-dice",
+		"rule-1-1-0": "two-dice",
+		"rule-2-0-3": "icebreaker-hop",
+		"rule-2-1-0": "guard-nibble",
+		"rule-2-1-2": "guard-nibble",
+		"rule-3-0-0": "guard-crown",
+		"rule-3-1-0": "guard-crown",
+		"rule-4-0-0": "royal-watch",
+		"rule-4-0-3": "royal-watch"
+	}
+};
+function courseActivity(id, key) {
+	const card = courseCards(id).find((c) => c.key === key);
+	if (!card) throw Error("Choose a step from this game’s guide.");
+	if (key === "red-seat") return {
+		kind: "lesson",
+		lesson: "move",
+		after: "Your Red piece made a legal first move. Your home is at the bottom of this view."
+	};
+	if (scenes[id]?.[key]) return {
+		kind: "scene",
+		mission: scenes[id][key]
+	};
+	if (id === "sanyou" && ["rule-2-1-0", "rule-2-1-2"].includes(key)) return {
+		kind: "inspect",
+		cells: key === "rule-2-1-0" ? [
+			"C20",
+			"C22",
+			"C24"
+		] : [
+			"C1",
+			"C7",
+			"C13"
+		],
+		prompt: "Tap a gold-ringed point to locate the rule.",
+		after: key === "rule-2-1-0" ? "These stopping points do not form a horizontal line." : "These gates belong to two camps and do not trigger promotion for either home camp."
+	};
+	if (id === "yanyi" && key === "rule-0-0-2") return {
+		kind: "inspect",
+		cells: ["8,8"],
+		prompt: "Tap the marked central intersection.",
+		after: "The cross has playable intersections. The four blank corners and decorative border are not destinations."
+	};
+	if (card.role) return {
+		kind: "solo",
+		role: card.role
+	};
+	const t = card.cue.toLowerCase(), guide = PIECE_GUIDES[id].find(([role, name]) => t.includes(name.toLowerCase()) && ![
+		"king",
+		"general",
+		"emperor"
+	].includes(role));
+	if (id === "sannin" && /promot/.test(t) && /pawn|lance|mandatory/.test(t)) return {
+		kind: "solo",
+		role: "pawn"
+	};
+	if (id === "sannin" && key === "rule-2-1-0") return {
+		kind: "solo",
+		role: "bishop"
+	};
+	if (id === "sanyou" && key === "rule-1-0-0") return {
+		kind: "solo",
+		role: "chariot"
+	};
+	if (id === "sanyou" && key === "rule-1-1-2") return {
+		kind: "solo",
+		role: "soldier"
+	};
+	if (id === "yanyi" && key === "rule-4-1-4") return {
+		kind: "solo",
+		role: "elephant"
+	};
+	if (guide && !/notation|files are numbered|identical pieces|storytelling|year|propos|leaving|online|invite|private|stalemate|checkmate|repet|allian|inherit|appropriat|transfer|resign|last surviving|no-progress|quiet.move/.test(t)) return {
+		kind: "solo",
+		role: guide[0]
+	};
+	const role = /notation|files are numbered|identical pieces/.test(t) ? id === "shogi" ? "rook" : id === "sanguo" ? "icebreaker" : "chariot" : /soldier/.test(t) ? FIRST_PIECE[id] : ["xiangqi", "sanyou"].includes(id) ? "general" : "king", name = PIECE_GUIDES[id].find((p) => p[0] === role)?.[1] || "King";
+	return {
+		kind: "inspect",
+		role,
+		prompt: `Tap the gold-ringed ${name} to locate it.`,
+		after: /repet|earlier full|prior complete/.test(t) ? "Repetition concerns the whole position, including the pieces, control and whose turn it is." : /online|room|leaving|phone/.test(t) ? "This is your Red seat. The rule above applies during a full match." : /notation|files are numbered|identical pieces/.test(t) ? "The match journal records the named piece’s source and destination." : `That is your ${name}. Keep this rule in mind when the match reaches this situation.`
+	};
+}
+function activityPosition(id, activity, actionIds = [], inspected = false) {
+	if (!Array.isArray(actionIds) || actionIds.some((a) => typeof a !== "string")) throw Error("Replay this step to continue.");
+	if (activity.kind === "scene") {
+		const p = adventurePosition(id, activity.mission, preferredSetup(id, activity.mission), actionIds), m = missionFor(id, activity.mission);
+		return {
+			...p,
+			activity,
+			prompt: p.stage === 1 && activity.mission === "two-dice" ? "Die 1 is spent. Now select the Unicorn and use die 3." : m.task,
+			after: m.after
+		};
+	}
+	if (activity.kind === "solo") {
+		const p = soloPosition(id, activity.role, actionIds);
+		return {
+			...p,
+			activity,
+			complete: actionIds.length > 0,
+			prompt: "Move this piece to a blue destination. You can keep exploring after your first move.",
+			after: `That move is legal. ${p.movementNote} Keep moving, or continue.`
+		};
+	}
+	if (activity.kind === "lesson") {
+		if (![
+			"move",
+			"capture",
+			"special"
+		].includes(activity.lesson) || actionIds.length > 1) throw Error("Replay this step to continue.");
+		const p = lessonPosition(id, activity.lesson);
+		if (actionIds.length && !p.legal.some((a) => a.id === actionIds[0])) throw Error("Use a highlighted legal destination.");
+		const a = p.legal.find((a) => a.id === actionIds[0]);
+		return {
+			...p,
+			state: a ? apply(id, p.state, a.id) : p.state,
+			legal: a ? [] : p.legal,
+			activity,
+			complete: !!a,
+			trail: a ? {
+				from: pieces(id, p.state).find((q) => q.source === p.focus)?.cell,
+				to: a.target
+			} : null,
+			prompt: activity.lesson === "capture" ? "Tap the gold-ringed piece, then capture the orange-ringed rival." : "Tap the gold-ringed piece, then a blue destination.",
+			after: activity.after || (activity.lesson === "capture" ? "Your piece landed on the rival and captured it." : "A legal move. Your piece is on its new point."),
+			practiceDice: id === "dominion" ? p.state.dice : null
+		};
+	}
+	if (activity.kind !== "inspect" || actionIds.length) throw Error("Choose a valid board activity.");
+	const state = teachingState(id);
+	if (activity.cells) {
+		if (activity.cells.some((c) => !board(id).cells.some((p) => p.id === c))) throw Error("Choose a point on the board.");
+		return {
+			state,
+			legal: [],
+			focus: null,
+			activity,
+			complete: inspected === true,
+			prompt: activity.prompt,
+			after: activity.after,
+			notice: activity.cells.map((cell) => ({
+				cell,
+				label: board(id).cells.find((c) => c.id === cell).label
+			}))
+		};
+	}
+	const unit = rawUnits(id, state).find((p) => unitRole(id, p) === activity.role && owner(id, p) === "red");
+	if (!unit) throw Error("This guide needs a piece on the board.");
+	return {
+		state,
+		legal: [],
+		focus: "piece:" + unit.id,
+		activity,
+		complete: inspected === true,
+		prompt: activity.prompt,
+		after: activity.after
+	};
+}
+function coursePosition(id, key, actionIds = [], inspected = false) {
+	return activityPosition(id, courseActivity(id, key), actionIds, inspected);
+}
+
+//#endregion
+//#region mobile/arctic-play/src/firstJourney.js
+const move = {
+	key: "first-move",
+	title: "Your first move",
+	host: "polly",
+	activity: {
+		kind: "lesson",
+		lesson: "move"
+	}
+}, capture = {
+	key: "first-capture",
+	title: "Your first capture",
+	host: "retsba",
+	activity: {
+		kind: "lesson",
+		lesson: "capture"
+	}
+}, scene = (key, title, host = "pengu") => ({
+	key,
+	title,
+	host,
+	activity: {
+		kind: "scene",
+		mission: key
+	}
+});
+const FIRST_STEPS = {
+	shogi: [
+		move,
+		capture,
+		scene("helper-drop", "Bring a helper back"),
+		scene("king-shelter", "Keep your King safe")
+	],
+	sannin: [
+		move,
+		capture,
+		scene("returning-helper", "Bring a helper back"),
+		scene("garden-visit", "Find the Garden", "abster")
+	],
+	sanguo: [
+		move,
+		capture,
+		scene("one-screen", "One Cannon screen"),
+		{
+			key: "palace",
+			title: "Stay in your palace",
+			host: "pengu",
+			activity: {
+				kind: "solo",
+				role: "king"
+			}
+		}
+	],
+	sanyou: [
+		move,
+		capture,
+		scene("flag-path", "Two clear Flag steps"),
+		scene("terrain-lines", "A route across the Sea", "abster")
+	],
+	yanyi: [
+		move,
+		capture,
+		scene("leaping-horse", "A Horse that leaps"),
+		scene("wake-han", "Wake the Han court", "abster"),
+		scene("king-facing", "Your King’s palace")
+	],
+	xiangqi: [
+		move,
+		capture,
+		scene("cannon-bridge", "One Cannon screen"),
+		scene("palace-home", "Keep your General safe")
+	],
+	dominion: [
+		scene("two-dice", "Two dice, one turn", "polly"),
+		scene("guard-nibble", "A diagonal capture", "retsba"),
+		scene("royal-watch", "Protect the royal King", "abster")
+	]
+};
+function firstSteps(id) {
+	if (!FIRST_STEPS[id]) throw Error("Choose a game.");
+	return FIRST_STEPS[id].map((s) => ({
+		...s,
+		cue: s.key === "first-move" ? PIECE_GUIDES[id].find((p) => p[0] === FIRST_PIECE[id])[2] : ""
+	}));
+}
+function firstPosition(id, key, path = []) {
+	const step = firstSteps(id).find((s) => s.key === key);
+	if (!step) throw Error("Choose a first-game step.");
+	return activityPosition(id, step.activity, path);
+}
+
+//#endregion
+//#region mobile/arctic-play/src/replayModel.js
+const token = (v) => typeof v === "string" && /^[a-z0-9-]{1,70}$/.test(v);
+function replayRequest(value) {
+	if (!game(value?.id)) throw Error("Choose a game from the collection.");
+	const { id, task } = value;
+	if (["first", "course"].includes(task) && token(value.key)) return {
+		id,
+		task,
+		key: value.key
+	};
+	if (task === "scene" && token(value.mission)) return {
+		id,
+		task,
+		mission: value.mission
+	};
+	if (task === "activity" && value.activity?.kind === "scene" && token(value.activity.mission)) return {
+		id,
+		task: "scene",
+		mission: value.activity.mission
+	};
+	if (task === "activity" && value.activity?.kind === "lesson" && [
+		"move",
+		"capture",
+		"special"
+	].includes(value.activity.lesson)) return {
+		id,
+		task,
+		activity: {
+			kind: "lesson",
+			lesson: value.activity.lesson
+		}
+	};
+	throw Error("This memory needs a guided move or challenge.");
+}
+function replayPosition(request, path = []) {
+	const r = replayRequest(request);
+	if (r.task === "first") return firstPosition(r.id, r.key, path);
+	if (r.task === "course") return coursePosition(r.id, r.key, path);
+	return activityPosition(r.id, r.task === "scene" ? {
+		kind: "scene",
+		mission: r.mission
+	} : r.activity, path);
+}
+function replayProof(value) {
+	if (value?.version && value.version !== "arctic-play-1.0.0") throw Error("This memory uses another rules version. It stays in your Archive; try a new discovery to replay.");
+	const request = replayRequest(value?.request), path = value?.actionIds;
+	if (!Array.isArray(path) || path.length > 12 || path.some((a) => typeof a !== "string" || a.length > 200)) throw Error("This move record is invalid.");
+	const frames = [], moves = [];
+	let p = replayPosition(request, []);
+	frames.push(p.state);
+	for (let i = 0; i < path.length; i++) {
+		const a = p.legal.find((a) => a.id === path[i]);
+		if (!a) throw Error("That move is not legal in this discovery.");
+		moves.push({
+			from: pieces(request.id, p.state).find((u) => u.source === a.source)?.cell || null,
+			to: a.target
+		});
+		p = replayPosition(request, path.slice(0, i + 1));
+		frames.push(p.state);
+	}
+	const title = request.task === "first" ? firstSteps(request.id).find((s) => s.key === request.key)?.title : request.task === "course" ? courseCards(request.id).find((s) => s.key === request.key)?.title : request.task === "scene" ? missionFor(request.id, request.mission).title : "A first guided move";
+	return {
+		request,
+		actionIds: [...path],
+		frames,
+		moves,
+		complete: p.complete === true && path.length > 0,
+		title,
+		caption: p.after || "A legal discovery, earned together.",
+		version: VERSION
+	};
+}
+
+//#endregion
+exports.replayPosition = replayPosition;
+exports.replayProof = replayProof;
+exports.replayRequest = replayRequest;
