@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "packageName": "xyz.arcticdominion.play",
-  "versionName": "2.0.0",
-  "versionCode": 6,
-  "downloadUrl": "https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/ArcticPlay-v2.0.0.apk",
-  "sizeBytes": 8855172,
-  "sha256": "198be50ddd71356aa3283fb66b2f574cb236de7b101fc734b59398fd1860ecb9",
-  "publishedAt": "2026-10-16T14:37:06.767Z",
+  "versionName": "3.0.0",
+  "versionCode": 17,
+  "downloadUrl": "https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/ArcticPlay-v3.0.0.apk",
+  "sizeBytes": 9509243,
+  "sha256": "b6dac97a7dbec0ab9767555fc05fdd4471bc9155d61a8db69cd4f1002aedaa9c",
+  "publishedAt": "2026-10-17T21:44:01.384025Z",
   "releaseNotes": [
-    "Welcome to Antarctic Kingdoms by Antarctic Gaming Co. Timeless games. A new world.",
-    "A new penguin royal-piece app icon, dark Antarctic lobby and fictional Frozen Archive discovery story.",
-    "Meet Polly, Retsba, Pengu and Abster; learn a first move in each game and track your local Archive journal.",
-    "Origin and edition notes distinguish living traditions, historical variants and modern adaptations.",
-    "All seven games, original artwork, legal moves, bots, private rooms and chat are retained.",
-    "Install over Arctic Play to keep your profile, favorites, saved seats and practice games. Old invitations still work."
+    "Learn through quick interactive board lessons, complete rules and legal one-piece exploration.",
+    "Keep discoveries with an optional recovery account and synced progress.",
+    "Replay guided memories, retry a position and share a challenge with friends.",
+    "Explore the three-step Sleeping Han Court chapter and earn a permanent Camp lantern.",
+    "Preview Founding Explorers: four mascot outfits, Aurora Camp, a profile badge and postcard frame. Purchases open after merchant setup.",
+    "All seven games, saved seats, practice, original pieces and Quiet/Off mascot preferences are retained. Install over your existing app to keep its data."
   ]
 }
