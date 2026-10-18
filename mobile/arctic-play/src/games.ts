@@ -11,9 +11,10 @@ import { parseArmNode } from '../../../frontend/src/games/san-you-qi/topology.js
 import * as yy from '../../../frontend/src/games/heritage-arcade/ported/game/sanguoYanYiRules.ts';
 import { yanYiPixelPoint, yanYiPieceSprite, YAN_YI_CHAPTERS, YAN_YI_ROLE_HELP } from '../../../frontend/src/games/heritage-arcade/ported/game/sanguoYanYiPresentation.ts';
 import * as xq from '../../../frontend/src/games/heritage-arcade/ported/game/xiangqiRules.ts';
+import {createDominion,dominionActions,applyDominion,pieceArt,PIECE_NAMES} from './dominion.js';
 
 export const VERSION = 'arctic-play-1.0.0';
-export const COLORS = { red: '#ed5269', blue: '#348ff4', black: '#348ff4', green: '#31b788', han: '#e4b848' };
+export const COLORS = { red: '#ed5269', blue: '#348ff4', black: '#348ff4', green: '#31b788', yellow:'#ffb7e1', han: '#e4b848' };
 export const GAME_LIST = [
   { id: 'shogi', name: 'Shogi', subtitle: 'Every capture is a new possibility', seats: ['red', 'blue'], players: 2, tag: 'Japanese chess', accent: '#b8693c', icon: 'shogi/red-king.webp' },
   { id: 'sannin', name: 'Sannin Shogi', subtitle: 'Three kingdoms. One hexagonal board.', seats: ['red', 'green', 'blue'], players: 3, tag: 'Three-player shogi', accent: '#82714d', icon: 'sannin/red-king.webp' },
@@ -21,9 +22,10 @@ export const GAME_LIST = [
   { id: 'sanyou', name: 'San You Qi', subtitle: 'A world of fire, flags and strategy', seats: ['red', 'green', 'blue'], players: 3, tag: 'Three-player chess', accent: '#199b82', icon: 'sanyou/green_team_SWfacing_general.webp' },
   { id: 'yanyi', name: 'Sanguo Yan Yi Qi', subtitle: 'Alliances, the Han Emperor and conquest', seats: ['green', 'blue', 'red'], players: 3, tag: 'Three Kingdoms', accent: '#7653a6', icon: 'yanyi/pieces/han-emperor.webp' },
   { id: 'xiangqi', name: 'Xiangqi', subtitle: 'The classic battle across the river', seats: ['red', 'black'], players: 2, tag: 'Chinese chess', accent: '#ad454b', icon: 'tokens/token-sanguo-red-general.webp' },
+  { id:'dominion',name:'Arctic Dominion',subtitle:'Four kingdoms. Roll, plan, conquer.',seats:['green','red','blue','yellow'],players:4,tag:'Chaturanga',accent:'#215888',icon:'dominion/green-frost-king.webp' },
 ];
 export const game = (id) => GAME_LIST.find(item => item.id === id);
-export const seatName = (id, seat) => seat === 'black' ? 'Blue' : ({red:'Red',green:'Green',blue:'Blue',han:'Han'})[seat] || seat;
+export const seatName = (id, seat) => seat === 'black' ? 'Blue' : ({red:'Red',green:'Green',blue:'Blue',yellow:'Pink',han:'Han'})[seat] || seat;
 export const asset = (path) => `art/${path}`;
 const tokenRoot = 'tokens/token-sanguo-';
 const sanguoRoles = {king:'general',guard:'advisor',seer:'elephant',rider:'horse',runner:'bannerman',icebreaker:'chariot',cannon:'cannon',scout:'soldier'};
@@ -41,11 +43,13 @@ export function create(id) {
     case 'sanyou': return sy.createInitialState();
     case 'yanyi': return yy.createYanYiState();
     case 'xiangqi': return xq.initialXiangqiState();
-    default: throw new Error('Choose one of the six Arctic games.');
+    case 'dominion': return createDominion();
+    default: throw new Error('Choose a game from Arctic Play.');
   }
 }
 export function result(state) {
   if (state.mobileResult) return state.mobileResult;
+  if (state.gameOver) return {winner:state.winner||null,draw:!state.winner,reason:state.winner?'Last surviving royal kingdom':'No royal kingdom remains'};
   if (state.outcome) return {winner:state.outcome.winner || state.outcome.winners?.join(' + ') || null, reason:state.outcome.reason || state.outcome.type || 'Game over', draw:state.outcome.type === 'draw'};
   if (state.winner || state.draw) return {winner:state.winner || null, draw:!!state.draw, reason:state.result || (typeof state.draw === 'string' ? state.draw : state.draw ? 'Draw' : 'Last surviving kingdom')};
   return null;
@@ -54,6 +58,7 @@ export const turn = (state) => state.turn;
 
 export function actions(id, state) {
   if (result(state)) return [];
+  if (id==='dominion') return dominionActions(state);
   let raw = [];
   if(id === 'shogi') raw = sh.getLegalActions(state);
   if(id === 'sannin') raw = ss.getLegalActions(state);
@@ -76,6 +81,7 @@ export function apply(id, state, actionId) {
   if(!action) throw new Error('That move is no longer legal. The board has been refreshed.');
   const a = action.raw;
   let next;
+  if(id==='dominion')next=applyDominion(state,action);
   if(id==='shogi') { const r=sh.applyShogiAction(state,a); if(r.error) throw new Error(r.error); next=r.state; }
   if(id==='sannin') { const r=ss.applyAction(state,a); if(r.error) throw new Error(r.error.message); next=r.state; }
   if(id==='sanyou') { const r=sy.applyAction(state,a); if(r.error) throw new Error(r.error.message); next=sy.resolveStalemate(r.state); }
@@ -91,6 +97,7 @@ export function apply(id, state, actionId) {
 }
 export function inCheck(id,state) {
   if(result(state)) return false;
+  if(id==='dominion')return false;
   if(id==='shogi') return sh.isInCheck(state,state.turn);
   if(id==='sannin') return ss.isInCheck(state,state.turn);
   if(id==='sanyou') return sy.isInCheck(state,state.turn);
@@ -104,6 +111,7 @@ export function hand(id,state) {
   return [];
 }
 export function board(id) {
+  if(id==='dominion')return {viewBox:'0 0 1000 1000',image:asset('dominion/board.webp'),imageWidth:1000,imageHeight:1000,size:110,cells:Array.from({length:64},(_,i)=>({id:`${Math.floor(i/8)},${i%8}`,x:62.5+(i%8)*125,y:62.5+Math.floor(i/8)*125,label:`File ${String.fromCharCode(65+i%8)}, rank ${8-Math.floor(i/8)}`}))};
   if(id==='shogi') return {viewBox:'0 0 900 1000',width:900,height:1000,size:88,grid:true,cells:Array.from({length:81},(_,i)=>({id:String(i),x:90+(i%9)*90,y:140+Math.floor(i/9)*90,label:`File ${9-i%9}, rank ${Math.floor(i/9)+1}`}))};
   if(id==='sannin') return {viewBox:BATTLE_VIEWBOX,image:asset('sannin/board.webp'),imageWidth:1334,imageHeight:1179,size:56,cells:HEX_CELLS.map(c=>({id:c.id,...artworkPoint(c,placement[c.id]),label:`Hex ${c.id}`}))};
   if(id==='sanguo') return {viewBox:'65 20 1160 1055',image:asset('boards/sanguo.webp'),imageWidth:1280,imageHeight:1280,size:56,cells:['red','green','blue'].flatMap(sector=>Array.from({length:45},(_,i)=> {const n={sector,rank:Math.floor(i/9),file:i%9};const p=arcticBoardNode(sector,n.rank,n.file);return {id:sgKey(n),x:p.x*1280,y:p.y*1280,label:`${title(sector)}, file ${n.file+1}, rank ${n.rank+1}`};}))};
@@ -114,6 +122,7 @@ export function board(id) {
   return {viewBox:'40 35 832 870',image:asset('boards/xiangqi.webp'),imageX:40,imageY:35,imageWidth:832,imageHeight:870,size:73,cells:Array.from({length:90},(_,i)=>({id:`${Math.floor(i/9)},${i%9}`,x:xs[i%9],y:ys[Math.floor(i/9)],label:`File ${i%9+1}, rank ${Math.floor(i/9)+1}`}))};
 }
 export function pieces(id,state) {
+  if(id==='dominion')return state.board.flatMap((row,r)=>row.flatMap((p,c)=>p?[{id:p.id,source:`piece:${p.id}`,cell:`${r},${c}`,owner:p.team,origin:p.team,label:PIECE_NAMES[p.type]+(p.type==='king'&&p.isRoyal===false?' (promoted fighter)':p.isRoyal?' (royal)':''),sprite:asset(pieceArt(p.team,p.type))}]:[]));
   if(id==='shogi') return state.board.flatMap((p,i)=>p ? [{id:p.id,source:`piece:${p.id}`,cell:String(i),owner:p.side,origin:p.side,label:sh.displayPieceName(p),sprite:asset(`shogi/${p.side}-${sh.assetRole(p)}.webp`),rotation:p.side==='blue'?180:0}] : []);
   if(id==='sannin') return state.pieces.filter(p=>p.status==='board').map(p=>({id:p.id,source:`piece:${p.id}`,cell:p.cell,owner:p.owner,origin:p.owner,label:title(p.type)+(p.promoted?' (promoted)':''),sprite:asset(`sannin/${p.owner}-${ss.assetRole(p)}.webp`),rotation:{red:-120,green:0,blue:120}[p.owner]}));
   if(id==='sanguo') return state.pieces.filter(p=>!p.captured).map(p=>({id:p.id,source:`piece:${p.id}`,cell:sgKey(p.node),owner:p.controller,origin:p.sector,label:sg.roleLabels[p.role],sprite:asset(`${tokenRoot}${p.sector}-${sanguoRoles[p.role]}.webp`)}));
@@ -130,7 +139,7 @@ export function chooseBot(id,state) {
   const choices=actions(id,state);
   if(!choices.length) return null;
   const visible=pieces(id,state), byCell=new Map(visible.map(p=>[p.cell,p]));
-  const rawPieces=id==='shogi'?state.board.filter(Boolean):state.pieces;
+  const rawPieces=id==='shogi'?state.board.filter(Boolean):id==='dominion'?state.board.flat().filter(Boolean):state.pieces;
   const rawById=new Map(rawPieces.map(p=>[p.id,p]));
   const cells=board(id).cells, byNode=new Map(cells.map(c=>[c.id,c]));
   const [, ,width,height]=board(id).viewBox.split(' ').map(Number);
@@ -139,7 +148,7 @@ export function chooseBot(id,state) {
     const cell=byNode.get(a.target),moving=visible.find(p=>p.source===a.source),from=moving&&byNode.get(moving.cell);
     const distance=cell? Math.hypot(cell.x-width/2,cell.y-height/2):0;
     const progress=from&&cell? (Math.hypot(from.x-width/2,from.y-height/2)-distance)/100:0;
-    return {action:a,score:(rawVictim ? values[rawVictim.type||rawVictim.role]||2:0)*10+(a.promote?4:0)+progress+Math.random()*2-(a.kind==='castle'?1:0)};
+    return {action:a,score:(rawVictim ? id==='dominion'?({king:rawVictim.isRoyal===false?4:1000,elephant:10,horse:5,ship:3,pawn:1}[rawVictim.type]||2):values[rawVictim.type||rawVictim.role]||2:0)*10+(a.promote?4:0)+progress+Math.random()*2-(a.kind==='castle'?1:0)};
   }).sort((a,b)=>b.score-a.score);
   // Casual, one-ply ranking. Do not evaluate complete successor states here:
   // Sannin drop/alliance validation already performs substantial rule work.
@@ -150,11 +159,19 @@ export function forfeit(id,state,seat) {
   if(id==='yanyi') return yy.resignYanYi(state,seat) || state;
   if(id==='sanguo') return sg.resignSanguoFaction(state,seat) || state;
   if(game(id).players===2) return {...state,mobileResult:{winner:game(id).seats.find(s=>s!==seat),reason:'Resignation',draw:false}};
-  // Three-player Shogi / San You use a bot replacement when a player leaves,
+  // Sannin Shogi, San You and Arctic Dominion use a bot replacement on leaving,
   // rather than introducing a new elimination rule to their canonical engines.
   throw new Error('Your seat will be handed to a practice bot when you leave this match.');
 }
 export const RULES = {
+  dominion:[
+    {title:'Four kingdoms',paragraphs:['Arctic Dominion is the existing Chaturanga-inspired Arctic game on an 8 × 8 board. Green, Red, Blue and Pink take turns in that order. Each begins with a royal Frost King, War Mammoth, Aurora Unicorn, Icebreaker and four Snow Guards. Green opens. Capture opposing royal Kings and become the last surviving kingdom.']},
+    {title:'Roll, then move',paragraphs:['Roll two six-sided dice once at the start of your turn. Each die permits one move: 1 or 5 activates a Snow Guard or Frost King; 2 a War Mammoth; 3 an Aurora Unicorn; 4 or 6 an Icebreaker. Use the two dice in either order. When both activate the same piece, choose which die to spend; that piece may move again with the other die if legal.','A used die cannot be reused. Your turn ends automatically once both dice are spent or no remaining die has a legal move. An entirely unusable roll automatically passes to the next surviving kingdom.']},
+    {title:'Piece movement',paragraphs:['Frost King: one square in any direction. War Mammoth: any clear orthogonal distance, stopping at the first occupied square. Aurora Unicorn: a knight’s L-shaped jump, two squares along one axis and one along the other. Icebreaker: jumps exactly two squares diagonally, over any intervening piece.','Snow Guard: one empty square forward, or one forward diagonal to capture. Green advances up, Red right, Blue left and Pink down. A piece may capture an enemy on its destination but cannot land on a friendly piece.']},
+    {title:'Promotion',paragraphs:['A Snow Guard reaching its far edge promotes automatically according to the landing square. Green and Pink, across that edge from left to right: Icebreaker, Unicorn, Mammoth, King, King, Mammoth, Unicorn, Icebreaker. Red, from top to bottom: Icebreaker, Mammoth, Unicorn, King, King, Unicorn, Mammoth, Icebreaker. Blue, from top to bottom: Icebreaker, Unicorn, Mammoth, King, King, Mammoth, Unicorn, Icebreaker.','A promoted King is a fighting piece, not a royal King. Capturing that fighter does not eliminate its kingdom.']},
+    {title:'Royal capture and victory',paragraphs:['There is no check or checkmate restriction in this game. Protect your original royal Frost King: its capture removes your entire army, including promoted Kings, and eliminates your kingdom. Turns skip eliminated kingdoms. The final surviving royal kingdom wins.']},
+    {title:'Play with friends',paragraphs:['Create a private four-seat table and share its invitation. Invite three friends, or fill empty seats with casual bots. All phones use the same original rules; the server rolls the dice and validates online actions. Offline practice and pass-the-phone play also support all four kingdoms. Leaving a live online match hands your seat to a bot.']},
+  ],
   shogi:[{title:'The goal',paragraphs:['Two players take turns on a 9 × 9 board. Red opens. Checkmate the opposing King. You must answer check and may not expose your own King. A side with no legal move loses.']},{title:'Movement',paragraphs:['King: one square in any direction. Rook: any clear orthogonal distance. Bishop: any clear diagonal distance. Gold: one forward, sideways, backward straight or forward diagonal. Silver: one forward or any diagonal. Knight: two forward and one sideways. Lance: any clear distance forward. Pawn: one square forward.']},{title:'Promotion and drops',paragraphs:['Moving into, out of or within the farthest three ranks permits eligible pieces to promote. Promoted Rook adds one-step diagonal movement; promoted Bishop adds one-step orthogonal movement. Promoted Silver, Knight, Lance and Pawn move as Gold. Promotion is mandatory when a Pawn, Lance or Knight would have no future unpromoted move.','Captured pieces return to your hand unpromoted. On your turn, drop one onto an empty square. Never drop a Pawn in a file already containing your unpromoted Pawn, or deliver immediate checkmate with a Pawn drop. Pawns and Lances cannot drop on the last rank; Knights cannot drop on the last two. Fourfold repetition draws except perpetual check, which loses for the checking side.'] }],
   sannin:[{title:'Three-player Shogi',paragraphs:['A 127-cell hexagonal board with Red, Green and Blue taking turns. Each army starts with 18 pieces. Win by safely moving your unallied King into the central Pleasure Garden, or by becoming the final surviving player. The table follows the Fairbairn–Kapitan digital rules used by Heritage Arcade.']},{title:'Movement',paragraphs:['King: one adjacent hex. An illuminated King ranges along all twelve main and radian lines. Rook: four main lines and the directly rear radian; a promoted Rook uses all six main lines. Bishop: all six radian lines; a promoted Bishop also steps to all adjacent cells.','Gold: six steps, using four main directions and forward/rear radian directions; it never promotes. Silver: four diagonal forward/rear main steps and two forward radian steps; promotion adds forward/rear radian ranges. Knight: two sideways main steps and four sideways radian steps; it neither jumps nor promotes. Lance: ranges on two forward main lines; promotion adds two rear main ranges. Pawn: one step on either forward main line; promotion gives Gold movement.','Radian landing cells are two hexes apart. Rays pass between the two flanking cells; pieces in those flanking cells do not block them. Directions are relative to each army’s seat. Tap a piece to see every legal destination.']},{title:'Captures, drops and promotion',paragraphs:['A captured piece changes owner, demotes and enters the captor’s hand. A drop uses your whole turn. There is no two-Pawns-on-a-file rule. Dead Pawn/Lance drops and immediate Pawn-drop mate are forbidden.','King, Rook, Bishop, Silver, Lance and Pawn may promote when entering, leaving or staying in an opponent’s territory, or entering/leaving the Garden. Promotion is mandatory for a Pawn or Lance that would otherwise have no future move. Choose Promote or Keep when both are legal.']},{title:'Royal powers and alliances',paragraphs:['Before moving or ever being checked, a King may castle-jump to a legal point anywhere in its own three-rank territory. Castling destinations are offered separately from ordinary moves. A promoted King may illuminate all twelve rays: it captures the first enemy on each eligible ray only if neither opponent protects that enemy. The Illuminate button appears when this action is legal.','Certain consecutive material-winning attacks compel an alliance. Allies may capture each other’s nonroyal pieces, but cannot check one another. They lose promotion and Garden rights; unused castling ends, and the lone King illuminates. Mating either ally defeats both. If the allies mate the lone player, that army leaves play and the alliance dissolves. This app starts with three independent armies.']},{title:'Repetition and draws',paragraphs:['A move recreating an earlier full position is illegal; the initiator must vary. A player with no legal action while not checked causes a draw.'] }],
   sanguo:[{title:'Three kingdoms',paragraphs:['Red, Green and Blue each begin with 16 pieces on three 5 × 9 sectors: General, two Advisors, Elephants, Horses, Chariots and Cannons, and five Soldiers. Red opens. The river and junction connections determine how moves continue into other sectors.']},{title:'Movement and capture',paragraphs:['General and Advisors stay within their palace. Elephant eyes and Horse legs can block movement. Chariots slide on clear logical ranks and files; Cannons need exactly one intervening screen to capture. Soldiers advance in their controller’s direction and gain sideways moves after the river.','You may not expose your own General or leave facing Generals on an open logical file. Checkmate or stalemate defeats a kingdom. The victor receives its surviving army; the defeated General leaves play. The mobile table completes this mandatory appropriation automatically. Original colors remain visible, and an owner ring identifies inherited pieces. The last surviving kingdom wins; repeated positions or the engine’s no-progress rule can draw.'] }],

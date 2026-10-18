@@ -19,7 +19,7 @@ public final class ApkProvider extends ContentProvider {
     @Override public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         validate(uri);String[] columns = projection == null ? new String[]{OpenableColumns.DISPLAY_NAME,OpenableColumns.SIZE} : projection;
         MatrixCursor cursor = new MatrixCursor(columns,1);Object[] values = new Object[columns.length];
-        for(int i=0;i<columns.length;i++)values[i]=OpenableColumns.DISPLAY_NAME.equals(columns[i])?"ArcticPlay-v1.0.0.apk":OpenableColumns.SIZE.equals(columns[i])?apk().length():null;
+        for(int i=0;i<columns.length;i++)values[i]=OpenableColumns.DISPLAY_NAME.equals(columns[i])?"ArcticPlay-v1.2.0.apk":OpenableColumns.SIZE.equals(columns[i])?apk().length():null;
         cursor.addRow(values);return cursor;
     }
     @Override public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {

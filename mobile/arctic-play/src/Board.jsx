@@ -1,13 +1,13 @@
 import React,{useMemo,useRef,useState} from 'react';
+import {Plus,Minus} from 'lucide-react';
 import {board,pieces,COLORS,seatName} from './games.ts';
-export function Board({id,state,legal,selected,onSelect,onTarget,canAct}){
+export function Board({id,state,legal,selected,suggested,trail,onSelect,onTarget,canAct}){
   const geometry=useMemo(()=>board(id),[id]);
   const units=useMemo(()=>pieces(id,state),[id,state]);
   const byCell=useMemo(()=>new Map(units.map(p=>[p.cell,p])),[units]);
   const destinations=useMemo(()=>new Set(legal.filter(a=>a.source===selected).map(a=>a.target)),[legal,selected]);
   const [zoom,setZoom]=useState(1),[pan,setPan]=useState({x:0,y:0});
   const pointers=useRef(new Map()),gesture=useRef(null),dragged=useRef(false),viewport=useRef(null);
-  const last=state.lastMove||state.lastAction;
   const activate=cell=>{if(dragged.current||!canAct)return;if(destinations.has(cell.id)){onTarget(cell.id);return;}const unit=byCell.get(cell.id);if(unit&&legal.some(a=>a.source===unit.source))onSelect(unit.source);else onSelect(null);};
   const start=e=>{
     pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});dragged.current=false;
@@ -18,7 +18,7 @@ export function Board({id,state,legal,selected,onSelect,onTarget,canAct}){
   const move=e=>{
     if(!pointers.current.has(e.pointerId))return;pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
     const points=[...pointers.current.values()],base=gesture.current;if(!base)return;
-    if(points.length===2&&base.distance){dragged.current=true;setZoom(Math.max(1,Math.min(3,base.zoom*Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y)/base.distance)));}
+    if(points.length===2&&base.distance){dragged.current=true;setZoom(Math.max(1,Math.min(4,base.zoom*Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y)/base.distance)));}
     else if(zoom>1&&base.x!==undefined){const dx=e.clientX-base.x,dy=e.clientY-base.y;if(Math.abs(dx)+Math.abs(dy)>8){dragged.current=true;e.currentTarget.setPointerCapture(e.pointerId);const rect=viewport.current.getBoundingClientRect(),limitX=rect.width*(zoom-1)/2,limitY=rect.height*(zoom-1)/2;setPan({x:Math.max(-limitX,Math.min(limitX,base.pan.x+dx)),y:Math.max(-limitY,Math.min(limitY,base.pan.y+dy))});}}
   };
   const end=e=>{pointers.current.delete(e.pointerId);if(!pointers.current.size)gesture.current=null;};
@@ -36,8 +36,10 @@ export function Board({id,state,legal,selected,onSelect,onTarget,canAct}){
         </>}
         {geometry.cells.map(cell=>{
           const unit=byCell.get(cell.id),isSelected=unit?.source===selected,highlight=destinations.has(cell.id),inherited=unit&&unit.owner&&unit.origin!==unit.owner,half=geometry.size/2;
-          return <g key={cell.id} data-cell={cell.id} role="button" aria-label={`${cell.label}${unit?`, ${seatName(id,unit.owner||unit.origin)} ${unit.label}`:''}${highlight?', legal destination':''}`} tabIndex={highlight||isSelected?0:-1} onClick={()=>activate(cell)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate(cell);}}}>
-            <circle cx={cell.x} cy={cell.y} r={half*.68} fill="transparent"/>
+          return <g key={cell.id} data-cell={cell.id} role="button" aria-label={`${cell.label}${unit?`, ${seatName(id,unit.owner||unit.origin)} ${unit.label}`:''}${highlight?', legal destination':''}`} tabIndex={canAct&&(highlight||isSelected||unit&&legal.some(a=>a.source===unit.source))?0:-1} onClick={()=>activate(cell)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate(cell);}}}>
+            <circle cx={cell.x} cy={cell.y} r={half*.95} fill="transparent"/>
+            {(cell.id===trail?.from||cell.id===trail?.to)&&<circle className="last-move-ring" cx={cell.x} cy={cell.y} r={half*1.03} fill="#ffc85b22" stroke="#ffd477" strokeWidth="4" strokeDasharray={cell.id===trail?.from?'7 5':undefined} pointerEvents="none"/>}
+            {unit?.source===suggested&&<circle className="suggested-piece" cx={cell.x} cy={cell.y} r={half*1.07} fill="#ffd47722" stroke="#ffe59e" strokeWidth="6" strokeDasharray="9 5" pointerEvents="none"/>}
             {isSelected&&<circle cx={cell.x} cy={cell.y} r={half*1.04} fill="#389cf470" stroke="#b9efff" strokeWidth="5"/>}
             {unit&&<>
               {inherited&&<circle cx={cell.x} cy={cell.y} r={half*1.01} fill="none" stroke={COLORS[unit.owner]} strokeWidth="8"/>}
@@ -45,11 +47,11 @@ export function Board({id,state,legal,selected,onSelect,onTarget,canAct}){
               {inherited&&<circle cx={cell.x+half*.67} cy={cell.y+half*.65} r={half*.2} fill={COLORS[unit.owner]} stroke="white" strokeWidth="2"/>}
             </>}
             {highlight&&(unit?<circle cx={cell.x} cy={cell.y} r={half*.99} fill="#ff6e6322" stroke="#ff9a76" strokeWidth="6"/>:<circle cx={cell.x} cy={cell.y} r={half*.29} fill="#78d2ff" stroke="#fff" strokeWidth="3"/>)}
-            <circle cx={cell.x} cy={cell.y} r={half*.72} fill="transparent"/>
+            <circle cx={cell.x} cy={cell.y} r={half*.95} fill="transparent"/>
           </g>;
         })}
       </svg>
     </div>
-    <div className="board-tools"><span>{zoom>1?'Drag to pan':'Pinch to zoom'} · {Math.round(zoom*100)}%</span><div><button onClick={()=>setZoom(value=>Math.min(3,value+.5))} aria-label="Zoom in">＋</button><button onClick={()=>{setZoom(value=>Math.max(1,value-.5));setPan({x:0,y:0});}} aria-label="Zoom out">−</button><button onClick={reset}>Fit</button></div></div>
+    <div className="board-tools"><span>{zoom>1?'Drag to pan':'Zoom for easier taps'} · {Math.round(zoom*100)}%</span><div><button onClick={()=>setZoom(value=>Math.min(4,value+.5))} aria-label="Zoom in"><Plus size={18}/></button><button onClick={()=>{setZoom(value=>Math.max(1,value-.5));setPan({x:0,y:0});}} aria-label="Zoom out"><Minus size={18}/></button><button onClick={reset}>Fit</button></div></div>
   </section>;
 }
