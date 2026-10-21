@@ -6476,7 +6476,7 @@ function dominionActions(state) {
 			});
 		}
 	}
-	return moves.length ? moves : [{
+	return [...moves, {
 		id: "end|control:end",
 		kind: "end",
 		source: "control:end",
@@ -7009,7 +7009,8 @@ const values = {
 	flag: 5
 };
 function chooseBot(id, state) {
-	const choices = actions(id, state);
+	const legal = actions(id, state);
+	const choices = id === "dominion" && legal.some((a) => a.kind === "move") ? legal.filter((a) => a.kind !== "end") : legal;
 	if (!choices.length) return null;
 	const visible = pieces(id, state), byCell = new Map(visible.map((p) => [p.cell, p]));
 	const rawPieces = id === "shogi" ? state.board.filter(Boolean) : id === "dominion" ? state.board.flat().filter(Boolean) : state.pieces;
