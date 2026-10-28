@@ -227,7 +227,10 @@
   border-radius: 50%;
   background: transparent;
   cursor: pointer;
-  filter: drop-shadow(0 6px 7px rgba(0, 0, 0, 0.42));
+  isolation: isolate;
+  filter:
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.88))
+    drop-shadow(0 4px 7px rgba(0, 0, 0, 0.44));
   transition: transform 120ms ease, filter 120ms ease;
 }
 
@@ -238,16 +241,35 @@
   outline: none;
 }
 
+/* SAN YOU QI HIGH-CONTRAST TOKEN EDGE
+   This neutral ivory/charcoal keyline stays visible on blue, green and red
+   territories. It does not resize pieces or change playable coordinates. */
+.san-you-qi-piece-button::before {
+  content: "";
+  position: absolute;
+  inset: -3%;
+  z-index: 0;
+  border-radius: 50%;
+  background: #081522;
+  box-shadow:
+    0 0 0 1px #081522,
+    0 0 0 2px #fff7df,
+    0 3px 5px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
 .san-you-qi-piece-button img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
+  z-index: 1;
   pointer-events: none;
 }
 
 .san-you-qi-piece-ring {
+  z-index: 2;
   position: absolute;
   inset: -7%;
   border: 2px solid transparent;
@@ -291,6 +313,7 @@
 }
 
 .san-you-qi-promotion-mark {
+  z-index: 3;
   position: absolute;
   right: -4%;
   top: -4%;
