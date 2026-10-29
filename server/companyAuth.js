@@ -4,8 +4,9 @@ const digest=x=>createHash('sha256').update(String(x)).digest('hex'),random=()=>
 const same=(a,b)=>typeof a==='string'&&typeof b==='string'&&a.length===b.length&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
 const emailOf=v=>String(v||'').trim().toLowerCase();
 const validEmail=e=>e.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
-function createCompanyAuth({googleClientId=process.env.AK_GOOGLE_CLIENT_ID,googleClientSecret=process.env.AK_GOOGLE_CLIENT_SECRET,redirectUri=process.env.AK_GOOGLE_REDIRECT_URI||'https://articweb3.onrender.com/arctic-play/v3/auth/google/callback',mailKey=process.env.AK_MAIL_API_KEY,mailFrom=process.env.AK_MAIL_FROM,fetcher=fetch,sendCode}={}){
+function createCompanyAuth({googleClientId=process.env.AK_GOOGLE_CLIENT_ID,googleClientSecret=process.env.AK_GOOGLE_CLIENT_SECRET,websiteReturnUri=process.env.AK_GOOGLE_WEBSITE_RETURN_URI||'https://arcticdominion.xyz/',redirectUri=process.env.AK_GOOGLE_REDIRECT_URI||'https://articweb3.onrender.com/arctic-play/v3/auth/google/callback',mailKey=process.env.AK_MAIL_API_KEY,mailFrom=process.env.AK_MAIL_FROM,fetcher=fetch,sendCode}={}){
  const attempts=new Map();
+ const websiteReturn=new URL(websiteReturnUri);if(websiteReturn.protocol!=='https:'||websiteReturn.username||websiteReturn.password||websiteReturn.hash||websiteReturn.search)throw Error('Google website return URI must be an HTTPS page without query or fragment.');
  const google=!!(googleClientId&&googleClientSecret),email=!!(sendCode||(mailKey&&mailFrom));let jwks,keysAt=0;
  async function googleClaims(token,nonce,now,error){
   try{
@@ -24,26 +25,26 @@ function createCompanyAuth({googleClientId=process.env.AK_GOOGLE_CLIENT_ID,googl
   if(provider==='google')await store.transact('auth-identity',digest('email:'+verifiedEmail),v=>v||{accountId,provider:'email',createdAt:now()});
   return {accountId,isNew};
  }
- async function signIn(provider,key,verifiedEmail,ctx){const found=await identityAccount(provider,key,verifiedEmail,ctx);let out;await ctx.store.transact('account',found.accountId,a=>{out={accountId:a.id,session:ctx.session(a),email:a.email,marketingChoiceNeeded:!!a.email&&!a.marketingChoiceSet,isNew:found.isNew};return a;});return out;}
+ async function signIn(provider,key,verifiedEmail,ctx,displayName,wallet){const found=await identityAccount(provider,key,verifiedEmail,ctx);let out;await ctx.store.transact('account',found.accountId,a=>{if(provider==='privy'&&wallet){if(a.privyWallet&&a.privyWallet.userId!==wallet.userId)throw ctx.error('Use your existing game wallet.',409);a.privyWallet=wallet;}if(provider==='google')a.identity={provider:'google',displayName:typeof displayName==='string'?displayName.replace(/[\u0000-\u001f\u007f<>]/g,'').trim().slice(0,100):''};else if(!a.identity)a.identity={provider,displayName:''};out={accountId:a.id,session:ctx.session(a),email:a.email,displayName:a.identity.displayName,provider:a.identity.provider,...(a.privyWallet?{wallet:a.privyWallet}:{}),marketingChoiceNeeded:!!a.email&&!a.marketingChoiceSet,isNew:found.isNew};return a;});return out;}
  async function route(ctx){const {req,path,method,body,store,error,now,authenticated}=ctx;
   if(method==='POST'&&['/auth/email/start','/auth/google/start'].includes(path)){const ip=req.socket?.remoteAddress||'unknown',key=ip+':'+path,old=attempts.get(key),limit=path.includes('email')?6:20;if(old&&now()-old.at<600000){if(++old.n>limit)throw error('Too many sign-in requests. Please try again later.',429);}else attempts.set(key,{at:now(),n:1});if(attempts.size>10000)for(const [k,v]of attempts)if(now()-v.at>=600000)attempts.delete(k);}
   if(path==='/auth/providers'&&method==='GET')return {google:google&&store.configured,email:email&&store.configured,recovery:true};
   if(path==='/auth/google/start'&&method==='POST'){
    if(!google||!store.configured)throw error('Google sign-in is awaiting service setup.',503);
    const b=await body(req);if(!/^[A-Za-z0-9_-]{43}$/.test(b.challenge||''))throw error('Start sign-in again.');
-   const state=random(),nonce=random(),verifier=random();await store.transact('oauth-attempt',digest(state),()=>({nonce,verifier,challenge:b.challenge,platform:b.platform==='android'?'android':'web',expires:now()+600000}));
+   const state=random(),nonce=random(),verifier=random();await store.transact('oauth-attempt',digest(state),()=>({nonce,verifier,challenge:b.challenge,platform:b.platform==='android'?'android':b.platform==='website'?'website':'web',expires:now()+600000}));
    const u=new URL('https://accounts.google.com/o/oauth2/v2/auth');u.search=new URLSearchParams({client_id:googleClientId,redirect_uri:redirectUri,response_type:'code',scope:'openid email profile',state,nonce,code_challenge:createHash('sha256').update(verifier).digest('base64url'),code_challenge_method:'S256',prompt:'select_account'});return {url:u.href};
   }
   if(path==='/auth/google/callback'&&method==='GET'){
    const state=ctx.url.searchParams.get('state'),code=ctx.url.searchParams.get('code');if(!/^[A-Za-z0-9_-]{43}$/.test(state||'')||!code||code.length>3000)throw error('Google sign-in was cancelled or expired.',401);
    let attempt;await store.transact('oauth-attempt',digest(state),v=>{if(!v||v.expires<=now()||v.used)throw error('Start Google sign-in again.',401);attempt={...v};return {...v,used:true};});
    const r=await fetcher('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({code,client_id:googleClientId,client_secret:googleClientSecret,redirect_uri:redirectUri,grant_type:'authorization_code',code_verifier:attempt.verifier}),signal:AbortSignal.timeout(12000)});if(!r.ok)throw error('Google sign-in failed. Please try again.',401);const tokens=await r.json(),claims=await googleClaims(tokens.id_token,attempt.nonce,now,error),ticket=random();
-   await store.transact('auth-ticket',digest(ticket),()=>({provider:'google',key:claims.sub,email:emailOf(claims.email),challenge:attempt.challenge,expires:now()+120000}));
-   return {redirect:attempt.platform==='android'?'arcticplay://auth?ticket='+ticket:'/arctic-play/app/?auth_ticket='+ticket};
+   await store.transact('auth-ticket',digest(ticket),()=>({provider:'google',key:claims.sub,email:emailOf(claims.email),displayName:claims.name,challenge:attempt.challenge,expires:now()+120000}));
+   return {redirect:attempt.platform==='android'?'arcticplay://auth?ticket='+ticket:attempt.platform==='website'?websiteReturn.href+'?auth_ticket='+ticket:'/arctic-play/app/?auth_ticket='+ticket};
   }
   if(path==='/auth/exchange'&&method==='POST'){
    const b=await body(req);if(!/^[A-Za-z0-9_-]{43}$/.test(b.ticket||'')||!/^[A-Za-z0-9_-]{43}$/.test(b.verifier||''))throw error('Start sign-in again.',401);let ticket;
-   await store.transact('auth-ticket',digest(b.ticket),v=>{if(!v||v.expires<=now()||!same(v.challenge,createHash('sha256').update(b.verifier).digest('base64url')))throw error('This sign-in belongs to another app session.',401);ticket=v;return null;});return signIn(ticket.provider,ticket.key,ticket.email,ctx);
+   await store.transact('auth-ticket',digest(b.ticket),v=>{if(!v||v.expires<=now()||!same(v.challenge,createHash('sha256').update(b.verifier).digest('base64url')))throw error('This sign-in belongs to another app session.',401);ticket=v;return null;});return signIn(ticket.provider,ticket.key,ticket.email,ctx,ticket.displayName,ticket.wallet);
   }
   if(path==='/auth/email/start'&&method==='POST'){
    if(!email||!store.configured)throw error('Email sign-in is awaiting service setup.',503);const b=await body(req),address=emailOf(b.email);if(!validEmail(address))throw error('Enter a valid email address.');

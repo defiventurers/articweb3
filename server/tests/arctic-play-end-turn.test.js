@@ -5,7 +5,7 @@ const engine=require('../arcticPlayEngine.cjs');
 
 test('Dominion End turn accepts zero or one move and enforces seat, revision and roll phase',async t=>{
   const rooms=new Map(),saved=new Map();let request=0;
-  const service=createArcticPlayService({rooms,send:(ws,p)=>ws.packets.push(p),ok:(ws,r,type,payload)=>ws.packets.push({requestId:r,type,payload}),fail:(ws,r,message)=>ws.packets.push({requestId:r,type:'error',payload:{message}}),saveRoomSafe:async room=>saved.set(room.roomCode,structuredClone(room)),loadSavedRoom:async code=>saved.get(code)});
+  const service=createArcticPlayService({requireLogin:false,accessOptions:{requireAccount:false},rooms,send:(ws,p)=>ws.packets.push(p),ok:(ws,r,type,payload)=>ws.packets.push({requestId:r,type,payload}),fail:(ws,r,message)=>ws.packets.push({requestId:r,type:'error',payload:{message}}),saveRoomSafe:async room=>saved.set(room.roomCode,structuredClone(room)),loadSavedRoom:async code=>saved.get(code)});
   t.after(()=>service.close());
   async function call(client,type,payload={}){
     const requestId=String(++request);await service.dispatch(client.ws,requestId,type,{...client.session,...payload});

@@ -4,7 +4,7 @@ const engine=require('../arcticPlayEngine.cjs');
 const {randomUUID}=require('node:crypto');
 function harness(){
   const rooms=new Map(),snapshots=[];
-  const service=createArcticPlayService({rooms,send:(ws,p)=>ws.packets.push(p),ok:(ws,r,t,p)=>ws.packets.push({requestId:r,type:t,payload:p}),fail:(ws,r,message)=>ws.packets.push({requestId:r,type:'error',payload:{message}}),saveRoomSafe:async room=>{assert.ok(Number.isFinite(Number(room.createdAt)),'PostgreSQL room store requires epoch milliseconds');for(const player of Object.values(room.players))assert.ok(Number.isFinite(Number(player.joinedAt)),'PostgreSQL player timestamp must be numeric');snapshots.push(room);},loadSavedRoom:async code=>snapshots.findLast(room=>room.roomCode===code)});
+  const service=createArcticPlayService({requireLogin:false,accessOptions:{requireAccount:false,festivals:[{id:'rules-test',name:'Rules test festival',games:engine.GAME_LIST.map(g=>g.id),startsAt:0,endsAt:4102444800000}]},rooms,send:(ws,p)=>ws.packets.push(p),ok:(ws,r,t,p)=>ws.packets.push({requestId:r,type:t,payload:p}),fail:(ws,r,message)=>ws.packets.push({requestId:r,type:'error',payload:{message}}),saveRoomSafe:async room=>{assert.ok(Number.isFinite(Number(room.createdAt)),'PostgreSQL room store requires epoch milliseconds');for(const player of Object.values(room.players))assert.ok(Number.isFinite(Number(player.joinedAt)),'PostgreSQL player timestamp must be numeric');snapshots.push(room);},loadSavedRoom:async code=>snapshots.findLast(room=>room.roomCode===code)});
   const socket=()=>({readyState:1,packets:[]});let counter=0;
   async function call(ws,type,payload){const id=String(++counter);await service.dispatch(ws,id,type,payload);const answer=ws.packets.find(p=>p.requestId===id);assert.ok(answer);return answer;}
   return {rooms,snapshots,service,socket,call};
@@ -41,7 +41,7 @@ test('Only explicit fill-with-bots starts a table with empty seats; bot complete
   const h=harness();t.after(()=>h.service.close());const ws=h.socket(),playerId=randomUUID();const created=await h.call(ws,'ap_room_create',{tableId:'yanyi',seat:'red',playerId,name:'Host'});
   const session={roomCode:created.payload.room.roomCode,playerId,seatToken:created.payload.seatToken};await h.call(ws,'ap_room_ready',{...session,ready:true});assert.equal((await h.call(ws,'ap_room_start',session)).type,'error');
   const started=await h.call(ws,'ap_room_start',{...session,fillWithBots:true});assert.equal(started.payload.room.players.filter(p=>p.bot).length,2);
-  await new Promise(resolve=>setTimeout(resolve,1800));const room=h.rooms.get(session.roomCode);assert.equal(engine.turn(room.gameState),'red');assert.ok(room.revision>started.payload.room.revision);
+  const room=h.rooms.get(session.roomCode),deadline=Date.now()+12000;while(engine.turn(room.gameState)!=='red'&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,30));assert.equal(engine.turn(room.gameState),'red');assert.ok(room.revision>started.payload.room.revision);
 });
 test('Leaving the last human seat ends the room instead of running unattended bot games',async t=>{
   const h=harness();t.after(()=>h.service.close());const ws=h.socket(),playerId=randomUUID();const created=await h.call(ws,'ap_room_create',{tableId:'sannin',playerId,name:'Host'});

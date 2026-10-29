@@ -1,0 +1,2 @@
+// Public verification key only. Private signing key is held by the service.
+module.exports={"kid":"ak-offline-2026-01","jwk":{"kty":"RSA","n":"vQAJdTYaGklZyJkiMC537rx6JHHY6g1Ie4lwzgV7brT9BkHLrErDobjIPuhMJNPmO4TSo4-HookF413kKAVBOJlpl6g3tl0uM9smPg8JryjSzBaRVbLekLptXqhG4Twl5QZWNZNp1TTZQ1Qb5kHaSSiU3MHqqtFniZNz37PKbMvvhsebUIFQB7J8ZEvNtAdte3BBzRCwaB22G9FV8FCvUJTQ_COA9Z4o1NGx4fXcPcee7Cb2hKhcMRZ_9W0dMqPIcR-Px7YuwqvKyQRRlk3oJHy3u32D0vdDrKg9tc3mmHgLrF973IObP63FMFZg-b65CXXluG89jjntWGyDw8hNow","e":"AQAB"}};
