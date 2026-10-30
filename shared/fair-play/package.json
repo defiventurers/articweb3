@@ -1,0 +1,9 @@
+{
+  "name": "@antarctic/fair-play",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "drand-client": "1.4.2"
+  }
+}
