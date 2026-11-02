@@ -1,0 +1,2 @@
+// Build only public wallet UI; project credentials are read at runtime.
+const {execFileSync}=require('node:child_process'),path=require('node:path');const cwd=path.resolve(__dirname,'../wallet-build'),npm=process.platform==='win32'?'npm.cmd':'npm';execFileSync(npm,['ci','--omit=dev','--ignore-scripts','--no-audit','--no-fund'],{cwd,stdio:'inherit'});execFileSync(npm,['run','build'],{cwd,stdio:'inherit'});

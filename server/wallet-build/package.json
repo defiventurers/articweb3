@@ -1,0 +1,1 @@
+{"name":"antarctic-google-wallet","version":"1.0.0","private":true,"type":"module","scripts":{"build":"vite build"},"dependencies":{"@web3auth/modal":"11.4.3","react":"19.2.7","react-dom":"19.2.7","vite":"8.0.16","viem":"2.55.19"}}
