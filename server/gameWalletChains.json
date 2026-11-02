@@ -1,0 +1,8 @@
+{
+  "4663":{"id":4663,"name":"Robinhood Chain","testnet":false,"nativeCurrency":{"name":"Ether","symbol":"ETH","decimals":18},"rpcUrls":{"default":{"http":["https://rpc.mainnet.chain.robinhood.com"]}},"blockExplorers":{"default":{"name":"Robinhood Blockscout","url":"https://robinhoodchain.blockscout.com"}}},
+  "46630":{"id":46630,"name":"Robinhood Chain Testnet","testnet":true,"nativeCurrency":{"name":"Test Ether","symbol":"ETH","decimals":18},"rpcUrls":{"default":{"http":["https://rpc.testnet.chain.robinhood.com"]}},"blockExplorers":{"default":{"name":"Robinhood Testnet Explorer","url":"https://explorer.testnet.chain.robinhood.com"}}},
+  "42161":{"id":42161,"name":"Arbitrum One","testnet":false,"nativeCurrency":{"name":"Ether","symbol":"ETH","decimals":18},"rpcUrls":{"default":{"http":["https://arb1.arbitrum.io/rpc"]}},"blockExplorers":{"default":{"name":"Arbiscan","url":"https://arbiscan.io"}}},
+  "421614":{"id":421614,"name":"Arbitrum Sepolia","testnet":true,"nativeCurrency":{"name":"Test Ether","symbol":"ETH","decimals":18},"rpcUrls":{"default":{"http":["https://sepolia-rollup.arbitrum.io/rpc"]}},"blockExplorers":{"default":{"name":"Arbiscan Sepolia","url":"https://sepolia.arbiscan.io"}}},
+  "2741":{"id":2741,"name":"Abstract","testnet":false,"nativeCurrency":{"name":"Ether","symbol":"ETH","decimals":18},"rpcUrls":{"default":{"http":["https://api.mainnet.abs.xyz"]}},"blockExplorers":{"default":{"name":"Abscan","url":"https://abscan.org"}}},
+  "11124":{"id":11124,"name":"Abstract Sepolia","testnet":true,"nativeCurrency":{"name":"Test Ether","symbol":"ETH","decimals":18},"rpcUrls":{"default":{"http":["https://api.testnet.abs.xyz"]}},"blockExplorers":{"default":{"name":"Abscan Sepolia","url":"https://sepolia.abscan.org"}}}
+}

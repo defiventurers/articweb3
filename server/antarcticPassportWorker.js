@@ -4,9 +4,9 @@ const VISA_ABI=['function mintVisa(address recipient,bytes32 claimId) returns (u
 const ACHIEVEMENT_ABI=['function mintAchievement(address recipient,uint256 tokenId,bytes32 claimId)','function recipientForClaim(bytes32) view returns (address)','function tokenForClaim(bytes32) view returns (uint256)'];
 const ARRIVAL_ABI=['function mintArrival(address recipient,bytes32 claimId)','function recipientForClaim(bytes32) view returns (address)'];
 function workerConfig(env=process.env){
- const chainId=Number(env.AK_VISA_CHAIN_ID||11124);if(![11124,2741].includes(chainId))throw Error('Unsupported visa chain.');
+ const chainId=Number(env.AK_VISA_CHAIN_ID||11124);if(!require('./gameWalletChains.json')[chainId])throw Error('Unsupported visa chain.');
  if(env.AK_VISA_DELIVERY_ENABLED!=='true')throw Error('NFT delivery is disabled.');
- if(chainId===2741&&env.AK_VISA_MAINNET_APPROVED!=='true')throw Error('Mainnet NFT delivery has not been approved.');
+ if(!require('./gameWalletChains.json')[chainId].testnet&&env.AK_VISA_MAINNET_APPROVED!=='true')throw Error('Mainnet NFT delivery has not been approved.');
  for(const k of ['AK_VISA_RPC_URL','AK_VISA_MINTER_KEY','AK_VISA_CONTRACT','AK_ARRIVAL_CONTRACT'])if(!env[k])throw Error(k+' is required.');
  const u=new URL(env.AK_VISA_RPC_URL);if(u.protocol!=='https:')throw Error('Use an HTTPS RPC endpoint.');
  for(const k of ['AK_VISA_CONTRACT','AK_ARRIVAL_CONTRACT',...(env.AK_ACHIEVEMENT_CONTRACT?['AK_ACHIEVEMENT_CONTRACT']:[])])if(!/^0x[0-9a-f]{40}$/i.test(env[k])||/^0x0{40}$/i.test(env[k]))throw Error('Invalid '+k);
@@ -16,7 +16,7 @@ function workerConfig(env=process.env){
 // One sequential sender per signer. Check the on-chain claim before every send,
 // including recovery after a process died between broadcast and persistence.
 async function deliverOne({store,adapter,now=Date.now}){
- const job=await store.claimJob(now());if(!job)return false;
+ const job=await store.claimJob(now(),adapter.chainId);if(!job)return false;
  try{
   if(job.chain_id!==adapter.chainId)throw Object.assign(Error('Wrong network.'),{permanent:true,code:'NETWORK_MISMATCH'});
   const existing=await adapter.lookup(job);if(existing){if(existing.recipient.toLowerCase()!==job.wallet.toLowerCase()||(job.kind==='achievement'&&String(existing.tokenId)!==String(job.achievement_token_id)))throw Object.assign(Error('Claim recipient mismatch.'),{permanent:true,code:'RECIPIENT_MISMATCH'});await store.updateJob(job.id,{status:existing.confirmed===false?'submitted':'confirmed',tokenId:existing.tokenId||null,leaseUntil:0,runAfter:now()+30000,errorCode:null});return true;}

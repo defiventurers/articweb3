@@ -1,2 +1,2 @@
-import {defineConfig} from 'vite';import {fileURLToPath} from 'node:url';
-export default defineConfig({base:'/arctic-play/wallet/',build:{outDir:fileURLToPath(new URL('../gameWalletWeb',import.meta.url)),emptyOutDir:true},resolve:{dedupe:['react','react-dom']}});
+import {defineConfig} from 'vite';import {nodePolyfills} from 'vite-plugin-node-polyfills';import {fileURLToPath} from 'node:url';
+export default defineConfig({plugins:[nodePolyfills({include:['buffer','process','util','events','stream','crypto','http','https','zlib','url']})],base:'/arctic-play/wallet/',build:{outDir:fileURLToPath(new URL('../gameWalletWeb',import.meta.url)),emptyOutDir:true},resolve:{alias:Object.fromEntries(['global','process','buffer'].map(n=>['vite-plugin-node-polyfills/shims/'+n,fileURLToPath(new URL('./node_modules/vite-plugin-node-polyfills/shims/'+n+'/dist/index.js',import.meta.url))])),dedupe:['react','react-dom']}});
