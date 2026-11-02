@@ -14,7 +14,6 @@ function createCompanyService({store=createCompanyStore(),now=Date.now,extraRout
   const rates=new Map(),challenges=require('./companyChallenges').createChallengeRoutes(),commerce=require('./companyCommerce').createCommerce(commerceOptions);
   const playAccess=require('./companyPlayAccess').createPlayAccess(playAccessOptions);
   const auth=require('./companyAuth').createCompanyAuth(authOptions);
-  const privy=require('./privyPassportAuth').createPrivyPassportAuth(privyOptions);
   const passports=require('./antarcticPassport').createPassportRoutes({...passportOptions,accountStore:store});
   const accessCommerce=require('./accessCommerce').createAccessCommerce({...accessCommerceOptions,offlineReady:playAccess.ready});
   function rate(req){const protectedPath=/\/(account|passport|progress|rotate|logout|metrics|checkout|purchases\/restore)$/.test(new URL(req.url,'https://localhost').pathname);const bearer=/^Bearer [a-f0-9-]{36}\.[A-Za-z0-9_-]{43}$/.test(req.headers.authorization||'');const key=protectedPath&&bearer?hash(req.headers.authorization):req.socket.remoteAddress||'unknown',t=now(),r=rates.get(key);if(!r||t-r.at>60000)rates.set(key,{at:t,n:1});else if(++r.n>90)throw error('Please wait a minute before trying again.',429);if(rates.size>10000)for(const[k,v]of rates)if(t-v.at>60000)rates.delete(k);}
@@ -34,8 +33,7 @@ function createCompanyService({store=createCompanyStore(),now=Date.now,extraRout
     if(p==='/progress'&&method==='GET')return authenticated(req,a=>({progress:a.progress,revision:a.revision}));
     if(p==='/progress'&&method==='POST'){const b=await body(req);return authenticated(req,a=>{const progress=mergeProgress(a.progress,b.progress);if(Buffer.byteLength(JSON.stringify(progress))>150000)throw error('Your saved collection is too large to merge. Contact support.',413);a.progress=progress;a.revision++;return{progress:a.progress,revision:a.revision};});}
     if(p==='/metrics'&&method==='POST'){const b=await body(req);return authenticated(req,a=>{if(b.clear){a.metrics=[];return{ok:true};}if(b.consent!==true)throw error('Usage sharing is off.',403);const seen=new Set(a.metrics.map(e=>e.id));for(const e of (Array.isArray(b.events)?b.events:[]).slice(0,40))if(e&&/^[a-f0-9-]{36}$/.test(e.id)&&METRICS.has(e.name)&&!seen.has(e.id)){a.metrics.push({id:e.id,name:e.name,at:now(),game:['shogi','sannin','sanguo','sanyou','yanyi','xiangqi','dominion'].includes(e.game)?e.game:null});seen.add(e.id);}a.metrics=a.metrics.slice(-2000);return{ok:true};});}
-    const privyResult=await privy.route({req,url,path:p,method,body,authenticated,store,error,now,session});if(privyResult!==undefined)return privyResult;
-    const authResult=await auth.route({req,url,path:p,method,body,authenticated,store,error,now,session});if(authResult!==undefined)return authResult;
+    const authResult=await auth.route({req,url,path:p,method,body,authenticated,store,error,now,session,walletInventory:passports.walletInventory});if(authResult!==undefined)return authResult;
     const passportResult=await passports.route({req,url,path:p,method,body,authenticated,store,error,now});if(passportResult!==undefined)return passportResult;
     const playResult=await playAccess.route({req,url,path:p,method,body,authenticated,store,error,now});if(playResult!==undefined)return playResult;
     const accessResult=await accessCommerce.route({req,url,path:p,method,body,authenticated,store,error,now});if(accessResult!==undefined)return accessResult;
@@ -53,3 +51,4 @@ function createCompanyService({store=createCompanyStore(),now=Date.now,extraRout
   return{handleHttp,store,syncPassportAchievements:passports.syncAchievements,withAccountSession:(token,fn)=>authenticated({headers:{authorization:'Bearer '+token}},fn),close:async()=>{challenges.close();await passports.close();return store.close();}};
 }
 module.exports={createCompanyService,METRICS};
+

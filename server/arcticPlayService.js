@@ -5,7 +5,7 @@ const { URL } = require('node:url');
 const browserAssetsReady=require('node:fs').existsSync(require('node:path').join(__dirname,'arcticPlayWeb/index.html'));
 const { createArcticPlayWorkerPool } = require('./arcticPlayWorkerPool');
 const {serveArcticPlayWeb}=require('./arcticPlayWeb');
-const {servePrivyWallet}=require('./privyWalletWeb');
+const {serveGameWallet}=require('./gameWalletWeb');
 const TEAM_CAPABILITY='dominion-teams-v1';
 const dominionTeamsReady=engine.create('dominion',{teamMode:'2v2'}).teamMode==='2v2';
 const ROOM_GAME_ID = 'arctic-play';
@@ -242,7 +242,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
   function handleHttp(req,res) {
     if(company.handleHttp(req,res))return true;
     const url=new URL(req.url,'https://articweb3.onrender.com');
-    if(servePrivyWallet(req,res,url))return true;
+    if(serveGameWallet(req,res,url))return true;
     if(serveArcticPlayWeb(req,res,url))return true;
     if(url.pathname==='/arctic-play/health') {res.writeHead(200,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,version:engine.VERSION,capabilities:[...(dominionTeamsReady?[TEAM_CAPABILITY]:[]),...(browserAssetsReady?['browser-play-v1']:[]),'hall-access-v1','account-play-v1'],accessSync:access.configured(),webAppUrl:browserAssetsReady?'https://articweb3.onrender.com/arctic-play/app/':null,buildCommit:process.env.RENDER_GIT_COMMIT||null,games:engine.GAME_LIST.map(g=>({id:g.id,name:g.name,players:g.players}))}));return true;}
     if(url.pathname==='/arctic-play/join') {
@@ -256,3 +256,4 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
   return {dispatch,restoreRoom,handleHttp,disconnected,close,view};
 }
 module.exports={createArcticPlayService,ROOM_GAME_ID};
+
