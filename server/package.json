@@ -27,7 +27,8 @@
     "test:shogi": "node --test tests/shogi-online.test.js tests/shogi-socket.test.js",
     "test:xiangqi": "node --test tests/xiangqi-online.test.js tests/xiangqi-socket.test.js",
     "worker:passport": "node antarcticPassportWorker.js",
-    "test:passport": "node --test tests/antarctic-passport.test.js"
+    "test:passport": "node --test tests/antarctic-passport.test.js",
+    "postinstall": "node scripts/build-privy-wallet.cjs"
   },
   "dependencies": {
     "@privy-io/node": "0.37.0",
