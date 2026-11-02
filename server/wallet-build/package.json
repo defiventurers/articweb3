@@ -1,1 +1,23 @@
-{"name":"antarctic-google-wallet","version":"1.0.0","private":true,"type":"module","scripts":{"build":"vite build"},"dependencies":{"@web3auth/modal":"11.4.3","react":"19.2.7","react-dom":"19.2.7","vite":"8.0.16","viem":"2.55.19"}}
+{
+  "name": "antarctic-para-wallet",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "prepare:para": "setup-para"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.90.21",
+    "@wagmi/core": "2.22.1",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "viem": "2.55.19",
+    "vite": "7.3.1",
+    "vite-plugin-node-polyfills": "0.25.0",
+    "wagmi": "2.19.5",
+    "@getpara/react-sdk-lite": "3.25.0",
+    "@getpara/viem-v2-integration": "3.25.0",
+    "@getpara/evm-wallet-connectors": "3.25.0"
+  }
+}

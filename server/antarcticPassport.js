@@ -1,6 +1,6 @@
 const {getAddress}=require('ethers');
 const {createPassportStore}=require('./antarcticPassportStore');
-const CHAINS={11124:{name:'Abstract Sepolia',explorer:'https://sepolia.abscan.org'},2741:{name:'Abstract',explorer:'https://abscan.org'}};
+const CHAINS=Object.fromEntries(Object.values(require('./gameWalletChains.json')).map(c=>[c.id,{name:c.name,explorer:c.blockExplorers.default.url,testnet:c.testnet}]));
 function createPassportRoutes({store=createPassportStore(),chainId=Number(process.env.AK_VISA_CHAIN_ID||11124),accountStore,deliveryEnabled=process.env.AK_VISA_DELIVERY_ENABLED==='true'}={}){
  if(!CHAINS[chainId])throw Error('Unsupported passport network.');
  function response(p){if(!p)return null;return {...p,network:CHAINS[p.chainId]?.name,deliveries:p.deliveries.map(d=>({...d,status:!deliveryEnabled&&d.status==='queued'?'awaiting_setup':d.status,...(/^0x[0-9a-f]{64}$/i.test(d.transactionHash||'')?{explorerUrl:CHAINS[p.chainId].explorer+'/tx/'+d.transactionHash}:{})}))};}
@@ -14,10 +14,11 @@ function createPassportRoutes({store=createPassportStore(),chainId=Number(proces
    const actor=await authenticated(req,a=>({id:a.id,wallet:a.gameWallet||a.privyWallet}));let wallet;try{wallet=getAddress(String(['privy','embedded'].includes(b.walletMode)?actor.wallet?.address:b.wallet||'').trim());if(/^0x0{40}$/i.test(wallet))throw Error();}catch{throw error('Enter a valid EVM wallet address. Check mixed-case addresses carefully.');}
    if(!['antarctic-visa-v1','antarctic-visa-v2'].includes(b.consentVersion)||typeof b.souvenir!=='boolean')throw error('Review your passport and confirm the NFT delivery address.');
    const accountId=await authenticated(req,a=>a.id);
-   const p=await store.register(accountId,{playerName:name,wallet,chainId,souvenir:b.souvenir,consentVersion:b.consentVersion,walletProvider:b.walletMode==='embedded'?'metamask-embedded':b.walletMode==='privy'?'privy':'external',achievementOptIn:b.consentVersion==='antarctic-visa-v2'&&b.achievementOptIn===true},now());await syncAchievements(accountId);return {passport:response(await store.get(accountId)||p)};
+   const selectedChain=b.walletMode==='embedded'&&actor.wallet?.provider==='para'?actor.wallet.chainId:chainId;if(!CHAINS[selectedChain])throw error('This wallet network is not supported.');
+   const p=await store.register(accountId,{playerName:name,wallet,chainId:selectedChain,souvenir:b.souvenir,consentVersion:b.consentVersion,walletProvider:b.walletMode==='embedded'?actor.wallet?.provider:b.walletMode==='privy'?'privy':'external',achievementOptIn:b.consentVersion==='antarctic-visa-v2'&&b.achievementOptIn===true},now());await syncAchievements(accountId);return {passport:response(await store.get(accountId)||p)};
   }
  }
- async function walletInventory(accountId){const p=await store.get(accountId);if(!p)return [];const addresses={visa:process.env.AK_VISA_CONTRACT,arrival:process.env.AK_ARRIVAL_CONTRACT,achievement:process.env.AK_ACHIEVEMENTS_CONTRACT};return p.deliveries.filter(d=>d.status==='confirmed'&&/^\d+$/.test(d.tokenId||'')&&/^0x[0-9a-fA-F]{40}$/.test(addresses[d.kind]||'')).map(d=>({title:d.title||(d.kind==='visa'?'Antarctic Visa':'Arrival collectible'),contract:getAddress(addresses[d.kind]),tokenId:d.tokenId,chainId:d.chainId||p.chainId,standard:d.kind==='visa'?'ERC721':'ERC1155',transferable:d.kind!=='visa',wallet:p.wallet}));}
+ async function walletInventory(accountId){const p=await store.get(accountId);if(!p)return [];const contract=(key)=>process.env[key+'_'+p.chainId]||(p.chainId===chainId?process.env[key]:null);const addresses={visa:contract('AK_VISA_CONTRACT'),arrival:contract('AK_ARRIVAL_CONTRACT'),achievement:contract('AK_ACHIEVEMENT_CONTRACT')};return p.deliveries.filter(d=>d.status==='confirmed'&&/^\d+$/.test(d.tokenId||'')&&/^0x[0-9a-fA-F]{40}$/.test(addresses[d.kind]||'')).map(d=>({title:d.title||(d.kind==='visa'?'Antarctic Visa':'Arrival collectible'),contract:getAddress(addresses[d.kind]),tokenId:d.tokenId,chainId:d.chainId||p.chainId,network:CHAINS[d.chainId||p.chainId]?.name,standard:d.kind==='visa'?'ERC721':'ERC1155',transferable:d.kind!=='visa',wallet:p.wallet}));}
  return {route,syncAchievements,walletInventory,close:()=>store.close()};
 }
 module.exports={createPassportRoutes,CHAINS};
