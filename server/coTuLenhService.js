@@ -1,5 +1,5 @@
 const { randomUUID, randomBytes, createHash, timingSafeEqual }=require('node:crypto');
-const { createInitialState, applyAction, VERSION }=require('./coTuLenhEngine.cjs');
+const { createInitialState, applyAction, VERSION, RULE_PROFILES, resolveProfile }=require('./coTuLenhEngine.cjs');
 const ID='co-tu-lenh';
 const codeOf=v=>String(v||'').trim().toUpperCase();
 const hash=v=>createHash('sha256').update(v).digest('hex');
@@ -31,8 +31,10 @@ function createCoTuLenhService({rooms,send,ok,fail,saveRoomSafe,now=Date.now}){
       if(!goodToken(token))return reject(ws,id,'Invalid seat credential');
       const team=payload.team==='blue'?'blue':'red';
       const code=freshCode();const name=String(payload.name||'Commander').slice(0,24);
+      const profile=resolveProfile(payload.mode||'ancientchess_2015_standard');
+      if(!RULE_PROFILES[profile])return reject(ws,id,'Unknown rules profile');
       const room={roomCode:code,gameId:ID,status:'waiting',revision:0,createdAt:now(),updatedAt:now(),
-        seats:{red:null,blue:null},gameState:createInitialState(payload.mode==='commander'?'commander':'division')};
+        seats:{red:null,blue:null},gameState:createInitialState(profile)};
       room.seats[team]={name,digest:hash(token)};rooms.set(code,room);bind(ws,room,team);publish(room);return confirm(ws,id,room,team);
     }
     if(type==='ctl_room_list')return ok(ws,id,'ctl_room_list_ack',{rooms:[]}); // deliberately private rooms only
@@ -56,6 +58,7 @@ function createCoTuLenhService({rooms,send,ok,fail,saveRoomSafe,now=Date.now}){
       room.status='playing';room.revision++;publish(room);return confirm(ws,id,room,team);
     }
     if(type==='ctl_game_action'){
+      if(room.gameState.rulesVersion!==VERSION)return reject(ws,id,'Room uses an older rules engine; create a new v0.3 match');
       if(room.status!=='playing')return reject(ws,id,'Match not active');
       if(!Number.isSafeInteger(payload.revision)||payload.revision!==room.revision)return reject(ws,id,'Stale room revision');
       if(room.gameState.turn!==team)return reject(ws,id,'Not your turn');
