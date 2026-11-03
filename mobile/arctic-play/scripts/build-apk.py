@@ -75,6 +75,6 @@ digest=hashlib.sha256(apk.read_bytes()).hexdigest()
 (OUTPUT/f'AntarcticKingdoms-v{VERSION}.apk.sha256').write_text(f'{digest}  {apk.name}\n')
 legacy=OUTPUT/f'ArcticPlay-v{VERSION}.apk'
 shutil.copyfile(apk,legacy)  # Existing 1.4 clients trust this exact stable URL.
-metadata={'file':apk.name,'updateFile':legacy.name,'bytes':apk.stat().st_size,'sha256':digest,'package':'xyz.arcticdominion.play','version':VERSION,'versionCode':VERSION_CODE,'minSdk':24,'targetSdk':35,'games':['Shogi','Sannin Shogi','Sanguo Qi','San You Qi','Sanguo Yan Yi Qi','Xiangqi','Chaturanga','Shanshui Xiangqi']}
+metadata={'file':apk.name,'updateFile':legacy.name,'bytes':apk.stat().st_size,'sha256':digest,'package':'xyz.arcticdominion.play','version':VERSION,'versionCode':VERSION_CODE,'minSdk':24,'targetSdk':35,'games':['Shogi','Sannin Shogi','Sanguo Qi','San You Qi','Sanguo Yan Yi Qi','Xiangqi','Chaturanga','Shanshui Xiangqi','Cờ Tư Lệnh']}
 (OUTPUT/'build-info.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(json.dumps(metadata,indent=2))
