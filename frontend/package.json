@@ -41,7 +41,7 @@
     "build:xiangqi-engine": "node scripts/build-xiangqi-engine.mjs",
     "check:xiangqi-engine": "node scripts/build-xiangqi-engine.mjs --check",
     "test:xiangqi": "vitest run --config vitest.xiangqi.config.ts",
-    "test:co-tu-lenh": "node --test ../tests/co-tu-lenh-rules.test.mjs ../tests/co-tu-lenh-service.test.cjs",
+    "test:co-tu-lenh": "node --test ../tests/co-tu-lenh-rules.test.mjs ../tests/co-tu-lenh-service.test.cjs ../tests/co-tu-lenh-art.test.mjs",
     "build:co-tu-lenh-engine": "node scripts/build-co-tu-lenh-engine.cjs",
     "check:co-tu-lenh-engine": "node scripts/build-co-tu-lenh-engine.cjs --check"
   },
