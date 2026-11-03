@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { applyAction, atPoint, chooseBotMove, createInitialState, legalActions, TYPES, VERSION } from './rules.js';
 import { CoTuLenhClient, getSeat, newSeatToken, saveSeat, inviteUrl } from './onlineClient.js';
+import { PenguinHostPair, PenguinHost } from '../../components/PenguinHosts.jsx';
 import './coTuLenh.css';
 
 const ROOT='/assets/co-tu-lenh/pieces/';
@@ -83,7 +84,7 @@ export default function CoTuLenhApp({onExitToLibrary}) {
     const code=new URLSearchParams(window.location.search).get('room')?.trim().toUpperCase();
     const saved=code?getSeat(code):null;
     if(saved){activeRoomCode.current=code;setMode('online');setJoinCode(code);void c.request('ctl_room_sync',{roomCode:code,token:saved.token}).then(res=>{setOnline({room:res.room,team:res.team,token:saved.token});setState(res.room.gameState);setView(res.team);setStarted(true);}).catch(e=>setNotice(`Could not restore room: ${e.message}`));}
-    return()=>{c.close();client.current=null;};
+    return()=>{client.current?.close();client.current=null;};
   },[]);
   async function openOnline(create){
     try{const token=newSeatToken();const res=await client.current.request(create?'ctl_room_create':'ctl_room_join',{team:human,token,name:'Commander',mode:victory,...(!create?{roomCode:joinCode}:{} )});
@@ -110,7 +111,7 @@ export default function CoTuLenhApp({onExitToLibrary}) {
   return <main className="ctl-app">
     <header className="ctl-heading">
       <button className="ctl-ghost" onClick={()=>onExitToLibrary?.()}>← All games</button>
-      <div><span className="ctl-kicker">ANTARCTIC GAMING CO · VIETNAMESE STRATEGY</span><h1>Cờ Tư Lệnh <span>Operation Frozen Front</span></h1></div>
+      <div><span className="ctl-kicker">ANTARCTIC GAMING CO · VIETNAMESE STRATEGY</span><h1>Cờ Tư Lệnh <span>Operation Frozen Front</span></h1></div><PenguinHostPair gameId="co-tu-lenh" compact />
       <button className="ctl-ghost" onClick={()=>setGuide(0)}>How to Play</button>
     </header>
     <p className="ctl-disclaimer"><strong>Working reconstruction</strong> based on published Commander Chess descriptions. Initial unit identities, exact transport interactions and certain air-defence edge cases are pending primary-source validation. Free play · no wallet required.</p>
@@ -158,7 +159,7 @@ export default function CoTuLenhApp({onExitToLibrary}) {
         <button className="ctl-primary" onClick={()=>setGuide(0)}>Learn with Pengu →</button>
       </aside>
     </div>}
-    {guide>=0&&<div className="ctl-modal-overlay" role="presentation"><section className="ctl-modal" role="dialog" aria-modal="true" aria-label="Commander Chess tutorial"><button className="ctl-close" onClick={()=>setGuide(-1)} aria-label="Close tutorial">×</button><div className="ctl-kicker">PENGU ORDER · RULES & ROUTES</div><h2>{activeHint[0]}</h2><p>{activeHint[1]}</p><div className="ctl-tutorial-nav"><span>Lesson {guide+1}/{steps.length}</span>{guide>0&&<button onClick={()=>setGuide(i=>i-1)}>Back</button>}<button className="ctl-primary" onClick={()=>setGuide(i=>i===steps.length-1?-1:i+1)}>{guide===steps.length-1?'Play':'Next'}</button></div></section></div>}
+    {guide>=0&&<div className="ctl-modal-overlay" role="presentation"><section className="ctl-modal" role="dialog" aria-modal="true" aria-label="Commander Chess tutorial"><button className="ctl-close" onClick={()=>setGuide(-1)} aria-label="Close tutorial">×</button><div className="ctl-guide-heading"><PenguinHost host="pengu" size="mini"/><div className="ctl-kicker">PENGU ORDER · RULES & ROUTES</div></div><h2>{activeHint[0]}</h2><p>{activeHint[1]}</p><div className="ctl-tutorial-nav"><span>Lesson {guide+1}/{steps.length}</span>{guide>0&&<button onClick={()=>setGuide(i=>i-1)}>Back</button>}<button className="ctl-primary" onClick={()=>setGuide(i=>i===steps.length-1?-1:i+1)}>{guide===steps.length-1?'Play':'Next'}</button></div></section></div>}
     <footer className="ctl-foot">Cờ Tư Lệnh by Nguyễn Quý Hải (Vietnam, 2010). Arctic illustrations are independent adaptations, not official game art. Rules profile: {VERSION}.</footer>
   </main>;
 }
