@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { applyAction, atPoint, chooseBotMove, createInitialState, legalActions, TYPES, VERSION } from './rules.js';
+import { applyAction, atPoint, chooseBotMove, createInitialState, legalActions, airDefenceZones, profileFor, RULE_PROFILES, DEFAULT_PROFILE, TYPES, VERSION } from './rules.js';
 import { CoTuLenhClient, getSeat, newSeatToken, saveSeat, inviteUrl } from './onlineClient.js';
 import { PenguinHostPair, PenguinHost } from '../../components/PenguinHosts.jsx';
 import './coTuLenh.css';
@@ -13,7 +13,7 @@ const steps=[
   ['Find your Commander','The gold-star Commander controls your side. Capture the opposing Commander to win. It travels along clear orthogonal lines but captures only an adjacent piece.'],
   ['Understand terrain','The dark left lane is sea. The centre river separates the two armies. Some heavy units must use the two shallow fords; ships use sea and coastline.'],
   ['Attack and transport','Artillery may jump to capture, aircraft can return after a bombing strike, and tanks/ships can carry selected friendly units. Beware missile and anti-aircraft danger zones.'],
-  ['Try the board','Tap one of your units, then a highlighted intersection. A dotted circle means movement; a red outline means attack; orange indicates an air-defence risk.']
+  ['Try the board','Tap a unit, then a highlighted intersection. Turn on the blue/red defensive-range rings from the board toolbar to see protected airspace; the smaller glowing dots indicate the exact intersections covered.']
 ];
 // Immutable board geometry taken from the user-approved 11-by-12 coordinate master.
 const W=1199,H=1312,X=148,Y=183,STEP_X=90.4,STEP_Y=900/11;
@@ -24,8 +24,9 @@ export default function CoTuLenhApp({onExitToLibrary}) {
   const [mode,setMode]=useState('bot');
   const [difficulty,setDifficulty]=useState('medium');
   const [human,setHuman]=useState('red');
-  const [victory,setVictory]=useState('division');
-  const [state,setState]=useState(()=>createInitialState('division'));
+  const [victory,setVictory]=useState(DEFAULT_PROFILE);
+  const [state,setState]=useState(()=>createInitialState(DEFAULT_PROFILE));
+  const [showDefence,setShowDefence]=useState(false);
   const [selected,setSelected]=useState(null);
   const [notice,setNotice]=useState('Select a piece, then a highlighted intersection.');
   const [guide,setGuide]=useState(-1);
@@ -44,6 +45,8 @@ export default function CoTuLenhApp({onExitToLibrary}) {
   const botTurn=started&&mode==='bot'&&state.turn!==human&&!state.winner;
   const actions=useMemo(()=>selected?legalActions(state,selected):[],[state,selected]);
   const movingTeam=state.turn;
+  const defenceZones=useMemo(()=>showDefence?airDefenceZones(state):[],[state,showDefence]);
+  const currentProfile=profileFor(state);
   const point=(x,y)=>view==='red'?{x:X+x*STEP_X,y:Y+(11-y)*STEP_Y}:{x:X+(10-x)*STEP_X,y:Y+y*STEP_Y};
   const redraw=next=>{setState(next);setSelected(null);};
   function reset(nextMode=mode){
@@ -117,11 +120,11 @@ export default function CoTuLenhApp({onExitToLibrary}) {
       <div><span className="ctl-kicker">ANTARCTIC GAMING CO · VIETNAMESE STRATEGY</span><h1>Cờ Tư Lệnh <span>Operation Frozen Front</span></h1></div><PenguinHostPair gameId="co-tu-lenh" compact />
       <button className="ctl-ghost" onClick={()=>setGuide(0)}>How to Play</button>
     </header>
-    <p className="ctl-disclaimer"><strong>Working reconstruction</strong> based on published Commander Chess descriptions. Initial unit identities, exact transport interactions and certain air-defence edge cases are pending primary-source validation. Free play · no wallet required.</p>
+    <p className="ctl-disclaimer"><strong>v0.3 research-grade practice.</strong> 2015, 2024 and BGA rules are selectable and labelled. The exact 38 starting locations, two ford coordinates, complex stacked attacks and some interception cases still need official verification. The Antarctic art is a modern visual adaptation. Free play · no wallet required.</p>
     {!started&&<section className="ctl-setup" aria-label="Game setup">
       <h2>Choose your command</h2>
       <div className="ctl-choices">{menu.map(m=><button key={m.id} className={mode===m.id?'active':''} onClick={()=>setMode(m.id)}><b>{m.label}</b><small>{m.description}</small></button>)}</div>
-      <div className="ctl-prefs"><label>Victory mode<select value={victory} onChange={e=>setVictory(e.target.value)}><option value="division">Commander or destroy a division</option><option value="commander">Commander capture only</option></select></label>
+      <div className="ctl-prefs"><label>Rules profile (research draft)<select value={victory} onChange={e=>setVictory(e.target.value)}>{Object.values(RULE_PROFILES).map(profile=><option key={profile.id} value={profile.id}>{profile.label}</option>)}</select></label>
         {['bot','online'].includes(mode)&&<><label>Your team<select value={human} onChange={e=>setHuman(e.target.value)}><option value="red">Red · First move</option><option value="blue">Blue · Second move</option></select></label>{mode==='bot'&&<label>Bot difficulty<select value={difficulty} onChange={e=>setDifficulty(e.target.value)}><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard (2-ply heuristic)</option></select></label>}</>}
       </div>{mode==='online'?<div className="ctl-online-join"><label>Private room code<input placeholder="Enter six-letter code to join" value={joinCode} maxLength={6} onChange={e=>setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z2-9]/g,''))}/></label><button className="ctl-primary" onClick={()=>openOnline(false)} disabled={joinCode.length!==6}>Join room</button><button className="ctl-primary" onClick={()=>openOnline(true)}>Create private room</button><p role="status">{notice}</p></div>:<button className="ctl-primary" onClick={()=>reset()}>Begin battle</button>}
     </section>}
@@ -131,6 +134,12 @@ export default function CoTuLenhApp({onExitToLibrary}) {
       <div className="ctl-board-viewport" style={{'--ctl-zoom':zoom}}>
       <svg className="ctl-board" style={{width:`${zoom*100}%`}} viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Cờ Tư Lệnh with 11 columns, 12 ranks, 132 clickable intersections; red and blue Arctic faction pieces">
         <image href={BOARD} x="0" y="0" width={W} height={H} preserveAspectRatio="none" transform={view==='blue'?`rotate(180 ${W/2} ${H/2})`:undefined} pointerEvents="none" />
+        {showDefence&&<g className="ctl-defence-zones" pointerEvents="none" aria-hidden="true">
+          {defenceZones.map(zone=>{const center=point(zone.x,zone.y);const color=zone.team==='red'?'#ef4658':'#2f9fff';return <g key={`zone-${zone.id}`}>
+            <ellipse cx={center.x} cy={center.y} rx={zone.radius*STEP_X} ry={zone.radius*STEP_Y} fill={color} fillOpacity=".055" stroke={color} strokeOpacity=".78" strokeWidth="4" strokeDasharray="12 8" />
+            {zone.points.map(pt=>{const pos=point(pt.x,pt.y);return <circle key={`${zone.id}:${pt.x}:${pt.y}`} cx={pos.x} cy={pos.y} r="7" fill={color} fillOpacity=".84" stroke="#fff" strokeOpacity=".8" strokeWidth="1.4" />;})}
+          </g>;})}
+        </g>}
         {Array.from({length:132},(_,i)=>{const x=i%11,y=Math.floor(i/11),pt=point(x,y),stack=atPoint(state,x,y);
           const top=stack.find(p=>!p.carrier)||stack[0];const legal=actions.filter(a=>a.x===x&&a.y===y);const highlight=legal.length>0;
           const danger=legal.some(a=>a.risk),capture=legal.some(a=>['capture','bomb','fire'].includes(a.kind));
@@ -143,16 +152,17 @@ export default function CoTuLenhApp({onExitToLibrary}) {
           </g>;
         })}
       </svg></div>
-      <div className="ctl-toolbar"><button onClick={()=>setZoom(z=>Math.max(1,+(z-0.25).toFixed(2)))} disabled={zoom<=1} aria-label="Zoom board out">− Zoom</button><button onClick={()=>setZoom(z=>Math.min(2.5,+(z+0.25).toFixed(2)))} disabled={zoom>=2.5} aria-label="Zoom board in">+ Zoom</button><button disabled={isOnline||!undoStack.length} onClick={()=>{seq.current++;if(undoStack.length){setState(undoStack.at(-1));setUndoStack(h=>h.slice(0,-1));setSelected(null);}}} >↶ Undo</button>{!isOnline&&<button onClick={()=>reset()}>↻ Reset</button>}<button onClick={()=>setView(v=>v==='red'?'blue':'red')}>⇄ Rotate view</button><button onClick={()=>{setStarted(false);setGuide(-1);seq.current++;if(isOnline){activeRoomCode.current=null;client.current?.close();client.current=makeClient();setOnline(null);const url=new URL(window.location.href);url.searchParams.delete('room');window.history.replaceState({},'',url);}}}>⚙ Setup</button></div>
+      <div className="ctl-toolbar"><button type="button" className={showDefence?'ctl-range-toggle is-active':'ctl-range-toggle'} aria-pressed={showDefence} onClick={()=>setShowDefence(v=>!v)}>{showDefence?'◉ Hide air-defence rings':'◎ Show air-defence rings'}</button><button onClick={()=>setZoom(z=>Math.max(1,+(z-0.25).toFixed(2)))} disabled={zoom<=1} aria-label="Zoom board out">− Zoom</button><button onClick={()=>setZoom(z=>Math.min(2.5,+(z+0.25).toFixed(2)))} disabled={zoom>=2.5} aria-label="Zoom board in">+ Zoom</button><button disabled={isOnline||!undoStack.length} onClick={()=>{seq.current++;if(undoStack.length){setState(undoStack.at(-1));setUndoStack(h=>h.slice(0,-1));setSelected(null);}}} >↶ Undo</button>{!isOnline&&<button onClick={()=>reset()}>↻ Reset</button>}<button onClick={()=>setView(v=>v==='red'?'blue':'red')}>⇄ Rotate view</button><button onClick={()=>{setStarted(false);setGuide(-1);seq.current++;if(isOnline){activeRoomCode.current=null;client.current?.close();client.current=makeClient();setOnline(null);const url=new URL(window.location.href);url.searchParams.delete('room');window.history.replaceState({},'',url);}}}>⚙ Setup</button></div>
+      {showDefence&&<div className="ctl-defence-key" aria-live="polite"><span className="ctl-red-key">● Red air defence</span><span className="ctl-blue-key">● Blue air defence</span><span>Small dots = exact threatened intersections; dashed ring = approximate visual radius. Anti-aircraft & Navy: 1. Missile: 2.</span></div>}
       <p className="ctl-message" aria-live="polite">{notice}</p>
       </section>
       <aside className="ctl-sidebar"><div className="ctl-panel"><h2>{selectedPiece?TYPES[selectedPiece.type].label:'Field Guide'}</h2>{selectedPiece?<><img src={graphic(selectedPiece)} alt="" className="ctl-preview"/><strong>{TYPES[selectedPiece.type].native}</strong><p>{labelFor(selectedPiece)}</p><p>{actions.length} legal actions. {selectedPiece.carrier?'Currently embarked.':''}</p></>:<p>Tap a unit to learn its identity and review available movement, transport and attack targets.</p>}</div>
-        <div className="ctl-panel"><h3>Victory condition</h3><p>{state.mode==='division'?'Capture the enemy Commander, both naval ships, both aircraft, or all six infantry/tank/artillery units.':'Capture the enemy Commander.'}</p></div>
-        <div className="ctl-panel"><h3>Rules status</h3><p>Reconstructed movement. Set-up identities, hero promotion timing, stack multi-attacks, and certain aircraft AA encounters require adjudication.</p><a href="https://en.boardgamearena.com/gamepanel?game=commanderchess" target="_blank" rel="noreferrer">Published game reference</a></div>
+        <div className="ctl-panel"><h3>Selected rules profile</h3><strong>{currentProfile.label}</strong><p>{currentProfile.autoDivision?`Win by capturing the Commander, both ships, both aircraft or the entire ${currentProfile.landDivision.length===3?'six':'nine'}-unit land division.`:'Only defeating the enemy Commander ends the untimed match automatically.'}</p><p>Movement basis: {currentProfile.movementBasis}. No tournament timer is enabled in this practice build.</p></div>
+        <div className="ctl-panel"><h3>Defensive coverage</h3><p>Anti-aircraft (Cao xạ) and Navy (Hải quân) defend radius 1. Missile (Tên lửa) covers 2 orthogonally and 1 diagonally. Red and blue overlays are optional and do not modify the rules. Engineer air defence remains unresolved and is not displayed.</p><p>Exact initial setup and ford columns are provisional; advanced multi-action stacks, HQ interactions and air interception timing are under review.</p><a href="https://en.doc.boardgamearena.com/Gamehelpcommanderchess" target="_blank" rel="noreferrer">BGA rules reference</a></div>
         <button className="ctl-primary" onClick={()=>setGuide(0)}>Learn with Pengu →</button>
       </aside>
     </div>}
     {guide>=0&&<div className="ctl-modal-overlay" role="presentation"><section className="ctl-modal" role="dialog" aria-modal="true" aria-label="Commander Chess tutorial"><button className="ctl-close" onClick={()=>setGuide(-1)} aria-label="Close tutorial">×</button><div className="ctl-guide-heading"><PenguinHost host="pengu" size="mini"/><div className="ctl-kicker">PENGU ORDER · RULES & ROUTES</div></div><h2>{activeHint[0]}</h2><p>{activeHint[1]}</p><div className="ctl-tutorial-nav"><span>Lesson {guide+1}/{steps.length}</span>{guide>0&&<button onClick={()=>setGuide(i=>i-1)}>Back</button>}<button className="ctl-primary" onClick={()=>setGuide(i=>i===steps.length-1?-1:i+1)}>{guide===steps.length-1?'Play':'Next'}</button></div></section></div>}
-    <footer className="ctl-foot">Cờ Tư Lệnh by Nguyễn Quý Hải (Vietnam, 2010). Arctic illustrations are independent adaptations, not official game art. Rules profile: {VERSION}.</footer>
+    <footer className="ctl-foot">Cờ Tư Lệnh by Nguyễn Quý Hải (Vietnam, 2010). Arctic illustrations are independent adaptations, not official game art. Rules build: {VERSION}; profile: {currentProfile.id} · Research draft, not a verified official edition.</footer>
   </main>;
 }
