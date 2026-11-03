@@ -3,3 +3,9 @@
 .ctl-online-join{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}.ctl-online-join label{font-size:13px;flex:1;min-width:230px}.ctl-online-join input{display:block;background:#09253f;border:1px solid #54869e;color:#ecfbff;padding:12px;border-radius:10px;width:100%;margin-top:7px}.ctl-online-join p{width:100%;color:#b3ebf5}.ctl-online-bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:10px 12px;margin-bottom:10px;background:#0c2c4a;border:1px solid #4a8eb3;border-radius:12px;font-size:13px}.ctl-online-bar button{background:#1c5673;color:white;border:1px solid #77b7cc;border-radius:8px;padding:8px;cursor:pointer}
 
 .ctl-guide-heading{display:flex;align-items:center;gap:10px}.ctl-heading .penguin-host-pair{flex-shrink:0}
+
+/* Source-accurate Antarctic board: transparent unit silhouettes aligned to 132 intersections. */
+.ctl-board-viewport{max-width:100%;max-height:min(84vh,1000px);overflow:auto;overscroll-behavior:contain;scrollbar-color:#8abed8 #092643;border-radius:10px}
+.ctl-board-viewport .ctl-board{width:calc(100% * var(--ctl-zoom,1));min-width:0;max-height:none;max-width:none;height:auto;touch-action:manipulation}
+.ctl-board g[role=button]:focus-visible circle[fill=transparent]{stroke:#ffd968;stroke-width:4;fill:#fff2a422}
+@media(max-width:520px){.ctl-board-viewport{max-height:75vh}.ctl-board-wrap{padding:5px}.ctl-board-viewport .ctl-board{min-width:0}}
