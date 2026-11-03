@@ -1,17 +1,32 @@
 // GENERATED from frontend/src/games/co-tu-lenh/rules.js; do not edit
 /**
- * Antarctic Kingdoms Cờ Tư Lệnh — BGA-inspired PRACTICE RECONSTRUCTION v0.2.
- * Two-player deterministic rules. No chain dependencies. Not a certified rulebook implementation.
- * Initial piece identities are inferred from a 512px Wikimedia diagram and require primary-source review.
- * Unsupported multi-capture stacking and official timed scoring are intentionally excluded.
+ * Antarctic Kingdoms Cờ Tư Lệnh — 2015/2024 VERSIONED RESEARCH RULES v0.3.
+ * Two-player deterministic practice implementation; NOT a certified/complete rulebook edition.
+ * Unverified: exact full starting setup, ford coordinates, some carrier/AA event ordering,
+ * composite multi-captures, tournament timers and publisher's commercial permission.
+ * The fantasy unit sprites are an explicitly modern Antarctic Kingdoms visual adaptation.
  */
-const VERSION = 'co-tu-lenh-practice-0.2';
+const VERSION = 'co-tu-lenh-practice-0.3';
+/** Heritage movement/win-rule choices from user-provided research v0.3, not edition approval. */
+const RULE_PROFILES = Object.freeze({
+  ancientchess_2015_standard: Object.freeze({id:'ancientchess_2015_standard',label:'Heritage Standard · 2015 (research)',movementBasis:'AncientChess 2015',commanderRange:Infinity,missileDiagonal:true,landDivision:['infantry','tank','artillery'],autoDivision:true}),
+  ancientchess_2015_long: Object.freeze({id:'ancientchess_2015_long',label:'Heritage Long / Total War · 2015 (research)',movementBasis:'AncientChess 2015',commanderRange:Infinity,missileDiagonal:true,landDivision:null,autoDivision:false}),
+  creator_2024_standard: Object.freeze({id:'creator_2024_standard',label:'Creator 2024 Standard · research',movementBasis:'PROVISIONAL 2015 movement pending 2024 adjudication',commanderRange:Infinity,missileDiagonal:true,landDivision:['infantry','tank','engineer','artillery','militia'],autoDivision:true}),
+  bga_2024: Object.freeze({id:'bga_2024',label:'BGA 2024 · documented differences',movementBasis:'BGA 2024',commanderRange:10,missileDiagonal:false,landDivision:['infantry','tank','artillery'],autoDivision:true})
+});
+const DEFAULT_PROFILE='ancientchess_2015_standard';
+const resolveProfile=(key)=>key==='commander'?'ancientchess_2015_long':key==='division'?'ancientchess_2015_standard':key;
+function profileFor(state){
+  const id=resolveProfile(state.rulesProfile||state.mode||DEFAULT_PROFILE);
+  return RULE_PROFILES[id]||RULE_PROFILES[DEFAULT_PROFILE];
+}
+
 const FILES = 11;
 const RANKS = 12;
 const TEAMS = ['red','blue'];
-const FORDS = [5,7];
+const FORDS = [5,7]; // PROVISIONAL ONLY: exact 2015 ford indices still await diagram verification.
 const TYPES = Object.freeze({
-  commander:{label:'Commander',native:'Tư lệnh',count:1,range:10,points:100},
+  commander:{label:'Commander',native:'Tư lệnh',count:1,range:11,points:100},
   infantry:{label:'Infantry',native:'Bộ binh',count:2,range:1,points:10},
   tank:{label:'Tank',native:'Xe tăng',count:2,range:2,points:20},
   militia:{label:'Militia',native:'Dân quân',count:1,range:1,points:10,diagonal:true},
@@ -20,8 +35,8 @@ const TYPES = Object.freeze({
   antiair:{label:'Anti-aircraft',native:'Cao xạ',count:2,range:1,points:10,airDefence:1},
   missile:{label:'Missile',native:'Tên lửa',count:1,range:2,points:20,diagonalRange:1,airDefence:2},
   aircraft:{label:'Aircraft',native:'Không quân',count:2,range:4,points:40,diagonal:true,canJump:true},
-  navy:{label:'Navy',native:'Hải quân',count:2,range:4,points:80,diagonal:true,canJump:true,airDefence:1},
-  headquarters:{label:'Headquarters',native:'Sở chỉ huy',count:2,range:0,points:0}
+  navy:{label:'Navy',native:'Hải quân',count:2,range:4,points:80,diagonal:true,airDefence:1},
+  headquarters:{label:'Headquarters',native:'Sở chỉ huy',count:2,range:0,points:10}
 });
 const POINT_VALUES=Object.fromEntries(Object.entries(TYPES).map(([k,v])=>[k,v.points]));
 const ORTHO = [[1,0],[-1,0],[0,1],[0,-1]];
@@ -36,7 +51,10 @@ const byId=(state,id)=>state.pieces.find(p=>p.id===id&&p.alive);
 const atPoint=(state,x,y)=>state.pieces.filter(p=>p.alive&&p.x===x&&p.y===y);
 const cargoOf=(state,id)=>state.pieces.filter(p=>p.alive&&p.carrier===id);
 const direction=(dx,dy)=>(dx===0||dy===0)?'orthogonal':Math.abs(dx)===Math.abs(dy)?'diagonal':null;
-const maxRange=p=>(TYPES[p.type]?.range||0)+(p.hero?1:0);
+const maxRange=(p,state)=>((p.type==='commander'?profileFor(state).commanderRange:TYPES[p.type]?.range)||0)+(p.hero?1:0);
+const permitsDiagonal=(p,state)=>Boolean(p.hero||TYPES[p.type].diagonal||(p.type==='missile'&&profileFor(state).missileDiagonal));
+const diagonalRange=(p,state)=>p.type==='missile'&&!p.hero? (profileFor(state).missileDiagonal?1:0):maxRange(p,state);
+
 const piecesAt=(state,x,y)=>atPoint(state,x,y);
 const isHeavy=t=>['artillery','antiair','missile'].includes(t);
 const seaPoint=(x,y)=>x<=1;
@@ -64,11 +82,23 @@ function travelAllowed(state,p,x,y,actionKind='move') {
   if(isHeavy(p.type)&&crossedRiver(p.y,y)&&!FORDS.includes(x))return false;
   return true;
 }
-function threatenedByAirDefence(state,x,y,owner) {
-  return state.pieces.filter(p=>p.alive&&p.team!==owner&&TYPES[p.type].airDefence&&!p.carrier).some(p=>{
-    const r=TYPES[p.type].airDefence;
-    return (p.x-x)**2+(p.y-y)**2<=r*r;
-  });
+/** The precise air-defence cells used for flight interception AND user-visible rings. */
+function airDefencePoints(unit){
+  if(!unit?.alive||unit.carrier||!['antiair','missile','navy'].includes(unit.type))return [];
+  const r=unit.type==='missile'?2:1,points=[];
+  for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++){
+    // Radius 1 = centre and orthogonal neighbors; missile also one-step diagonals.
+    if(dx*dx+dy*dy>r*r)continue;
+    const x=unit.x+dx,y=unit.y+dy;if(inside(x,y))points.push({x,y});
+  }
+  return points;
+}
+function airDefenceZones(state){
+  return state.pieces.filter(p=>p.alive&&!p.carrier&&['antiair','missile','navy'].includes(p.type))
+    .map(p=>({id:p.id,team:p.team,type:p.type,x:p.x,y:p.y,radius:TYPES[p.type].airDefence,points:airDefencePoints(p)}));
+}
+function threatenedByAirDefence(state,x,y,owner){
+  return airDefenceZones(state).some(z=>z.team!==owner&&z.points.some(pt=>pt.x===x&&pt.y===y));
 }
 function projectedAirRisk(state,p,x,y){
   if(p.type!=='aircraft'||p.hero)return false;
@@ -85,11 +115,11 @@ function legalActions(state,id) {
   if(!p||p.team!==state.turn||state.winner)return [];
   if(p.type==='headquarters')return [];
   const acts=[];
-  const spec=TYPES[p.type],r=maxRange(p);
-  const dirs=p.hero||spec.diagonal||spec.diagonalRange?ORTHO.concat(DIAG):ORTHO;
+  const spec=TYPES[p.type],r=maxRange(p,state);
+  const dirs=permitsDiagonal(p,state)?ORTHO.concat(DIAG):ORTHO;
   for(const [dx,dy] of dirs){
     const diagonal=dx&&dy;
-    const lim=diagonal&&!p.hero&&!spec.diagonal&&spec.diagonalRange?spec.diagonalRange:r;
+    const lim=diagonal?diagonalRange(p,state):r;
     for(let step=1;step<=lim;step++) {
       const x=p.x+dx*step,y=p.y+dy*step;
       if(!inside(x,y))break;
@@ -99,7 +129,7 @@ function legalActions(state,id) {
       const location=piecesAt(state,x,y);
       const foes=location.filter(q=>q.team!==p.team),friends=location.filter(q=>q.team===p.team);
       const isArtilleryCapture=p.type==='artillery'&&foes.length>0;
-      const pass=spec.canJump||p.type==='artillery';
+      const pass=p.type==='aircraft'||p.type==='artillery';
       const obstructed=blocked(state,p,x,y,false);
       if(!pass&&obstructed)break;
       const risk=projectedAirRisk(state,p,x,y);
@@ -112,7 +142,10 @@ function legalActions(state,id) {
       }
       if(foes.length){
         if(p.type==='commander'&&step>1)break;
-        const target=foes.find(q=>!q.carrier)||foes[0];
+        const shelter=foes.find(q=>q.type==='headquarters');
+        const commander=foes.find(q=>q.type==='commander');
+        const bypassShelter=commander&&shelter&&['engineer','tank','artillery','aircraft'].includes(p.type);
+        const target=bypassShelter?commander:(foes.find(q=>!q.carrier)||foes[0]);
         if(p.type==='aircraft'&&target.type==='aircraft'){
           acts.push({id:p.id,kind:'capture',x,y,targetId:target.id,risk});
         }else if(p.type==='navy'&&!nautical(x,y)){
@@ -146,10 +179,11 @@ function countArmy(state,team){return state.pieces.filter(p=>p.alive&&p.team===t
 function checkDivisionVictory(state,team){
   const enemy=opponent(team),left=state.pieces.filter(p=>p.alive&&p.team===enemy);
   if(!left.some(p=>p.type==='commander'))return 'commander';
-  if(state.mode==='division'){
+  const profile=profileFor(state);
+  if(profile.autoDivision){
     if(!left.some(p=>p.type==='navy'))return 'navy';
     if(!left.some(p=>p.type==='aircraft'))return 'air';
-    if(!left.some(p=>['infantry','tank','artillery'].includes(p.type)))return 'land';
+    if(!left.some(p=>profile.landDivision.includes(p.type)))return 'land';
   }
   return null;
 }
@@ -163,9 +197,8 @@ function givesCheck(state,p){
   if(!e||p.type==='headquarters')return false;
   const dx=e.x-p.x,dy=e.y-p.y,shape=direction(dx,dy);
   if(!shape||(dx===0&&dy===0))return false;
-  const limit=(shape==='diagonal'&&!p.hero&&!TYPES[p.type].diagonal&&TYPES[p.type].diagonalRange)
-    ?TYPES[p.type].diagonalRange:maxRange(p);
-  if(shape==='diagonal'&&!p.hero&&!TYPES[p.type].diagonal&&!TYPES[p.type].diagonalRange)return false;
+  const limit=shape==='diagonal'?diagonalRange(p,state):maxRange(p,state);
+  if(shape==='diagonal'&&!permitsDiagonal(p,state))return false;
   if(Math.max(Math.abs(dx),Math.abs(dy))>limit)return false;
   if(p.type==='commander'&&Math.max(Math.abs(dx),Math.abs(dy))>1)return false;
   return !blocked(state,p,e.x,e.y,p.type==='aircraft'||p.type==='navy'||p.type==='artillery');
@@ -223,14 +256,15 @@ const RED_SETUP=[
   ['navy',2,3],['tank',4,3],['engineer',5,3],['engineer',7,3],['tank',8,3],
   ['infantry',2,4],['artillery',3,4],['militia',6,4],['artillery',9,4],['infantry',10,4]
 ];
-function createInitialState(mode='division') {
-  if(!['division','commander'].includes(mode))throw Error('Unknown match mode');
+function createInitialState(mode=DEFAULT_PROFILE) {
+  const rulesProfile=resolveProfile(mode);
+  if(!RULE_PROFILES[rulesProfile])throw Error('Unknown rules profile');
   const pieces=[];
   for(const team of TEAMS){
     RED_SETUP.forEach(([type,x,y],i)=>pieces.push({id:`${team}-${String(i+1).padStart(2,'0')}`,type,team,
       x,y:team==='red'?y:11-y,hero:false,alive:true,carrier:null}));
   }
-  return {rulesVersion:VERSION,mode,turn:'red',pieces,captures:[],historyMessage:'',lastMove:null,ply:0,winner:null,winReason:null,setupVerified:false};
+  return {rulesVersion:VERSION,mode,rulesProfile,turn:'red',pieces,captures:[],historyMessage:'',lastMove:null,ply:0,winner:null,winReason:null,setupVerified:false,fordsVerified:false};
 }
 function allLegalActions(state,team=state.turn){
   if(state.winner)return [];
@@ -258,4 +292,4 @@ function chooseBotMove(state,level='medium'){
   }).sort((a,b)=>b.v-a.v)[0].a;
 }
 
-module.exports={VERSION,FILES,RANKS,TEAMS,FORDS,TYPES,POINT_VALUES,at,inside,water,coast,nautical,opponent,byId,atPoint,cargoOf,threatenedByAirDefence,legalActions,countArmy,checkDivisionVictory,applyAction,createInitialState,allLegalActions,chooseBotMove};
+module.exports={VERSION,RULE_PROFILES,DEFAULT_PROFILE,resolveProfile,profileFor,FILES,RANKS,TEAMS,FORDS,TYPES,POINT_VALUES,at,inside,water,coast,nautical,opponent,byId,atPoint,cargoOf,airDefencePoints,airDefenceZones,threatenedByAirDefence,legalActions,countArmy,checkDivisionVictory,applyAction,createInitialState,allLegalActions,chooseBotMove};
