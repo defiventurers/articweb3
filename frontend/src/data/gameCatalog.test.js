@@ -21,9 +21,14 @@ describe("game catalog discovery policy", () => {
     expect(LANDING_GAME_CATALOG.some((game) => game.id === "sannin-shogi")).toBe(false);
   });
 
+  it("adds a source-labelled Commander Chess practice game without changing other IDs", () => {
+    expect(getCatalogGame("co-tu-lenh")).toMatchObject({id:"co-tu-lenh",statusKey:"research",available:true});
+    expect(LANDING_GAME_CATALOG.some(game => game.id === "co-tu-lenh")).toBe(true);
+  });
+
   it("removes Heritage Board Arcade from every landing-game collection", () => {
     expect(LANDING_GAME_CATALOG.some((game) => game.id === "heritage-arcade")).toBe(false);
-    expect(LANDING_GAME_CATALOG).toHaveLength(14);
+    expect(LANDING_GAME_CATALOG).toHaveLength(15);
     expect(LANDING_GAME_CATALOG[0]?.id).toBe("shogi-frozen-shogunate");
   });
 });

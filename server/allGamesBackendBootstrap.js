@@ -22,6 +22,7 @@ const { injectSanninShogi } = require("./sanninBackendBootstrap.js");
 const { injectXiangqi } = require("./xiangqiBackendBootstrap.js");
 const { injectShogi } = require("./shogiBackendBootstrap.js");
 const { injectArcticPlay } = require("./arcticPlayBackendBootstrap.js");
+const { injectCoTuLenh } = require("./coTuLenhBackendBootstrap.js");
 
 function injectKhasiFishflowAfterAllGames(source) {
   let transformed = source;
@@ -149,7 +150,7 @@ function loadAllGamesBackend() {
   backendModule.filename = indexPath;
   backendModule.paths = Module._nodeModulePaths(path.dirname(indexPath));
   require.cache[indexPath] = backendModule;
-  backendModule._compile(injectArcticPlay(injectXiangqi(injectShogi(injectSanninShogi(injectSanYouQi(injectSanguo(transformed)))))), indexPath);
+  backendModule._compile(injectCoTuLenh(injectArcticPlay(injectXiangqi(injectShogi(injectSanninShogi(injectSanYouQi(injectSanguo(transformed))))))), indexPath);
   return backendModule.exports;
 }
 
