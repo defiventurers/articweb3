@@ -15,8 +15,10 @@ const steps=[
   ['Attack and transport','Artillery may jump to capture, aircraft can return after a bombing strike, and tanks/ships can carry selected friendly units. Beware missile and anti-aircraft danger zones.'],
   ['Try the board','Tap one of your units, then a highlighted intersection. A dotted circle means movement; a red outline means attack; orange indicates an air-defence risk.']
 ];
-const W=752,H=824,X=78,Y=80,S=58;
-const graphic=(p)=>(`${ROOT}${p.team}-${p.type}.svg`);
+// Immutable board geometry taken from the user-approved 11-by-12 coordinate master.
+const W=1199,H=1312,X=148,Y=183,STEP_X=90.4,STEP_Y=900/11;
+const BOARD='/assets/co-tu-lenh/board/board-antarctic-11x12.webp';
+const graphic=(p)=>(`${ROOT}${p.team}-${p.type}.webp`);
 const labelFor=p=>p?`${p.team.toUpperCase()} ${TYPES[p.type].label}${p.hero?' ★ Hero':''}`:'';
 export default function CoTuLenhApp({onExitToLibrary}) {
   const [mode,setMode]=useState('bot');
@@ -30,6 +32,7 @@ export default function CoTuLenhApp({onExitToLibrary}) {
   const [started,setStarted]=useState(false);
   const [undoStack,setUndoStack]=useState([]);
   const [view,setView]=useState('red');
+  const [zoom,setZoom]=useState(1);
   const [joinCode,setJoinCode]=useState(()=>new URLSearchParams(window.location.search).get('room')?.toUpperCase()||'');
   const [online,setOnline]=useState(null);
   const [isConnected,setIsConnected]=useState(false);
@@ -41,7 +44,7 @@ export default function CoTuLenhApp({onExitToLibrary}) {
   const botTurn=started&&mode==='bot'&&state.turn!==human&&!state.winner;
   const actions=useMemo(()=>selected?legalActions(state,selected):[],[state,selected]);
   const movingTeam=state.turn;
-  const point=(x,y)=>view==='red'?{x:X+x*S,y:Y+(11-y)*S}:{x:X+(10-x)*S,y:Y+y*S};
+  const point=(x,y)=>view==='red'?{x:X+x*STEP_X,y:Y+(11-y)*STEP_Y}:{x:X+(10-x)*STEP_X,y:Y+y*STEP_Y};
   const redraw=next=>{setState(next);setSelected(null);};
   function reset(nextMode=mode){
     seq.current++;
@@ -125,32 +128,22 @@ export default function CoTuLenhApp({onExitToLibrary}) {
     {started&&<div className="ctl-play-layout"><section className="ctl-board-wrap" aria-label="Commander Chess board">
       {isOnline&&online&&<div className="ctl-online-bar"><b>Room {online.room.roomCode} · {isConnected?'Connected':'Disconnected'}</b><span>Red: {online.room.seats.red.name||'Waiting'} · Blue: {online.room.seats.blue.name||'Waiting'}</span><button onClick={()=>navigator.clipboard?.writeText(inviteUrl(online.room.roomCode))}>Copy invite</button>{online.room.status==='waiting'&&<button onClick={startRoom} disabled={!online.room.seats.red.name||!online.room.seats.blue.name}>Start online match</button>}{!isConnected&&<button onClick={async()=>{try{const c=await client.current.request('ctl_room_sync',{roomCode:online.room.roomCode,token:online.token});setOnline(old=>({...old,room:c.room}));setState(c.room.gameState);}catch(e){setNotice(e.message);}}}>Reconnect</button>}</div>}
       <div className="ctl-score"><span>🔴 Red · {remaining.red} units</span><b>{state.winner?`${state.winner.toUpperCase()} WINS — ${state.winReason}`:`${movingTeam.toUpperCase()} TO MOVE${botTurn?' · Bot thinking':''}`}</b><span>🔵 Blue · {remaining.blue} units</span></div>
-      <svg className="ctl-board" viewBox={`0 0 ${W} ${H}`} role="group" aria-label="11 files by 12 ranks, 38 starting units">
-        <defs><linearGradient id="ctlIce" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#f0fbff"/><stop offset="1" stopColor="#b2dbe7"/></linearGradient><linearGradient id="ctlWater"><stop stopColor="#1d6595"/><stop offset="1" stopColor="#123d78"/></linearGradient></defs>
-        <rect width={W} height={H} fill="#08213d" rx="22"/>
-        <text x={W/2} y="41" fontSize="16" fill="#d2f5ff" textAnchor="middle" fontWeight="bold">COMMANDER CHESS · TƯ LỆNH</text>
-        <rect x={X-14} y={Y-14} width={10*S+28} height={11*S+28} rx="10" fill="url(#ctlIce)"/>
-        <rect x={view==='red'?X-14:X+8*S-14} y={Y-14} width={2*S+28} height={11*S+28} fill="url(#ctlWater)" opacity=".98"/>
-        <rect x={X-14} y={Y+5*S} width={10*S+28} height={S} fill="#65cadd" opacity=".65"/>
-        {[5,7].map(f=>{const t=point(f,5);return <rect key={f} x={t.x-18} y={Y+5*S+3} width="36" height={S-6} rx="5" fill="#dbe3ca" stroke="#77aaba" strokeDasharray="4 4"/>;})}
-        {Array.from({length:11},(_,i)=><line key={`v${i}`} x1={X+i*S} y1={Y} x2={X+i*S} y2={Y+11*S} stroke="#315a75" strokeWidth="1.8"/>)}
-        {Array.from({length:12},(_,i)=><line key={`h${i}`} x1={X} y1={Y+i*S} x2={X+10*S} y2={Y+i*S} stroke="#315a75" strokeWidth="1.8"/>)}
-        {Array.from({length:11},(_,i)=><text key={`file${i}`} x={X+i*S} y={Y+11*S+28} textAnchor="middle" fill="#bce5f1" fontSize="13">{view==='red'?i:10-i}</text>)}
-        {Array.from({length:12},(_,i)=><text key={`rank${i}`} x={X-33} y={Y+i*S+4} textAnchor="middle" fill="#bce5f1" fontSize="13">{view==='red'?11-i:i}</text>)}
+      <div className="ctl-board-viewport" style={{'--ctl-zoom':zoom}}>
+      <svg className="ctl-board" viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Cờ Tư Lệnh with 11 columns, 12 ranks, 132 clickable intersections; red and blue Arctic faction pieces">
+        <image href={BOARD} x="0" y="0" width={W} height={H} preserveAspectRatio="none" transform={view==='blue'?`rotate(180 ${W/2} ${H/2})`:undefined} pointerEvents="none" />
         {Array.from({length:132},(_,i)=>{const x=i%11,y=Math.floor(i/11),pt=point(x,y),stack=atPoint(state,x,y);
           const top=stack.find(p=>!p.carrier)||stack[0];const legal=actions.filter(a=>a.x===x&&a.y===y);const highlight=legal.length>0;
           const danger=legal.some(a=>a.risk),capture=legal.some(a=>['capture','bomb','fire'].includes(a.kind));
           const isSelected=selectedPiece?.x===x&&selectedPiece?.y===y;
           return <g key={`${x}:${y}`} tabIndex={botTurn||blockedOnline?-1:0} role="button" aria-label={`${x},${y}${top?' — '+labelFor(top):''}${highlight?' — legal target':''}`} onClick={()=>clickPoint(x,y)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();clickPoint(x,y);}}} style={{cursor:'pointer'}}>
-            {highlight&&<circle cx={pt.x} cy={pt.y} r="24" fill={capture?'#f47060':'#a0f6ed'} opacity=".6" stroke={danger?'#ffba41':capture?'#e55449':'#177da1'} strokeWidth={danger?5:2}/>}
-            {isSelected&&<circle cx={pt.x} cy={pt.y} r="26" fill="none" stroke="#ffd44a" strokeWidth="4"/>}
-            <circle cx={pt.x} cy={pt.y} r="28" fill="transparent"/>
-            {top&&<><image x={pt.x-23} y={pt.y-23} width="46" height="46" href={graphic(top)} pointerEvents="none"/>{stack.length>1&&<g pointerEvents="none"><circle cx={pt.x+20} cy={pt.y-18} r="10" fill="#08213d" stroke="#effaff"/><text x={pt.x+20} y={pt.y-14} textAnchor="middle" fontSize="11" fontWeight="bold" fill="white">{stack.length}</text></g>}{top.hero&&<text x={pt.x-21} y={pt.y-23} fill="#ffe073" fontSize="16" pointerEvents="none">★</text>}</>}
+            {highlight&&<circle cx={pt.x} cy={pt.y} r="35" fill={capture?'#f47060':'#a0f6ed'} opacity=".6" stroke={danger?'#ffba41':capture?'#e55449':'#177da1'} strokeWidth={danger?5:2}/>}
+            {isSelected&&<circle cx={pt.x} cy={pt.y} r="39" fill="none" stroke="#ffd44a" strokeWidth="4"/>}
+            <circle cx={pt.x} cy={pt.y} r="40" fill="transparent"/>
+            {top&&<><image x={pt.x-33} y={pt.y-33} width="66" height="66" href={graphic(top)} pointerEvents="none"/>{stack.length>1&&<g pointerEvents="none"><circle cx={pt.x+27} cy={pt.y-28} r="12" fill="#08213d" stroke="#effaff"/><text x={pt.x+27} y={pt.y-24} textAnchor="middle" fontSize="11" fontWeight="bold" fill="white">{stack.length}</text></g>}{top.hero&&<text x={pt.x-32} y={pt.y-32} fill="#ffe073" fontSize="16" pointerEvents="none">★</text>}</>}
           </g>;
         })}
-        <text x={W/2} y={H-14} textAnchor="middle" fill="#a4d6e4" fontSize="13">SEA ◀ · SHALLOW FORDS ▥ · 11 × 12 INTERSECTIONS</text>
-      </svg>
-      <div className="ctl-toolbar"><button disabled={isOnline||!undoStack.length} onClick={()=>{seq.current++;if(undoStack.length){setState(undoStack.at(-1));setUndoStack(h=>h.slice(0,-1));setSelected(null);}}} >↶ Undo</button>{!isOnline&&<button onClick={()=>reset()}>↻ Reset</button>}<button onClick={()=>setView(v=>v==='red'?'blue':'red')}>⇄ Rotate view</button><button onClick={()=>{setStarted(false);setGuide(-1);seq.current++;if(isOnline){activeRoomCode.current=null;client.current?.close();client.current=makeClient();setOnline(null);const url=new URL(window.location.href);url.searchParams.delete('room');window.history.replaceState({},'',url);}}}>⚙ Setup</button></div>
+      </svg></div>
+      <div className="ctl-toolbar"><button onClick={()=>setZoom(z=>Math.max(1,+(z-0.25).toFixed(2)))} disabled={zoom<=1} aria-label="Zoom board out">− Zoom</button><button onClick={()=>setZoom(z=>Math.min(2.5,+(z+0.25).toFixed(2)))} disabled={zoom>=2.5} aria-label="Zoom board in">+ Zoom</button><button disabled={isOnline||!undoStack.length} onClick={()=>{seq.current++;if(undoStack.length){setState(undoStack.at(-1));setUndoStack(h=>h.slice(0,-1));setSelected(null);}}} >↶ Undo</button>{!isOnline&&<button onClick={()=>reset()}>↻ Reset</button>}<button onClick={()=>setView(v=>v==='red'?'blue':'red')}>⇄ Rotate view</button><button onClick={()=>{setStarted(false);setGuide(-1);seq.current++;if(isOnline){activeRoomCode.current=null;client.current?.close();client.current=makeClient();setOnline(null);const url=new URL(window.location.href);url.searchParams.delete('room');window.history.replaceState({},'',url);}}}>⚙ Setup</button></div>
       <p className="ctl-message" aria-live="polite">{notice}</p>
       </section>
       <aside className="ctl-sidebar"><div className="ctl-panel"><h2>{selectedPiece?TYPES[selectedPiece.type].label:'Field Guide'}</h2>{selectedPiece?<><img src={graphic(selectedPiece)} alt="" className="ctl-preview"/><strong>{TYPES[selectedPiece.type].native}</strong><p>{labelFor(selectedPiece)}</p><p>{actions.length} legal actions. {selectedPiece.carrier?'Currently embarked.':''}</p></>:<p>Tap a unit to learn its identity and review available movement, transport and attack targets.</p>}</div>
@@ -163,4 +156,3 @@ export default function CoTuLenhApp({onExitToLibrary}) {
     <footer className="ctl-foot">Cờ Tư Lệnh by Nguyễn Quý Hải (Vietnam, 2010). Arctic illustrations are independent adaptations, not official game art. Rules profile: {VERSION}.</footer>
   </main>;
 }
-
