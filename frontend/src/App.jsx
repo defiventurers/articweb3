@@ -39,6 +39,7 @@ import { KhasiFishflowApp } from "./games/khasi-fishflow/KhasiFishflowApp.jsx";
 import { RumaIcePuzzleApp } from "./games/ruma-ice-puzzle/RumaIcePuzzleApp.jsx";
 import { HeritageArcadeApp } from "./games/heritage-arcade/HeritageArcadeApp.jsx";
 import SanYouQiApp from "./games/san-you-qi/SanYouQiApp.jsx";
+import CoTuLenhApp from "./games/co-tu-lenh/CoTuLenhApp.jsx";
 import ShanshuiApp from "./games/shanshui-xiangqi/ShanshuiApp.jsx";
 import SanYouQiMovementGuide from "./games/san-you-qi/SanYouQiMovementGuide.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
@@ -77,6 +78,7 @@ const SMOKE_PROFILE = { wallet: "0x0000000000000000000000000000000000000019", na
 const COVER_TRACK_DELAY_MS = 650;
 const PLAY_NOW_TRACK_DELAY_MS = 500;
 const PLAYABLE_GAME_IDS = new Set([
+  "co-tu-lenh",
   "heritage-arcade",
   "agon-cold-throne",
   "shogi-frozen-shogunate",
@@ -158,6 +160,7 @@ export default function App() {
   if (screen === "san-you-qi" && params.get("movement") === "1") return withAppChrome(<SanYouQiMovementGuide onExit={exitToLibrary} />, screen);
   if (screen === "shanshui-xiangqi") return withAppChrome(<ShanshuiApp onExit={exitToLibrary} />, screen);
   if (screen === "san-you-qi") return withAppChrome(<SanYouQiApp onExit={exitToLibrary} />, screen);
+  if (screen === "co-tu-lenh") return withAppChrome(<CoTuLenhApp onExitToLibrary={exitToLibrary} />, screen);
   if (screen === "nine-ice-forts") return withAppChrome(<NineIceFortsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
   if (screen === "four-wing-ice-hunt") return withAppChrome(<FourWingIceHuntApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
   if (screen === "fishflow") return withAppChrome(<FishflowApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
