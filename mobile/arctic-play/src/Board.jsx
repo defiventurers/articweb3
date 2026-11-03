@@ -42,7 +42,7 @@ export function Board({id,state,legal,selected,onSelect,onTarget,canAct}){
             {unit&&<>
               {inherited&&<circle cx={cell.x} cy={cell.y} r={half*1.01} fill="none" stroke={COLORS[unit.owner]} strokeWidth="8"/>}
               <image href={unit.sprite} x={cell.x-half} y={cell.y-half} width={geometry.size} height={geometry.size} opacity={unit.inactive ? .45 : 1} transform={unit.rotation?`rotate(${unit.rotation} ${cell.x} ${cell.y})`:undefined} pointerEvents="none"/>
-              {inherited&&<circle cx={cell.x+half*.67} cy={cell.y+half*.65} r={half*.2} fill={COLORS[unit.owner]} stroke="white" strokeWidth="2"/>}
+              {unit.badge&&<g pointerEvents='none'><circle cx={cell.x+half*.65} cy={cell.y+half*.65} r={half*.28} fill={unit.badge==='M'?'#566a7f':'#126c9b'} stroke='white' strokeWidth='2'/><text x={cell.x+half*.65} y={cell.y+half*.65+5} fontSize='16' fill='white' textAnchor='middle'>{unit.badge}</text></g>}{inherited&&<circle cx={cell.x+half*.67} cy={cell.y+half*.65} r={half*.2} fill={COLORS[unit.owner]} stroke="white" strokeWidth="2"/>}
             </>}
             {highlight&&(unit?<circle cx={cell.x} cy={cell.y} r={half*.99} fill="#ff6e6322" stroke="#ff9a76" strokeWidth="6"/>:<circle cx={cell.x} cy={cell.y} r={half*.29} fill="#78d2ff" stroke="#fff" strokeWidth="3"/>)}
             <circle cx={cell.x} cy={cell.y} r={half*.72} fill="transparent"/>

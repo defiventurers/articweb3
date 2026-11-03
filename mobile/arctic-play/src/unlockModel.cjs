@@ -1,6 +1,7 @@
 // Shared by the Android/browser UI and the room service. No prices or secrets here.
 const VERSION=1,KEY_THRESHOLD=3;
 const CATALOG=Object.freeze({
+  shanshui:{starter:true,name:'Shanshui Xiangqi'},
   dominion:{starter:true,name:'Chaturanga'},
   xiangqi:{starter:true,name:'Xiangqi'},
   shogi:{starter:true,name:'Shogi'},

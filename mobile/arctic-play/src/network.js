@@ -36,7 +36,7 @@ export class RoomClient {
     return new Promise((resolve,reject)=>{
       const timer=setTimeout(()=>{this.pending.delete(requestId);reject(new Error('The room did not answer. Reconnect and try again.'));},20000);
       this.pending.set(requestId,{resolve,reject,timer});
-      this.socket.send(JSON.stringify({type,requestId,payload}));
+      this.socket.send(JSON.stringify({type,requestId,payload:{...payload,capabilities:[...new Set([...(payload.capabilities||[]),'shanshui-antarctic-v1'])]}}));
     });
   }
   useSession(session){this.session=session;}

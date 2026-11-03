@@ -1,6 +1,7 @@
 /* Tactile Expedition Theatre: inline, reliable cover art keeps each heritage game distinct without competing with play surfaces. */
 import { PenguinHostPair } from "./PenguinHosts.jsx";
 const COVER_META = {
+  "shanshui-xiangqi": { accent: "#ccacf3", glow: "#6d4699", label: "Mountain & River Chess" },
   "nine-ice-forts": { accent: "#bdeeff", glow: "#3d8bd0", label: "Mill alignment" },
   "four-wing-ice-hunt": { accent: "#efba7f", glow: "#b75c35", label: "Four-wing hunt" },
   fishflow: { accent: "#78d7eb", glow: "#19798c", label: "Relay sowing" },
@@ -31,6 +32,7 @@ function CoverGlyph({ gameId }) {
   const nodeStyle = { fill: "currentColor", stroke: "#071725", strokeWidth: "2" };
   const dotRows = (count, y, x = 46, gap = 29) => Array.from({ length: count }, (_, index) => <circle key={`${y}-${index}`} cx={x + index * gap} cy={y} r="8" />);
 
+  if (gameId === "shanshui-xiangqi") return <image href="/assets/games/shanshui-xiangqi/starting-position-light.webp" x="15" y="45" width="210" height="210" preserveAspectRatio="xMidYMid meet" />;
   if (gameId === "nine-ice-forts") return <><path {...common} d="M45 77H195V226H45ZM76 108H164V195H76ZM106 138H134V166H106Z" />{points([[45,77],[120,77],[195,77],[45,151],[195,151],[45,226],[120,226],[195,226],[120,151]]).map((node, index) => <g key={index} style={nodeStyle}>{node}</g>)}</>;
   if (gameId === "four-wing-ice-hunt") return <><path {...common} d="M42 152H198M120 54V250M42 152L120 54 198 152 120 250 42 152M65 95L175 209M175 95L65 209" />{points([[42,152],[65,95],[120,54],[175,95],[198,152],[175,209],[120,250],[65,209],[120,152]]).map((node, index) => <g key={index} style={nodeStyle}>{node}</g>)}</>;
   if (gameId === "fishflow" || gameId === "khasi-fishflow") return <><path {...common} d="M37 109C65 73 175 73 203 109M37 190C65 226 175 226 203 190" />{dotRows(6, 118).concat(dotRows(6, 182)).map((dot, index) => <g key={index} style={nodeStyle}>{dot}</g>)}<path {...common} opacity=".5" d="M54 152C82 130 104 175 132 152S182 130 196 152" /></>;

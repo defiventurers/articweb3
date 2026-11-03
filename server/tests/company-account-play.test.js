@@ -14,6 +14,19 @@ test('Production defaults require account login and never enroll a guest as a ve
  const {call,service}=await setup(t);assert.equal((await call('/accounts','POST',{})).status,403);assert.equal((await call('/play-access','POST',{installation:randomUUID()})).status,401);
  const ws={readyState:1};for(const type of ['ap_room_create','ap_room_preview','ap_access_open','ap_game_action']){await service.dispatch(ws,randomUUID(),type,{tableId:'dominion',playerId:randomUUID()});assert.equal(ws.last.type,'error',type);}
 });
+test('Shanshui keeps production account authentication for both formats and validates an authenticated move',async t=>{
+ const {service,login}=await setup(t),users=[await login('shanshui-one@example.test'),await login('shanshui-two@example.test')],engine=require('../arcticPlayGames.cjs');
+ const first={readyState:1},second={readyState:1},playerIds=[randomUUID(),randomUUID()],capabilities=['shanshui-antarctic-v1'];
+ await service.dispatch(first,randomUUID(),'ap_room_create',{tableId:'shanshui',playerId:playerIds[0],cloudSession:users[0].session,capabilities});assert.notEqual(first.last.type,'error',first.last.message);
+ const host={roomCode:first.last.payload.room.roomCode,playerId:playerIds[0],seatToken:first.last.payload.seatToken,cloudSession:users[0].session,capabilities};
+ await service.dispatch(second,randomUUID(),'ap_room_join',{roomCode:host.roomCode,playerId:playerIds[1],cloudSession:users[1].session,capabilities});assert.notEqual(second.last.type,'error',second.last.message);
+ const guest={roomCode:host.roomCode,playerId:playerIds[1],seatToken:second.last.payload.seatToken,cloudSession:users[1].session,capabilities};
+ for(const [ws,credentials] of [[first,host],[second,guest]])await service.dispatch(ws,randomUUID(),'ap_room_ready',{...credentials,ready:true});
+ await service.dispatch(first,randomUUID(),'ap_room_start',host);assert.equal(first.last.payload.room.status,'playing');const room=first.last.payload.room,action=engine.actions('shanshui',room.gameState)[0];
+ await service.dispatch(first,randomUUID(),'ap_game_action',{...host,revision:room.revision,actionId:action.id});assert.notEqual(first.last.type,'error',first.last.message);assert.equal(first.last.payload.room.gameState.turn,'blue');
+ await service.dispatch(first,randomUUID(),'ap_room_get',{...host,cloudSession:users[1].session});assert.equal(first.last.type,'error');assert.match(first.last.message,/another signed-in account/);
+ await service.dispatch(first,randomUUID(),'ap_room_create',{tableId:'shanshui-2v2',playerId:randomUUID(),cloudSession:users[0].session,capabilities});assert.notEqual(first.last.type,'error',first.last.message);assert.equal(first.last.payload.room.gameState.controlMode,'four');
+});
 test('Email codes are verified, single use, rate limited, expire and default marketing to off',async t=>{
  const {call,emails,advance}=await setup(t);let start=await call('/auth/email/start','POST',{email:' PLAYER@Example.Test '});assert.equal(start.status,200);assert.equal(emails[0].email,'player@example.test');assert.equal((await call('/auth/email/start','POST',{email:'player@example.test'})).status,429);
  const code=emails[0].code;assert.equal((await call('/auth/email/verify','POST',{attempt:start.attempt,code:'bad'})).status,400);const user=await call('/auth/email/verify','POST',{attempt:start.attempt,code});assert.equal(user.status,200);assert.equal(user.marketingChoiceNeeded,true);assert.equal((await call('/communication-preferences','GET',null,user.session)).enabled,false);

@@ -9,7 +9,7 @@ const engine=createRequire(import.meta.url)('../build/games.cjs');
 const js=fs.readFileSync(new URL('../android/app/src/main/assets/app.js',import.meta.url),'utf8');
 const settle=()=>new Promise(resolve=>setTimeout(resolve,60));
 const waitFor=async(predicate,label)=>{const deadline=Date.now()+10000;while(!predicate()){if(Date.now()>deadline)throw new Error(`Timed out: ${label}`);await new Promise(resolve=>setTimeout(resolve,20));}};
-test('Phone interface: six games, all offline boards, legal taps, English rules, invitations and native APK sharing',{timeout:30000},async()=>{
+test('Phone interface: existing six games plus the Shanshui entry, all offline boards, legal taps, English rules, invitations and native APK sharing',{timeout:30000},async()=>{
   const errors=[],calls=[];const virtual=new VirtualConsole();virtual.on('jsdomError',e=>errors.push(e));
   const dom=new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>',{url:'https://appassets.androidplatform.net/assets/index.html',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:virtual,beforeParse(window){
     Object.defineProperty(window,'innerWidth',{value:360});Object.defineProperty(window,'innerHeight',{value:800});
@@ -17,9 +17,9 @@ test('Phone interface: six games, all offline boards, legal taps, English rules,
     window.Worker=class {postMessage(data){setTimeout(()=>{try{const response=data.task==='legal'?{requestId:data.requestId,legal:engine.actions(data.id,data.state),checked:engine.inCheck(data.id,data.state)}:data.task==='apply'?{requestId:data.requestId,state:engine.apply(data.id,data.state,data.actionId)}:{sequence:data.sequence,action:engine.chooseBot(data.id,data.state)};this.onmessage?.({data:response});}catch(error){this.onmessage?.({data:{requestId:data.requestId,error:error.message}});}},0);}terminate(){}};
   }});
   const {window}=dom,doc=window.document;window.eval(js);await settle();
-  assert.equal(doc.querySelectorAll('.game-card').length,6);assert.equal(doc.querySelectorAll('.bottom-nav button').length,5);
+  assert.equal(doc.querySelectorAll('.game-card').length,7);assert.equal(doc.querySelectorAll('.bottom-nav button').length,5);
   function button(text){const found=[...doc.querySelectorAll('button')].find(b=>b.textContent.trim()===text);assert.ok(found,`Button: ${text}`);return found;}
-  for(const game of engine.GAME_LIST){
+  for(const game of engine.GAME_LIST.filter(g=>g.id!=='shanshui')){
     doc.querySelector(`[aria-label="Play ${game.name}"]`).click();await settle();assert.ok(doc.querySelector('.seat-choice'));
     button('On this phonePass the phone between players').click();await settle();
     await waitFor(()=>doc.querySelector('.selection-hint')?.textContent==='Tap a piece to see its legal moves.',`${game.id} legal worker ready`);

@@ -39,6 +39,7 @@ import { KhasiFishflowApp } from "./games/khasi-fishflow/KhasiFishflowApp.jsx";
 import { RumaIcePuzzleApp } from "./games/ruma-ice-puzzle/RumaIcePuzzleApp.jsx";
 import { HeritageArcadeApp } from "./games/heritage-arcade/HeritageArcadeApp.jsx";
 import SanYouQiApp from "./games/san-you-qi/SanYouQiApp.jsx";
+import ShanshuiApp from "./games/shanshui-xiangqi/ShanshuiApp.jsx";
 import SanYouQiMovementGuide from "./games/san-you-qi/SanYouQiMovementGuide.jsx";
 import { getCatalogGame } from "./data/gameCatalog.js";
 import { HighStakesGate } from "./features/high-stakes/HighStakesGate.jsx";
@@ -83,7 +84,7 @@ const PLAYABLE_GAME_IDS = new Set([
   "nine-ice-forts", "four-wing-ice-hunt", "fishflow", "break-the-ice", "ice-hunters", "sixteen-ice-warriors", "glacier-trail",
   "crown-run", "forty-glacier-guards", "sky-temple-run", "ice-rings", "cowrie-kingdoms", "two-stones", "aurora-vulture",
   "khasi-fishflow", "seven-ice-rings", "ruma-ice-puzzle", "polar-tablan", "sige", "aurora-ganjifa-academy",
-  "san-you-qi"
+  "san-you-qi", "shanshui-xiangqi"
 ]);
 
 export default function App() {
@@ -155,6 +156,7 @@ export default function App() {
   if (screen === "sannin-shogi" && params.get("placement") === "1") return withAppChrome(<SanninPiecePlacement />, screen);
   if (screen === "sannin-shogi") return withAppChrome(<SanninShogiApp onExit={exitToLibrary} />, screen);
   if (screen === "san-you-qi" && params.get("movement") === "1") return withAppChrome(<SanYouQiMovementGuide onExit={exitToLibrary} />, screen);
+  if (screen === "shanshui-xiangqi") return withAppChrome(<ShanshuiApp onExit={exitToLibrary} />, screen);
   if (screen === "san-you-qi") return withAppChrome(<SanYouQiApp onExit={exitToLibrary} />, screen);
   if (screen === "nine-ice-forts") return withAppChrome(<NineIceFortsApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
   if (screen === "four-wing-ice-hunt") return withAppChrome(<FourWingIceHuntApp onExitToLibrary={exitToLibrary} profile={profile} onProfileChange={setProfile} />, screen);
