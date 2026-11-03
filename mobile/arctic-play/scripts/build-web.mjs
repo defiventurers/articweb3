@@ -38,18 +38,26 @@ const art=path.join(destination,'art/shanshui');await fs.mkdir(art,{recursive:tr
 const newArt=['board-light.webp','board-dark.webp','starting-position-light.webp','starting-position-dark.webp'];
 for(const name of newArt)await fs.copyFile(path.join(root,'frontend/public/assets/games/shanshui-xiangqi',name),path.join(art,name));
 await fs.cp(path.join(root,'frontend/public/assets/games/shanshui-xiangqi/pieces'),path.join(art,'pieces'),{recursive:true});
+// Cờ Tư Lệnh artwork is additive, independent of the protected v5.6.8 art inventory.
+const ctlArt=path.join(destination,'art/co-tu-lenh'),ctlSource=path.join(root,'frontend/public/assets/co-tu-lenh');
+await fs.mkdir(path.join(ctlArt,'board'),{recursive:true});
+await fs.cp(path.join(ctlSource,'pieces'),path.join(ctlArt,'pieces'),{recursive:true,filter:source=>!source.endsWith('.svg')});
+await fs.copyFile(path.join(ctlSource,'board/board-antarctic-11x12.webp'),path.join(ctlArt,'board/board-antarctic-11x12.webp'));
+await fs.copyFile(path.join(ctlSource,'rules-profiles-v0.3.json'),path.join(ctlArt,'rules-profiles-v0.3.json'));
 const styles=['styles.css','startup.css','ice-theme.css','frostbound.css','archive-world.css','gathering.css','celebration.css','release-controls.css','learning-rules.css','compact-lobby.css','unlocks.css','chaturanga-fast.css','account-entry.css','board-calibration.css','discovery.css','visa-compact.css','visa-welcome.css'];
 const css=await Promise.all(styles.map(name=>fs.readFile(path.join(mobile,'src',name),'utf8')));
-for(const file of ['shared/antarctic-visa/visa.css','shared/fair-play/fair-play.css','frontend/src/games/shanshui-xiangqi/shanshui.css'])css.push(await fs.readFile(path.join(root,file),'utf8'));
+for(const file of ['shared/antarctic-visa/visa.css','shared/fair-play/fair-play.css','frontend/src/games/shanshui-xiangqi/shanshui.css','frontend/src/games/co-tu-lenh/coTuLenh.css'])css.push(await fs.readFile(path.join(root,file),'utf8'));
+css.push('.ctl-catalogue-entry{display:grid;grid-template-columns:minmax(100px,35%) 1fr;gap:18px;align-items:center;margin:16px 0 24px;padding:16px;background:var(--surface,#102942);border:1px solid #638da988;border-radius:20px}.ctl-catalogue-entry img{width:100%;max-height:270px;object-fit:contain;border-radius:14px}.ctl-catalogue-entry h2{font-size:22px;margin:6px 0}.ctl-catalogue-entry p{font-size:14px;line-height:1.5}@media(max-width:440px){.ctl-catalogue-entry{grid-template-columns:1fr}.ctl-catalogue-entry img{max-height:150px}}');
 css.push('.shanshui-catalogue-entry{display:grid;grid-template-columns:minmax(100px,35%) 1fr;gap:18px;align-items:center;margin:16px 0 24px;padding:16px;background:var(--surface,#102942);border:1px solid #a789ce77;border-radius:20px}.shanshui-catalogue-entry img{width:100%;border-radius:14px}.shanshui-catalogue-entry h2{font-size:22px;margin:6px 0}.shanshui-catalogue-entry p{font-size:14px;line-height:1.5}.shanshui-online-setup,.shanshui-online-summary{max-width:900px;margin:20px auto;padding:20px}.shanshui-online-setup form,.shanshui-online-summary form{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.shanshui-app input{font:inherit;max-width:100%;padding:10px;border:1px solid #aaa;border-radius:10px}.shanshui-online-seats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}');
 await fs.writeFile(path.join(destination,'app.css'),css.join('\n'));
 for(const file of ['startup.js','theme-init.js'])await fs.copyFile(path.join(mobile,'src',file),path.join(destination,file));
-await fs.writeFile(path.join(destination,'app-version.json'),JSON.stringify({version:release.versionName,versionCode:release.versionCode,capabilities:['dominion-teams-v1','browser-play-v1','fair-play-v1','shanshui-antarctic-v1']}));
+await fs.writeFile(path.join(destination,'app-version.json'),JSON.stringify({version:release.versionName,versionCode:release.versionCode,capabilities:['dominion-teams-v1','browser-play-v1','fair-play-v1','shanshui-antarctic-v1','co-tu-lenh-practice-v03']}));
 const warm=JSON.parse(await fs.readFile(path.join(destination,'game-assets.json')));
 for(const name of [...newArt,...(await fs.readdir(path.join(art,'pieces'))).map(n=>'pieces/'+n)]){const url='art/shanshui/'+name;warm.assets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});}
-warm.assets.push({url:'shanshui-bot.js',bytes:(await fs.stat(path.join(destination,'shanshui-bot.js'))).size});warm.version=release.versionName;
+warm.assets.push({url:'shanshui-bot.js',bytes:(await fs.stat(path.join(destination,'shanshui-bot.js'))).size});
+for(const name of ['board/board-antarctic-11x12.webp',...(await fs.readdir(path.join(ctlArt,'pieces'))).filter(n=>n.endsWith('.webp')).map(n=>'pieces/'+n),'rules-profiles-v0.3.json']){const url='art/co-tu-lenh/'+name;warm.assets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});}warm.version=release.versionName;
 for(const item of warm.assets)item.bytes=(await fs.stat(path.join(destination,item.url))).size;
 await fs.writeFile(path.join(destination,'game-assets.json'),JSON.stringify(warm));
 await fs.writeFile(path.join(destination,'game-assets-sw.js'),(await fs.readFile(path.join(root,'shared/game-assets/game-assets-sw.js'),'utf8')).replace('__GAME_ASSET_CACHE_VERSION__','ak-public-game-art-bundled-'+release.versionName));
-await fs.writeFile(path.join(mobile,'build/mobile-baseline.json'),JSON.stringify({version:release.versionName,baselineVersion:'5.6.8',baselineSha256:baselineHash,legacyGames:7,newGame:'shanshui-xiangqi',artworkPolicy:'Existing artwork reused byte for byte',nativePolicy:'Unchanged v5.6.8 native shell'},null,2)+'\n');
-console.log(`Built current Antarctic Kingdoms ${release.versionName}: seven existing games + Shanshui; ${warm.assets.length} preload assets. Server files were not regenerated.`);
+await fs.writeFile(path.join(mobile,'build/mobile-baseline.json'),JSON.stringify({version:release.versionName,baselineVersion:'5.6.8',baselineSha256:baselineHash,legacyGames:7,newGames:['shanshui-xiangqi','co-tu-lenh'],artworkPolicy:'Existing artwork reused byte for byte',nativePolicy:'Unchanged v5.6.8 native shell'},null,2)+'\n');
+console.log(`Built current Antarctic Kingdoms ${release.versionName}: seven existing games + Shanshui + Cờ Tư Lệnh; ${warm.assets.length} preload assets. Server files were not regenerated.`);
