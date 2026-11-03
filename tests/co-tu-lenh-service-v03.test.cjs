@@ -1,6 +1,6 @@
 const test=require('node:test'); const assert=require('node:assert/strict'); const {EventEmitter}=require('node:events');
 const {createCoTuLenhService}=require('../server/coTuLenhService.js');
-function create(){const rooms=new Map();const output=[];const s=createCoTuLenhService({rooms,send:(ws,p)=>output.push(p),ok:(ws,req,type,payload)=>output.push({type,payload}),fail:(ws,req,msg)=>output.push({type:'error',payload:{message:msg}}),saveRoomSafe:()=>{}});const ws=new EventEmitter();ws.readyState=1;return {rooms,s,req:(type,payload)=>{s.dispatch(ws,'one',type,payload);return output.at(-1)}};}
+function create(){const rooms=new Map();const output=[];const s=createCoTuLenhService({rooms,send:(ws,p)=>output.push(p),ok:(ws,req,type,payload)=>output.push({type,payload}),fail:(ws,req,msg)=>output.push({type:'error',payload:{message:msg}}),saveRoomSafe:()=>{}});const ws=new EventEmitter();ws.readyState=1;return {rooms,s,req:(type,payload)=>{s.dispatch(ws,'one',type,{...payload,rulesVersion:require('../server/coTuLenhEngine.cjs').VERSION});return output.at(-1)}};}
 const tok='a'.repeat(64);
 test('server accepts versioned 2015, 2024 and BGA profiles; validates unknown values',()=>{
  for(const mode of ['ancientchess_2015_standard','ancientchess_2015_long','creator_2024_standard','bga_2024']){

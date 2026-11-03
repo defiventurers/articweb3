@@ -74,7 +74,7 @@ test('air-defence overlay can be toggled and maps to authoritative engine covera
 test('HQ blocks weak capturers while strong eligible attackers can target sheltered Commander',()=>{
   const army=[piece('a','infantry','red',5,4),piece('e','tank','red',7,5),piece('h','headquarters','blue',5,5),piece('c','commander','blue',5,5,{carrier:'h'}),piece('r','commander','red',2,0)];
   const s=make('ancientchess_2015_long',army);
-  const infantry=legalActions(s,'a').find(a=>a.x===5&&a.y===5&&a.kind==='capture');
+  const infantry=legalActions(s,'a').find(a=>a.x===5&&a.y===5&&a.kind==='fire');
   assert.equal(infantry?.targetId,'h');
   // Tank must be within range and on same line to target HQ+Commander.
   s.pieces[0].x=4;s.pieces[0].y=5; s.pieces[1].x=5;s.pieces[1].y=3;

@@ -55,3 +55,46 @@ test('packaged Games route runs Commander local, practice, bot, profiles, tutori
   await until(()=>d.querySelector('.ctl-score b')?.textContent.includes('BLUE TO MOVE'));
   assert.deepEqual(errors,[]);
 });
+
+async function carrierFixture(t){
+ const errors=[],virtual=new VirtualConsole();virtual.on('jsdomError',e=>errors.push(e.message));
+ const dom=new JSDOM('<div id="root"></div>',{url:'https://appassets.androidplatform.net/assets/index.html',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:virtual,beforeParse(w){w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;w.structuredClone=structuredClone;Object.defineProperty(w,'crypto',{value:webcrypto});w.WebSocket=undefined;w.HTMLElement.prototype.scrollIntoView=function(){};verifiedAccount(w);}});
+ t.after(()=>dom.window.close());dom.window.eval(bundle);const w=dom.window,d=w.document;
+ await until(()=>d.querySelector('.bottom-nav'));button(d,'Games');await until(()=>d.querySelector('[aria-label="Play Cờ Tư Lệnh"]'));d.querySelector('[aria-label="Play Cờ Tư Lệnh"]').click();await until(()=>d.querySelector('.ctl-setup'));
+ setSelect(w,d.querySelector('.ctl-prefs select'),'ancientchess_2015_long');[...d.querySelectorAll('.ctl-choices button')].find(b=>b.textContent.includes('Pass & Play')).click();await new Promise(r=>setTimeout(r,10));button(d,'Begin battle');await until(()=>d.querySelector('.ctl-board'));
+ let state=createInitialState('ancientchess_2015_long');
+ const point=(x,y)=>d.querySelectorAll('.ctl-board g[role=button]')[y*11+x];
+ async function play(action,choice){
+  const p=state.pieces.find(p=>p.id===action.id);point(p.x,p.y).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));await new Promise(r=>setTimeout(r,10));
+  point(action.x,action.y).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));await new Promise(r=>setTimeout(r,10));
+  if(d.querySelector('[aria-label="Choose your action"]')){assert.ok(choice,'explicit action choice');button(d,choice);}
+  const {applyAction}=await import('../../../frontend/src/games/co-tu-lenh/rules.js');state=applyAction(state,action);
+  await until(()=>d.querySelector('.ctl-score b').textContent.includes(state.turn.toUpperCase()+' TO MOVE'));
+  await new Promise(r=>setTimeout(r,10));
+ }
+ async function blue(){const a=allLegalActions(state).find(a=>a.id==='blue-01'&&a.kind==='move');assert.ok(a);await play(a);}
+ return {w,d,point,play,blue,errors,state:()=>state};
+}
+test('packaged UI boards, selects and leaves a passenger, then finishes the same stack turn',{timeout:20000},async t=>{
+ const f=await carrierFixture(t),{d,w,point}=f;
+ const act=(id,kind,x,y)=>allLegalActions(f.state()).find(a=>a.id===id&&a.kind===kind&&a.x===x&&a.y===y);
+ await f.play(act('red-15','embark',2,3),'Board Navy');await f.blue();
+ point(2,3).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));await until(()=>d.querySelector('[aria-label="Stack pieces"]'));
+ assert.ok(d.querySelector('[aria-label="Select Infantry in stack"]'));
+ const checkbox=d.querySelector('[aria-label="Passengers for carrier travel"] input');assert.equal(checkbox.checked,true);checkbox.click();await new Promise(r=>setTimeout(r,10));
+ // Keep the selected carrier so its passenger choice is retained while tapping the target.
+ point(2,4).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));await until(()=>d.querySelector('[aria-label="Continue stack turn"]'));
+ assert.match(point(2,3).getAttribute('aria-label'),/Infantry/);
+ assert.ok(d.querySelector('[aria-label="Continue with Infantry"]'));
+ button(d,'End turn');await until(()=>d.querySelector('.ctl-score b').textContent.includes('BLUE TO MOVE'));
+ assert.equal(d.querySelector('[aria-label="Continue stack turn"]'),null);assert.deepEqual(f.errors,[]);
+});
+test('packaged aircraft action chooser drops Infantry, returns the aircraft, and lets the passenger move',{timeout:20000},async t=>{
+ const f=await carrierFixture(t),{d,w}=f;
+ const act=(id,kind,x,y)=>allLegalActions(f.state()).find(a=>a.id===id&&a.kind===kind&&a.x===x&&a.y===y);
+ for(const [x,y]of [[10,3],[9,3],[9,2]]){await f.play(act('red-19',y===2?'embark':'move',x,y),y===2?'Board Aircraft':undefined);await f.blue();}
+ await f.play(act('red-09','airdrop',9,5),'Drop Infantry and return');
+ assert.match(f.point(9,2).getAttribute('aria-label'),/Aircraft/);assert.match(f.point(9,5).getAttribute('aria-label'),/Infantry/);
+ d.querySelector('[aria-label="Continue with Infantry"]').click();await new Promise(r=>setTimeout(r,10));f.point(10,5).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));
+ await until(()=>d.querySelector('.ctl-score b').textContent.includes('BLUE TO MOVE'));assert.deepEqual(f.errors,[]);
+});

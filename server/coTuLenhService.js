@@ -26,6 +26,7 @@ function createCoTuLenhService({rooms,send,ok,fail,saveRoomSafe,now=Date.now}){
   function dispatch(ws,id,type,payload={}){
     if(closed)return reject(ws,id,'Service unavailable');
     if(!payload||typeof payload!=='object'||Array.isArray(payload))return reject(ws,id,'Invalid payload');
+    if(payload.rulesVersion!==VERSION)return reject(ws,id,'Commander Chess carrier rules require the matching v0.4 app and backend.');
     if(type==='ctl_room_create'){
       const token=payload.token;
       if(!goodToken(token))return reject(ws,id,'Invalid seat credential');
@@ -40,6 +41,7 @@ function createCoTuLenhService({rooms,send,ok,fail,saveRoomSafe,now=Date.now}){
     if(type==='ctl_room_list')return ok(ws,id,'ctl_room_list_ack',{rooms:[]}); // deliberately private rooms only
     const code=codeOf(payload.roomCode);const room=rooms.get(code);
     if(!isRoom(room))return reject(ws,id,'Room not found');
+    if(room.gameState?.rulesVersion!==VERSION)return reject(ws,id,'Room uses an older rules engine; create a new v0.4 match');
     if(type==='ctl_room_join'){
       const token=payload.token;if(!goodToken(token))return reject(ws,id,'Invalid seat credential');
       const team=payload.team;
@@ -58,7 +60,7 @@ function createCoTuLenhService({rooms,send,ok,fail,saveRoomSafe,now=Date.now}){
       room.status='playing';room.revision++;publish(room);return confirm(ws,id,room,team);
     }
     if(type==='ctl_game_action'){
-      if(room.gameState.rulesVersion!==VERSION)return reject(ws,id,'Room uses an older rules engine; create a new v0.3 match');
+      if(room.gameState.rulesVersion!==VERSION)return reject(ws,id,'Room uses an older rules engine; create a new v0.4 match');
       if(room.status!=='playing')return reject(ws,id,'Match not active');
       if(!Number.isSafeInteger(payload.revision)||payload.revision!==room.revision)return reject(ws,id,'Stale room revision');
       if(room.gameState.turn!==team)return reject(ws,id,'Not your turn');

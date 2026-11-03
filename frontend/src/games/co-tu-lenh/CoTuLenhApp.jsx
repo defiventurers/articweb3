@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { applyAction, atPoint, chooseBotMove, createInitialState, legalActions, airDefenceZones, profileFor, RULE_PROFILES, DEFAULT_PROFILE, TYPES, VERSION } from './rules.js';
+import { applyAction, atPoint, chooseBotMove, createInitialState, legalActions, cargoOf, airDefenceZones, profileFor, RULE_PROFILES, DEFAULT_PROFILE, TYPES, VERSION } from './rules.js';
 import { CoTuLenhClient, getSeat, newSeatToken, saveSeat, inviteUrl } from './onlineClient.js';
 import { PenguinHostPair, PenguinHost } from '../../components/PenguinHosts.jsx';
 import './coTuLenh.css';
@@ -11,7 +11,7 @@ const menu=[{id:'local',label:'Pass & Play',description:'Two players on one devi
 const steps=[
   ['Find your Commander','The gold-star Commander controls your side. Capture the opposing Commander to win. It travels along clear orthogonal lines but captures only an adjacent piece.'],
   ['Understand terrain','The dark left lane is sea. The centre river separates the two armies. Some heavy units must use the two shallow fords; ships use sea and coastline.'],
-  ['Attack and transport','Artillery may jump to capture, aircraft can return after a bombing strike, and tanks/ships can carry selected friendly units. Beware missile and anti-aircraft danger zones.'],
+  ['Attack and transport','Tap a stack, then choose its carrier or any passenger from the stack panel. Each component may act once in the same turn. Aircraft can drop a passenger and return; ships can attack with both weapons. Use End turn when finished.'],
   ['Try the board','Tap a unit, then a highlighted intersection. Turn on the blue/red defensive-range rings from the board toolbar to see protected airspace; the smaller glowing dots indicate the exact intersections covered.']
 ];
 // Immutable board geometry taken from the user-approved 11-by-12 coordinate master.
@@ -27,6 +27,8 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
   const [state,setState]=useState(()=>createInitialState(DEFAULT_PROFILE));
   const [showDefence,setShowDefence]=useState(false);
   const [selected,setSelected]=useState(null);
+  const [carryIds,setCarryIds]=useState([]);
+  const [actionChoices,setActionChoices]=useState([]);
   const [notice,setNotice]=useState('Select a piece, then a highlighted intersection.');
   const [guide,setGuide]=useState(-1);
   const [started,setStarted]=useState(false);
@@ -49,7 +51,8 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
   // Rotate around the artwork centre, including its asymmetric decorative margins.
   // The same coordinates drive hit areas, sprites, legal targets and defence dots.
   const point=(x,y)=>{const px=X+x*STEP_X,py=Y+(11-y)*STEP_Y;return view==='red'?{x:px,y:py}:{x:W-px,y:H-py};};
-  const redraw=next=>{setState(next);setSelected(null);};
+  const redraw=next=>{setState(next);setSelected(null);setActionChoices([]);};
+  const selectUnit=id=>{setSelected(id);setCarryIds(cargoOf(state,id).map(p=>p.id));setActionChoices([]);};
   function reset(nextMode=mode){
     seq.current++;
     setMode(nextMode);setUndoStack([]);redraw(createInitialState(victory));
@@ -57,11 +60,13 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
   }
   async function move(action){
     if(botTurn||blockedOnline)return;
+    if(['move','capture'].includes(action.kind)&&cargoOf(state,action.id).length)action={...action,carryIds};
+    setActionChoices([]);
     if(isOnline){try{await client.current?.request('ctl_game_action',{roomCode:online.room.roomCode,token:online.token,revision:online.room.revision,action});}catch(e){setNotice(e.message);}return;}
     try{
       const next=applyAction(state,action);
       setUndoStack(h=>[...h,state].slice(-60));
-      redraw(next);setNotice(`${action.kind.toUpperCase()} · ${state.turn.toUpperCase()} → ${action.x},${action.y}`);
+      redraw(next);setNotice(action.kind==='end-turn'?'Turn completed.':`${action.kind.toUpperCase()} · ${state.turn.toUpperCase()} → ${action.x},${action.y}${next.turnContext?' · Continue this stack or End turn.':''}`);
     }catch(error){setNotice(error.message);}
   }
   function clickPoint(x,y){
@@ -69,20 +74,15 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
     const here=atPoint(state,x,y),own=here.find(p=>p.team===state.turn&&!p.carrier)||here.find(p=>p.team===state.turn);
     const choices=actions.filter(a=>a.x===x&&a.y===y);
     if(choices.length){
-      const capture=choices.find(a=>a.kind==='capture')||choices.find(a=>a.kind==='fire')||choices.find(a=>a.kind==='embark')||choices[0];
-      if(choices.some(a=>a.kind==='bomb')&&choices.some(a=>a.kind==='capture')){
-        const bomb=window.confirm('Bomb and return to base? OK = return after attack, Cancel = occupy destination.');
-        const selectedAction=choices.find(a=>a.kind===(bomb?'bomb':'capture'));
-        if(selectedAction){move(selectedAction);return;}
-      }
-      move(capture);return;
+      if(choices.length>1){setActionChoices(choices);return;}
+      move(choices[0]);return;
     }
-    if(own){setSelected(own.id);setNotice(labelFor(own));return;}
+    if(own){selectUnit(own.id);setNotice(labelFor(own));return;}
     setSelected(null);setNotice('Select a friendly piece or a legal target.');
   }
   function makeClient(){
     const c=new CoTuLenhClient(wsEndpoint);
-    c.onPacket=p=>{if(p.type==='ctl_room_state'&&p.payload?.room&&p.payload.room.roomCode===activeRoomCode.current){setOnline(old=>old?{...old,room:p.payload.room}:old);setState(p.payload.room.gameState);}};
+    c.onPacket=p=>{if(p.type==='ctl_room_state'&&p.payload?.room&&p.payload.room.roomCode===activeRoomCode.current){setOnline(old=>old?{...old,room:p.payload.room}:old);setState(p.payload.room.gameState);setSelected(null);setActionChoices([]);}};
     c.onStatus=setIsConnected;
     return c;
   }
@@ -115,13 +115,16 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
   const remaining={red:state.pieces.filter(p=>p.alive&&p.team==='red').length,blue:state.pieces.filter(p=>p.alive&&p.team==='blue').length};
   const selectedPiece=state.pieces.find(p=>p.alive&&p.id===selected);
   const activeHint=guide>=0?steps[guide]:null;
+  const stack=selectedPiece?atPoint(state,selectedPiece.x,selectedPiece.y).filter(p=>p.team===state.turn):[];
+  const passengers=selectedPiece?cargoOf(state,selectedPiece.id):[];
+  const choiceLabel=a=>({move:'Move to this intersection',capture:'Capture and occupy',fire:'Fire and stay here',embark:'Board '+(TYPES[state.pieces.find(p=>p.id===a.carrierId)?.type]?.label||'carrier'),load:'Pick up '+(TYPES[state.pieces.find(p=>p.id===a.passengerId)?.type]?.label||'passenger'),bomb:'Bomb and return',airdrop:'Drop '+(a.dropIds||[]).map(id=>TYPES[state.pieces.find(p=>p.id===id)?.type]?.label).join(', ')+' and return'})[a.kind]||a.kind;
   return <main className="ctl-app">
     <header className="ctl-heading">
       <button className="ctl-ghost" onClick={()=>onExitToLibrary?.()}>← All games</button>
       <div><span className="ctl-kicker">ANTARCTIC GAMING CO · VIETNAMESE STRATEGY</span><h1>Cờ Tư Lệnh <span>Operation Frozen Front</span></h1></div><PenguinHostPair gameId="co-tu-lenh" compact />
       <button className="ctl-ghost" onClick={()=>setGuide(0)}>How to Play</button>
     </header>
-    <p className="ctl-disclaimer"><strong>v0.3 research-grade practice.</strong> 2015, 2024 and BGA rules are selectable and labelled. The exact 38 starting locations, two ford coordinates, complex stacked attacks and some interception cases still need official verification. The Antarctic art is a modern visual adaptation. Free play · no wallet required.</p>
+    <p className="ctl-disclaimer"><strong>v0.4 carrier and combat update · Research Draft.</strong> 2015, 2024 and BGA rules are selectable and labelled. The exact 38 starting locations, two ford coordinates, some advanced combat ordering and edition-specific carrying limits still need verification. The Antarctic art is a modern visual adaptation. Free play · no wallet required.</p>
     {!started&&<section className="ctl-setup" aria-label="Game setup">
       <h2>Choose your command</h2>
       <div className="ctl-choices">{menu.map(m=><button key={m.id} className={mode===m.id?'active':''} onClick={()=>setMode(m.id)}><b>{m.label}</b><small>{m.description}</small></button>)}</div>
@@ -132,6 +135,7 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
     {started&&<div className="ctl-play-layout"><section className="ctl-board-wrap" aria-label="Commander Chess board">
       {isOnline&&online&&<div className="ctl-online-bar"><b>Room {online.room.roomCode} · {isConnected?'Connected':'Disconnected'}</b><span>Red: {online.room.seats.red.name||'Waiting'} · Blue: {online.room.seats.blue.name||'Waiting'}</span><button onClick={()=>navigator.clipboard?.writeText(inviteUrl(online.room.roomCode,inviteBaseUrl))}>Copy invite</button>{online.room.status==='waiting'&&<button onClick={startRoom} disabled={!online.room.seats.red.name||!online.room.seats.blue.name}>Start online match</button>}{!isConnected&&<button onClick={async()=>{try{const c=await client.current.request('ctl_room_sync',{roomCode:online.room.roomCode,token:online.token});setOnline(old=>({...old,room:c.room}));setState(c.room.gameState);}catch(e){setNotice(e.message);}}}>Reconnect</button>}</div>}
       <div className="ctl-score"><span>🔴 Red · {remaining.red} units</span><b>{state.winner?`${state.winner.toUpperCase()} WINS — ${state.winReason}`:`${movingTeam.toUpperCase()} TO MOVE${botTurn?' · Bot thinking':''}`}</b><span>🔵 Blue · {remaining.blue} units</span></div>
+      {state.turnContext&&<section className="ctl-compound-turn" aria-label="Continue stack turn"><strong>{state.turn.toUpperCase()} · Continue this stack</strong><p>Each component can act once. Select a passenger to disembark, or finish the turn. A ship can use its other weapon once.</p><div>{state.turnContext.participants.map(id=>{const p=state.pieces.find(p=>p.id===id);return p?.alive&&<button key={id} aria-label={`Continue with ${TYPES[p.type].label}`} disabled={botTurn||blockedOnline||!legalActions(state,id).length} onClick={()=>selectUnit(id)}>{TYPES[p.type].label}{state.turnContext.spent.includes(id)?' · used':''}</button>;})}</div><button className="ctl-primary" disabled={botTurn||blockedOnline} onClick={()=>move({id:'turn',kind:'end-turn'})}>End turn</button></section>}
       <div className="ctl-board-viewport" style={{'--ctl-zoom':zoom}}>
       <svg className="ctl-board" style={{width:`${zoom*100}%`}} viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Cờ Tư Lệnh with 11 columns, 12 ranks, 132 clickable intersections; red and blue Arctic faction pieces">
         <image href={boardImage} x="0" y="0" width={W} height={H} preserveAspectRatio="none" transform={view==='blue'?`rotate(180 ${W/2} ${H/2})`:undefined} pointerEvents="none" />
@@ -158,11 +162,14 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
       <p className="ctl-message" aria-live="polite">{notice}</p>
       </section>
       <aside className="ctl-sidebar"><div className="ctl-panel"><h2>{selectedPiece?TYPES[selectedPiece.type].label:'Field Guide'}</h2>{selectedPiece?<><img src={graphic(selectedPiece)} alt="" className="ctl-preview"/><strong>{TYPES[selectedPiece.type].native}</strong><p>{labelFor(selectedPiece)}</p><p>{actions.length} legal actions. {selectedPiece.carrier?'Currently embarked.':''}</p></>:<p>Tap a unit to learn its identity and review available movement, transport and attack targets.</p>}</div>
+        {stack.length>1&&<section className="ctl-panel ctl-stack" aria-label="Stack pieces"><h3>Choose a piece in this stack</h3>{stack.map(p=><button key={p.id} aria-label={`Select ${TYPES[p.type].label} in stack`} aria-pressed={selected===p.id} onClick={()=>selectUnit(p.id)} disabled={botTurn||blockedOnline}><img src={graphic(p)} alt=""/><span>{TYPES[p.type].label}{p.carrier?' · passenger':' · carrier'}</span></button>)}</section>}
+        {passengers.length>0&&<section className="ctl-panel" aria-label="Passengers for carrier travel"><h3>Passengers for normal travel</h3><p>Checked pieces travel with the carrier. Uncheck one to leave it on a legal land intersection. To drop from an aircraft and return, choose that action on the destination.</p>{passengers.map(p=><label className="ctl-passenger" key={p.id}><input type="checkbox" checked={carryIds.includes(p.id)} onChange={e=>setCarryIds(ids=>e.target.checked?[...ids,p.id]:ids.filter(id=>id!==p.id))}/>{TYPES[p.type].label}</label>)}</section>}
         <div className="ctl-panel"><h3>Selected rules profile</h3><strong>{currentProfile.label}</strong><p>{currentProfile.autoDivision?`Win by capturing the Commander, both ships, both aircraft or the entire ${currentProfile.landDivision.length===3?'six':'nine'}-unit land division.`:'Only defeating the enemy Commander ends the untimed match automatically.'}</p><p>Movement basis: {currentProfile.movementBasis}. No tournament timer is enabled in this practice build.</p></div>
-        <div className="ctl-panel"><h3>Defensive coverage</h3><p>Anti-aircraft (Cao xạ) and Navy (Hải quân) defend radius 1. Missile (Tên lửa) covers 2 orthogonally and 1 diagonally. Red and blue overlays are optional and do not modify the rules. Engineer air defence remains unresolved and is not displayed.</p><p>Exact initial setup and ford columns are provisional; advanced multi-action stacks, HQ interactions and air interception timing are under review.</p><a href="https://en.doc.boardgamearena.com/Gamehelpcommanderchess" target="_blank" rel="noreferrer">BGA rules reference</a></div>
+        <div className="ctl-panel"><h3>Defensive coverage</h3><p>Anti-aircraft (Cao xạ) and Navy (Hải quân) defend radius 1. Missile (Tên lửa) covers 2 orthogonally and 1 diagonally. Red and blue overlays are optional and do not modify the rules. Engineer air defence remains unresolved and is not displayed.</p><p>Exact initial setup and ford columns remain provisional. Compound stack turns, ferrying, passenger selection, drop-and-return and naval dual attacks are enabled. Air interception uses the documented BGA continuous-zone interpretation provisionally; edition-specific timing and carrying limits still require verification.</p><a href="https://en.doc.boardgamearena.com/Gamehelpcommanderchess" target="_blank" rel="noreferrer">BGA rules reference</a></div>
         <button className="ctl-primary" onClick={()=>setGuide(0)}>Learn with Pengu →</button>
       </aside>
     </div>}
+    {actionChoices.length>0&&<div className="ctl-modal-overlay"><section className="ctl-modal" role="dialog" aria-modal="true" aria-label="Choose your action"><h2>Choose your action</h2><p>Several actions reach this intersection. Choose how to move or attack.</p><div className="ctl-action-choices">{actionChoices.map((a,i)=><button className="ctl-primary" key={i} onClick={()=>move(a)}>{choiceLabel(a)}</button>)}</div><button className="ctl-ghost" onClick={()=>setActionChoices([])}>Cancel</button></section></div>}
     {guide>=0&&<div className="ctl-modal-overlay" role="presentation"><section className="ctl-modal" role="dialog" aria-modal="true" aria-label="Commander Chess tutorial"><button className="ctl-close" onClick={()=>setGuide(-1)} aria-label="Close tutorial">×</button><div className="ctl-guide-heading"><PenguinHost host="pengu" size="mini"/><div className="ctl-kicker">PENGU ORDER · RULES & ROUTES</div></div><h2>{activeHint[0]}</h2><p>{activeHint[1]}</p><div className="ctl-tutorial-nav"><span>Lesson {guide+1}/{steps.length}</span>{guide>0&&<button onClick={()=>setGuide(i=>i-1)}>Back</button>}<button className="ctl-primary" onClick={()=>setGuide(i=>i===steps.length-1?-1:i+1)}>{guide===steps.length-1?'Play':'Next'}</button></div></section></div>}
     <footer className="ctl-foot">Cờ Tư Lệnh by Nguyễn Quý Hải (Vietnam, 2010). Arctic illustrations are independent adaptations, not official game art. Rules build: {VERSION}; profile: {currentProfile.id} · Research draft, not a verified official edition.</footer>
   </main>;
