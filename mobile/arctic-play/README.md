@@ -1,3 +1,7 @@
+# Antarctic Kingdoms mobile source · Shanshui beta 5.7.0 (79)
+
+Current source is restored through v5.6.8. See [the mobile reconciliation record](../../docs/game-builds/shanshui-xiangqi/MOBILE_RECONCILIATION.md) for inputs, rebuild commands, validation and release boundaries. The sections below are historical release notes.
+
 > Latest: v5.0.10 (61). Uploaded ice-white San You Qi board and 27-piece atlas, recalibrated points and preserved owner startup. See docs/releases/v5.0.10-sanyou-ice-white.md.
 
 # Current release: 4.7.0 — A compact Home and Games screen

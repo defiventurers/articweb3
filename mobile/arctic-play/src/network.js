@@ -4,7 +4,7 @@ import {signGameRequest,retainReceipt} from './fairClient.js';
 export const ENDPOINT='wss://articweb3.onrender.com';
 export const INVITE_ROOT='https://articweb3.onrender.com/arctic-play/join?room=';
 export const WEB_APP_URL='https://articweb3.onrender.com/arctic-play/app/';
-export const CLIENT_CAPABILITIES=['dominion-teams-v1','hall-access-v1','dominion-flex-dice-v1','account-play-v1','fair-play-v1'];
+export const CLIENT_CAPABILITIES=['dominion-teams-v1','hall-access-v1','dominion-flex-dice-v1','account-play-v1','fair-play-v1','shanshui-antarctic-v1'];
 export function browserRoomLink(code){
   const room=String(code||'').trim().toUpperCase();
   if(!/^[A-Z2-9]{6}$/.test(room))throw new Error('Choose a valid private room first.');
@@ -16,7 +16,7 @@ export async function requireServiceFeature(feature){
     const response=await fetch('https://articweb3.onrender.com/arctic-play/health',{signal:abort.signal,cache:'no-store'});
     if(!response.ok)throw new Error('The game service is reconnecting. Please retry in a moment.');
     const health=await response.json();
-    if(!health.capabilities?.includes(feature))throw new Error(feature==='dominion-teams-v1'?'Online 2v2 is awaiting the service update. You can play 2v2 in practice or choose Four-way with friends.':feature==='dominion-flex-dice-v1'?'The online service needs its dice update before one-die rolls or skipping can be used.':feature==='hall-access-v1'?'Online hall invitations are awaiting the unlock service update. Your room code is kept here.':'Browser play is awaiting the service update. Please try again later.');
+    if(!health.capabilities?.includes(feature))throw new Error(feature==='shanshui-antarctic-v1'?'Online Shanshui is awaiting the game service update. Local play, bots and practice are available.':feature==='dominion-teams-v1'?'Online 2v2 is awaiting the service update. You can play 2v2 in practice or choose Four-way with friends.':feature==='dominion-flex-dice-v1'?'The online service needs its dice update before one-die rolls or skipping can be used.':feature==='hall-access-v1'?'Online hall invitations are awaiting the unlock service update. Your room code is kept here.':'Browser play is awaiting the service update. Please try again later.');
   }catch(error){if(error.name==='AbortError')throw new Error('The game service did not answer. Please retry.');throw error;}
   finally{clearTimeout(timer);}
 }

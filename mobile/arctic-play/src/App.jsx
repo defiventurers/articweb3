@@ -1,3 +1,4 @@
+import {ShanshuiMobile} from './ShanshuiMobile.jsx';
 import {secureUuid} from './uuid.js';
 import {useGameAssetWarmup} from './gameAssets.js';
 import React,{useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
@@ -107,6 +108,7 @@ function App(){
   const [theme,setTheme]=useState(()=>read('theme','dark')==='light'?'light':'dark');
   const update=useRequiredUpdate();
   const toggleTheme=()=>setTheme(current=>current==='dark'?'light':'dark');
+  const [shanshuiInvite,setShanshuiInvite]=useState('');
   const [filter,setFilter]=useState('All'),[favorites,setFavorites]=useState(()=>read('favorites',[]));
   const [challengeId,setChallengeId]=useState(null);
   useEffect(()=>{window.arcticChallenge=value=>{if(/^[A-Za-z0-9_-]{24}$/.test(value)){setChallengeId(value);setSheet('friend-challenge');}};return()=>delete window.arcticChallenge;},[]);
@@ -303,6 +305,7 @@ function App(){
       let preview;
       if(saved?.session?.seatToken)preview={tableId:saved.room.tableId};
       else {await requireServiceFeature('hall-access-v1');preview=await roomClient.call('ap_room_preview',{roomCode:normalized});}
+      if(['shanshui','shanshui-2v2'].includes(preview.tableId)){setShanshuiInvite(normalized);setSheet(null);setScreen('shanshui');return;}
       if(!hallAccess.allowed(preview.tableId).open){setJoinCode(normalized);saveInvitation({code:normalized,name:displayName,gameId:preview.tableId});openLocked(preview.tableId);return;}
       if(!UNLOCKS.CATALOG[preview.tableId].starter)await hallAccess.ensureOnline();
     }
@@ -381,6 +384,7 @@ function App(){
   const postcardInvitation=postcard?.withInvitation&&room&&room.tableId===postcard.gameId&&['waiting','playing'].includes(room.status)&&(!room.gameState||!result(room.gameState))?{code:room.roomCode,url:INVITE_ROOT+room.roomCode}:null;
   if(update.required)return <RequiredUpdate update={update} theme={theme} onTheme={toggleTheme}/>;
   if(!playAccess.owner&&(!visa.record||!playAccess.allowed||playAccess.consentNeeded))return <AntarcticVisaEntry assetStatus={assetStatus} access={playAccess} halls={hallAccess} visa={visa} onProfile={name=>{const next={...profile,name};setProfile(next);setNameDraft(name);write('profile',next);}}/>;
+  if(screen==='shanshui')return <ShanshuiMobile initialCode={shanshuiInvite} access={playAccess} profile={profile} credentials={hallAccess.credentials} onExit={()=>{setScreen('lobby');setTab('games');}}/>;
   const headerControls=<HeaderControls theme={theme} onTheme={toggleTheme} onUpdates={()=>setSheet('updates')} checking={update.checking}/>;
   return <MascotAppearanceContext.Provider value={{outfits:{...companion.journey.outfits,...collection.outfits},pin:collection.pin}}><div data-screen={screen} data-game={id||undefined} data-tab={tab} className={`app ${screen==='match'?'battle':''} ${companion.preferences.mode!=='off'&&!['learn','story'].includes(screen)&&!(screen==='lobby'&&['home','games'].includes(tab))?'has-companion':''}`}>
     {screen==='learn'&&academy&&<HowToPlay key={academy.id} id={academy.id} initialTab={academy.initialTab} initialRole={academy.initialRole} initialMission={academy.initialMission} onGame={(gameId,section)=>openLearning(gameId,section||'start')} onLearningEvent={companion.learned} onClose={()=>setScreen(academy.returnScreen)} preferences={companion.preferences} onDiscovery={learningDiscovery} returnToGame={academy.returnScreen==='match'} onPractice={online?null:()=>run(()=>startPractice('bots',true))}/>}
@@ -393,6 +397,7 @@ function App(){
 
           <JourneyBar onJourney={showJourney} access={hallAccess} onFormations={()=>formations()} onPass={()=>accessShop('all-halls-v1')}/>
           <p className="games-chronology">7 halls · Oldest roots first</p>
+          <article className="shanshui-catalogue-entry"><img src="art/shanshui/starting-position-light.webp" alt="Four armies on the Mountain and River Chess board"/><div><small>NEW · CHINESE XIANGQI ADAPTATION</small><h2>Shanshui Xiangqi</h2><p>Four armies. One shared victory. Two-player teams, four-player 2v2, bots and guided practice.</p><button className="primary" aria-label="Play Shanshui Xiangqi" onClick={()=>{setShanshuiInvite('');setScreen('shanshui');}}>Play Shanshui Xiangqi</button></div></article>
           <div className={'games-grid '+(storyOptions.enabled?'seven-halls-grid':'')}>{chronologicalGames(GAME_LIST).filter(g=>filter==='All'||filter==='Favorites'&&favorites.includes(g.id)||filter===`${g.players} players`).map(g=><HallCard key={g.id} definition={g} access={hallAccess.allowed(g.id)} favorite={favorites.includes(g.id)} onFavorite={toggleFavorite} onPlay={pick} onExplore={openHall} onLearn={gameId=>openLearning(gameId)} onQuickPlay={gameId=>run(()=>startPractice('bots',false,gameId,'red'))} story={storyOptions.enabled}/>)}</div>
           {filter==='Favorites'&&!favorites.length&&<div className="empty"><Heart/><h3>Your favorites belong here</h3><p>Tap a heart on a game to keep it close.</p></div>}
         </>}

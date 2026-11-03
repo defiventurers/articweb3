@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(new URL('../../../frontend/package.json', import.meta.url));
 const { chromium } = require('playwright-core');
-const engine = createRequire(import.meta.url)('../build/games.cjs');
+const engine = createRequire(import.meta.url)('../build/shanshui.cjs');
 const directory = fileURLToPath(new URL('../android/app/src/main/assets/', import.meta.url));
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml' };
 const server = http.createServer(async (req, res) => {
@@ -24,7 +24,10 @@ try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   page.on('pageerror', e => errors.push(e.message));
   page.on('response', response => { if (response.status() >= 400 && /\/art\//.test(response.url())) badAssets.push(response.url()); });
+  await page.addInitScript(()=>{const id='11111111-1111-4111-8111-111111111111';localStorage.setItem('arctic-play.v1.cloud-session',JSON.stringify({accountId:id,session:id+'.'+'q'.repeat(43)}));localStorage.setItem('arctic-play.v1.antarctic-visa.v1.'+id,JSON.stringify({id:'passport-fixture',number:'AK-FIXTURE',playerName:'Saved Player',wallet:'0x1234567890123456789012345678901234567890',deliveries:[]}));window.WebSocket=undefined;});
+  await page.route('https://articweb3.onrender.com/**',route=>{const u=route.request().url(),id='11111111-1111-4111-8111-111111111111';const value=u.endsWith('/passport')?{identity:{accountId:id,displayName:'Saved Player'},passport:{id:'passport-fixture',number:'AK-FIXTURE',playerName:'Saved Player',wallet:'0x1234567890123456789012345678901234567890',deliveries:[]}}:u.endsWith('/play-access')?{accountId:id,online:true,leaseSeconds:60,offlineOwned:false,license:null,marketingChoiceNeeded:false}:{};return route.fulfill({json:value});});
   await page.goto(`http://127.0.0.1:${server.address().port}/`);
+  await page.getByRole('button',{name:'Games',exact:true}).click();
   await page.getByRole('button', { name: 'Play Shanshui Xiangqi', exact: true }).click();
   await page.getByRole('heading', { name: 'Shanshui Xiangqi', exact: true }).waitFor();
   await page.screenshot({ path: 'build/shanshui-phone-menu.png', fullPage: true });

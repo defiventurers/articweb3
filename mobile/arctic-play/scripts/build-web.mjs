@@ -1,221 +1,55 @@
+// Preserve released artwork. No build step mutates server/ or legacy rulesets.
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import {createRequire} from 'node:module';
-import {buildCovers} from './build-covers.mjs';
-import {buildBrand} from './build-brand.mjs';
-import {buildCollections} from './build-collections.mjs';
-import {buildTokenCutouts} from './build-token-cutouts.mjs';
-import {buildFairRules} from './build-fair-rules.mjs';
-const here=path.dirname(fileURLToPath(import.meta.url));
-const mobile=path.resolve(here,'..'),root=path.resolve(mobile,'../..');
-// Keep generated engine source labels independent of npm's working directory.
+const mobile=fileURLToPath(new URL('../',import.meta.url)),root=path.resolve(mobile,'../..');
+const flag=process.argv.indexOf('--baseline-apk'),baseline=flag>=0?path.resolve(process.argv[flag+1]||''):process.env.ANTARCTIC_BASELINE_APK;
 process.chdir(root);
-const require=createRequire(path.join(mobile,'build-deps/package.json'));
-const {build}=await import(require.resolve('rolldown'));
-const sharp=require('sharp');
-// Persist returned chunks explicitly, including during rapid rebuilds. A
-// successful bundler call must not leave an earlier worker in the APK.
-async function runtimeBundle(options){
- const result=await build(options);
- for(const output of result.output){
-  const file=options.output.file||path.join(options.output.dir,output.fileName);
-  await fs.mkdir(path.dirname(file),{recursive:true});
-  await fs.writeFile(file,output.type==='chunk'?output.code:output.source);
- }
- return result;
-}
-const destination=path.join(mobile,'android/app/src/main/assets');
-const release=JSON.parse(await fs.readFile(path.join(mobile,'release-config.json'),'utf8'));
+if(!baseline)throw Error('Supply --baseline-apk /path/to/AntarcticKingdoms-v5.6.8.apk. Released artwork is required.');
+const baselineHash='1f25ab4abd8578b399611e0f1ac66e801443c661235dd57c81a2c2788734ae6e';
+if(createHash('sha256').update(await fs.readFile(baseline)).digest('hex')!==baselineHash)throw Error('Expected the verified v5.6.8 APK.');
+const require=createRequire(path.join(mobile,'build-deps/package.json')),{build}=await import(require.resolve('rolldown'));
+const destination=path.join(mobile,'android/app/src/main/assets'),release=JSON.parse(await fs.readFile(path.join(mobile,'release-config.json')));
 const manifest=await fs.readFile(path.join(mobile,'android/app/src/main/AndroidManifest.xml'),'utf8');
-if(!manifest.includes(`android:versionName="${release.versionName}"`)||!manifest.includes(`android:versionCode="${release.versionCode}"`))throw new Error('Android manifest and release-config.json versions must match.');
+if(!manifest.includes(`android:versionName="${release.versionName}"`)||!manifest.includes(`android:versionCode="${release.versionCode}"`))throw Error('Release and Android manifest versions differ.');
 await fs.rm(destination,{recursive:true,force:true});await fs.mkdir(destination,{recursive:true});
-await buildFairRules({build,root,mobile});
-const browser=await runtimeBundle({input:path.join(mobile,'src/App.jsx'),platform:'browser',resolve:{alias:{react:path.join(mobile,'build-deps/node_modules/react'),'react-dom':path.join(mobile,'build-deps/node_modules/react-dom'),'lucide-react':path.join(mobile,'build-deps/node_modules/lucide-react')}},transform:{target:'es2020',define:{'process.env.NODE_ENV':'"production"'}},output:{dir:destination,format:'iife',entryFileNames:'app.js',minify:true}});
-await fs.copyFile(path.join(mobile,'src/styles.css'),path.join(destination,'app.css'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/startup.css'),'utf8'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(root,'shared/antarctic-visa/visa.css'),'utf8'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(root,'shared/fair-play/fair-play.css'),'utf8'));
-await fs.copyFile(path.join(mobile,'src/startup.js'),path.join(destination,'startup.js'));
-await fs.copyFile(path.join(mobile,'THIRD_PARTY_NOTICES.txt'),path.join(destination,'THIRD_PARTY_NOTICES.txt'));
-await runtimeBundle({input:path.join(mobile,'src/bot.worker.js'),platform:'browser',transform:{target:'es2020'},output:{file:path.join(destination,'bot.js'),format:'iife',minify:true}});
-await runtimeBundle({input:path.join(mobile,'src/learning.worker.js'),platform:'browser',transform:{target:'es2020'},output:{file:path.join(destination,'learn.js'),format:'iife',minify:true}});
-await build({input:path.join(mobile,'src/offlineLicense.js'),platform:'node',output:{file:path.join(mobile,'build/offlineLicense.cjs'),format:'cjs',minify:false}});
-await runtimeBundle({input:path.join(mobile,'src/fair.worker.js'),platform:'browser',transform:{target:'es2020'},output:{file:path.join(destination,'fair-worker.js'),format:'iife',minify:true}});
-await runtimeBundle({input:path.join(root,'shared/fair-play/VerifierPage.jsx'),platform:'browser',resolve:{alias:{react:path.join(mobile,'build-deps/node_modules/react'),'react-dom':path.join(mobile,'build-deps/node_modules/react-dom')}},transform:{target:'es2020',define:{'process.env.NODE_ENV':'"production"'}},output:{file:path.join(destination,'verifier.js'),format:'iife',minify:true}});
-await fs.copyFile(path.join(root,'shared/fair-play/fair-play.css'),path.join(destination,'fair-play.css'));
-await fs.writeFile(path.join(destination,'verify.html'),'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fair Play · Antarctic Kingdoms</title><link rel="stylesheet" href="fair-play.css"></head><body style="margin:0"><div id="root"></div><script src="verifier.js"></script></body></html>');
-const nodeCryptoBanner='if (!globalThis.crypto) globalThis.crypto = require("node:crypto").webcrypto;';
-const canonical=await build({input:path.join(mobile,'src/games.ts'),platform:'node',output:{file:path.join(root,'server/arcticPlayEngine.cjs'),format:'cjs',minify:false,banner:'// Generated by mobile/arctic-play/scripts/build-web.mjs. Do not edit; imports canonical Heritage Arcade rules.\n'+nodeCryptoBanner}});
-await build({input:path.join(mobile,'src/games.ts'),platform:'node',output:{file:path.join(mobile,'build/games.cjs'),format:'cjs',minify:false,banner:nodeCryptoBanner}});
-await build({input:path.join(mobile,'src/presentation.js'),platform:'node',output:{file:path.join(mobile,'build/presentation.cjs'),format:'cjs',minify:false}});
-await build({input:path.join(mobile,'src/updates.js'),platform:'node',output:{file:path.join(mobile,'build/updates.cjs'),format:'cjs',minify:false}});
-await build({input:path.join(mobile,'src/learning.js'),platform:'node',output:{file:path.join(mobile,'build/learning.cjs'),format:'cjs',minify:false,banner:nodeCryptoBanner}});
-await build({input:path.join(mobile,'src/adventures.js'),platform:'node',output:{file:path.join(mobile,'build/adventures.cjs'),format:'cjs',minify:false,banner:nodeCryptoBanner}});
-await build({input:path.join(mobile,'src/minimalLearning.js'),platform:'node',output:{file:path.join(mobile,'build/minimalLearning.cjs'),format:'cjs',minify:false,banner:nodeCryptoBanner}});
-for(const name of ['ownerAccess','sanyouCalibration','boardView','practiceBoard','soloPractice','curriculum','learningOrientation','courseActivities','companionJourney','firstJourney'])await build({input:path.join(mobile,'src/'+name+'.js'),platform:'node',output:{file:path.join(mobile,'build/'+name+'.cjs'),format:'cjs',minify:false,banner:nodeCryptoBanner}});
-await build({input:path.join(mobile,'src/replayModel.js'),platform:'node',output:{file:path.join(root,'server/companyLessons.cjs'),format:'cjs',minify:false,banner:nodeCryptoBanner}});
-await build({input:path.join(mobile,'src/foundation.js'),platform:'node',output:{file:path.join(root,'server/companyFoundation.cjs'),format:'cjs',minify:false,banner:nodeCryptoBanner}});
-await fs.copyFile(path.join(mobile,'src/cloudProgress.cjs'),path.join(root,'server/companyProgress.cjs'));
-const files=await fs.readdir(destination);const css=files.filter(f=>f.endsWith('.css'));
-await fs.writeFile(path.join(destination,'index.html'),`<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://articweb3.onrender.com wss://articweb3.onrender.com https://raw.githubusercontent.com https://rpc.testnet.chain.robinhood.com https://rpc.mainnet.chain.robinhood.com https://api.testnet.abs.xyz https://api.mainnet.abs.xyz; worker-src 'self'; font-src 'self'; base-uri 'none'; object-src 'none'"><meta name="theme-color" content="#061a32"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="manifest.webmanifest"><title>Antarctic Kingdoms</title><script src="theme-init.js"></script>${css.map(f=>`<link rel="stylesheet" href="${f}">`).join('')}</head><body><section id="startup-panel" class="startup-panel" data-startup-state="loading" role="status" aria-live="polite"><h1 id="startup-title">Opening Antarctic Kingdoms…</h1><p id="startup-message">Your saved games are on this phone.</p><button id="startup-retry" type="button" hidden>Try again</button></section><div id="root"></div><script src="startup.js"></script><script src="app.js"></script></body></html>`);
-const art=path.join(destination,'art'),source=path.join(root,'frontend/public/assets');
-async function installSanyouPieces(){
-  const sourceDir=path.join(mobile,'art/sanyou-gold-v2'),names=(await fs.readdir(sourceDir)).filter(n=>n.endsWith('.webp'));
-  if(names.length!==27)throw Error('All 27 approved San You Qi pieces are required.');
-  await fs.mkdir(path.join(art,'sanyou-gold-v2'),{recursive:true});
-  for(const name of names)await fs.copyFile(path.join(sourceDir,name),path.join(art,'sanyou-gold-v2',name));
-}
-await installSanyouPieces();
-const reuseFlag=process.argv.indexOf('--reuse-artwork');
-const reuseArtworkFilter=filename=>!/[\\/](sanyou|sanyou-gold-v1|tables-3d-v1|tables-3d-v2)([\\/]|$)/.test(filename)&&!/[\\/]boards[\\/](sanyou\.webp|sanyou-final\.png|sanyou-142225\.png|sanyou-142247\.png)$/.test(filename);
-// Bundle the exact uploaded GitHub board without re-encoding its pixels.
-await fs.mkdir(path.join(art,'shogi'),{recursive:true});
-await fs.copyFile(path.join(mobile,'art/boards/shogi-github-board.png'),path.join(art,'shogi/board-github-v1.png'));
-if(reuseFlag>=0){
-  const previous=path.resolve(process.argv[reuseFlag+1]||'');
-  const covers=JSON.parse(await fs.readFile(path.join(previous,'covers/manifest.json'),'utf8'));
-  if(covers.length!==7)throw new Error('Reused artwork must include all seven games.');
-  await fs.cp(previous,art,{recursive:true,filter:reuseArtworkFilter});
-}else{
-async function copy(relative,target){const to=path.join(art,target);await fs.mkdir(path.dirname(to),{recursive:true});await sharp(path.join(source,relative)).resize({width:target.includes('board')?1334:256,withoutEnlargement:true}).webp({quality:90,alphaQuality:100}).toFile(to);}
-async function board(relative,target,size=1280){const to=path.join(art,target);await fs.mkdir(path.dirname(to),{recursive:true});await sharp(path.join(source,relative)).resize({width:size,withoutEnlargement:true}).webp({quality:87}).toFile(to);}
-for(const [folder,target,colors] of [['games/shogi-frozen-shogunate','shogi',['red','blue']],['games/sannin-shogi','sannin',['red','green','blue']]]){
-  for(const file of await fs.readdir(path.join(source,folder)))if(file.endsWith('.webp')&&(colors.some(c=>file.startsWith(c+'-'))||file==='board.webp'))await copy(`${folder}/${file}`,`${target}/${file}`);
-}
-const tokens=await fs.readdir(path.join(source,'heritage-arcade/tokens'));
-for(const file of tokens)if(/^token-sanguo-(red|green|blue)-[a-z]+\.webp$/.test(file))await copy(`heritage-arcade/tokens/${file}`,`tokens/${file}`);
-for(const file of await fs.readdir(path.join(source,'heritage-arcade/sanguo-yan-yi/pieces')))if(file.endsWith('.webp'))await copy(`heritage-arcade/sanguo-yan-yi/pieces/${file}`,`yanyi/pieces/${file}`);
-await copy('heritage-arcade/sanguo-yan-yi/yan-yi-arctic-board.webp','yanyi/yan-yi-arctic-board.webp');
-await board('heritage-arcade/board/sanguo-arctic-board.png','boards/sanguo.webp');
-await fs.mkdir(path.join(art,'boards'),{recursive:true});
-await fs.copyFile(path.join(mobile,'art/boards/sanyou-ice-white-v2.png'),path.join(art,'boards/sanyou-ice-white-v2.png'));
-await fs.copyFile(path.join(mobile,'art/boards/sanyou-ice-white-v2-grid.svg'),path.join(art,'boards/sanyou-ice-white-v2-grid.svg'));
-await board('heritage-arcade/board/xiangqi-arctic-board.png','boards/xiangqi.webp');
-for(const file of await fs.readdir(path.join(source,'artic/lesson-pieces')))if(/^(green|red|blue|pink)-(frost-king|aurora-unicorn|war-mammoth|icebreaker|snow-guard)\.webp$/.test(file))await copy(`artic/lesson-pieces/${file}`,`dominion/${file}`);
-// Extract only the published 8x8 grid, using the original portrait board overlay
-// calibration. Generated artwork never supplies playable board coordinates.
-const dominionBase=path.join(source,'screens/arctic-dominion-game-base.webp');
-const dm=await sharp(dominionBase).metadata(),side=Math.round(dm.width*.6684);
-await sharp(dominionBase).extract({left:Math.round(dm.width*.1881),top:Math.round(dm.height*.3350),width:side,height:side}).resize(1000,1000).webp({quality:90}).toFile(path.join(art,'dominion/board.webp'));
-await buildTokenCutouts(mobile,destination);
-await buildCovers(mobile,destination);
-}
-// Reused release artwork has already passed the piece and board fixes.
-if(reuseFlag<0){
-// Install the Android-only board after reuse; refresh its canonical army preview.
-await fs.copyFile(path.join(mobile,'art/boards/yanyi-guardian-v3.webp'),path.join(art,'yanyi/yan-yi-arctic-board.webp'));
-await buildTokenCutouts(mobile,destination);
-await buildCovers(mobile,destination,{only:['yanyi','xiangqi','sanguo']});
-}
-await buildBrand(mobile,destination);
-await buildCollections(mobile,destination);
-await fs.copyFile(path.join(mobile,'art/brand/google-g.png'),path.join(art,'brand/google-g.png'));
-// Ice artwork and final theme layer always install after a reused art bundle.
-await fs.mkdir(path.join(art,'ice'),{recursive:true});
-for(const name of ['daylight.webp','night.webp'])await fs.copyFile(path.join(mobile,'art/ice',name),path.join(art,'ice',name));
-await fs.copyFile(path.join(mobile,'src/theme-init.js'),path.join(destination,'theme-init.js'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/ice-theme.css'),'utf8'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/frostbound.css'),'utf8'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/archive-world.css'),'utf8'));
-await fs.cp(path.join(mobile,'art/gathering'),path.join(art,'gathering'),{recursive:true,filter:filename=>!filename.endsWith('.txt')&&!filename.endsWith('.png')});
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/gathering.css'),'utf8'));
-await fs.cp(path.join(mobile,'art/celebration/scenes'),path.join(art,'celebration/scenes'),{recursive:true});
-await fs.cp(path.join(mobile,'art/celebration/stickers'),path.join(art,'celebration/stickers'),{recursive:true});
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/celebration.css'),'utf8'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/release-controls.css'),'utf8'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/learning-rules.css'),'utf8'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/compact-lobby.css'),'utf8'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/unlocks.css'),'utf8'));
-for(const name of ['chaturanga-fast.css','account-entry.css'])await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src',name),'utf8'));
-const size=await fs.stat(path.join(destination,'app.js'));
-console.log(`Built Android web app: ${files.join(', ')}; JavaScript ${(size.size/1024).toFixed(0)} KiB. Seven games and their assets are bundled.`);
-
-// Reuse approved artwork byte for byte across build-tool versions.
-if(reuseFlag>=0)await fs.cp(path.resolve(process.argv[reuseFlag+1]),art,{recursive:true,filter:reuseArtworkFilter});
-await installSanyouPieces();
-// The new role map uses the approved 27-piece pack exclusively.
-const retiredSanyou=path.join(art,'sanyou');
-try{
-  for(const entry of await fs.readdir(retiredSanyou,{withFileTypes:true})){
-    if(!entry.isFile()||!/^((red|green|blue)_team_)[A-Za-z]+_[a-z]+\.webp$/.test(entry.name))throw Error('Unexpected file in the retired San You Qi token folder.');
-    await fs.unlink(path.join(retiredSanyou,entry.name));
-  }
-  await fs.rmdir(retiredSanyou);
-}catch(e){if(e.code!=='ENOENT')throw e;}
-
-await fs.mkdir(path.join(art,'boards'),{recursive:true});
-await fs.copyFile(path.join(mobile,'art/boards/sanyou-ice-white-v2.png'),path.join(art,'boards/sanyou-ice-white-v2.png'));
-await fs.copyFile(path.join(mobile,'art/boards/sanyou-ice-white-v2-grid.svg'),path.join(art,'boards/sanyou-ice-white-v2-grid.svg'));
-await fs.rm(path.join(art,'sanyou-gold-v1'),{recursive:true,force:true});
-await fs.cp(path.join(root,'frontend/public/assets/passport-v1'),path.join(art,'passport-v1'),{recursive:true});
-await fs.cp(path.join(root,'frontend/public/assets/passport-v2'),path.join(art,'passport-v2'),{recursive:true});
-// Never ship superseded San You Qi boards, including in a reused art bundle.
-for(const name of ['sanyou.webp','sanyou-142225.png','sanyou-142247.png','sanyou-final.png'])await fs.rm(path.join(art,'boards',name),{force:true});
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/board-calibration.css'),'utf8'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/discovery.css'),'utf8'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/visa-compact.css'),'utf8'));
-await fs.appendFile(path.join(destination,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/visa-welcome.css'),'utf8'));
-await fs.cp(path.join(mobile,'art/visa-welcome-v1'),path.join(art,'visa-welcome-v1'),{recursive:true});
-
-
-// Refresh the Shogi army preview after reuse, with the uploaded board geometry.
-if(reuseFlag<0)await buildCovers(mobile,destination,{only:['shogi','sanyou']});
-
-// Complete table scenes install after legacy reuse. Masters stay out of the app.
-const tables=JSON.parse(await fs.readFile(path.join(mobile,'art/tables-3d-v3/manifest.json'),'utf8'));
-if(tables.length!==7)throw new Error('All seven sculpted table scenes are required.');
-await fs.mkdir(path.join(art,'tables-3d-v3'),{recursive:true});
-for(const table of tables)await fs.copyFile(path.join(mobile,'art/tables-3d-v3',table.file),path.join(art,'tables-3d-v3',table.file));
-// Install approved replacement images LAST, after generated covers/tables. Read
-// and write the bytes explicitly so a rapid build never reuses stale copies.
-async function copyOverrides(folder,relative=''){
- for(const entry of await fs.readdir(folder,{withFileTypes:true})){
-  const rel=path.join(relative,entry.name),from=path.join(folder,entry.name),to=path.join(art,rel);
-  if(entry.isDirectory()){await fs.mkdir(to,{recursive:true});await copyOverrides(from,rel);}
-  else{await fs.mkdir(path.dirname(to),{recursive:true});await fs.writeFile(to,await fs.readFile(from));}
- }
-}
-await copyOverrides(path.join(mobile,'art/runtime-overrides'));
-const crypto=await import('node:crypto');
-for(const item of JSON.parse(await fs.readFile(path.join(mobile,'art/runtime-overrides-manifest.json'),'utf8'))){
- if(!item.apk_path.startsWith('assets/art/'))continue;
- const bytes=await fs.readFile(path.join(destination,item.apk_path.slice(7)));
- if(crypto.createHash('sha256').update(bytes).digest('hex')!==item.packaged_sha256)throw Error('Approved artwork mismatch: '+item.apk_path);
-}
-
-
-// Android and Safari ship the same game, workers and artwork. The backend can
-// serve this checked-in build without installing frontend dependencies.
-await fs.writeFile(path.join(destination,'manifest.webmanifest'),JSON.stringify({name:'Antarctic Kingdoms',short_name:'Kingdoms',start_url:'.',scope:'.',display:'standalone',background_color:'#061a32',theme_color:'#061a32'}));
-await fs.writeFile(path.join(destination,'app-version.json'),JSON.stringify({version:release.versionName,versionCode:release.versionCode,capabilities:['dominion-teams-v1','browser-play-v1','fair-play-v1']}));
-const warmAssets=[];
-async function collectWarmAssets(folder,prefix='art'){for(const entry of (await fs.readdir(folder,{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))){const file=path.join(folder,entry.name),url=prefix+'/'+entry.name;if(entry.name.startsWith('.')||['sanyou','sanyou-gold-v1','tables-3d-v1','tables-3d-v2'].includes(entry.name))continue;if(entry.isDirectory())await collectWarmAssets(file,url);else if(/\.(avif|bmp|gif|jpe?g|png|svg|webp|aac|flac|m4a|mp3|ogg|wav|webm|woff2?|ttf|otf)$/i.test(entry.name))warmAssets.push({url,bytes:(await fs.stat(file)).size});}}
-await collectWarmAssets(art);
-const assetPriority=u=>/visa-welcome-v1/.test(u)?-1:/passport-v2|tables-3d-v3|covers\/|ice\//.test(u)?0:/sanyou-gold-v2|boards\/|shogi\/|sannin\/|tokens|dominion\/|yanyi\//.test(u)?1:2;
-warmAssets.sort((a,b)=>assetPriority(a.url)-assetPriority(b.url)||a.url.localeCompare(b.url));
-for(const url of ['bot.js','learn.js','fair-worker.js'])warmAssets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});
-await fs.writeFile(path.join(destination,'game-assets.json'),JSON.stringify({version:release.versionName,assets:warmAssets}));
-const cacheVersion='ak-public-game-art-bundled-'+release.versionName;
-await fs.writeFile(path.join(destination,'game-assets-sw.js'),(await fs.readFile(path.join(root,'shared/game-assets/game-assets-sw.js'),'utf8')).replace('__GAME_ASSET_CACHE_VERSION__',cacheVersion));
-const webDestination=path.join(root,'server/arcticPlayWeb');
-await fs.rm(webDestination,{recursive:true,force:true});
-await fs.cp(destination,webDestination,{recursive:true});
-// Write fresh entrypoints when rebuilding rapidly; readers must never receive
-// the previous app script alongside new workers and release metadata.
-for(const file of await fs.readdir(destination,{withFileTypes:true}))if(file.isFile())await fs.writeFile(path.join(webDestination,file.name),await fs.readFile(path.join(destination,file.name)));
-for(const target of [destination,webDestination])for(const folder of ['tables-3d-v1','tables-3d-v2'])await fs.rm(path.join(target,'art',folder),{recursive:true,force:true});
-for(const target of [destination,webDestination]){
-  try{await fs.access(path.join(target,'art/sanyou'));throw Error('A retired San You Qi token folder remains in the generated output.');}catch(e){if(e.code!=='ENOENT')throw e;}
-  if((await fs.readdir(path.join(target,'art/sanyou-gold-v2'))).filter(n=>n.endsWith('.webp')).length!==27)throw Error('Generated output must contain all 27 approved San You Qi pieces.');
-}
-console.log('Built matching browser edition: server/arcticPlayWeb');
-
-const editor=await build({input:path.join(mobile,'src/calibrationEditor.jsx'),platform:'browser',resolve:{alias:{react:path.join(mobile,'build-deps/node_modules/react'),'react-dom':path.join(mobile,'build-deps/node_modules/react-dom')}},transform:{target:'es2020',define:{'process.env.NODE_ENV':'"production"'}},output:{format:'iife',minify:true}});
-const editorStyle=await fs.readFile(path.join(mobile,'src/board-calibration.css'),'utf8');
-await fs.writeFile(path.join(root,'frontend/public/assets/heritage-arcade/sanyou-piece-placement.html'),`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="board-calibration" content="sanyou-ice-white-142437-v1"><title>San You Qi · Board positions</title><style>html,body{margin:0;background:#071a2b;color:white;font-family:system-ui}button,input,select,textarea{font:inherit}${editorStyle}</style></head><body><div id="root"></div><script>${editor.output[0].code.replaceAll('</script','<\\/script')}</script></body></html>`);
-
-// Publish the independent verifier on the main website as well.
-const verifierDir=path.join(root,'frontend/public/fair-play');await fs.mkdir(verifierDir,{recursive:true});
-for(const name of ['fair-worker.js','verifier.js','fair-play.css'])await fs.copyFile(path.join(destination,name),path.join(verifierDir,name));
-await fs.copyFile(path.join(destination,'verify.html'),path.join(verifierDir,'index.html'));
+execFileSync('python3',['-c',`import pathlib,sys,zipfile
+out=pathlib.Path(sys.argv[2])
+with zipfile.ZipFile(sys.argv[1]) as z:
+ for name in z.namelist():
+  if not name.startswith('assets/') or name.endswith('/'):continue
+  p=pathlib.PurePosixPath(name).relative_to('assets')
+  if '..' in p.parts:raise ValueError('Unsafe asset path')
+  dest=out/p;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(z.read(name))`,baseline,destination]);
+const alias=Object.fromEntries(['react','react-dom','lucide-react'].map(name=>[name,path.join(mobile,'build-deps/node_modules',name)]));
+const plugins=[{name:'explicit-css',load(id){if(id.endsWith('.css'))return {code:'',moduleType:'js'};}}];
+async function bundle(input,file,platform='browser'){return build({input,plugins,platform,onwarn(warning,defaultHandler){if(['UNRESOLVED_IMPORT','MISSING_GLOBAL_NAME'].includes(warning.code))throw Error(warning.message);defaultHandler(warning);},resolve:{alias},transform:{target:'es2020',define:{'process.env.NODE_ENV':'"production"'}},output:{file,format:platform==='node'?'cjs':'iife',minify:platform!=='node',...(platform==='node'?{banner:'if (!globalThis.crypto) globalThis.crypto = require("node:crypto").webcrypto;'}:{})}});}
+await bundle(path.join(mobile,'src/App.jsx'),path.join(destination,'app.js'));
+for(const [input,output]of [['bot.worker.js','bot.js'],['learning.worker.js','learn.js'],['fair.worker.js','fair-worker.js']])await bundle(path.join(mobile,'src',input),path.join(destination,output));
+await bundle(path.join(root,'frontend/src/games/shanshui-xiangqi/bot.worker.js'),path.join(destination,'shanshui-bot.js'));
+await bundle(path.join(root,'shared/fair-play/VerifierPage.jsx'),path.join(destination,'verifier.js'));
+await fs.mkdir(path.join(mobile,'build'),{recursive:true});
+for(const name of ['games.ts','offlineLicense.js','presentation.js','updates.js','learning.js','adventures.js','minimalLearning.js','ownerAccess.js','sanyouCalibration.js','boardView.js','practiceBoard.js','soloPractice.js','curriculum.js','learningOrientation.js','courseActivities.js','companionJourney.js','firstJourney.js'])await bundle(path.join(mobile,'src',name),path.join(mobile,'build',name.replace(/\.(ts|js)$/,'.cjs')),'node');
+await bundle(path.join(root,'frontend/src/games/shanshui-xiangqi/mobileAdapter.js'),path.join(mobile,'build/shanshui.cjs'),'node');
+const art=path.join(destination,'art/shanshui');await fs.mkdir(art,{recursive:true});
+const newArt=['board-light.webp','board-dark.webp','starting-position-light.webp','starting-position-dark.webp'];
+for(const name of newArt)await fs.copyFile(path.join(root,'frontend/public/assets/games/shanshui-xiangqi',name),path.join(art,name));
+await fs.cp(path.join(root,'frontend/public/assets/games/shanshui-xiangqi/pieces'),path.join(art,'pieces'),{recursive:true});
+const styles=['styles.css','startup.css','ice-theme.css','frostbound.css','archive-world.css','gathering.css','celebration.css','release-controls.css','learning-rules.css','compact-lobby.css','unlocks.css','chaturanga-fast.css','account-entry.css','board-calibration.css','discovery.css','visa-compact.css','visa-welcome.css'];
+const css=await Promise.all(styles.map(name=>fs.readFile(path.join(mobile,'src',name),'utf8')));
+for(const file of ['shared/antarctic-visa/visa.css','shared/fair-play/fair-play.css','frontend/src/games/shanshui-xiangqi/shanshui.css'])css.push(await fs.readFile(path.join(root,file),'utf8'));
+css.push('.shanshui-catalogue-entry{display:grid;grid-template-columns:minmax(100px,35%) 1fr;gap:18px;align-items:center;margin:16px 0 24px;padding:16px;background:var(--surface,#102942);border:1px solid #a789ce77;border-radius:20px}.shanshui-catalogue-entry img{width:100%;border-radius:14px}.shanshui-catalogue-entry h2{font-size:22px;margin:6px 0}.shanshui-catalogue-entry p{font-size:14px;line-height:1.5}.shanshui-online-setup,.shanshui-online-summary{max-width:900px;margin:20px auto;padding:20px}.shanshui-online-setup form,.shanshui-online-summary form{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.shanshui-app input{font:inherit;max-width:100%;padding:10px;border:1px solid #aaa;border-radius:10px}.shanshui-online-seats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}');
+await fs.writeFile(path.join(destination,'app.css'),css.join('\n'));
+for(const file of ['startup.js','theme-init.js'])await fs.copyFile(path.join(mobile,'src',file),path.join(destination,file));
+await fs.writeFile(path.join(destination,'app-version.json'),JSON.stringify({version:release.versionName,versionCode:release.versionCode,capabilities:['dominion-teams-v1','browser-play-v1','fair-play-v1','shanshui-antarctic-v1']}));
+const warm=JSON.parse(await fs.readFile(path.join(destination,'game-assets.json')));
+for(const name of [...newArt,...(await fs.readdir(path.join(art,'pieces'))).map(n=>'pieces/'+n)]){const url='art/shanshui/'+name;warm.assets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});}
+warm.assets.push({url:'shanshui-bot.js',bytes:(await fs.stat(path.join(destination,'shanshui-bot.js'))).size});warm.version=release.versionName;
+for(const item of warm.assets)item.bytes=(await fs.stat(path.join(destination,item.url))).size;
+await fs.writeFile(path.join(destination,'game-assets.json'),JSON.stringify(warm));
+await fs.writeFile(path.join(destination,'game-assets-sw.js'),(await fs.readFile(path.join(root,'shared/game-assets/game-assets-sw.js'),'utf8')).replace('__GAME_ASSET_CACHE_VERSION__','ak-public-game-art-bundled-'+release.versionName));
+await fs.writeFile(path.join(mobile,'build/mobile-baseline.json'),JSON.stringify({version:release.versionName,baselineVersion:'5.6.8',baselineSha256:baselineHash,legacyGames:7,newGame:'shanshui-xiangqi',artworkPolicy:'Existing artwork reused byte for byte',nativePolicy:'Unchanged v5.6.8 native shell'},null,2)+'\n');
+console.log(`Built current Antarctic Kingdoms ${release.versionName}: seven existing games + Shanshui; ${warm.assets.length} preload assets. Server files were not regenerated.`);

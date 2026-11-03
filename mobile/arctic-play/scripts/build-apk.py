@@ -41,7 +41,7 @@ run(aapt,'compile','--dir',APP/'res','-o',compiled)
 # never become installable assets, even when a checkout contains old output.
 staged=WORK/'assets';staged.mkdir()
 source_assets=APP/'assets'
-root_names={'index.html','app.js','app.css','bot.js','learn.js','fair-worker.js','fair-play.css','verifier.js','verify.html','startup.js','theme-init.js','THIRD_PARTY_NOTICES.txt','manifest.webmanifest','app-version.json','game-assets.json','game-assets-sw.js'}
+root_names={'index.html','app.js','app.css','bot.js','learn.js','fair-worker.js','shanshui-bot.js','fair-play.css','verifier.js','verify.html','startup.js','theme-init.js','THIRD_PARTY_NOTICES.txt','manifest.webmanifest','app-version.json','game-assets.json','game-assets-sw.js'}
 asset_manifest=json.loads((source_assets/'game-assets.json').read_text())
 allowed=root_names|{item['url'] for item in asset_manifest['assets']}
 for relative in sorted(allowed):
@@ -63,14 +63,10 @@ run(args.jdk/'bin/java','-cp',d8,'com.android.tools.r8.D8','--lib',platform,'--m
 with zipfile.ZipFile(base,'a',zipfile.ZIP_DEFLATED) as archive:
     for file in sorted(dex.glob('*.dex')):archive.write(file,file.name)
 aligned=WORK/'aligned.apk';run(align,'-f','-p','4',base,aligned)
-key=args.keystore or OUTPUT/'signing/ArcticPlay-release.jks'
-password=args.password_file or OUTPUT/'signing/signing-password.txt'
-if bool(args.keystore)!=bool(args.password_file):raise SystemExit('Supply both --keystore and --password-file.')
-if not key.exists():
-    key.parent.mkdir(parents=True,exist_ok=True);password.parent.mkdir(parents=True,exist_ok=True)
-    password.write_text(secrets.token_urlsafe(32)+'\n');os.chmod(password,0o600)
-    run(args.jdk/'bin/keytool','-genkeypair','-keystore',key,'-storepass:file',password,'-keypass:file',password,'-alias','arctic-play','-keyalg','RSA','-keysize','3072','-validity','10000','-dname','CN=Arctic Play, O=Arctic Dominion','-storetype','JKS')
-    os.chmod(key,0o600)
+if not args.keystore or not args.password_file:
+    raise SystemExit('Supply the original --keystore and --password-file; update builds never create a new app identity.')
+key=args.keystore;password=args.password_file
+if not key.is_file() or not password.is_file():raise SystemExit('Original signing files are missing.')
 apk=OUTPUT/f'AntarcticKingdoms-v{VERSION}.apk'
 run(signer,'sign','--ks',key,'--ks-key-alias','arctic-play','--ks-pass',f'file:{password}','--out',apk,aligned)
 run(signer,'verify','--verbose','--print-certs',apk)
@@ -79,6 +75,6 @@ digest=hashlib.sha256(apk.read_bytes()).hexdigest()
 (OUTPUT/f'AntarcticKingdoms-v{VERSION}.apk.sha256').write_text(f'{digest}  {apk.name}\n')
 legacy=OUTPUT/f'ArcticPlay-v{VERSION}.apk'
 shutil.copyfile(apk,legacy)  # Existing 1.4 clients trust this exact stable URL.
-metadata={'file':apk.name,'updateFile':legacy.name,'bytes':apk.stat().st_size,'sha256':digest,'package':'xyz.arcticdominion.play','version':VERSION,'versionCode':VERSION_CODE,'minSdk':24,'targetSdk':35,'games':[entry['game'] for entry in json.loads((ROOT/'art/cards/manifest.json').read_text())]}
+metadata={'file':apk.name,'updateFile':legacy.name,'bytes':apk.stat().st_size,'sha256':digest,'package':'xyz.arcticdominion.play','version':VERSION,'versionCode':VERSION_CODE,'minSdk':24,'targetSdk':35,'games':['Shogi','Sannin Shogi','Sanguo Qi','San You Qi','Sanguo Yan Yi Qi','Xiangqi','Chaturanga','Shanshui Xiangqi']}
 (OUTPUT/'build-info.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(json.dumps(metadata,indent=2))

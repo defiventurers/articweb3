@@ -1,3 +1,5 @@
+> Mobile reconciliation and a signed 5.7.0 beta are complete. See [MOBILE_RECONCILIATION.md](MOBILE_RECONCILIATION.md) for current status. The first-playable record below describes the earlier stage.
+
 # Shanshui Xiangqi — first playable implementation
 
 Built 3 November 2026 from `main` commit

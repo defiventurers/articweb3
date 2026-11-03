@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sign a web-only update using the verified, unchanged native 5.2.1 shell.
+"""Sign a web-only update using the verified, unchanged native 5.6.8 shell.
 
 Use build-apk.py for any Java, native resources, permissions or SDK changes.
 This release changes only web assets and the manifest version fields.
@@ -13,7 +13,7 @@ import subprocess
 import tempfile
 import zipfile
 
-BASE_SHA256='d2e0a9feaeb620ef17649da67b92773a7a8f3b8b84f971ec5d4c9595bbc0f364'
+BASE_SHA256='1f25ab4abd8578b399611e0f1ac66e801443c661235dd57c81a2c2788734ae6e'
 CERT_SHA256='20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37'
 
 def patch_version(raw,version,code):
@@ -59,7 +59,7 @@ def patch_version(raw,version,code):
                     data_type=data[pos+15]
                     value=struct.unpack_from('<I',data,pos+16)[0]
                     if strings[name]=='versionName':
-                        if data_type!=3 or strings[value]!='5.2.1':
+                        if data_type!=3 or strings[value]!='5.6.8':
                             raise ValueError('Unexpected base version name')
                         at,n,encoding=positions[value]
                         new=version.encode(encoding)
@@ -68,9 +68,9 @@ def patch_version(raw,version,code):
                         data[at:at+n]=new
                         changed.add('name')
                     elif strings[name]=='versionCode':
-                        if data_type!=0x10 or value!=64:
+                        if data_type!=0x10 or value!=78:
                             raise ValueError('Unexpected base version code')
-                        if code<=64:
+                        if code<=78:
                             raise ValueError('The update must have a newer version code')
                         struct.pack_into('<I',data,pos+16,code)
                         changed.add('code')
@@ -88,7 +88,7 @@ def main():
     mobile=Path(__file__).resolve().parents[1]
     release=json.loads((mobile/'release-config.json').read_text())
     if hashlib.sha256(args.base_apk.read_bytes()).hexdigest()!=BASE_SHA256:
-        raise SystemExit('The base APK is not the verified 5.2.1 release')
+        raise SystemExit('The base APK is not the verified 5.6.8 release')
     (args.build_tools/'zipalign').chmod(0o755)
     signer=args.build_tools/'lib/apksigner.jar'
     def run(*command):
@@ -123,7 +123,7 @@ def main():
         retained=[n for n in base.namelist() if not n.startswith(('META-INF/','assets/')) and n!='AndroidManifest.xml']
         if any(base.read(n)!=update.read(n) for n in retained):
             raise SystemExit('Native contents changed unexpectedly')
-    value={'file':final.name,'bytes':final.stat().st_size,'sha256':hashlib.sha256(final.read_bytes()).hexdigest(),'package':release['packageName'],'version':release['versionName'],'versionCode':release['versionCode'],'minSdk':24,'targetSdk':35,'certificateSha256':CERT_SHA256,'nativeShell':'unchanged verified 5.2.1','nativeFilesByteMatched':len(retained)}
+    value={'file':final.name,'bytes':final.stat().st_size,'sha256':hashlib.sha256(final.read_bytes()).hexdigest(),'package':release['packageName'],'version':release['versionName'],'versionCode':release['versionCode'],'minSdk':24,'targetSdk':35,'certificateSha256':CERT_SHA256,'nativeShell':'unchanged verified 5.6.8','nativeFilesByteMatched':len(retained)}
     (args.output/'build-info.json').write_text(json.dumps(value,indent=2)+'\n')
     (args.output/(final.name+'.sha256')).write_text(value['sha256']+'  '+final.name+'\n')
     print(json.dumps(value,indent=2))

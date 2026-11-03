@@ -24,6 +24,8 @@ jobs:
         working-directory: frontend
       - run: npm ci --ignore-scripts --no-audit
         working-directory: server
+      - run: npm ci --ignore-scripts --no-audit
+        working-directory: shared/fair-play
       - run: npm run test:shanshui && npm run check:shanshui-engine
         working-directory: frontend
       - run: npx vitest run --config vitest.shanshui.config.ts && npm run test:xiangqi
