@@ -291,5 +291,4 @@ function chooseBotMove(state,level='medium'){
     return {a,v:v-enemyBest*7+(next.winner===state.turn?100000:0)};
   }).sort((a,b)=>b.v-a.v)[0].a;
 }
-
 module.exports={VERSION,RULE_PROFILES,DEFAULT_PROFILE,resolveProfile,profileFor,FILES,RANKS,TEAMS,FORDS,TYPES,POINT_VALUES,at,inside,water,coast,nautical,opponent,byId,atPoint,cargoOf,airDefencePoints,airDefenceZones,threatenedByAirDefence,legalActions,countArmy,checkDivisionVictory,applyAction,createInitialState,allLegalActions,chooseBotMove};

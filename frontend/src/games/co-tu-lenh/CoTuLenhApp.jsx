@@ -46,7 +46,9 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
   const movingTeam=state.turn;
   const defenceZones=useMemo(()=>showDefence?airDefenceZones(state):[],[state,showDefence]);
   const currentProfile=profileFor(state);
-  const point=(x,y)=>view==='red'?{x:X+x*STEP_X,y:Y+(11-y)*STEP_Y}:{x:X+(10-x)*STEP_X,y:Y+y*STEP_Y};
+  // Rotate around the artwork centre, including its asymmetric decorative margins.
+  // The same coordinates drive hit areas, sprites, legal targets and defence dots.
+  const point=(x,y)=>{const px=X+x*STEP_X,py=Y+(11-y)*STEP_Y;return view==='red'?{x:px,y:py}:{x:W-px,y:H-py};};
   const redraw=next=>{setState(next);setSelected(null);};
   function reset(nextMode=mode){
     seq.current++;
