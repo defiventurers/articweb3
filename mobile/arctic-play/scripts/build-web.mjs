@@ -55,7 +55,7 @@ await fs.writeFile(path.join(destination,'app-version.json'),JSON.stringify({ver
 const warm=JSON.parse(await fs.readFile(path.join(destination,'game-assets.json')));
 for(const name of [...newArt,...(await fs.readdir(path.join(art,'pieces'))).map(n=>'pieces/'+n)]){const url='art/shanshui/'+name;warm.assets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});}
 warm.assets.push({url:'shanshui-bot.js',bytes:(await fs.stat(path.join(destination,'shanshui-bot.js'))).size});
-for(const name of ['board/board-antarctic-11x12.webp',...(await fs.readdir(path.join(ctlArt,'pieces'))).filter(n=>n.endsWith('.webp')).map(n=>'pieces/'+n),'rules-profiles-v0.3.json']){const url='art/co-tu-lenh/'+name;warm.assets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});}warm.version=release.versionName;
+for(const name of ['board/board-antarctic-11x12.webp',...(await fs.readdir(path.join(ctlArt,'pieces'))).filter(n=>n.endsWith('.webp')).map(n=>'pieces/'+n)]){const url='art/co-tu-lenh/'+name;warm.assets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});}warm.version=release.versionName;
 for(const item of warm.assets)item.bytes=(await fs.stat(path.join(destination,item.url))).size;
 await fs.writeFile(path.join(destination,'game-assets.json'),JSON.stringify(warm));
 await fs.writeFile(path.join(destination,'game-assets-sw.js'),(await fs.readFile(path.join(root,'shared/game-assets/game-assets-sw.js'),'utf8')).replace('__GAME_ASSET_CACHE_VERSION__','ak-public-game-art-bundled-'+release.versionName));
