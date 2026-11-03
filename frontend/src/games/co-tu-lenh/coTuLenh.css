@@ -9,3 +9,11 @@
 .ctl-board-viewport .ctl-board{width:calc(100% * var(--ctl-zoom,1));min-width:0;max-height:none;max-width:none;height:auto;touch-action:manipulation}
 .ctl-board g[role=button]:focus-visible circle[fill=transparent]{stroke:#ffd968;stroke-width:4;fill:#fff2a422}
 @media(max-width:520px){.ctl-board-viewport{max-height:75vh}.ctl-board-wrap{padding:5px}.ctl-board-viewport .ctl-board{min-width:0}}
+/* Optional, non-interactive faction air-defence overlay. No impact on board hit testing. */
+.ctl-range-toggle{border-color:#d4b977!important;color:#f9eed4!important}
+.ctl-range-toggle.is-active{background:#234765!important;box-shadow:0 0 0 2px #d3b66b inset}
+.ctl-defence-zones{isolation:isolate}
+.ctl-defence-key{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:10px;font-size:12px;line-height:1.45;color:#bedae7}
+.ctl-red-key{color:#ff9ea8;font-weight:700}
+.ctl-blue-key{color:#8fd4ff;font-weight:700}
+@media(max-width:480px){.ctl-defence-key{font-size:11px}.ctl-range-toggle{width:100%}}
