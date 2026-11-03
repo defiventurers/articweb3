@@ -28,7 +28,8 @@
     "test:xiangqi": "node --test tests/xiangqi-online.test.js tests/xiangqi-socket.test.js",
     "worker:passport": "node antarcticPassportWorker.js",
     "test:passport": "node --test tests/antarctic-passport.test.js",
-    "postinstall": "node scripts/build-game-wallet.cjs"
+    "postinstall": "node scripts/build-game-wallet.cjs",
+    "test:co-tu-lenh": "node --test ../tests/co-tu-lenh-rules.test.mjs ../tests/co-tu-lenh-service.test.cjs"
   },
   "dependencies": {
     "dotenv": "latest",

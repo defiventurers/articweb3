@@ -1,0 +1,76 @@
+{
+  "status": "DRAFT_RESEARCH_NOT_PLAYABLE",
+  "sourceVersion": "BGA English working baseline (2026-11-03)",
+  "board": {
+    "files": 11,
+    "ranks": 12,
+    "intersections": 132,
+    "riverBetweenRanks": [
+      5,
+      6
+    ],
+    "shoreOnLeft": true,
+    "fordCoordinatesVerified": false
+  },
+  "players": [
+    "red",
+    "blue"
+  ],
+  "units": [
+    {
+      "id": "commander",
+      "vietnamese": "Tư lệnh",
+      "perPlayer": 1
+    },
+    {
+      "id": "infantry",
+      "vietnamese": "Bộ binh",
+      "perPlayer": 2
+    },
+    {
+      "id": "tank",
+      "vietnamese": "Xe tăng",
+      "perPlayer": 2
+    },
+    {
+      "id": "militia",
+      "vietnamese": "Dân quân",
+      "perPlayer": 1
+    },
+    {
+      "id": "engineer",
+      "vietnamese": "Công binh",
+      "perPlayer": 2
+    },
+    {
+      "id": "artillery",
+      "vietnamese": "Pháo binh",
+      "perPlayer": 2
+    },
+    {
+      "id": "antiair",
+      "vietnamese": "Cao xạ",
+      "perPlayer": 2
+    },
+    {
+      "id": "missile",
+      "vietnamese": "Tên lửa",
+      "perPlayer": 1
+    },
+    {
+      "id": "aircraft",
+      "vietnamese": "Không quân",
+      "perPlayer": 2
+    },
+    {
+      "id": "navy",
+      "vietnamese": "Hải quân",
+      "perPlayer": 2
+    },
+    {
+      "id": "headquarters",
+      "vietnamese": "Sở chỉ huy",
+      "perPlayer": 2
+    }
+  ]
+}
