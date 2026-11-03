@@ -44,7 +44,10 @@
     "test:shanshui": "node --test src/games/shanshui-xiangqi/rules.test.js",
     "build:shanshui-engine": "node scripts/build-shanshui-engine.mjs",
     "check:shanshui-engine": "node scripts/build-shanshui-engine.mjs --check",
-    "assets:shanshui": "node scripts/build-shanshui-assets.mjs"
+    "assets:shanshui": "node scripts/build-shanshui-assets.mjs",
+    "test:co-tu-lenh": "node --test ../tests/co-tu-lenh-rules.test.mjs ../tests/co-tu-lenh-service.test.cjs ../tests/co-tu-lenh-art.test.mjs",
+    "build:co-tu-lenh-engine": "node scripts/build-co-tu-lenh-engine.cjs",
+    "check:co-tu-lenh-engine": "node scripts/build-co-tu-lenh-engine.cjs --check"
   },
   "dependencies": {
     "@abstract-foundation/agw-client": "1.12.3",
