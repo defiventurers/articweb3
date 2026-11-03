@@ -1,0 +1,37 @@
+{
+  "title": "C\u1edd T\u01b0 L\u1ec7nh \u2014 Antarctic Kingdoms",
+  "source": "CoTuLenh-Antarctic-Exact-Board/co-tu-lenh-board-exact-11x12.png",
+  "size": [
+    1199,
+    1312
+  ],
+  "columns": 11,
+  "rows": 12,
+  "nodes": 132,
+  "origin_svg": [
+    148,
+    183
+  ],
+  "step_svg": [
+    90.4,
+    81.81818181818181
+  ],
+  "row_orientation": "11 at top, 0 at bottom",
+  "sea_columns_intervals": [
+    0,
+    1
+  ],
+  "river_between_rows": [
+    6,
+    5
+  ],
+  "ford_columns": [
+    5,
+    7
+  ],
+  "ford_status": "provisional pending authoritative Vietnamese edition",
+  "node_style": "full gold, no black centres",
+  "artwork_status": "DRAFT awaiting explicit approval",
+  "sprite_format": "320x320 RGBA WebP 22 units",
+  "source_assets": "user supplied red unit sheets and blue colour studies"
+}
