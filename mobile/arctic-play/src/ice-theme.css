@@ -1,0 +1,86 @@
+/* Shared Antarctic surfaces. Background imagery stays outside playable boards. */
+:root,html[data-theme="dark"]{
+ --bg:#061a32;--surface:#0a2946f2;--panel:#123956f2;
+ --text:#f1f9ff;--muted:#bdd5e8;--line:#87dcff50;--blue:#91dfff;
+ --soft-blue:#154968;--input:#092b48;--nav-surface:#082840f5;
+ --warm:#3c3523;--gold:#f4d48c;--positive:#9ce5c3;--green-wash:#153e37;
+ --ice-scene:url('art/ice/night.webp');--ice-veil:linear-gradient(#03172d30,#04192d59);
+ --ice-reading:#082b48ed;--ice-highlight:#d8f7ff45;
+ --ice-sheet-veil:linear-gradient(#06243bd9,#06243be6);
+ --ice-shine:linear-gradient(118deg,#c8f1ff16,transparent 38%,#4dcaff0a 75%,transparent);
+ --ice-shadow:0 9px 26px #00112538,inset 0 1px 0 #e5fbff36;
+ --ice-button:linear-gradient(150deg,#1777aa,#09527e);
+ color-scheme:dark;background:var(--bg);color:var(--text);
+}
+html[data-theme="light"]{
+ --bg:#dceffb;--surface:#f5fcfff2;--panel:#e4f4fdf2;
+ --text:#123951;--muted:#3f6279;--line:#477d9d66;--blue:#086792;
+ --soft-blue:#d1ecfa;--input:#e6f5fd;--nav-surface:#eefafff5;
+ --warm:#fff1d5;--gold:#775315;--positive:#166647;--green-wash:#dbf3e8;
+ --ice-scene:url('art/ice/daylight.webp');--ice-veil:linear-gradient(#e8f8ff0a,#eaf7ff30);
+ --ice-reading:#f2fbfff0;--ice-highlight:#ffffffd9;
+ --ice-sheet-veil:linear-gradient(#effaffdb,#f2fbffeb);
+ --ice-shine:linear-gradient(118deg,#ffffffa6,transparent 40%,#bdeaff45 75%,transparent);
+ --ice-shadow:0 8px 23px #1c648b24,inset 0 1px 0 #fff;
+ --ice-button:linear-gradient(150deg,#1478a9,#075b89);
+ color-scheme:light;background:var(--bg);color:var(--text);
+}
+body{position:relative;isolation:isolate;background:var(--bg);color:var(--text)}
+body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:var(--ice-veil),var(--ice-scene);background-position:center,center;background-size:cover,cover;background-repeat:no-repeat}
+.app,.app.battle{background:transparent;color:var(--text)}
+.how-to-play{background:transparent;color:var(--text)}
+.academy-header{background:var(--ice-shine),var(--nav-surface);border-color:var(--line);box-shadow:inset 0 1px 0 var(--ice-highlight)}
+.learning-panel{background-image:var(--ice-shine),var(--ice-sheet-veil),var(--ice-scene);background-size:cover;background-position:center;color:var(--text);border-color:var(--line)}
+.lobby-header,.match-header,.page-header,.bottom-nav,.chat-bar{
+ background:var(--ice-shine),var(--nav-surface);border-color:var(--line);
+ box-shadow:inset 0 1px 0 var(--ice-highlight),0 3px 18px #001a2e12;
+}
+.lobby-header{border-bottom:1px solid var(--line);margin-bottom:12px}
+.brand-wordmark{filter:drop-shadow(0 1px 1px #00162826)}
+.brand-wordmark>span{color:var(--blue)}
+.brand-wordmark>strong{color:var(--text);text-shadow:0 1px 0 var(--ice-highlight)}
+.bottom-nav button.active>span{background:var(--ice-shine),var(--soft-blue);box-shadow:inset 0 1px 0 var(--ice-highlight);border:1px solid var(--line)}
+.home-landing,.home-world-copy,.kingdom-intro,.guide-card,.mascot-note,.first-journey,
+.daily-puzzle-entry,.memory-item,.memory-shelf,.learn-mode-row,.minimal-host,
+.resume-table,.player-pill,.result-card,.room-chat,.chat-message,.share-banner,
+.profile-card,.profile-options,.companion-settings,.account-panel,.recovery-card,
+.collection-entry,.collection-product,.boutique-preview,.camp-roster>button,
+.outfit-choices button,.collection-contents-card,.camp-studio-panel{
+ background:var(--ice-shine),var(--surface);border-color:var(--line);
+ box-shadow:var(--ice-shadow);color:var(--text);
+}
+.home-landing{border:1px solid var(--line)}
+.home-world-copy{border-top:1px solid var(--line);background-image:var(--ice-shine),var(--ice-sheet-veil),var(--ice-scene);background-size:cover;background-position:center}
+.home-world-kicker{color:var(--blue)}
+.home-world-copy h2,.home-motto{color:var(--text)}
+.home-world-copy h2 em{color:var(--blue)}
+.home-world-intent,.home-world-copy small{color:var(--muted)}
+.profile-card,.profile-options,.account-panel{border:1px solid var(--line);border-radius:18px}
+.profile-options{padding-inline:12px}
+.table-row,.friend-row,.room-seat{background:var(--ice-shine),var(--ice-reading);border:1px solid var(--line);border-radius:14px;padding-left:12px;padding-right:12px;margin-block:8px}
+.section-title,.tab-intro,.friend-intro,.empty,.welcome-companion,.learning-onramp,.focus-heading{
+ background:var(--ice-reading);border-radius:12px;
+}
+.section-title{padding:8px 10px}
+.tab-intro,.friend-intro,.empty,.welcome-companion,.focus-heading{padding-inline:12px}
+.sheet,.battle .sheet{background-image:var(--ice-shine),var(--ice-sheet-veil),var(--ice-scene);background-color:var(--surface);background-size:cover;background-position:center;border:1px solid var(--line);box-shadow:0 -12px 44px #00152866,inset 0 1px 0 var(--ice-highlight);color:var(--text)}
+.sheet>header{background:var(--surface);box-shadow:0 -13px 0 var(--surface)}
+.sheet-grip{background:var(--blue);opacity:.45}
+.overlay{background:#001328ad}
+.app .primary{background:var(--ice-button);color:#fff;border:1px solid #a4ecff80;box-shadow:inset 0 1px 0 #d4f5ff5c,0 5px 15px #001a3b26}
+.app .secondary,.app .blue-pill,.filter-row button,.board-tools button,.replay-controls button{
+ background:var(--ice-shine),var(--soft-blue);color:var(--blue);border:1px solid var(--line);box-shadow:inset 0 1px 0 var(--ice-highlight);
+}
+.filter-row button.active{background:var(--ice-button);color:#fff;border-color:#a4ecff80}
+input,.text-input,.code-input,select,textarea{background:var(--input);color:var(--text);border-color:var(--line);box-shadow:inset 0 1px 4px #00294b12}
+.game-card{border:1px solid #d4f8ff85;box-shadow:0 7px 20px #001a3b3d,inset 0 1px 0 #efffff70}
+.board-viewport{background:#12324d;border:1px solid #b5efff80;box-shadow:0 5px 22px #00182f52}
+.board-tools{background:var(--ice-reading);padding:8px 6px;margin-top:5px;border-radius:10px}
+.command-area{background:var(--ice-shine),var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:8px}
+.player-pill.current{background:var(--ice-shine),var(--soft-blue);border-color:var(--blue)}
+.selection-hint,.board-tools,.home-world-intent{color:var(--muted)}
+.chat-message.mine{background:var(--ice-shine),var(--soft-blue)}
+.page-header h1,.match-header h1,.sheet h2,.section-title h2{color:var(--text)}
+.minimal-host.success{border-color:var(--positive)}
+.home-archive-links>summary,.lobby-footnote{background:var(--ice-reading);border-radius:10px;padding:8px 10px}
+@media(forced-colors:active){body::before{display:none}.app,.app.battle{background:Canvas;color:CanvasText}}

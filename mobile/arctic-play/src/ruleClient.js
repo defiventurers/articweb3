@@ -1,13 +1,14 @@
+import {secureUuid} from './uuid.js';
 export class RuleClient {
-  constructor(){this.worker=null;this.pending=new Map();}
+  constructor(workerUrl='bot.js'){this.worker=null;this.pending=new Map();this.workerUrl=workerUrl;}
   call(task,payload){
     if(!this.worker){
-      this.worker=new Worker('bot.js');
+      this.worker=new Worker(this.workerUrl);
       this.worker.onmessage=({data})=>{const job=this.pending.get(data.requestId);if(!job)return;this.pending.delete(data.requestId);clearTimeout(job.timer);data.error?job.reject(new Error(data.error)):job.resolve(data);};
       this.worker.onerror=()=>this.reset('The rule worker stopped. Reopen the game to retry.');
     }
     return new Promise((resolve,reject)=>{
-      const requestId=crypto.randomUUID(),timer=setTimeout(()=>this.reset('Rule calculation took too long. Reopen the game to retry.'),25000);
+      const requestId=secureUuid(),timer=setTimeout(()=>this.reset('Rule calculation took too long. Reopen the game to retry.'),25000);
       this.pending.set(requestId,{resolve,reject,timer});this.worker.postMessage({task,requestId,...payload});
     });
   }

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "service": "https://articweb3.onrender.com",
+  "keys": [
+    {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "uJsv6W5E2OIBDv4w4qn6zMbxWg1TD7szVjgdBRkEIRI",
+      "y": "dQFbxMcnbGkEhKF3r87qBgKmSPZ13cibuSmaTWgO4jk",
+      "ext": true
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "file": "AntarcticKingdoms-v2.2.0.apk",
+  "updateFile": "ArcticPlay-v2.2.0.apk",
+  "bytes": 8912577,
+  "sha256": "8c7e23ab1001d4d51fa4afafc471e5bd706ad4273b04802ec338a3637d4bb2eb",
+  "package": "xyz.arcticdominion.play",
+  "version": "2.2.0",
+  "versionCode": 8,
+  "minSdk": 24,
+  "targetSdk": 35,
+  "games": [
+    "Shogi",
+    "Sannin Shogi",
+    "Sanguo Qi",
+    "San You Qi",
+    "Sanguo Yan Yi Qi",
+    "Xiangqi",
+    "Arctic Dominion"
+  ],
+  "certificateSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+  "matchesOriginalCertificate": true,
+  "unchangedArtworkFiles": 217,
+  "privateSigningFilesInApk": false,
+  "unitAndInterfaceTests": 43,
+  "privateRoomTests": 10,
+  "physicalDeviceTested": false,
+  "verifiedAt": "2026-10-16T23:11:47.984018+00:00",
+  "sourceBase": "4bd408b687f3b3b69e27d70698cba4392ef016fb",
+  "reviewedMain": "3fa3455be2b38c310b2a85da579248f6c085403f",
+  "sourceBranch": "codex/mascot-how-to-play",
+  "releaseFeedPublished": false,
+  "externalPracticeUrlSupplied": false,
+  "learningPhoneChecks": [
+    {
+      "viewport": "320x640",
+      "lessons": 21,
+      "pieceExamples": 52,
+      "freeBoards": 7,
+      "errors": [],
+      "savedPracticePreserved": true,
+      "offPreservesTeaching": true
+    },
+    {
+      "viewport": "360x800",
+      "lessons": 21,
+      "pieceExamples": 52,
+      "freeBoards": 7,
+      "errors": [],
+      "savedPracticePreserved": true,
+      "offPreservesTeaching": true
+    },
+    {
+      "viewport": "412x915",
+      "lessons": 21,
+      "pieceExamples": 52,
+      "freeBoards": 7,
+      "errors": [],
+      "savedPracticePreserved": true,
+      "offPreservesTeaching": true
+    },
+    {
+      "viewport": "800x360",
+      "lessons": 21,
+      "pieceExamples": 52,
+      "freeBoards": 7,
+      "errors": [],
+      "savedPracticePreserved": true,
+      "offPreservesTeaching": true
+    }
+  ],
+  "existingPhoneChecks": [
+    {
+      "viewport": "320x640",
+      "games": 7,
+      "guides": 4,
+      "guidedMoveRecorded": true,
+      "editionLabels": true,
+      "lightMode": true,
+      "updateHandoff": true,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "viewport": "360x800",
+      "games": 7,
+      "guides": 4,
+      "guidedMoveRecorded": true,
+      "editionLabels": true,
+      "lightMode": true,
+      "updateHandoff": true,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "viewport": "412x915",
+      "games": 7,
+      "guides": 4,
+      "guidedMoveRecorded": true,
+      "editionLabels": true,
+      "lightMode": true,
+      "updateHandoff": true,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "viewport": "800x360",
+      "games": 7,
+      "guides": 4,
+      "guidedMoveRecorded": true,
+      "editionLabels": true,
+      "lightMode": true,
+      "updateHandoff": true,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    }
+  ],
+  "companionPhoneChecks": [
+    {
+      "viewport": "320x640",
+      "allFourInteractive": true,
+      "preferredGuide": true,
+      "quietMode": true,
+      "offPersists": true,
+      "motionToggle": true,
+      "reducedMotion": true,
+      "boardPreserved": true,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "viewport": "360x800",
+      "allFourInteractive": true,
+      "preferredGuide": true,
+      "quietMode": true,
+      "offPersists": true,
+      "motionToggle": true,
+      "reducedMotion": true,
+      "boardPreserved": true,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "viewport": "412x915",
+      "allFourInteractive": true,
+      "preferredGuide": true,
+      "quietMode": true,
+      "offPersists": true,
+      "motionToggle": true,
+      "reducedMotion": true,
+      "boardPreserved": true,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "viewport": "800x360",
+      "allFourInteractive": true,
+      "preferredGuide": true,
+      "quietMode": true,
+      "offPersists": true,
+      "motionToggle": true,
+      "reducedMotion": true,
+      "boardPreserved": true,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    }
+  ]
+}

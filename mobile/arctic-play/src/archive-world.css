@@ -1,0 +1,143 @@
+/* Frozen Archive: the same ice, quieter reading surfaces, restrained heritage inlay.
+   Decorative surfaces never change a board, sprite, team or legal-move colour. */
+:root,html[data-theme="dark"]{
+ --archive-accent:#f0d49b;--archive-inlay:#d8bc795c;--archive-paper:#fff1cf;
+ --archive-reading:#0c2c46f2;--archive-soft:#173e59e8;
+ --frost-face:linear-gradient(135deg,#7bc5e94d,#103a5bf0 46%,#1b4d70e8);
+ --frost-row:linear-gradient(110deg,#6cb8df31,#103552ed 58%,#1a4567ec);
+ --frost-quiet:linear-gradient(120deg,#5fa8cc29,#0c2f4ae8);
+ --archive-card:#0d304b;--archive-veil:linear-gradient(#0a2d48ed,#102f48f5);
+}
+html[data-theme="light"]{
+ --archive-accent:#79561f;--archive-inlay:#96723775;--archive-paper:#79561f;
+ --archive-reading:#f1fafff5;--archive-soft:#e8f5fbe8;
+ --frost-face:linear-gradient(135deg,#ffffffed,#d7edf8ec 46%,#e9faffe8);
+ --frost-row:linear-gradient(110deg,#fffffff0,#e1f1f9eb 58%,#effbffed);
+ --frost-quiet:linear-gradient(120deg,#ffffffc7,#e4f3fbee);
+ --archive-card:#e8f5fc;--archive-veil:linear-gradient(#f2fbfff0,#eaf6fdf5);
+}
+
+/* A continuous world with calm places to read. */
+.app :is(.lobby-header,.page-header,.match-header),.academy-header{border-bottom:1px solid var(--archive-inlay)}
+.app .world-header{border-bottom:0}
+.app .lobby-header h1:not(.brand-wordmark),.app .page-header h1,.sheet>header h2,.learning-panel>header h2{
+ font-family:Georgia,'Times New Roman',serif;letter-spacing:-.45px;font-weight:700;
+}
+.app .brand-wordmark>span,.world-eyebrow{color:var(--archive-accent)}
+.world-eyebrow{font-size:9px!important;font-weight:800;letter-spacing:1.35px;line-height:1.6!important;margin:10px 0!important}
+.app :is(.primary,.secondary),.app .icon-btn,.overlay .icon-btn{border-color:var(--archive-inlay)}
+.app .primary,.overlay .primary{border-top-color:#f7e5b7b3;border-bottom-color:#5bc2e887}
+:is(.app,.overlay) :is(button,input,select,textarea):focus-visible{outline:3px solid var(--archive-accent);outline-offset:3px}
+.app .section-title{background:transparent;border-bottom:1px solid var(--archive-inlay);border-radius:0;padding:8px 0}
+.app .section-title h2{font-family:Georgia,serif;font-weight:700}
+.app :is(.minimal-host,.mascot-note,.guide-card,.first-journey,.result-card,.account-panel,.recovery-card,.collection-contents-card){
+ background-image:var(--frost-quiet),var(--ice-scene);background-size:cover;background-position:center;
+ border-color:var(--archive-inlay);box-shadow:inset 0 1px 0 var(--frost-glint);
+}
+.app .minimal-host{border-left-color:var(--archive-accent)}
+.app .minimal-host.success{border-left-color:var(--positive)}
+.sheet,.battle .sheet,.learning-panel{
+ background-image:var(--archive-veil),var(--ice-scene);border-color:var(--archive-inlay);
+ box-shadow:inset 0 1px 0 #f8e4ba70,0 -10px 32px #001a2e4d;
+}
+.sheet>header,.learning-panel>header{background:var(--archive-reading);border-bottom:1px solid var(--archive-inlay);padding-bottom:12px}
+.sheet-grip{background:var(--archive-accent)}
+.app :is(.room-chat,.chat-message,.focus-heading,.quickstart-goal){background:var(--archive-reading);border-color:var(--archive-inlay)}
+.app .room-code{color:var(--blue);border-color:var(--archive-inlay)}
+.app .command-area{background:var(--archive-reading);border-color:var(--archive-inlay)}
+.app :is(.player-pill,.resume-table,.daily-puzzle-entry,.home-camp-entry,.memory-item,.table-row){border-color:var(--archive-inlay)}
+.app .player-pill.current{border-color:var(--blue)}
+.app :is(input,select,textarea),.overlay :is(input,select,textarea){border:1px solid var(--line);background:var(--archive-reading);border-radius:13px;color:var(--text)}
+.app .bottom-nav{border-top-color:var(--archive-inlay)}
+.app .bottom-nav button.active>span{border-color:var(--archive-inlay)}
+
+/* Real game relics sit on the generated ledge; no invented playable diagram. */
+.app .home-world-scene{width:calc(100% + 16px);margin:0 -8px;overflow:hidden;isolation:isolate}
+.home-scene-inner{position:relative;width:112%;margin-left:-6%}
+.app .home-world-art{width:100%;height:auto;display:block;filter:none}
+.home-artifacts{position:absolute;inset:0;pointer-events:none}
+.home-artifact{position:absolute;bottom:31.5%;object-fit:contain;object-position:center bottom;transform:translateX(-50%);filter:drop-shadow(0 2px 1px #06334b60)}
+.home-artifact.relic-shogi{left:32%;width:9%;height:19%}
+.home-artifact.relic-yanyi{left:50.3%;width:12%;height:24%}
+.home-artifact.relic-dominion{left:69%;width:12%;height:21%}
+.home-game-families{display:flex;justify-content:center;align-items:center;gap:0;margin:1px 0 6px;font-size:9px;line-height:1.5;font-weight:700;color:var(--archive-accent);text-shadow:var(--frost-title-shadow)}
+.home-game-families>span{padding:0 9px;border-right:1px solid var(--archive-inlay)}
+.home-game-families>span:last-child{border:0}
+.app .home-world-copy{padding-top:8px}
+.app .home-world-kicker{color:var(--archive-accent);font-size:8px;letter-spacing:1.35px;margin-bottom:8px}
+.app .home-world-copy h2{font-family:Georgia,'Times New Roman',serif;font-size:clamp(31px,9.3vw,44px);line-height:1.08;letter-spacing:-.9px;font-weight:700;margin-bottom:10px}
+.app .home-motto{font-size:13px;max-width:27em;margin-bottom:8px}
+.app .home-world-intent{font-size:10px;margin-bottom:13px}
+.app .home-play-actions button{min-height:46px}
+.app .home-play-actions .primary:before{border-color:#f6dfab7d}
+.app .home-play-actions .secondary{min-height:44px}
+
+/* The collection gets to the boards sooner: compact greeting, fewer repeated actions. */
+.app .lobby-content[data-view="games"] .welcome-companion{
+ background:transparent;border:0;border-radius:0;box-shadow:none;min-height:58px;padding:4px 0 9px;gap:10px;
+}
+.app .lobby-content[data-view="games"] .welcome-companion>.mascot-portrait{width:44px;height:49px;flex-basis:44px}
+.app .lobby-content[data-view="games"] .welcome-companion strong{font-size:15px}
+.app .lobby-content[data-view="games"] .welcome-companion small{font-size:10px;margin-top:3px}
+.app .lobby-content[data-view="games"] .learning-invitation{min-height:50px;padding:8px 10px;margin:0 0 5px}
+.app .learning-invitation .learning-flippers{width:30px;height:34px;flex-basis:30px}
+.app .filter-row{padding:5px 0 12px;gap:7px}
+.app .filter-row button{min-height:44px;padding:8px 12px}
+.app .games-grid{gap:12px}
+.app .game-card{background:var(--archive-card);aspect-ratio:1.04;border:1px solid var(--archive-inlay);border-radius:18px;box-shadow:inset 0 1px 0 var(--frost-glint),0 2px 6px #00294324}
+.app .game-card:after{background:none}
+.app .game-open:after{background:linear-gradient(0deg,var(--archive-card) 0%,var(--archive-card) 22%,transparent 76%)}
+.app .game-card .cover-hero{mask-image:linear-gradient(#000 55%,#000000bf 75%,transparent 100%)}
+.app .card-caption{left:11px;right:9px;bottom:10px;text-align:left}
+.app .card-caption strong{font-family:Georgia,serif;font-size:16px;line-height:1.12;color:var(--text);font-weight:700;text-shadow:none}
+.app .card-caption small{font-size:9px;line-height:1.3;color:var(--muted);margin-top:5px}
+.app .card-origin{font-size:8px;color:var(--archive-accent)}
+.app .card-seats{color:var(--text);background:var(--archive-reading);border:1px solid var(--archive-inlay);top:10px;left:9px;padding:4px 6px}
+.app .card-favorite{color:var(--blue);background-image:var(--frost-face),var(--ice-scene);border-color:var(--archive-inlay)}
+.app .card-favorite[aria-pressed="true"]{color:var(--archive-accent);border-color:var(--archive-accent)}
+.app .lobby-content[data-view="games"]>.daily-puzzle-entry{margin-top:17px}
+
+/* Friends, conversations and identity belong to the same Archive. */
+.app .archive-welcome{background:transparent;border:0;box-shadow:none;text-align:center;padding:20px 12px 18px}
+.archive-guide-art{width:88px;height:100px;object-fit:contain;margin:0 auto 5px;filter:drop-shadow(0 4px 3px #00476620)}
+.app .archive-welcome h2,.app .archive-welcome h3{font-family:Georgia,serif;font-size:28px;line-height:1.15;letter-spacing:-.5px;color:var(--text);margin:10px 0}
+.app .archive-welcome>p:not(.world-eyebrow){font-size:13px;line-height:1.65;max-width:30em;margin:10px auto 18px;color:var(--muted)}
+.app .archive-welcome>.primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px}
+.app .lobby-content[data-view="chats"]>.tab-intro{font-size:11px;letter-spacing:.35px;background:transparent;padding:8px 0 12px;border-bottom:1px solid var(--archive-inlay);border-radius:0}
+.app .profile-card{display:grid;grid-template-columns:76px minmax(0,1fr);grid-template-areas:'badge badge' 'portrait name' 'portrait caption' 'portrait edit';column-gap:14px;text-align:left;padding:18px;border-color:var(--archive-inlay);background-image:var(--frost-quiet),var(--ice-scene);margin-bottom:16px}
+.app .profile-card>.avatar{grid-area:portrait;align-self:center;justify-self:center}
+.app .profile-card>h2{grid-area:name;font-family:Georgia,serif;font-size:24px;line-height:1.2;margin:0 0 5px;overflow-wrap:anywhere}
+.app .profile-card>p{grid-area:caption;font-size:12px;margin:0 0 10px}
+.app .profile-card>button{grid-area:edit;justify-self:start;font-size:12px;padding:8px 14px}
+.app .profile-card>.supporter-preview{grid-area:badge;justify-self:start;margin:0 0 12px}
+.app .profile-options>button{padding:12px;min-height:66px;margin:7px 0;border-color:var(--archive-inlay)}
+.app .profile-options .option-icon{border-color:var(--archive-inlay);border-radius:12px}
+.app .profile-options small{font-size:10px;line-height:1.5}
+.app .companion-dock{background:var(--archive-reading);border-color:var(--archive-inlay);padding:6px 7px 6px 9px;border-radius:16px}
+.app .companion-dock.floating{bottom:calc(var(--nav) + var(--safe-bottom) + 7px)}
+.app .companion-main{min-height:48px;gap:8px}
+.app .companion-main strong{font-size:11px;margin-bottom:3px}
+.app .companion-line{font-size:11px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.app .companion-main .mascot-portrait{width:32px;height:41px;flex-basis:32px}
+.app .companion-tools{flex-basis:44px}
+.app.has-companion .lobby-content{padding-bottom:calc(var(--nav) + 98px + var(--safe-bottom))}
+
+/* Only the free default Camp changes. Owned and preview collection scenes keep their artwork. */
+.camp-room.scene-classic{background-image:var(--frost-quiet),var(--ice-scene);background-size:cover;background-position:center;border-color:var(--archive-inlay)}
+.camp-room.scene-classic:before{left:12%;right:12%;top:auto;bottom:13%;height:18%;border-radius:50%;background:linear-gradient(#ddfaff8c,#70d9ef30);border:1px solid var(--archive-inlay);box-shadow:inset 0 1px 0 #f5ffffc2,0 3px 6px #00435a33;transform:none}
+.app .camp-room-identity h3,.app .camp-room-identity>strong{font-family:Georgia,serif}
+.app .camp-stage{border-color:var(--archive-inlay)}
+.app .companion-choices>button{border-color:var(--archive-inlay)}
+
+@media(max-width:359px){
+ .app .home-world-copy h2{font-size:30px}.home-game-families{font-size:8px}.home-game-families>span{padding:0 7px}
+ .app .home-motto{font-size:12px}.app .home-world-intent{font-size:9px}.app .home-world-kicker{font-size:7px}
+ .app .card-caption strong{font-size:14px}.app .card-caption small{font-size:8px}.app .card-seats{font-size:8px;padding:4px}
+ .app .profile-card{padding:14px;column-gap:10px;grid-template-columns:70px minmax(0,1fr)}
+}
+@media(max-height:700px) and (max-width:450px){.home-scene-inner{width:100%;margin-left:0}.app .home-world-copy h2{font-size:30px}.app .home-world-copy{padding-top:5px}.app .home-motto{margin-bottom:6px}.app .home-world-intent{margin-bottom:9px}}
+@media(min-width:600px){.app .games-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.app .home-world-scene{max-width:580px;margin-inline:auto}.app .home-world-copy h2{font-size:44px}.app .home-motto{font-size:16px}.home-game-families{font-size:11px}}
+@media(forced-colors:active){
+ .sheet,.learning-panel,.app .profile-card,.app .game-card{background:Canvas;color:CanvasText;border-color:ButtonText}
+ .app .card-caption strong,.app .card-caption small,.app .card-origin,.home-game-families,.world-eyebrow{color:CanvasText;text-shadow:none}
+}

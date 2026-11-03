@@ -1,0 +1,127 @@
+/* Keep the main destinations inside the phone; only the game list scrolls. */
+.app[data-screen="lobby"]:is([data-tab="home"],[data-tab="games"]){height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.app[data-screen="lobby"]:is([data-tab="home"],[data-tab="games"]) .lobby-header{position:relative;flex:0 0 64px;height:64px;padding:8px 14px;gap:10px}
+.app[data-screen="lobby"]:is([data-tab="home"],[data-tab="games"]) .bottom-nav{position:relative;inset:auto;transform:none;flex:0 0 calc(70px + var(--safe-bottom));height:calc(70px + var(--safe-bottom));padding:7px 8px calc(7px + var(--safe-bottom))}
+.app[data-screen="lobby"]:is([data-tab="home"],[data-tab="games"]) .lobby-content{flex:1;min-height:0;min-width:0;padding:8px 12px 12px}
+.app[data-tab="home"][data-screen="lobby"] .lobby-content{overflow:hidden;overscroll-behavior:none;touch-action:pan-x}
+
+.app[data-tab="games"][data-screen="lobby"] .lobby-content{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.app[data-tab="games"] .filter-row{display:grid;grid-template-columns:.65fr 1fr 1fr 1fr 1.1fr;gap:5px;overflow:visible;padding:0;margin:0 0 7px}
+.app[data-tab="games"] .filter-row button{justify-content:center;min-height:44px;min-width:0;padding:6px 2px;gap:3px;font-size:11px;letter-spacing:-.2px}
+.app[data-tab="games"] .filter-row button>svg{display:none}
+.app[data-tab="games"] .games-chronology{margin:0 1px 9px;font-size:11px;line-height:1.4}
+.app[data-tab="games"] .games-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch}
+.app[data-tab="games"] .game-card.hall-card{display:flex;flex-direction:column;min-width:0;border-radius:14px;aspect-ratio:auto}
+.app[data-tab="games"] .hall-card .game-open{flex:1;min-width:0;display:flex;flex-direction:column;border-radius:0}
+.app[data-tab="games"] .hall-card .cover-art{aspect-ratio:auto;height:clamp(64px,20vw,88px);flex-shrink:0}
+.app[data-tab="games"] .hall-card .cover-hero{object-fit:contain;object-position:center}
+.app[data-tab="games"] .hall-card .card-caption{width:100%;padding:9px 9px 8px}
+.app[data-tab="games"] .hall-card .card-caption strong{font-size:15px;line-height:1.15;overflow-wrap:anywhere}
+.app[data-tab="games"] .hall-card .game-translation{display:block;font-family:Arctic,system-ui,sans-serif;font-size:11px;line-height:1.25;letter-spacing:0;margin-top:4px;font-weight:600}
+.app[data-tab="games"] .hall-card .card-origin{font-size:10px;line-height:1.3;letter-spacing:0;margin-top:5px}
+.app[data-tab="games"] .hall-card .card-caption>small{display:none}
+.app[data-tab="games"] .hall-card .card-seats{top:4px;left:4px;font-size:9px;line-height:1.2;padding:4px 5px;max-width:calc(100% - 52px);gap:3px}
+.app[data-tab="games"] .hall-card .card-seats svg{width:10px;height:10px}
+.app[data-tab="games"] .hall-card .card-favorite{width:44px;height:44px;right:3px;top:3px}
+.app[data-tab="games"] .hall-card-actions{flex-shrink:0}
+.app[data-tab="games"] .hall-card-actions button{min-height:48px;padding:6px 3px;font-size:11px;line-height:1.2;gap:0}
+.app[data-tab="games"] .hall-card-actions button>svg{display:none}
+.app[data-tab="games"] .hall-play-now small{font-size:10px;margin-top:3px}
+.app[data-tab="games"] .hall-how-to-play{min-height:44px;flex-shrink:0;justify-content:center;padding:6px 8px;gap:6px}
+.app[data-tab="games"] .hall-how-to-play>span{flex:0 1 auto}
+.app[data-tab="games"] .hall-how-to-play strong{font-size:12px;line-height:1.3}
+.app[data-tab="games"] .hall-how-to-play small,.app[data-tab="games"] .hall-how-to-play>svg:last-child{display:none}
+.app[data-tab="games"] .hall-how-to-play>svg:first-child{width:16px;height:16px}
+
+.chat-room-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:8px 0 14px}
+.chat-room-actions button{min-height:48px;padding:10px 7px;font-size:13px;gap:7px}
+.chat-camp-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.chat-camp-shortcuts button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:84px;padding:10px 4px;border-radius:15px;font-size:12px;line-height:1.3}
+.chat-camp-shortcuts button>svg{color:var(--blue)}
+.chat-camp>section{margin-top:24px}
+.chat-camp>section>h2{font-size:18px;line-height:1.3;margin:0 0 12px}
+.chat-tables-empty{border:1px solid var(--line);border-radius:15px;padding:14px;background:var(--panel)}
+.chat-tables-empty p{font-size:13px;line-height:1.5;color:var(--muted);margin:0 0 4px}
+.chat-tables-empty .text-button{min-height:44px;padding:7px 0;justify-content:flex-start}
+.chat-story-links{display:grid;gap:8px;margin-top:12px}
+.chat-story-links button{min-height:48px;font-size:13px;padding:11px}
+.chat-camp .memory-shelf{margin-top:16px}
+
+@media(min-width:600px){
+ .app[data-tab="games"] .games-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .app[data-tab="games"] .hall-card .cover-art{height:88px}
+}
+/* Resume stays available; exploring the catalogue is the main invitation. */
+.app[data-tab="home"] .harbor-home .home-play-actions .home-continue{background:var(--ice-shine),var(--harbor-surface);color:var(--harbor-ink);border:1px solid var(--line);box-shadow:inset 0 1px 0 var(--ice-highlight)}
+
+/* Lantern Harbor: welcome, approved artwork, story, then the full-width doors. */
+.app[data-tab="home"] .home-landing.harbor-home{display:flex;flex-direction:column;gap:8px;height:100%;min-height:0;margin:0;padding:0;overflow:hidden}
+.app[data-tab="home"] .harbor-home>.home-world-kicker{display:block;flex:0 0 auto;color:var(--harbor-gold);font-size:10px;font-weight:800;letter-spacing:1.3px;line-height:1.3;text-align:center;margin:0;padding:1px 4px}
+.app[data-tab="home"] .harbor-panorama{flex:1 1 200px;width:100%;min-width:0;min-height:48px;max-height:300px;border-radius:16px;overflow:hidden}
+.app[data-tab="home"] .harbor-panorama>.home-world-art{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
+.app[data-tab="home"] .harbor-home .home-world-copy{flex:0 0 auto;width:100%;max-width:500px;margin:0 auto;padding:5px 10px;background:transparent;border:0;border-radius:0;box-shadow:none;text-align:center}
+.app[data-tab="home"] .harbor-home .home-world-copy:before{display:none}
+.app[data-tab="home"] .harbor-home .home-world-copy h2{font-family:Georgia,serif;font-size:clamp(19px,5.6vw,26px);line-height:1.12;letter-spacing:-.35px;margin:0 0 8px;color:var(--harbor-ink);text-wrap:balance}
+.home-celebration-story{font-size:12px;line-height:1.4;color:var(--harbor-ink)}
+.home-celebration-story p{margin:0 0 6px}
+.home-celebration-story .home-story-finale{display:flex;flex-direction:column;gap:2px;margin:0}
+.home-story-finale>span{color:var(--harbor-muted)}
+.home-story-finale>strong{font-size:13px;letter-spacing:.15px;color:var(--harbor-ink)}
+.app[data-tab="home"] .harbor-home .home-play-actions{display:flex;flex-direction:column;flex:0 0 auto;gap:8px;width:100%;max-width:500px;margin:0 auto}
+.app[data-tab="home"] .harbor-home .home-play-actions button{width:100%;flex-shrink:0;min-height:44px;margin:0;padding:9px 12px;font-size:14px;border-radius:16px}
+.app[data-tab="home"] .harbor-home .home-play-actions .home-explore{min-height:58px;font-size:19px;gap:12px;border:2px solid #e9d29b;background:linear-gradient(125deg,#0a638d,#087e9e);color:#fff;box-shadow:0 4px 10px #073e6433,inset 0 1px 0 #dcfaff6b;letter-spacing:.1px}
+html[data-theme="dark"] .app[data-tab="home"] .harbor-home .home-play-actions .home-explore{background:linear-gradient(125deg,#c6f8ff,#74d8ff);color:#073754;border-color:#f1dba7;box-shadow:0 4px 14px #00172c66,inset 0 1px 0 #fff}
+.app[data-tab="home"] .harbor-home .home-play-actions .home-explore:focus-visible{outline:3px solid var(--harbor-gold);outline-offset:2px}
+.app[data-tab="home"] .harbor-home .home-join-controls{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%}
+.app[data-tab="home"] .harbor-home .home-play-actions .home-join-sticker{min-height:44px;background:var(--ice-shine),var(--harbor-surface);border:1px solid var(--harbor-inlay);color:var(--blue);box-shadow:inset 0 1px 0 var(--ice-highlight);font-size:14px}
+.home-room-code{display:block;width:100%;margin:0}
+.room-code-fields{display:grid;grid-template-columns:repeat(5,minmax(0,1fr) 4px) minmax(0,1fr);gap:1px;align-items:center;width:100%;max-width:390px;min-width:0;margin:0 auto}
+.app .room-code-fields .room-code-character{display:block;width:100%;min-width:0;height:44px;min-height:44px;margin:0;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--harbor-surface);color:var(--harbor-ink);font-size:18px;font-weight:800;line-height:1.25;letter-spacing:0;text-align:center;box-shadow:none;text-transform:uppercase}
+.app .room-code-fields .room-code-character:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.room-code-hyphen{width:4px;text-align:center;font-size:12px;line-height:1;color:var(--harbor-ink);pointer-events:none;user-select:none}
+.join-code-summary{letter-spacing:2px;color:var(--blue)}
+@media(max-height:740px) and (orientation:portrait){
+ .app[data-tab="home"] .home-landing.harbor-home{gap:5px}
+ .app[data-tab="home"] .harbor-panorama{flex-basis:120px;min-height:42px}
+ .app[data-tab="home"] .harbor-home .home-world-copy{padding:4px 8px}
+ .app[data-tab="home"] .harbor-home .home-world-copy h2{font-size:20px;margin-bottom:5px;line-height:1.08}
+ .home-celebration-story{font-size:11px;line-height:1.3}
+ .home-celebration-story p{margin-bottom:4px}
+ .home-story-finale>strong{font-size:12px}
+ .app[data-tab="home"] .harbor-home .home-play-actions{gap:5px}
+ .app[data-tab="home"] .harbor-home .home-play-actions .home-explore{min-height:52px;font-size:17px}
+}
+@media(max-height:610px) and (orientation:portrait){
+ .app[data-screen="lobby"][data-tab="home"] .lobby-header{flex-basis:56px;height:56px;padding-block:4px;margin-bottom:4px}
+ .app[data-screen="lobby"][data-tab="home"] .bottom-nav{flex-basis:calc(64px + var(--safe-bottom));height:calc(64px + var(--safe-bottom));padding-top:4px;padding-bottom:calc(4px + var(--safe-bottom))}
+ .app[data-screen="lobby"][data-tab="home"] .lobby-content{padding:3px 10px 7px}
+ .app[data-tab="home"] .harbor-home .home-world-copy h2{font-size:18px;line-height:1.05}
+ .app[data-tab="home"] .harbor-home .home-play-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+ .app[data-tab="home"] .harbor-home .home-play-actions .home-explore{grid-column:1/-1;grid-row:1;min-height:50px}
+ .app[data-tab="home"] .harbor-home .home-join-controls{display:contents}
+ .app[data-tab="home"] .harbor-home .home-play-actions .home-join-sticker{grid-column:1;grid-row:2}
+ .app[data-tab="home"] .harbor-home .home-play-actions .home-continue{grid-column:2;grid-row:2;font-size:12px;padding:5px}
+ .app[data-tab="home"] .harbor-home .home-room-code{grid-column:1/-1;grid-row:3}
+ .app[data-tab="home"] .harbor-home .home-play-actions:not(:has(.home-continue)) .home-join-sticker{grid-column:1/-1}
+}
+@media(orientation:landscape) and (max-height:500px){
+ .app[data-screen="lobby"][data-tab="home"] .lobby-header{flex-basis:44px;height:44px;margin-bottom:0;padding-block:0}
+ .app[data-screen="lobby"][data-tab="home"] .bottom-nav{flex-basis:calc(50px + var(--safe-bottom));height:calc(50px + var(--safe-bottom));padding-top:2px;padding-bottom:calc(2px + var(--safe-bottom))}
+ .app[data-screen="lobby"][data-tab="home"] .lobby-content{padding:4px 10px 6px}
+ .app[data-tab="home"] .home-landing.harbor-home{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr) minmax(0,1.2fr);grid-template-rows:auto minmax(0,1fr);gap:4px 10px;align-items:center}
+ .app[data-tab="home"] .harbor-home>.home-world-kicker{grid-column:1;grid-row:1;font-size:8px;letter-spacing:.7px}
+ .app[data-tab="home"] .harbor-panorama{grid-column:1;grid-row:2;max-height:none;min-height:0;height:100%;align-self:stretch}
+ .app[data-tab="home"] .harbor-home .home-world-copy{display:contents}
+ .app[data-tab="home"] .harbor-home .home-world-copy h2{grid-column:2/4;grid-row:1;font-size:17px;line-height:1.05;margin:0;text-align:center}
+ .home-celebration-story{grid-column:2;grid-row:2;align-self:center;font-size:10px;line-height:1.22;text-align:center}
+ .home-celebration-story p{margin-bottom:3px}
+ .home-story-finale>strong{font-size:11px}
+ .app[data-tab="home"] .harbor-home .home-play-actions{grid-column:3;grid-row:2;display:grid;grid-template-columns:1fr 1fr;gap:4px;align-self:center}
+ .app[data-tab="home"] .harbor-home .home-play-actions .home-explore{grid-column:1/-1;grid-row:1;min-height:48px;font-size:15px;padding:5px}
+ .app[data-tab="home"] .harbor-home .home-join-controls{display:contents}
+ .app[data-tab="home"] .harbor-home .home-play-actions .home-join-sticker{grid-column:1;grid-row:2;padding:5px;font-size:12px}
+ .app[data-tab="home"] .harbor-home .home-play-actions .home-continue{grid-column:2;grid-row:2;font-size:11px;padding:5px}
+ .app[data-tab="home"] .harbor-home .home-room-code{grid-column:1/-1;grid-row:3}
+ .app[data-tab="home"] .harbor-home .home-play-actions:not(:has(.home-continue)) .home-join-sticker{grid-column:1/-1}
+ .app[data-tab="home"] .harbor-home .home-motto{grid-column:2;grid-row:2;display:block;font-size:10px}
+}

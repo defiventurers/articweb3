@@ -1,0 +1,11 @@
+{
+  "name": "@antarctic/fair-play",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "drand-client": "1.4.2",
+    "@noble/hashes": "1.8.0",
+    "@noble/curves": "1.9.7"
+  }
+}

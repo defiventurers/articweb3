@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><shape><solid android:color="#061A32"/></shape></item>
+    <item><bitmap android:src="@drawable/launch_ice_texture" android:gravity="fill"/></item>
+    <item><shape><gradient android:angle="270" android:startColor="#3006172D" android:endColor="#5904192D"/></shape></item>
+</layer-list>

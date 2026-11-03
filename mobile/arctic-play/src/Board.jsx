@@ -1,14 +1,22 @@
-import React,{useMemo,useRef,useState} from 'react';
+import {useBoardAssets} from './gameAssets.js';
+import {createPortal} from 'react-dom';
+import React,{useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
+import {Plus,Minus,ZoomIn} from 'lucide-react';
 import {board,pieces,COLORS,seatName} from './games.ts';
-export function Board({id,state,legal,selected,onSelect,onTarget,canAct}){
-  const geometry=useMemo(()=>board(id),[id]);
-  const units=useMemo(()=>pieces(id,state),[id,state]);
+import {boardGeometry,pieceRotation} from './boardView.js';
+import {SANYOU_CALIBRATION_KEY} from './sanyouCalibration.js';
+export function Board({id,state,legal=[],selected=null,suggested=null,trail,onSelect,onTarget,canAct,positionPieces,spotlight,destinationLabel='legal destination',inspectableSources=[],inspectableCells=[],placementCells=[],onInspect,onMiss,annotations=[],compactControls=false,perspective,controlsTarget=null}){
+  const [calibrationRevision,setCalibrationRevision]=useState(0);
+  useEffect(()=>{const changed=e=>{if(e.detail?.key===SANYOU_CALIBRATION_KEY||e.key==='arctic-play.v1.'+SANYOU_CALIBRATION_KEY)setCalibrationRevision(n=>n+1);};window.addEventListener('arctic-storage',changed);window.addEventListener('storage',changed);return()=>{window.removeEventListener('arctic-storage',changed);window.removeEventListener('storage',changed);};},[]);
+  const geometry=useMemo(()=>boardGeometry(id,perspective),[id,perspective,calibrationRevision]);
+  const units=useMemo(()=>positionPieces||pieces(id,state),[id,state,positionPieces]);
+  const art=useBoardAssets([geometry.image,geometry.overlay,...units.map(p=>p.sprite)]);
   const byCell=useMemo(()=>new Map(units.map(p=>[p.cell,p])),[units]);
   const destinations=useMemo(()=>new Set(legal.filter(a=>a.source===selected).map(a=>a.target)),[legal,selected]);
   const [zoom,setZoom]=useState(1),[pan,setPan]=useState({x:0,y:0});
   const pointers=useRef(new Map()),gesture=useRef(null),dragged=useRef(false),viewport=useRef(null);
-  const last=state.lastMove||state.lastAction;
-  const activate=cell=>{if(dragged.current||!canAct)return;if(destinations.has(cell.id)){onTarget(cell.id);return;}const unit=byCell.get(cell.id);if(unit&&legal.some(a=>a.source===unit.source))onSelect(unit.source);else onSelect(null);};
+  useLayoutEffect(()=>{setZoom(1);setPan({x:0,y:0});pointers.current.clear();gesture.current=null;dragged.current=false;},[id,geometry.perspective]);
+  const activate=cell=>{if(dragged.current||!canAct)return;if(destinations.has(cell.id)){onTarget(cell.id);return;}if(inspectableCells.includes(cell.id)||placementCells.includes(cell.id)){onInspect?.(cell.id);return;}const unit=byCell.get(cell.id);if(unit&&(legal.some(a=>a.source===unit.source)||inspectableSources.includes(unit.source)))onSelect(unit.source);else{onSelect(null);onMiss?.(cell.id);}};
   const start=e=>{
     pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});dragged.current=false;
     const points=[...pointers.current.values()];
@@ -18,16 +26,17 @@ export function Board({id,state,legal,selected,onSelect,onTarget,canAct}){
   const move=e=>{
     if(!pointers.current.has(e.pointerId))return;pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
     const points=[...pointers.current.values()],base=gesture.current;if(!base)return;
-    if(points.length===2&&base.distance){dragged.current=true;setZoom(Math.max(1,Math.min(3,base.zoom*Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y)/base.distance)));}
+    if(points.length===2&&base.distance){dragged.current=true;setZoom(Math.max(1,Math.min(4,base.zoom*Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y)/base.distance)));}
     else if(zoom>1&&base.x!==undefined){const dx=e.clientX-base.x,dy=e.clientY-base.y;if(Math.abs(dx)+Math.abs(dy)>8){dragged.current=true;e.currentTarget.setPointerCapture(e.pointerId);const rect=viewport.current.getBoundingClientRect(),limitX=rect.width*(zoom-1)/2,limitY=rect.height*(zoom-1)/2;setPan({x:Math.max(-limitX,Math.min(limitX,base.pan.x+dx)),y:Math.max(-limitY,Math.min(limitY,base.pan.y+dy))});}}
   };
   const end=e=>{pointers.current.delete(e.pointerId);if(!pointers.current.size)gesture.current=null;};
   const reset=()=>{setZoom(1);setPan({x:0,y:0});};
   const [, ,width,height]=geometry.viewBox.split(' ').map(Number);
-  return <section className="board-section">
-    <div className="board-viewport" ref={viewport} style={{aspectRatio:`${width}/${height}`}} onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
-      <svg data-testid="game-board" className="game-board" viewBox={geometry.viewBox} aria-label={`${id} board`} style={{transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`}}>
-        {geometry.image?<image href={geometry.image} x={geometry.imageX||0} y={geometry.imageY||0} width={geometry.imageWidth} height={geometry.imageHeight} preserveAspectRatio="none"/>:<>
+  const zoomTools=compactControls?<details className="board-zoom"><summary aria-label="Board zoom tools"><ZoomIn size={16}/>{zoom===1?'Zoom':`${Math.round(zoom*100)}%`}</summary><div className="board-tools"><span>Pinch or use buttons</span><div><button onClick={()=>setZoom(value=>Math.min(4,value+.5))} aria-label="Zoom in"><Plus size={18}/></button><button onClick={()=>{setZoom(value=>Math.max(1,value-.5));setPan({x:0,y:0});}} aria-label="Zoom out"><Minus size={18}/></button><button onClick={reset}>Fit</button></div></div></details>:<div className="board-tools"><span>{zoom>1?'Drag to pan':'Zoom for easier taps'} · {Math.round(zoom*100)}%</span><div><button onClick={()=>setZoom(value=>Math.min(4,value+.5))} aria-label="Zoom in"><Plus size={18}/></button><button onClick={()=>{setZoom(value=>Math.max(1,value-.5));setPan({x:0,y:0});}} aria-label="Zoom out"><Minus size={18}/></button><button onClick={reset}>Fit</button></div></div>;
+  return <section className="board-section" data-game={id}>
+    <div className="board-viewport" ref={viewport} aria-busy={!art.ready} style={{aspectRatio:`${width}/${height}`,position:'relative'}} onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
+      <svg data-testid="game-board" data-perspective={geometry.perspective} data-view-angle={geometry.angle} className="game-board" viewBox={geometry.viewBox} aria-label={`${id} board, ${seatName(id,geometry.perspective)} army at the bottom`} style={{transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`,visibility:art.ready?'visible':'hidden'}}>
+        {geometry.image?<><image href={geometry.image} x={geometry.imageX||0} y={geometry.imageY||0} width={geometry.imageWidth} height={geometry.imageHeight} preserveAspectRatio="none" transform={geometry.backgroundTransform}/>{geometry.overlay&&<image href={geometry.overlay} x="0" y="0" width={geometry.imageWidth} height={geometry.imageHeight} transform={geometry.backgroundTransform} pointerEvents="none"/>}</>:<>
           <defs><linearGradient id="wood" x2="1" y2="1"><stop stopColor="#e7c68a"/><stop offset="1" stopColor="#bd8e4d"/></linearGradient></defs>
           <rect width="900" height="1000" rx="24" fill="url(#wood)"/><rect x="40" y="90" width="820" height="820" fill="#f4d7a2" stroke="#9b692e" strokeWidth="4"/>
           {Array.from({length:10},(_,i)=><React.Fragment key={i}><path d={`M ${45+i*90} 95 V 905 M 45 ${95+i*90} H 855`} stroke="#73552d" strokeWidth="2"/></React.Fragment>)}
@@ -35,21 +44,25 @@ export function Board({id,state,legal,selected,onSelect,onTarget,canAct}){
           <text x="450" y="52" textAnchor="middle" fill="#72502e" fontSize="26" fontWeight="700">SHOGI</text>
         </>}
         {geometry.cells.map(cell=>{
-          const unit=byCell.get(cell.id),isSelected=unit?.source===selected,highlight=destinations.has(cell.id),inherited=unit&&unit.owner&&unit.origin!==unit.owner,half=geometry.size/2;
-          return <g key={cell.id} data-cell={cell.id} role="button" aria-label={`${cell.label}${unit?`, ${seatName(id,unit.owner||unit.origin)} ${unit.label}`:''}${highlight?', legal destination':''}`} tabIndex={highlight||isSelected?0:-1} onClick={()=>activate(cell)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate(cell);}}}>
-            <circle cx={cell.x} cy={cell.y} r={half*.68} fill="transparent"/>
+          const unit=byCell.get(cell.id),isSelected=!!unit&&unit.source===selected,highlight=destinations.has(cell.id),inherited=unit&&unit.owner&&unit.origin!==unit.owner,diameter=cell.size??geometry.size,half=diameter/2;
+          return <g key={cell.id} data-cell={cell.id} data-piece={unit?.id} aria-pressed={isSelected} role="button" aria-label={`${cell.label}${unit?`, ${seatName(id,unit.owner||unit.origin)} ${unit.label}`:''}${highlight?`, ${destinationLabel}`:''}${annotations.some(n=>n.cell===cell.id)?`, ${annotations.find(n=>n.cell===cell.id).label}`:''}`} tabIndex={canAct&&(highlight||isSelected||inspectableCells.includes(cell.id)||placementCells.includes(cell.id)||unit&&(legal.some(a=>a.source===unit.source)||inspectableSources.includes(unit.source)))?0:-1} onClick={()=>activate(cell)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate(cell);}}}>
+            <circle cx={cell.x} cy={cell.y} r={half*.95} fill="transparent"/>
+            {(cell.id===trail?.from||cell.id===trail?.to)&&<circle className="last-move-ring" cx={cell.x} cy={cell.y} r={half*1.03} fill="#ffc85b22" stroke="#ffd477" strokeWidth="4" strokeDasharray={cell.id===trail?.from?'7 5':undefined} pointerEvents="none"/>}
+            {(unit?.source===suggested||inspectableCells.includes(cell.id))&&<circle className="suggested-piece" cx={cell.x} cy={cell.y} r={half*1.07} fill="#ffd47722" stroke="#ffe59e" strokeWidth="6" strokeDasharray="9 5" pointerEvents="none"/>}
             {isSelected&&<circle cx={cell.x} cy={cell.y} r={half*1.04} fill="#389cf470" stroke="#b9efff" strokeWidth="5"/>}
             {unit&&<>
               {inherited&&<circle cx={cell.x} cy={cell.y} r={half*1.01} fill="none" stroke={COLORS[unit.owner]} strokeWidth="8"/>}
-              <image href={unit.sprite} x={cell.x-half} y={cell.y-half} width={geometry.size} height={geometry.size} opacity={unit.inactive ? .45 : 1} transform={unit.rotation?`rotate(${unit.rotation} ${cell.x} ${cell.y})`:undefined} pointerEvents="none"/>
-              {unit.badge&&<g pointerEvents='none'><circle cx={cell.x+half*.65} cy={cell.y+half*.65} r={half*.28} fill={unit.badge==='M'?'#566a7f':'#126c9b'} stroke='white' strokeWidth='2'/><text x={cell.x+half*.65} y={cell.y+half*.65+5} fontSize='16' fill='white' textAnchor='middle'>{unit.badge}</text></g>}{inherited&&<circle cx={cell.x+half*.67} cy={cell.y+half*.65} r={half*.2} fill={COLORS[unit.owner]} stroke="white" strokeWidth="2"/>}
+              <image href={unit.sprite} x={cell.x-half} y={cell.y-half} width={diameter} height={diameter} opacity={spotlight&&spotlight!==unit.source&&!highlight ? .35 : unit.inactive ? .45 : 1} transform={pieceRotation(unit,geometry.angle)?`rotate(${pieceRotation(unit,geometry.angle)} ${cell.x} ${cell.y})`:undefined} pointerEvents="none"/>
+              {inherited&&<circle cx={cell.x+half*.67} cy={cell.y+half*.65} r={half*.2} fill={COLORS[unit.owner]} stroke="white" strokeWidth="2"/>}
             </>}
             {highlight&&(unit?<circle cx={cell.x} cy={cell.y} r={half*.99} fill="#ff6e6322" stroke="#ff9a76" strokeWidth="6"/>:<circle cx={cell.x} cy={cell.y} r={half*.29} fill="#78d2ff" stroke="#fff" strokeWidth="3"/>)}
-            <circle cx={cell.x} cy={cell.y} r={half*.72} fill="transparent"/>
+            {annotations.map((n,i)=>n.cell===cell.id&&<g key={i} pointerEvents="none"><title>{n.label}</title><circle cx={cell.x+half*.8} cy={cell.y-half*.8} r={half*.32} fill="#efe3ff" stroke="#48345f" strokeWidth="2"/><text x={cell.x+half*.8} y={cell.y-half*.8} textAnchor="middle" dominantBaseline="central" fontSize={n.marker?half*.38:half*.5} fontWeight="800" fill="#382a50">{n.marker||i+1}</text></g>)}
+            <circle cx={cell.x} cy={cell.y} r={half*.95} fill="transparent"/>
           </g>;
         })}
       </svg>
+      {!art.ready&&<div className="board-art-loading" role="status"><strong>{art.error?'This board artwork could not load.':'Preparing your board…'}</strong>{art.error&&<button type="button" onClick={art.retry}>Try again</button>}</div>}
     </div>
-    <div className="board-tools"><span>{zoom>1?'Drag to pan':'Pinch to zoom'} · {Math.round(zoom*100)}%</span><div><button onClick={()=>setZoom(value=>Math.min(3,value+.5))} aria-label="Zoom in">＋</button><button onClick={()=>{setZoom(value=>Math.max(1,value-.5));setPan({x:0,y:0});}} aria-label="Zoom out">−</button><button onClick={reset}>Fit</button></div></div>
+    {controlsTarget?createPortal(zoomTools,controlsTarget):zoomTools}
   </section>;
 }

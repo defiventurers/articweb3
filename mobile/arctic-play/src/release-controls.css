@@ -1,0 +1,29 @@
+/* Keep the artwork complete and the two global controls reachable on phones. */
+.header-controls{display:flex;align-items:center;gap:2px;flex:0 0 auto}
+.header-controls .icon-btn{width:44px;height:44px;color:var(--harbor-ink,var(--text));background:var(--frost-quiet,#153c56);border:1px solid var(--line,#80bed140)}
+.header-controls .header-update{color:var(--harbor-gold,#ffe29b)}
+.app .lobby-header{gap:8px}
+.app .lobby-header h1{flex:1;min-width:0;overflow-wrap:anywhere}
+.app .lobby-header h1:not(.brand-wordmark){font-size:clamp(17px,5vw,24px)}
+.app .lobby-header .brand-wordmark{min-width:0}
+.header-room-tools{display:flex;align-items:center;gap:6px;margin:0 0 12px;flex-wrap:wrap}
+.header-room-tools button{display:flex;align-items:center;gap:6px;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--frost-quiet);color:var(--harbor-ink)}
+.game-translation{font-size:.66em;font-weight:500;line-height:1.4}
+.game-period{display:block;font-size:11px;line-height:1.55;color:var(--harbor-muted,var(--muted));margin:5px 0 7px;letter-spacing:0;font-weight:500}
+.app .hall-card .card-caption .game-period{font-size:11px;margin:6px 0 7px}
+.app .hall-card .card-caption .game-translation{font-size:16px}
+.hall-game-name{font-family:Georgia,serif;font-size:25px;line-height:1.3;margin:12px 0 0}
+.game-history p{font-size:12px;line-height:1.65}.game-history ul{padding-left:18px}.game-history li{margin:7px 0;font-size:12px;line-height:1.5}.game-history a{color:var(--harbor-gold,var(--blue));overflow-wrap:anywhere}
+.required-update-page{min-height:100dvh;padding-bottom:30px;background:var(--harbor-foot,var(--bg));color:var(--harbor-ink,var(--text))}
+.required-update-header{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:16px;gap:12px;border-bottom:1px solid var(--line);background:var(--harbor-foot,var(--bg))}
+.required-update-panel{padding:28px 22px;max-width:500px;margin:0 auto;outline:none}
+.required-update-panel h1{font-family:Georgia,serif;font-size:34px;line-height:1.15;margin:10px 0 18px}
+.required-update-panel>p{line-height:1.6}.required-update-panel .primary,.required-update-panel .secondary{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin-top:12px}
+.required-update-emblem{display:grid;place-items:center;width:64px;height:64px;border-radius:20px;background:var(--harbor-primary,#76dcff);color:#073754;margin-bottom:22px}
+.required-update-panel .update-notes{margin-top:24px}.update-needed{box-shadow:0 0 0 2px var(--harbor-gold,#ffe29b)}
+.app .match-header>div:first-of-type{min-width:0;flex:1}.app .match-header h1{overflow-wrap:anywhere}
+@media(max-width:359px){.app .brand-wordmark span{font-size:10px;letter-spacing:1px}.app .brand-wordmark strong{font-size:17px;letter-spacing:.5px}.app .lobby-header{padding-left:12px;padding-right:12px}.app .hall-card .card-caption .game-translation{font-size:15px}}
+
+.browser-room-invite{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin-top:10px}
+.browser-invite-note{font-size:12px;text-align:center;color:var(--harbor-muted,var(--muted));line-height:1.5;margin:8px 0 14px}
+.join-room-form input{font-size:16px;min-height:48px}

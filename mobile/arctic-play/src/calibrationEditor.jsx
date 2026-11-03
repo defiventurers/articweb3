@@ -1,0 +1,1 @@
+import React from 'react';import {createRoot} from 'react-dom/client';import {BoardCalibrator} from './BoardCalibrator.jsx';createRoot(document.getElementById('root')).render(<BoardCalibrator standalone/>);

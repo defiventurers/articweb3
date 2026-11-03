@@ -1,0 +1,37 @@
+/* Shared festival artwork; rules, hit targets and legal-state colours stay native. */
+.app .tabletop-cover .cover-hero{object-fit:contain;object-position:center;opacity:1;mask-image:none;-webkit-mask-image:none}
+.app .hall-card .tabletop-cover{aspect-ratio:3/2}
+.celebration-door .hall-story-scene{width:100%;height:100%;object-fit:cover;display:block}
+.hall-door-marker{z-index:2}
+.hall-earned-sticker{width:74px;height:74px;object-fit:contain;flex:0 0 74px}
+.festival-story-banner,.festival-friends-banner,.passport-story-banner{display:block;width:100%;height:auto;object-fit:cover;border-radius:16px;border:1px solid var(--harbor-inlay);margin:12px 0 16px;aspect-ratio:1.5}
+.passport-story-banner{aspect-ratio:2.6;object-position:50% 52%;max-height:150px}
+.celebration-friends .festival-friends-banner{max-height:230px;aspect-ratio:1.8;object-position:center}
+.celebration-friends .archive-guide-art{display:none}
+.empty .festival-friends-banner{max-width:420px;margin:0 auto 16px;max-height:200px;object-position:center}
+.festival-sticker-picker{border:1px solid var(--harbor-inlay);border-radius:15px;background:var(--harbor-surface);margin:10px 0;overflow:hidden}
+.festival-sticker-picker>summary{list-style:none;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;font-size:13px;font-weight:700;color:var(--harbor-ink)}
+.festival-sticker-picker>summary:after{content:'+';font-size:23px;color:var(--harbor-gold)}
+.festival-sticker-picker[open]>summary:after{content:'−'}
+.festival-sticker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:9px}
+.festival-sticker-grid button{min-width:0;min-height:52px;padding:8px 5px;background:var(--frost-quiet);color:var(--harbor-ink);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px}
+.festival-sticker-grid button:disabled{opacity:.5}
+.festival-sticker-grid img{display:block;width:100%;max-width:150px;aspect-ratio:1;height:auto;object-fit:contain}
+.festival-sticker-grid span{font-size:11px;line-height:1.45;text-align:center;overflow-wrap:anywhere}
+.festival-sticker-grid button[aria-pressed=true]{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.festival-sticker-album h3{font-family:Georgia,serif;font-size:27px;line-height:1.2;color:var(--harbor-ink);margin:8px 0 12px}
+.festival-sticker-album>p{font-size:12px;line-height:1.8;color:var(--harbor-muted)}
+.sticker-preview{display:flex;align-items:center;flex-direction:column;padding:14px;border-radius:18px;background:var(--harbor-surface);border:1px solid var(--harbor-inlay);margin:14px 0;gap:8px;text-align:center;scroll-margin-top:95px}
+.sticker-preview>img{width:min(100%,220px);height:auto;aspect-ratio:1;object-fit:contain}
+.sticker-preview>strong{font-size:17px;color:var(--harbor-ink)}
+.sticker-preview>small{font-size:11px;color:var(--harbor-muted)}
+.sticker-share-canvas{display:none}
+.festival-sticker-album>.primary{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px}
+.sticker-host-filter{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 6px}
+.sticker-host-filter button{min-height:44px;min-width:44px;border:1px solid var(--line);border-radius:20px;padding:8px 12px;background:var(--frost-quiet);color:var(--harbor-ink);font-size:12px}
+.sticker-host-filter button[aria-pressed=true]{background:var(--harbor-primary);color:#073754;border-color:#b5efff}
+.festival-reaction{display:flex;align-items:center;flex-direction:column;gap:4px;text-align:center}
+.chat-reaction.festival-reaction img{display:block;max-width:156px;width:156px;height:156px;object-fit:contain}
+.festival-reaction>span{font-size:12px;line-height:1.6}
+@media(max-width:350px){.festival-sticker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hall-earned-sticker{width:60px;height:60px;flex-basis:60px}.passport-story-banner{max-height:115px}}
+@media(prefers-reduced-motion:reduce){.festival-sticker-grid button,.sticker-host-filter button{transition:none!important}}

@@ -1,0 +1,9 @@
+// Shared catalogue. Prices are launch hypotheses, not evidence of demand.
+const PACK_ID='founding-explorers-v1'; // Preserve existing ownership.
+const PRODUCTS=[
+ {id:PACK_ID,name:'Aurora Companions',amount:19900,currency:'INR',price:'₹199',kind:'outfits',outfit:'founder',scene:'aurora',table:'aurora',tagline:'Four friends. One little expedition.',description:'Dress your favourite guide, light your Camp and frame the discoveries you make together.',items:['Four Aurora Companion outfits','Aurora Camp background','Aurora table trim on your device','Supporter profile badge','Aurora postcard frame']},
+ {id:'lantern-court-v1',name:'Lantern Court',amount:29900,currency:'INR',price:'₹299',kind:'outfits',outfit:'court',scene:'court',table:'court',tagline:'Make every reunion a festival.',description:'A lantern-lit courtyard and four storybook outfits for the penguins you know.',items:['Four Lantern Court outfits','Lantern Court Camp background','Aurora Lantern decoration','Snow Blossom decoration','Lantern table trim on your device']},
+ {id:'little-victories-v1',name:'Little Victories',amount:7900,currency:'INR',price:'₹79',kind:'reactions',tagline:'A little more you in every good game.',description:'Four illustrated companion reactions for table chat, with readable text for friends on older apps.',items:['Polly’s warm thanks','Pengu’s well played','Retsba’s flipper salute','Abster’s eureka']},
+ {id:'moonlit-study-v1',name:'Moonlit Study',amount:19900,currency:'INR',price:'₹199',kind:'camp',scene:'library',tagline:'A quiet place for your next great idea.',description:'Arrange a cozy little study and put a memory you earned on display.',items:['Moonlit Library Camp background','Moonlit Tea Set decoration','Stargazer Telescope decoration','Memory Pedestal decoration']}
+];
+module.exports={PACK_ID,PRODUCTS,productById:id=>PRODUCTS.find(p=>p.id===id)||null};

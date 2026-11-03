@@ -1,0 +1,55 @@
+import React,{useEffect,useRef,useState} from 'react';
+import {PassportCard} from '../../../shared/antarctic-visa/AntarcticVisa.jsx';
+import {deliveryLabel} from '../../../shared/antarctic-visa/model.js';
+import {AccountEntry} from './AccountEntry.jsx';
+import {cloudRequest,startParaSignIn,startGameWallet,signOutCloud,cloudSnapshot} from './cloud.js';
+import {read,write} from './storage.js';
+
+export function useVisaPassport(access){
+ const accountId=access.accountId,key='antarctic-visa.v1.'+accountId;
+ const [record,setRecord]=useState(()=>accountId?read(key,null):null),[checking,setChecking]=useState(!!accountId),[error,setError]=useState('');
+ useEffect(()=>{let live=true;setRecord(accountId?read(key,null):null);setError('');if(!accountId||access.owner){setChecking(false);return;}setChecking(true);cloudRequest('/passport').then(v=>{if(!live)return;setRecord(v.passport);if(v.passport)write(key,v.passport);}).catch(e=>{if(live)setError(e.message);}).finally(()=>{if(live)setChecking(false);});return()=>{live=false;};},[accountId,access.owner]);
+ return {record,checking,error,setRecord:p=>{write(key,p);setRecord(p);}};
+}
+
+export function AntarcticVisaEntry({access,halls,visa,onProfile,assetStatus}){
+ const [busy,setBusy]=useState(false),[error,setError]=useState(''),[retry,setRetry]=useState(0),[recover,setRecover]=useState(false);
+ const issuing=useRef(false);
+ useEffect(()=>{const failed=e=>setError(e.detail?.message||'Sign-in did not finish. Try again.');window.addEventListener('arctic-auth-error',failed);return()=>window.removeEventListener('arctic-auth-error',failed);},[]);
+ useEffect(()=>{let live=true;if(!access.accountId||visa.checking||issuing.current)return;
+  if(visa.record){onProfile(visa.record.playerName);return;}
+  issuing.current=true;setBusy(true);setError('');
+  (async()=>{try{const {identity}=await cloudRequest('/passport');if(identity?.wallet?.provider!=='para')throw Error('Connect your game wallet to finish your visa.');
+   let name=String(identity.displayName||'Explorer').normalize('NFKC').replace(/[\u0000-\u001f\u007f<>]/g,'').replace(/\s+/g,' ').trim();name=[...name].slice(0,24).join('');if([...name].length<2)name='Explorer';
+   const v=await cloudRequest('/passport',{method:'POST',data:{playerName:name,walletMode:'embedded',wallet:identity.wallet.address,souvenir:false,achievementOptIn:true,consentVersion:'antarctic-visa-v2'}});
+   if(live){visa.setRecord(v.passport);onProfile(v.passport.playerName);}
+  }catch(e){if(live)setError(e.message);}finally{issuing.current=false;if(live)setBusy(false);}})();return()=>{live=false;};
+ },[access.accountId,visa.checking,visa.record?.id,retry]);
+ async function signIn(){if(busy)return;setBusy(true);setError('');try{await startParaSignIn();}catch(e){setError(e.message);}finally{setBusy(false);}}
+ if(recover&&!access.accountId)return <AccountEntry compact access={access} halls={halls} forceSignIn initialMode="recover" onClose={()=>setRecover(false)}/>;
+ if(visa.record&&(!access.allowed||access.consentNeeded))return <AccountEntry compact access={access} halls={halls}/>;
+ const progress=assetStatus?.total?assetStatus.pending===0?(assetStatus.failed?'Artwork will retry automatically.':'Games ready'):`Loading games in the background · ${Math.floor(assetStatus.percent/10)*10}%`:'Preparing games in the background…';
+ return <main className="visa-art-screen" data-testid="antarctic-visa" data-visa-error={error?'true':undefined}>
+  <h1 className="visa-art-sr">Get your Antarctic visa.</h1>
+  <p className="visa-art-sr" id="visa-welcome-description">Sign in with one of your accounts. A game wallet is created automatically for you, so you can play, collect, and enjoy board games in the Antarctic. A game-world passport. No real travel document.</p>
+  <div className="visa-art-frame">
+   <img className="visa-art-image" src="art/visa-welcome-v1/screen.png" width="864" height="1536" fetchPriority="high" decoding="async" alt="Antarctic Gaming Co. welcomes you with Abster, Retsba, Pengu and Polly, an Antarctic passport and an icy board-game table."/>
+   {!access.accountId?<>
+    <button type="button" className="visa-art-action visa-art-signin cv-google" aria-label={busy?'Opening sign-in…':'Sign in or create account'} aria-describedby="visa-welcome-description" aria-busy={busy} disabled={busy} onClick={signIn}><span className={busy?'visa-art-busy':'visa-art-sr'}>{busy?'Opening sign-in…':'Sign in or create account'}</span></button>
+    <button type="button" className="visa-art-action visa-art-recovery cv-link" disabled={busy} onClick={()=>setRecover(true)}><span className="visa-art-sr">Use a recovery code</span></button>
+    {error&&<p className="visa-art-notice" role="alert">{error}</p>}
+   </>:<section className="visa-art-account-panel" aria-label="Visa setup">
+    <h2>Preparing your Antarctic visa…</h2>
+    {error?<><p role="alert">{error}</p><button type="button" disabled={busy} onClick={signIn}>Connect your game wallet</button><button type="button" disabled={busy} onClick={()=>setRetry(v=>v+1)}>Retry visa setup</button></>:<p role="status">Getting your seat ready…</p>}
+    <button type="button" disabled={busy} onClick={signOutCloud}>Use another account</button>
+   </section>}
+   <p className="visa-art-loading" role="status" aria-live="polite" aria-atomic="true">{progress}</p>
+  </div>
+ </main>;
+}
+
+export function VisaPassportSummary({visa}){
+ const [busy,setBusy]=useState(false),[error,setError]=useState('');const p=visa.record;
+ if(!p)return <p>Your Antarctic visa has not been issued yet.</p>;
+ return <section className="av-profile-visa"><PassportCard assets="art/passport-v2" compact name={p.playerName} wallet={p.wallet} passport={p}/><p className="muted">NFT delivery address</p><code className="av-full-wallet">{p.wallet}</code><div className="av-deliveries">{p.deliveries.map(d=><div key={d.kind+':'+(d.achievement||'')}><span>{d.kind==='visa'?'Permanent Antarctic visa':d.kind==='achievement'?(d.title||'Achievement NFT'):'Arrival collectible'}</span><strong>{deliveryLabel(d.status)}</strong>{d.explorerUrl&&<a href={d.explorerUrl} target="_blank" rel="noreferrer">View transaction ↗</a>}</div>)}</div>{cloudSnapshot().session?.wallet?.provider!=='para'&&<button className="secondary full" onClick={()=>startParaSignIn().catch(e=>setError(e.message))}>Connect a Para game wallet</button>}{cloudSnapshot().session?.wallet?.provider==='para'&&<button className="secondary full" onClick={()=>startGameWallet('manage').catch(e=>setError(e.message))}>My wallet & NFTs</button>}<button className="primary full" disabled={busy} onClick={async()=>{setBusy(true);setError('');try{const v=await cloudRequest('/passport');if(v.passport)visa.setRecord(v.passport);}catch(e){setError(e.message);}finally{setBusy(false);}}}>{busy?'Checking…':'Refresh NFT delivery'}</button>{error&&<p role="alert">{error}</p>}</section>;
+}
