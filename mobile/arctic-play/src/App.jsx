@@ -1,4 +1,5 @@
 import {ShanshuiMobile} from './ShanshuiMobile.jsx';
+import {CoTuLenhMobile} from './CoTuLenhMobile.jsx';
 import {secureUuid} from './uuid.js';
 import {useGameAssetWarmup} from './gameAssets.js';
 import React,{useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
@@ -385,6 +386,7 @@ function App(){
   if(update.required)return <RequiredUpdate update={update} theme={theme} onTheme={toggleTheme}/>;
   if(!playAccess.owner&&(!visa.record||!playAccess.allowed||playAccess.consentNeeded))return <AntarcticVisaEntry assetStatus={assetStatus} access={playAccess} halls={hallAccess} visa={visa} onProfile={name=>{const next={...profile,name};setProfile(next);setNameDraft(name);write('profile',next);}}/>;
   if(screen==='shanshui')return <ShanshuiMobile initialCode={shanshuiInvite} access={playAccess} profile={profile} credentials={hallAccess.credentials} onExit={()=>{setScreen('lobby');setTab('games');}}/>;
+  if(screen==='co-tu-lenh')return <CoTuLenhMobile onExit={()=>{setScreen('lobby');setTab('games');}}/>;
   const headerControls=<HeaderControls theme={theme} onTheme={toggleTheme} onUpdates={()=>setSheet('updates')} checking={update.checking}/>;
   return <MascotAppearanceContext.Provider value={{outfits:{...companion.journey.outfits,...collection.outfits},pin:collection.pin}}><div data-screen={screen} data-game={id||undefined} data-tab={tab} className={`app ${screen==='match'?'battle':''} ${companion.preferences.mode!=='off'&&!['learn','story'].includes(screen)&&!(screen==='lobby'&&['home','games'].includes(tab))?'has-companion':''}`}>
     {screen==='learn'&&academy&&<HowToPlay key={academy.id} id={academy.id} initialTab={academy.initialTab} initialRole={academy.initialRole} initialMission={academy.initialMission} onGame={(gameId,section)=>openLearning(gameId,section||'start')} onLearningEvent={companion.learned} onClose={()=>setScreen(academy.returnScreen)} preferences={companion.preferences} onDiscovery={learningDiscovery} returnToGame={academy.returnScreen==='match'} onPractice={online?null:()=>run(()=>startPractice('bots',true))}/>}
@@ -397,6 +399,7 @@ function App(){
 
           <JourneyBar onJourney={showJourney} access={hallAccess} onFormations={()=>formations()} onPass={()=>accessShop('all-halls-v1')}/>
           <p className="games-chronology">7 halls · Oldest roots first</p>
+          <article className="ctl-catalogue-entry" aria-label="Cờ Tư Lệnh — Vietnamese Commander Chess"><img loading="lazy" src="art/co-tu-lenh/board/board-antarctic-11x12.webp" alt="Cờ Tư Lệnh Arctic board with 11 columns and 12 rows"/><div><small>VIETNAM · 2010 · MODERN STRATEGY GAME · RESEARCH DRAFT</small><h2>Cờ Tư Lệnh</h2><p>Command penguin explorers across icy land and sea. Play local, bots, guided practice, or server-validated private rooms. Choose versioned 2015/2024 rules and optional defence-range rings.</p><button className="primary" aria-label="Play Cờ Tư Lệnh" onClick={()=>setScreen('co-tu-lenh')}>Play Commander Chess</button></div></article>
           <article className="shanshui-catalogue-entry"><img src="art/shanshui/starting-position-light.webp" alt="Four armies on the Mountain and River Chess board"/><div><small>NEW · CHINESE XIANGQI ADAPTATION</small><h2>Shanshui Xiangqi</h2><p>Four armies. One shared victory. Two-player teams, four-player 2v2, bots and guided practice.</p><button className="primary" aria-label="Play Shanshui Xiangqi" onClick={()=>{setShanshuiInvite('');setScreen('shanshui');}}>Play Shanshui Xiangqi</button></div></article>
           <div className={'games-grid '+(storyOptions.enabled?'seven-halls-grid':'')}>{chronologicalGames(GAME_LIST).filter(g=>filter==='All'||filter==='Favorites'&&favorites.includes(g.id)||filter===`${g.players} players`).map(g=><HallCard key={g.id} definition={g} access={hallAccess.allowed(g.id)} favorite={favorites.includes(g.id)} onFavorite={toggleFavorite} onPlay={pick} onExplore={openHall} onLearn={gameId=>openLearning(gameId)} onQuickPlay={gameId=>run(()=>startPractice('bots',false,gameId,'red'))} story={storyOptions.enabled}/>)}</div>
           {filter==='Favorites'&&!favorites.length&&<div className="empty"><Heart/><h3>Your favorites belong here</h3><p>Tap a heart on a game to keep it close.</p></div>}

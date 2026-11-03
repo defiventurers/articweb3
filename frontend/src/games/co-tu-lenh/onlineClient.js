@@ -2,11 +2,11 @@ const key=code=>`antarctic-ctl-seat:${code}`;
 export const newSeatToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),x=>x.toString(16).padStart(2,'0')).join('');
 export const getSeat=code=>{try{const x=JSON.parse(localStorage.getItem(key(code))||'null');return x?.roomCode===code&&/^[a-f0-9]{64}$/.test(x.token)?x:null;}catch{return null;}};
 export const saveSeat=seat=>{try{localStorage.setItem(key(seat.roomCode),JSON.stringify(seat));}catch{/* private browsing */}};
-export const inviteUrl=code=>{const url=new URL(window.location.href);url.search=new URLSearchParams({game:'co-tu-lenh',room:code}).toString();return url.toString();};
+export const inviteUrl=(code,baseUrl=null)=>{const url=new URL(baseUrl||window.location.href);url.search=new URLSearchParams({game:'co-tu-lenh',room:code}).toString();return url.toString();};
 export class CoTuLenhClient {
-  constructor(){this.socket=null;this.pending=new Map();this.connecting=null;this.serial=0;this.onPacket=()=>{};this.onStatus=()=>{};}
+  constructor(endpoint=null){this.endpoint=endpoint;this.socket=null;this.pending=new Map();this.connecting=null;this.serial=0;this.onPacket=()=>{};this.onStatus=()=>{};}
   async connect(){if(this.socket?.readyState===1)return this.socket;if(this.connecting)return this.connecting;
-    const endpoint=import.meta.env.VITE_WS_URL||(import.meta.env.DEV?'ws://localhost:10000':'');
+    const endpoint=this.endpoint||import.meta.env?.VITE_WS_URL||(import.meta.env?.DEV?'ws://localhost:10000':'');
     if(!endpoint)throw Error('Online lobby unavailable. Set VITE_WS_URL for this deployment.');
     const pending=new Promise((resolve,reject)=>{
       const ws=new WebSocket(endpoint);this.socket=ws;

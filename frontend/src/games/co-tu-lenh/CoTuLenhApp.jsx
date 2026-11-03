@@ -4,7 +4,6 @@ import { CoTuLenhClient, getSeat, newSeatToken, saveSeat, inviteUrl } from './on
 import { PenguinHostPair, PenguinHost } from '../../components/PenguinHosts.jsx';
 import './coTuLenh.css';
 
-const ROOT='/assets/co-tu-lenh/pieces/';
 const menu=[{id:'local',label:'Pass & Play',description:'Two players on one device'},
   {id:'bot',label:'Quick Play vs Bot',description:'Easy, Medium or Hard'},
   {id:'practice',label:'Practice & Learn',description:'Undo moves and inspect pieces'},
@@ -17,10 +16,10 @@ const steps=[
 ];
 // Immutable board geometry taken from the user-approved 11-by-12 coordinate master.
 const W=1199,H=1312,X=148,Y=183,STEP_X=90.4,STEP_Y=900/11;
-const BOARD='/assets/co-tu-lenh/board/board-antarctic-11x12.webp';
-const graphic=(p)=>(`${ROOT}${p.team}-${p.type}.webp`);
 const labelFor=p=>p?`${p.team.toUpperCase()} ${TYPES[p.type].label}${p.hero?' ★ Hero':''}`:'';
-export default function CoTuLenhApp({onExitToLibrary}) {
+export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-lenh', wsEndpoint=null, inviteBaseUrl=null}) {
+  const graphic=p=>`${assetBase}/pieces/${p.team}-${p.type}.webp`;
+  const boardImage=`${assetBase}/board/board-antarctic-11x12.webp`;
   const [mode,setMode]=useState('bot');
   const [difficulty,setDifficulty]=useState('medium');
   const [human,setHuman]=useState('red');
@@ -80,7 +79,7 @@ export default function CoTuLenhApp({onExitToLibrary}) {
     setSelected(null);setNotice('Select a friendly piece or a legal target.');
   }
   function makeClient(){
-    const c=new CoTuLenhClient();
+    const c=new CoTuLenhClient(wsEndpoint);
     c.onPacket=p=>{if(p.type==='ctl_room_state'&&p.payload?.room&&p.payload.room.roomCode===activeRoomCode.current){setOnline(old=>old?{...old,room:p.payload.room}:old);setState(p.payload.room.gameState);}};
     c.onStatus=setIsConnected;
     return c;
@@ -129,11 +128,11 @@ export default function CoTuLenhApp({onExitToLibrary}) {
       </div>{mode==='online'?<div className="ctl-online-join"><label>Private room code<input placeholder="Enter six-letter code to join" value={joinCode} maxLength={6} onChange={e=>setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z2-9]/g,''))}/></label><button className="ctl-primary" onClick={()=>openOnline(false)} disabled={joinCode.length!==6}>Join room</button><button className="ctl-primary" onClick={()=>openOnline(true)}>Create private room</button><p role="status">{notice}</p></div>:<button className="ctl-primary" onClick={()=>reset()}>Begin battle</button>}
     </section>}
     {started&&<div className="ctl-play-layout"><section className="ctl-board-wrap" aria-label="Commander Chess board">
-      {isOnline&&online&&<div className="ctl-online-bar"><b>Room {online.room.roomCode} · {isConnected?'Connected':'Disconnected'}</b><span>Red: {online.room.seats.red.name||'Waiting'} · Blue: {online.room.seats.blue.name||'Waiting'}</span><button onClick={()=>navigator.clipboard?.writeText(inviteUrl(online.room.roomCode))}>Copy invite</button>{online.room.status==='waiting'&&<button onClick={startRoom} disabled={!online.room.seats.red.name||!online.room.seats.blue.name}>Start online match</button>}{!isConnected&&<button onClick={async()=>{try{const c=await client.current.request('ctl_room_sync',{roomCode:online.room.roomCode,token:online.token});setOnline(old=>({...old,room:c.room}));setState(c.room.gameState);}catch(e){setNotice(e.message);}}}>Reconnect</button>}</div>}
+      {isOnline&&online&&<div className="ctl-online-bar"><b>Room {online.room.roomCode} · {isConnected?'Connected':'Disconnected'}</b><span>Red: {online.room.seats.red.name||'Waiting'} · Blue: {online.room.seats.blue.name||'Waiting'}</span><button onClick={()=>navigator.clipboard?.writeText(inviteUrl(online.room.roomCode,inviteBaseUrl))}>Copy invite</button>{online.room.status==='waiting'&&<button onClick={startRoom} disabled={!online.room.seats.red.name||!online.room.seats.blue.name}>Start online match</button>}{!isConnected&&<button onClick={async()=>{try{const c=await client.current.request('ctl_room_sync',{roomCode:online.room.roomCode,token:online.token});setOnline(old=>({...old,room:c.room}));setState(c.room.gameState);}catch(e){setNotice(e.message);}}}>Reconnect</button>}</div>}
       <div className="ctl-score"><span>🔴 Red · {remaining.red} units</span><b>{state.winner?`${state.winner.toUpperCase()} WINS — ${state.winReason}`:`${movingTeam.toUpperCase()} TO MOVE${botTurn?' · Bot thinking':''}`}</b><span>🔵 Blue · {remaining.blue} units</span></div>
       <div className="ctl-board-viewport" style={{'--ctl-zoom':zoom}}>
       <svg className="ctl-board" style={{width:`${zoom*100}%`}} viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Cờ Tư Lệnh with 11 columns, 12 ranks, 132 clickable intersections; red and blue Arctic faction pieces">
-        <image href={BOARD} x="0" y="0" width={W} height={H} preserveAspectRatio="none" transform={view==='blue'?`rotate(180 ${W/2} ${H/2})`:undefined} pointerEvents="none" />
+        <image href={boardImage} x="0" y="0" width={W} height={H} preserveAspectRatio="none" transform={view==='blue'?`rotate(180 ${W/2} ${H/2})`:undefined} pointerEvents="none" />
         {showDefence&&<g className="ctl-defence-zones" pointerEvents="none" aria-hidden="true">
           {defenceZones.map(zone=>{const center=point(zone.x,zone.y);const color=zone.team==='red'?'#ef4658':'#2f9fff';return <g key={`zone-${zone.id}`}>
             <ellipse cx={center.x} cy={center.y} rx={zone.radius*STEP_X} ry={zone.radius*STEP_Y} fill={color} fillOpacity=".055" stroke={color} strokeOpacity=".78" strokeWidth="4" strokeDasharray="12 8" />
