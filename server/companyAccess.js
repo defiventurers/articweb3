@@ -52,22 +52,26 @@ function createAccessService({store,withAccount,now=Date.now,festivals=readFesti
   }
   async function action(payload,kind,verified){const owner=await identity(payload);return transact(owner,p=>({progress:kind==='complete'?model.complete(p,payload.challengeId,payload.point):kind==='spend'?model.spend(p,payload.tableId,now()):kind==='win'?model.win(p,verified.id,verified.matchId,now()):kind==='foundation'?model.foundationWin(p,verified,now()):p}));}
   async function authorize(payload,id){
+    if(id==='shanshui-2v2')id='shanshui';
     if(requireAccount){const owner=await identity(payload);return authorizeOwner(owner,id);}
-    const publicAccess=model.access(id,{festivals,now:now()});let owner=null;
+    const publicAccess=id==='shanshui'?{open:true,reason:'starter'}:model.access(id,{festivals,now:now()});let owner=null;
     if(publicAccess.open){if(configured()&&(payload.cloudSession||payload.accessToken))owner=await identity(payload);return {owner,reason:publicAccess.reason};}
     if(!configured())throw error('This hall needs its unlock journey verified by the updated online service. Sign in and connect to verify your access.',503);
     owner=await identity(payload);return authorizeOwner(owner,id);
   }
   async function authorizeOwner(owner,id){
+    if(id==='shanshui-2v2')id='shanshui';
     if(requireAccount&&owner?.kind!=='account')throw error('Every player must sign in to play.',401);
+    if(id==='shanshui')return {owner,reason:'starter'};
     if(!owner){if(model.access(id,{festivals,now:now()}).open)return {owner:null};throw error('This hall is locked. Earn access or restore your purchase first.');}
     const snapshot=await transact(owner,p=>({progress:p}));
     const grant=model.access(id,{...snapshot,now:now()});if(!grant.open)throw error('Hall locked: '+id+'. '+model.requirement(id));return {owner,reason:grant.reason};
   }
   async function recordRoom(room){
+    if(room.tableId==='shanshui'||room.tableId==='shanshui-2v2')return;
     if(!configured()||room.progressDisqualified||!room.actionCount||room.status!=='finished')return;
-    const engine=require('./arcticPlayEngine.cjs'),seats=model.winningSeats(engine.result(room.gameState));
-    for(const player of Object.values(room.players))if(!player.bot&&!player.left&&player.accessOwner&&seats.includes(player.seat))await transact(player.accessOwner,p=>({progress:model.win(p,room.tableId,'room:'+room.matchId,now())}));
+    const engine=require('./arcticPlayGames.cjs'),seats=model.winningSeats(engine.result(room.gameState));
+    for(const player of Object.values(room.players))if(!player.bot&&!player.left&&player.accessOwner&&seats.includes(player.seat))await transact(player.accessOwner,p=>({progress:model.win(p,room.tableId==='shanshui-2v2'?'shanshui':room.tableId,'room:'+room.matchId,now())}));
   }
   return {open,action,authorize,authorizeOwner,recordRoom,identity,configured,festivals,snapshot:payload=>action(payload,'status'),model};
 }

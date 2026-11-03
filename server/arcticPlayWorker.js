@@ -1,5 +1,5 @@
 const {parentPort}=require('node:worker_threads');
-const engine=require('./arcticPlayEngine.cjs');
+const engine=require('./arcticPlayGames.cjs');
 parentPort.on('message',async job=>{
   try {
     if(job.foundationProof){const proof=await require('./companyFoundation.cjs').verifyFoundation(job.foundationProof);parentPort.postMessage({id:job.id,state:proof});return;}

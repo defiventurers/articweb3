@@ -1,0 +1,19 @@
+import React,{useEffect,useRef,useState} from 'react';
+import {Share2} from 'lucide-react';
+import {FESTIVAL_STICKERS} from './celebration.js';
+import {GUIDES} from './brand.js';
+import {game} from './games.ts';
+
+export function FestivalStickerTray({preferences,onReact,disabled=false}){
+  const [sending,setSending]=useState(false),panel=useRef(null);
+  async function send(id){if(disabled||sending)return;setSending(true);try{if(await onReact(id)!==false&&panel.current)panel.current.open=false;}finally{setSending(false);}}
+  return <details className="festival-sticker-picker" ref={panel}><summary>Festival stickers · 12 free</summary><div className="festival-sticker-grid">{FESTIVAL_STICKERS.map(s=><button key={s.id} disabled={disabled||sending} onClick={()=>send(s.id)} aria-label={`Send ${GUIDES[s.host].name}: ${s.label}`}>{preferences.mode!=='off'&&<img src={s.image} alt="" loading="lazy" decoding="async" width="128" height="128"/>}<span>{s.label}</span></button>)}</div></details>;
+}
+
+export function FestivalStickerAlbum({preferences,onShare}){
+  const[host,setHost]=useState('all'),[selected,setSelected]=useState(FESTIVAL_STICKERS[0]),[ready,setReady]=useState(false),[sharing,setSharing]=useState(false),[error,setError]=useState(''),canvas=useRef(null),preview=useRef(null);
+  useEffect(()=>{let active=true;setReady(false);setError('');const im=new Image();im.onload=()=>{if(!active)return;const ctx=canvas.current.getContext('2d');ctx.clearRect(0,0,1024,1024);ctx.drawImage(im,0,0,1024,1024);setReady(true);};im.onerror=()=>{if(active)setError('This sticker could not load. Please try another.');};im.src=selected.image;return()=>{active=false;};},[selected.id]);
+  function selectSticker(s){setSelected(s);requestAnimationFrame(()=>preview.current?.scrollIntoView({block:'start',behavior:'instant'}));}
+  async function share(){if(!ready||sharing)return;setSharing(true);setError('');try{await onShare({dataUrl:canvas.current.toDataURL('image/png'),filename:selected.id+'.png',text:`${GUIDES[selected.host].name}: ${selected.label} · The Eternal Gathering · Antarctic Kingdoms`});}catch(e){setError(e.message||'The sticker could not be shared. Please try again.');}finally{setSharing(false);}}
+  return <section className="festival-sticker-album"><p className="world-eyebrow">CELEBRATE EVERY TABLE</p><h3>Your festival stickers</h3><p>Twelve free reactions from the four hosts. Tap a sticker to preview it, share its transparent image, or send one from your table chat.</p><div className="sticker-preview" ref={preview} aria-live="polite">{preferences.mode!=='off'&&<img src={selected.image} alt={`${GUIDES[selected.host].name}: ${selected.label}`} width="256" height="256"/>}<strong>{selected.label}</strong><small>{GUIDES[selected.host].name}{selected.gameId?' · '+game(selected.gameId).name:''}</small></div><canvas className="sticker-share-canvas" ref={canvas} width="1024" height="1024" aria-hidden="true"/>{error&&<p role="alert">{error}</p>}<button className="primary full" disabled={!ready||sharing} onClick={share}><Share2 size={18}/>{sharing?'Preparing…':'Share this sticker'}</button><div className="sticker-host-filter" role="group" aria-label="Sticker host">{['all',...Object.keys(GUIDES)].map(id=><button key={id} aria-pressed={host===id} onClick={()=>setHost(id)}>{id==='all'?'All':GUIDES[id].name}</button>)}</div><div className="festival-sticker-grid">{FESTIVAL_STICKERS.filter(s=>host==='all'||s.host===host).map(s=><button key={s.id} aria-pressed={selected.id===s.id} onClick={()=>selectSticker(s)} aria-label={`Preview ${GUIDES[s.host].name}: ${s.label}`}>{preferences.mode!=='off'&&<img src={s.image} alt="" loading="lazy" decoding="async" width="160" height="160"/>}<span>{s.label}</span></button>)}</div><p className="muted">Images share as transparent PNGs. The app receiving them controls how they appear; importing a native messaging sticker pack is separate.</p></section>;
+}

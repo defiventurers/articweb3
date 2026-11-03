@@ -40,7 +40,11 @@
     "check:shogi-engine": "node scripts/build-shogi-engine.mjs --check",
     "build:xiangqi-engine": "node scripts/build-xiangqi-engine.mjs",
     "check:xiangqi-engine": "node scripts/build-xiangqi-engine.mjs --check",
-    "test:xiangqi": "vitest run --config vitest.xiangqi.config.ts"
+    "test:xiangqi": "vitest run --config vitest.xiangqi.config.ts",
+    "test:shanshui": "node --test src/games/shanshui-xiangqi/rules.test.js",
+    "build:shanshui-engine": "node scripts/build-shanshui-engine.mjs",
+    "check:shanshui-engine": "node scripts/build-shanshui-engine.mjs --check",
+    "assets:shanshui": "node scripts/build-shanshui-assets.mjs"
   },
   "dependencies": {
     "@abstract-foundation/agw-client": "1.12.3",

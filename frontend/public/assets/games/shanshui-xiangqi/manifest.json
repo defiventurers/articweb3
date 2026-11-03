@@ -1,0 +1,295 @@
+{
+  "rulesetVersion": "shanshui-antarctic-v1",
+  "grid": {
+    "size": 13,
+    "points": 169,
+    "imagePixels": 1536,
+    "origin": [
+      120,
+      120
+    ],
+    "step": 108
+  },
+  "newAssetApproval": "GENERATED_FOR_REVIEW",
+  "newAssets": [
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/board-dark.svg",
+      "bytes": 8977,
+      "sha256": "abbd993b0c5cae38f1a8c5907b6392985db144c76c26b3cabe67f96e71112fac"
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/board-dark.webp",
+      "bytes": 242610,
+      "sha256": "8397b9abf656621d553908adddc84c8cd6c7d6841693292ee0eda096d92c41c0",
+      "size": [
+        1536,
+        1536
+      ],
+      "alpha": false
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/board-light.svg",
+      "bytes": 8902,
+      "sha256": "0263d823124063c6c97499c8ad0eaabfd0b5e621091540abc791d964c8b628e0"
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/board-light.webp",
+      "bytes": 272582,
+      "sha256": "faef2243553dcafc71175e17be583a1de3669c82112e38bc0f5bf804126c7cdf",
+      "size": [
+        1536,
+        1536
+      ],
+      "alpha": false
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/ornamental-underlay.webp",
+      "bytes": 429644,
+      "sha256": "0008cedd1b014a3285b6046335a62f267b010ab8b2a560365871ba6928848ee8",
+      "size": [
+        1536,
+        1536
+      ],
+      "alpha": false
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/pieces/purple-advisor.webp",
+      "bytes": 79336,
+      "sha256": "ce5ec4087668fdf8949b28a930e5908c47a837b6238ef9dc817b47e4bdd36d32",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/pieces/purple-cannon.webp",
+      "bytes": 87516,
+      "sha256": "1393388a85665b0c04d21a3c43b47836105ca06441858357b5143829719a7f83",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/pieces/purple-chariot.webp",
+      "bytes": 94658,
+      "sha256": "f9a32ce0b215d4df2233668df1968562f8e75525af905adbb2508e4dfb7722f9",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/pieces/purple-elephant.webp",
+      "bytes": 82912,
+      "sha256": "fb9d56579a997ed0b40f6b81ae4ef2ff31245424a3cb2cb8a9be415cdab96f8e",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/pieces/purple-horse.webp",
+      "bytes": 81854,
+      "sha256": "280270fe411849db08c7cca54e4cbc98930baae46c22f0837db4747e1775a023",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/pieces/purple-king.webp",
+      "bytes": 78180,
+      "sha256": "2659d38d33ec119b5a1f2e831d0582e2be049735a7d75ff7c1768b24a6fc89df",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/pieces/purple-soldier.webp",
+      "bytes": 81566,
+      "sha256": "fd8af5ade170074723602fee17812d9afdbafce351a8db10f11cd2ca87aed30d",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/starting-position-dark.webp",
+      "bytes": 485102,
+      "sha256": "bc14c02725943e4f9d306ae0d43b54060d4c91c47fc40eca5504acc0638786f6",
+      "size": [
+        1536,
+        1536
+      ],
+      "alpha": false
+    },
+    {
+      "path": "frontend/public/assets/games/shanshui-xiangqi/starting-position-light.webp",
+      "bytes": 521842,
+      "sha256": "aa89e77a3b4764842e774f874583c860c97a5c3459a6e6d6e892f24919452396",
+      "size": [
+        1536,
+        1536
+      ],
+      "alpha": false
+    }
+  ],
+  "reusedYanYiAssets": [
+    {
+      "army": "red",
+      "role": "king",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/red-king.webp",
+      "sha256": "8f5ac44f9b10675796cf4ad2a4b68e58c227278f304ff2f76b9055321163f145",
+      "unchanged": true
+    },
+    {
+      "army": "red",
+      "role": "advisor",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/red-advisor.webp",
+      "sha256": "f7e9ae8645b9c8423fc802d14c06e5881f8a21afd0efeea8bb963ce9cff583bf",
+      "unchanged": true
+    },
+    {
+      "army": "red",
+      "role": "elephant",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/red-elephant.webp",
+      "sha256": "030f874857266985691472482b105bdfe4b1ba92d208fbdc57eb7b12fbc1979c",
+      "unchanged": true
+    },
+    {
+      "army": "red",
+      "role": "horse",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/red-horse.webp",
+      "sha256": "53765cedaed16728f555592955e559b2132b93fab352ca72ded83457c0b14f14",
+      "unchanged": true
+    },
+    {
+      "army": "red",
+      "role": "chariot",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/red-chariot.webp",
+      "sha256": "1375d26d88c36febbe3db7cab6c1750d2cd0a7bdb455d365252c7521e15c2655",
+      "unchanged": true
+    },
+    {
+      "army": "red",
+      "role": "cannon",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/red-cannon.webp",
+      "sha256": "84fabab5d1f2d2181810d11eeb8181d44fa49f08baa9ec9b66b8b3e75677a78b",
+      "unchanged": true
+    },
+    {
+      "army": "red",
+      "role": "soldier",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/red-soldier.webp",
+      "sha256": "9683a7d0ca8b66dcf500a5ada505bda6e02c33440400c43e5d062ede893b1679",
+      "unchanged": true
+    },
+    {
+      "army": "blue",
+      "role": "king",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/blue-king.webp",
+      "sha256": "b2addd4b30054a4a177f7a1513b6824b68c78db6fc122952f20c3ff8f4fa8884",
+      "unchanged": true
+    },
+    {
+      "army": "blue",
+      "role": "advisor",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/blue-advisor.webp",
+      "sha256": "720a868236f1bd3102ad4dcf898a7bb31aca6e2db6e502c74122bca2964052b2",
+      "unchanged": true
+    },
+    {
+      "army": "blue",
+      "role": "elephant",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/blue-elephant.webp",
+      "sha256": "1cf9e65f1e84dcc72f20eab4e91c7dba044158a3ac5a53378572c808269d0797",
+      "unchanged": true
+    },
+    {
+      "army": "blue",
+      "role": "horse",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/blue-horse.webp",
+      "sha256": "3f20c30d5fec95df9fef30c9ede5ca9f888265cab01bb30986f841fe7d589ce7",
+      "unchanged": true
+    },
+    {
+      "army": "blue",
+      "role": "chariot",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/blue-chariot.webp",
+      "sha256": "98fd50a8a6c40117f498c876ca807a238b1b477520693b54e1cedb7e15fda569",
+      "unchanged": true
+    },
+    {
+      "army": "blue",
+      "role": "cannon",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/blue-cannon.webp",
+      "sha256": "7eedf4fc599c8026336a30e6b57a92638e4d3ff8770c610a5583f8881bd9bcd8",
+      "unchanged": true
+    },
+    {
+      "army": "blue",
+      "role": "soldier",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/blue-soldier.webp",
+      "sha256": "ce87f3782eaaafee8d9bdc0e51a53bfa1aa9f23de397d5a4fc736814b00dbb14",
+      "unchanged": true
+    },
+    {
+      "army": "green",
+      "role": "king",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/green-king.webp",
+      "sha256": "8f66f4e2bb2a0674254a56544efb5fa9f5200513de9ae117dcb31d4192107b5d",
+      "unchanged": true
+    },
+    {
+      "army": "green",
+      "role": "advisor",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/green-advisor.webp",
+      "sha256": "acbe8b57e4adba958b51489612d2c53b819f716098e6c77a920067a685fc31cb",
+      "unchanged": true
+    },
+    {
+      "army": "green",
+      "role": "elephant",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/green-elephant.webp",
+      "sha256": "cd475201b3bf412df20b28168d0973d8642f68342bf625f62c5a0e073dacef74",
+      "unchanged": true
+    },
+    {
+      "army": "green",
+      "role": "horse",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/green-horse.webp",
+      "sha256": "2c82a8ffa3a2981e75edbcb3767897c0d2c5b7c38e064dff7efbdea79daa18fa",
+      "unchanged": true
+    },
+    {
+      "army": "green",
+      "role": "chariot",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/green-chariot.webp",
+      "sha256": "7c9cacab82bc8c50901fde840b6323c6d9221729055750b6cec899e3814e7f5a",
+      "unchanged": true
+    },
+    {
+      "army": "green",
+      "role": "cannon",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/green-cannon.webp",
+      "sha256": "4f2338300e58927081f443742bc208bd9ba13d4b645d4f182cd95dd99c01f16e",
+      "unchanged": true
+    },
+    {
+      "army": "green",
+      "role": "soldier",
+      "path": "frontend/public/assets/heritage-arcade/sanguo-yan-yi/pieces/green-soldier.webp",
+      "sha256": "41352f117282025c67fecf9c62e17ef87234e26d9f96d9a685645214f90d535d",
+      "unchanged": true
+    }
+  ]
+}

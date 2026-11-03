@@ -7,6 +7,7 @@ export const HOST_META = Object.freeze({
 });
 
 const HOST_BY_GAME = Object.freeze({
+  "shanshui-xiangqi": ["pengu", "retsba"],
   "nine-ice-forts": ["retsba", "pengu"], "four-wing-ice-hunt": ["retsba", "polly"], fishflow: ["abster", "polly"],
   "break-the-ice": ["polly", "pengu"], "ice-hunters": ["retsba", "pengu"], "sixteen-ice-warriors": ["retsba", "pengu"],
   "glacier-trail": ["polly", "pengu"], "crown-run": ["polly", "retsba"], "forty-glacier-guards": ["retsba", "abster"],

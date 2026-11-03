@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "runtimeHash": "dac8ec3e3451e234121c7bfd67f470348dae33f1b8d0d2b84bf8ef76bcfd0e17",
+  "sourceHash": "7a7afb11371dc3823011ab4dd1ccef84b71b750a32602708d667a0ed710274f8",
+  "compiler": "0.8.24+commit.e11b9ed9.Emscripten.clang"
+}

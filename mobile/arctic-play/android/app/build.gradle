@@ -1,8 +1,9 @@
 plugins { id 'com.android.application' }
+def releaseConfig = new groovy.json.JsonSlurper().parse(file('../../release-config.json'))
 android {
     namespace 'xyz.arcticdominion.play'
     compileSdk 35
-    defaultConfig { applicationId 'xyz.arcticdominion.play'; minSdk 24; targetSdk 35; versionCode 1; versionName '1.0.0' }
+    defaultConfig { applicationId 'xyz.arcticdominion.play'; minSdk 24; targetSdk 35; versionCode releaseConfig.versionCode; versionName releaseConfig.versionName }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
     buildTypes { release { minifyEnabled false } }
 }

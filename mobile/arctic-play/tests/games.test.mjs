@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),e=require('../build/games.cjs');
 const assets=new URL('../android/app/src/main/assets/',import.meta.url);
-const expected={shogi:[40,81,2],sannin:[54,127,3],sanguo:[48,135,3],sanyou:[54,156,3],yanyi:[53,225,3],xiangqi:[32,90,2]};
+const expected={shogi:[40,81,2],sannin:[54,127,3],sanguo:[48,135,3],sanyou:[54,156,3],yanyi:[53,225,3],xiangqi:[32,90,2],dominion:[32,64,4]};
 for(const g of e.GAME_LIST){
   test(`${g.name}: complete board, bundled pieces, legal turns and invalid move rejection`,()=>{
     let state=e.create(g.id);const initial=JSON.stringify(state),model=e.board(g.id);

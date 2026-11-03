@@ -1,9 +1,9 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const {spawn}=require('node:child_process'),{once}=require('node:events'),{createServer}=require('node:net'),{randomUUID}=require('node:crypto');
-const path=require('node:path'),WebSocket=require('ws'),engine=require('../arcticPlayEngine.cjs');
-test('Production bootstrap exposes seven Android tables over real sockets and preserves website services',{timeout:30000},async t=>{
+const path=require('node:path'),WebSocket=require('ws'),engine=require('../arcticPlayGames.cjs');
+test('Production bootstrap routes eight Android tables over real sockets (isolated access fixture)',{timeout:30000},async t=>{
   const reservation=createServer();reservation.listen(0,'127.0.0.1');await once(reservation,'listening');const port=reservation.address().port;await new Promise(resolve=>reservation.close(resolve));
-  const child=spawn(process.execPath,['-r','./allGamesBackendBootstrap.js','-e','require("./allGamesBackendBootstrap.js").loadAllGamesBackend()'],{cwd:path.join(__dirname,'..'),env:{...process.env,PORT:String(port),DATABASE_URL:'',ETH_SETTLEMENT_SIGNER:'',HIGH_STAKES_ENABLED:'false'},stdio:['ignore','pipe','pipe']});
+  const child=spawn(process.execPath,['-r','./allGamesBackendBootstrap.js','-e','const m=require("./arcticPlayService.js"),create=m.createArcticPlayService;m.createArcticPlayService=o=>create({...o,requireLogin:false,accessOptions:{requireAccount:false,festivals:[{id:"socket-fixture",name:"Socket fixture",games:Object.keys(require("../mobile/arctic-play/src/unlockModel.cjs").CATALOG),startsAt:0,endsAt:4102444800000}]}});require("./allGamesBackendBootstrap.js").loadAllGamesBackend()'],{cwd:path.join(__dirname,'..'),env:{...process.env,PORT:String(port),DATABASE_URL:'',ETH_SETTLEMENT_SIGNER:'',HIGH_STAKES_ENABLED:'false'},stdio:['ignore','pipe','pipe']});
   let errors='';child.stderr.on('data',data=>errors+=data);const sockets=[];
   t.after(async()=>{for(const ws of sockets)ws.terminate();if(child.exitCode===null){child.kill();await once(child,'exit');}});
   let health;for(let i=0;i<80;i++){if(child.exitCode!==null)throw new Error(errors);try{health=await(await fetch(`http://127.0.0.1:${port}/arctic-play/health`)).json();break;}catch{await new Promise(resolve=>setTimeout(resolve,100));}}
@@ -11,7 +11,7 @@ test('Production bootstrap exposes seven Android tables over real sockets and pr
   const legacy=await(await fetch(`http://127.0.0.1:${port}/health`)).json();for(const key of ['supportsShogi','supportsXiangqi','supportsSanninShogi','supportsSanYouQi','supportsSanguoQi'])assert.equal(legacy[key],true,key);
   let serial=0;
   async function connect(){const ws=new WebSocket(`ws://127.0.0.1:${port}`);sockets.push(ws);await once(ws,'open');return ws;}
-  function request(ws,type,payload){const requestId=`android-${++serial}`;return new Promise((resolve,reject)=>{const handler=raw=>{const packet=JSON.parse(raw);if(packet.requestId!==requestId)return;clearTimeout(timer);ws.off('message',handler);resolve(packet);};const timer=setTimeout(()=>{ws.off('message',handler);reject(new Error(`Timed out: ${type}`));},8000);ws.on('message',handler);ws.send(JSON.stringify({type,requestId,payload}));});}
+  function request(ws,type,payload){const requestId=`android-${++serial}`;return new Promise((resolve,reject)=>{const handler=raw=>{const packet=JSON.parse(raw);if(packet.requestId!==requestId)return;clearTimeout(timer);ws.off('message',handler);resolve(packet);};const timer=setTimeout(()=>{ws.off('message',handler);reject(new Error(`Timed out: ${type}`));},8000);ws.on('message',handler);ws.send(JSON.stringify({type,requestId,payload:{...payload,capabilities:['shanshui-antarctic-v1']}}));});}
   for(const game of engine.GAME_LIST){
     const clients=[];
     for(let i=0;i<game.players;i++){

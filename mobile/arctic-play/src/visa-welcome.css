@@ -1,0 +1,40 @@
+/* The supplied, approved 864 x 1536 screen is kept whole. Semantic controls
+   track the painted controls inside this same aspect-ratio frame. */
+.visa-art-screen{--visa-view-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));position:fixed;inset:0;z-index:1;display:grid;place-items:center;box-sizing:border-box;height:100dvh;min-height:0;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);overflow:hidden;overscroll-behavior:none;background:#0c6dba url('art/ice/daylight.webp') center/cover;color:#082a59;color-scheme:light;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.visa-art-frame{position:relative;width:min(100%,calc(var(--visa-view-height)*.5625));aspect-ratio:9/16;max-height:100%;isolation:isolate;box-shadow:0 0 70px #1678c4}
+.visa-art-image{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none}
+.visa-art-sr{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important}
+.visa-art-screen .visa-art-action{position:absolute;display:flex;align-items:center;justify-content:center;box-sizing:border-box;margin:0;padding:0;border:0;border-radius:999px;background:transparent;box-shadow:none;color:#fff;cursor:pointer;-webkit-tap-highlight-color:#fff4}
+.visa-art-screen .visa-art-action:focus-visible{outline:3px solid #ffe96c;outline-offset:3px;box-shadow:0 0 0 6px #063e89}
+.visa-art-screen .visa-art-action:active{background:#ffffff24}
+.visa-art-screen .visa-art-action:disabled{cursor:wait}
+.visa-art-signin{left:8.5%;top:75.7%;width:83%;height:6.7%}
+.visa-art-recovery{left:25%;top:83%;width:50%;height:5.5%;min-height:44px}
+.visa-art-busy{display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:999px;border:2px solid #f9da58;background:linear-gradient(#0086ed,#06388a);font-size:clamp(12px,4vw,25px);font-weight:650}
+.visa-art-notice{position:absolute;left:8.5%;bottom:25%;width:83%;box-sizing:border-box;margin:0;padding:12px;border:1px solid #ca7d68;border-radius:12px;background:#fff5eef5;box-shadow:0 5px 20px #071e4050;color:#702c20;font-size:clamp(12px,3.4vw,17px);line-height:1.4;max-height:24%;overflow:auto}
+.visa-art-loading{position:absolute;bottom:1.3%;left:7%;width:86%;box-sizing:border-box;margin:0;padding:4px 7px;border-radius:30px;background:#083e78db;color:#fff;text-align:center;font-size:clamp(10px,2.7vw,14px);line-height:1.4;pointer-events:none}
+.visa-art-account-panel{position:absolute;left:7%;bottom:11.5%;width:86%;box-sizing:border-box;max-height:38%;padding:14px;overflow:auto;display:flex;flex-direction:column;gap:8px;border:2px solid #f5ce59;border-radius:20px;background:#effafff5;text-align:center;box-shadow:0 8px 25px #0854a64a}
+.visa-art-account-panel h2{margin:0;font-size:clamp(17px,4.4vw,24px);color:#0a3263}.visa-art-account-panel p{margin:0;font-size:13px;color:#244862;overflow-wrap:anywhere}.visa-art-account-panel p[role=alert]{color:#862d27}.visa-art-account-panel button{min-height:44px;padding:8px 12px;border:1px solid #aacde9;border-radius:12px;background:#fff;color:#123f70;font-size:13px}.visa-art-account-panel button:disabled{opacity:.6}
+/* A short landscape viewport keeps the artwork in view and puts readable
+   controls beside it, without making the welcome page scroll. */
+@media(orientation:landscape) and (max-height:520px){.visa-art-screen{grid-template-columns:minmax(0,1fr) minmax(220px,1fr);gap:16px;padding:12px}.visa-art-frame{height:calc(100dvh - 24px);width:auto;max-width:100%;justify-self:end}.visa-art-screen .visa-art-signin{left:calc(100% + 16px);top:40%;width:min(42vw,340px);height:48px;background:linear-gradient(#048cee,#0643a0);border:2px solid #f9d75e}.visa-art-signin .visa-art-sr{position:static!important;width:auto!important;height:auto!important;margin:0!important;clip-path:none!important;white-space:normal!important;font-size:15px;font-weight:650}.visa-art-screen .visa-art-recovery{left:calc(100% + 16px);top:calc(40% + 60px);width:min(42vw,340px);height:44px;background:#f0faff;color:#10467f;border:1px solid #b2d9f1}.visa-art-recovery .visa-art-sr{position:static!important;width:auto!important;height:auto!important;margin:0!important;clip-path:none!important;white-space:normal!important;font-size:14px}.visa-art-notice{left:calc(100% + 16px);bottom:65%;width:min(42vw,340px);max-height:30%;font-size:12px}.visa-art-loading{left:calc(100% + 16px);bottom:9%;width:min(42vw,340px);font-size:11px}.visa-art-account-panel{left:calc(100% + 16px);bottom:20%;width:min(42vw,340px);max-height:75%;font-size:12px}}
+
+/* v5.6.2 hotfix: immersive, no-scroll portrait welcome; the screenshot already
+   contains rendered labels, so button hit areas track the stretched art exactly. */
+@media (orientation:portrait) {
+ .visa-art-screen { inset:0; width:100vw; height:100dvh; min-height:0; padding:0; margin:0; display:block; overflow:hidden; }
+ .visa-art-frame { position:relative; width:100vw; height:100dvh; max-width:none; max-height:none; aspect-ratio:auto; margin:0; box-shadow:none; }
+ .visa-art-image { display:block; width:100%; height:100%; object-fit:fill; }
+}
+/* Keep preload status accessible without covering the welcome illustration. */
+.visa-art-loading { position:absolute!important; width:1px!important; height:1px!important; margin:-1px!important; padding:0!important; overflow:hidden!important; clip-path:inset(50%)!important; white-space:nowrap!important; border:0!important; }
+/* Use only a small animated status ring: the CTA wording is already in the art. */
+.visa-art-screen .visa-art-busy {
+ position:absolute; right:7%; top:calc(50% - 10px); display:block;
+ box-sizing:border-box; width:20px; height:20px; min-width:20px; min-height:20px;
+ border:3px solid #bceaff; border-top-color:#fff; border-radius:50%;
+ background:transparent; box-shadow:none; overflow:hidden;
+ font-size:0; color:transparent; animation:visa-signin-spin 900ms linear infinite;
+}
+@keyframes visa-signin-spin { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .visa-art-screen .visa-art-busy { animation:none; border-top-color:#ffe27d; } }

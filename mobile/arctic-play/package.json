@@ -1,10 +1,11 @@
 {
   "name": "arctic-play-android",
-  "version": "1.0.0",
+  "version": "5.7.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node scripts/build-web.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "test:current": "node --test tests/interface.test.mjs tests/visa-entry.test.mjs tests/visa-welcome.test.mjs tests/offline-license.test.mjs tests/unlocks.test.mjs tests/discovery.test.mjs tests/asset-warmup.test.mjs tests/startup.test.mjs tests/games.test.mjs tests/required-updates.test.mjs tests/updates.test.mjs"
   }
 }

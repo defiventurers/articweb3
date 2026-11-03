@@ -1,0 +1,155 @@
+/* One ice material for touch controls, over the same world as the scenery.
+   Labels stay live text; board sprites, team colours and legal marks stay intact. */
+:root,html[data-theme="dark"]{
+ --frost-face:linear-gradient(135deg,#bbf4ff2b,#0d3658df 47%,#194867ca);
+ --frost-edge:#9ceaff82;--frost-glint:#e5fbff9c;
+ --frost-depth:inset 0 1px 0 #ecfdff6e,inset 0 -2px 0 #168ec54a,0 2px 5px #001b3433;
+ --frost-primary:linear-gradient(145deg,#b6f5ff45,transparent 40%),linear-gradient(165deg,#207eafeb,#07507feb);
+ --frost-selected:linear-gradient(140deg,#6ddcff61,#14618bd9);
+ --frost-row:linear-gradient(110deg,#b6efff20,#0c3453c9 62%,#19466bd9);
+ --frost-quiet:linear-gradient(120deg,#b6edff19,#0d3654c9);
+ --frost-home-glow:#0a2a46de;--frost-title-shadow:0 1px 2px #00182de0;
+}
+html[data-theme="light"]{
+ --frost-face:linear-gradient(135deg,#ffffffdc,#c7e9f7bd 47%,#def7ffc9);
+ --frost-edge:#327b9b8c;--frost-glint:#ffffffed;
+ --frost-depth:inset 0 1px 0 #fff,inset 0 -2px 0 #438cad40,0 2px 5px #1551731a;
+ --frost-primary:linear-gradient(145deg,#b6f5ff47,transparent 42%),linear-gradient(165deg,#1575a4ed,#075782ed);
+ --frost-selected:linear-gradient(140deg,#e6fbffec,#a3d9eebf);
+ --frost-row:linear-gradient(110deg,#ffffffc7,#d8f1fac9 62%,#e9faffd4);
+ --frost-quiet:linear-gradient(120deg,#f9ffffa3,#dbf1fbbb);
+ --frost-home-glow:#eefaffed;--frost-title-shadow:0 1px 1px #ffffffed;
+}
+
+/* Shared tactile face; no image-backed labels or new controls. */
+:is(.app,.overlay) button{
+ background-image:var(--frost-face),var(--ice-scene);
+ background-position:center;background-size:cover;
+ background-attachment:scroll,fixed;
+ border:1px solid var(--frost-edge);border-radius:14px;
+ box-shadow:var(--frost-depth);color:var(--text);
+ min-height:44px;transition:filter .12s ease,box-shadow .12s ease;
+}
+:is(.app,.overlay) button:enabled:active{filter:brightness(1.08);box-shadow:inset 0 2px 5px #00355250}
+:is(.app,.overlay) button:focus-visible,.minimal-detail>summary:focus-visible{
+ outline:3px solid var(--blue);outline-offset:3px;
+}
+:is(.app,.overlay) button:disabled{opacity:.46;filter:saturate(.55);cursor:default}
+:is(.app,.overlay) .primary{
+ background-image:var(--frost-primary),var(--ice-scene);color:#fff;
+ border-color:#b5efffd4;box-shadow:inset 0 1px 0 #ecffffbf,inset 0 -3px 0 #003d6c7d,0 2px 6px #00345830;
+ font-weight:750;border-radius:15px;
+ background-attachment:scroll,scroll,fixed;
+}
+:is(.app,.overlay) .secondary,:is(.app,.overlay) .blue-pill{
+ background-image:var(--frost-face),var(--ice-scene);color:var(--blue);
+ border-color:var(--frost-edge);box-shadow:var(--frost-depth);
+}
+:is(.app,.overlay) button[aria-pressed="true"],:is(.app,.overlay) button[aria-checked="true"],
+.app .filter-row button.active,.app .outfit-choices button[aria-pressed="true"]{
+ background-image:var(--frost-selected),var(--ice-scene);border-color:var(--blue);
+ box-shadow:inset 0 1px 0 var(--frost-glint),inset 0 0 0 1px var(--blue);
+ color:var(--text);
+}
+.app .filter-row button{border-radius:18px;min-height:40px;padding:9px 14px;font-weight:700}
+.app .filter-row button.active{color:var(--text)}
+.app :is(.companion-choices,.camp-prompts,.camp-mementos,.reaction-picker,.piece-grid,.lesson-tabs,.seat-choice,.avatar-picker,.lookbook-thumbnails,.outfit-choices) button{
+ background-image:var(--frost-face),var(--ice-scene);background-attachment:scroll,fixed;
+ border:1px solid var(--frost-edge);box-shadow:var(--frost-depth);color:var(--text);
+}
+.app :is(.seat-choice,.avatar-picker) button.selected{
+ background-image:var(--frost-selected),var(--ice-scene);border-color:var(--blue);
+ box-shadow:inset 0 0 0 1px var(--blue),inset 0 1px 0 var(--frost-glint);
+}
+
+/* Quiet ice insets for list actions, rather than detached opaque cards. */
+:is(.app,.overlay) :is(.mode-row,.minimal-option,.profile-options>button,.learn-mode-row,
+.resume-table,.daily-puzzle-entry,.home-camp-entry,.table-row,.memory-item,.latest-memory,
+.learning-invitation,.welcome-companion,.expedition-entry,.save-collection){
+ background-image:var(--frost-row),var(--ice-scene);border:1px solid var(--frost-edge);
+ border-radius:15px;box-shadow:inset 0 1px 0 var(--frost-glint),inset 0 -1px 0 #4ebbe537;
+ padding:12px;min-height:54px;
+}
+.app .profile-options{padding:0;background:transparent;border:0;box-shadow:none}
+.app .profile-options>button,.minimal-option{margin-block:7px}
+.app .profile-card{background-image:var(--frost-quiet),var(--ice-scene);background-position:center;background-size:cover;border-color:var(--frost-edge);box-shadow:inset 0 1px 0 var(--frost-glint)}
+.app .quick-invite button{background-image:var(--frost-face),var(--ice-scene);padding:10px 12px;color:var(--blue)}
+.app .daily-puzzle-mark{color:var(--blue);background:transparent;border:1px solid var(--line);box-shadow:inset 0 1px 0 var(--frost-glint)}
+.app .home-camp-entry>img{filter:drop-shadow(0 2px 1px #00355744)}
+.app .option-icon{background:transparent;border:1px solid var(--line);box-shadow:inset 0 1px 0 var(--frost-glint)}
+
+/* Small utility actions share the rim but retain familiar, simple silhouettes. */
+:is(.app,.overlay) .icon-btn{padding:0;border-radius:50%;min-width:44px;width:44px;height:44px}
+:is(.app,.overlay) :is(.text-button,.focus-help,.minimal-replay,.camp-studio-entry){
+ background-image:var(--frost-quiet),var(--ice-scene);border:1px solid var(--line);
+ box-shadow:inset 0 1px 0 var(--frost-glint);color:var(--blue);padding:10px 12px;
+}
+.app .board-tools button,.app .replay-controls button{border-radius:12px;min-width:44px}
+.app .theme-switch{background:var(--soft-blue);border:1px solid var(--frost-edge);box-shadow:inset 0 1px 4px #00334a30}
+.app .theme-switch.on{background:var(--blue)}
+.app .theme-switch i{background:linear-gradient(145deg,#fff,#c3edfa);box-shadow:0 1px 2px #10385145}
+.minimal-detail>summary,.app :is(.play-history,.camp-personalise,.camp-conversations,.reaction-picker)>summary{
+ background-image:var(--frost-quiet),var(--ice-scene);background-size:cover;background-position:center;
+ border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:44px;
+ box-shadow:inset 0 1px 0 var(--frost-glint);color:var(--blue);
+}
+
+/* Portraits and illustrations remain part of their scene, never boxed buttons. */
+:is(.app,.overlay) :is(.game-open,.avatar-btn,.mentor-touch,.mentor-tip,.companion-main,.room-host,.room-object){
+ background:transparent;border:0;box-shadow:none;
+}
+.app .avatar-btn{border-radius:50%;box-shadow:0 0 0 1px var(--frost-edge);padding:3px}
+.app .game-card{border:1px solid var(--frost-edge);box-shadow:inset 0 1px 0 var(--frost-glint),0 2px 6px #001e3c26}
+.app .game-card .game-open{border-radius:inherit}
+.app .card-favorite{width:44px;height:44px;top:5px;right:5px;border-radius:50%;background-image:linear-gradient(#0b4262d9,#0b4262d9),var(--ice-scene);color:#fff;border-color:#bdf2ff99}
+.app .card-seats{max-width:calc(100% - 65px)}
+.app .guide-card{background-image:var(--frost-row),var(--ice-scene)}
+.app .danger,.app .danger-bg{color:#fff;background-image:linear-gradient(#a53d55e8,#853147e8),var(--ice-scene);border-color:#ffc8d4b3}
+
+/* Headers and the five-tab rail are translucent extensions of the ice floor. */
+.app :is(.lobby-header,.page-header,.match-header,.bottom-nav,.chat-bar),.academy-header{
+ background-image:var(--frost-quiet),var(--ice-scene);background-size:cover;background-position:center;
+ background-attachment:scroll,fixed;
+ border-color:var(--frost-edge);box-shadow:inset 0 1px 0 var(--frost-glint);
+}
+.app .bottom-nav{background-image:linear-gradient(var(--nav-surface),var(--nav-surface)),var(--ice-scene)}
+.app .bottom-nav button{background:transparent;border:0;box-shadow:none;min-height:50px;min-width:44px;color:var(--muted);padding:0;border-radius:14px}
+.app .bottom-nav button>span{border:1px solid transparent}
+.app .bottom-nav button.active{color:var(--blue)}
+.app .bottom-nav button.active>span{background-image:var(--frost-face),var(--ice-scene);background-size:cover;border:1px solid var(--frost-edge);box-shadow:var(--frost-depth)}
+.app .chat-bar button{border-radius:13px;width:44px;min-width:44px}
+.app .world-header{background:linear-gradient(var(--ice-reading),transparent);border:0;box-shadow:none;margin-bottom:0}
+.home-brand-spark{display:grid;place-items:center;width:44px;font-size:30px;color:var(--blue);text-shadow:0 1px 0 var(--frost-glint)}
+
+/* A borderless cast and live copy, all on the existing frozen environment. */
+.app .home-landing,.app .home-world-copy{background:transparent;border:0;box-shadow:none;border-radius:0;overflow:visible}
+.app .home-landing{margin:0 0 18px;text-align:center;isolation:isolate}
+.home-world-scene{position:relative;width:calc(100% + 20px);margin:0 -10px -6px;isolation:isolate}
+.home-world-scene:before{content:'';position:absolute;z-index:-1;inset:12% 0 -5%;background:radial-gradient(ellipse,#a7edff7a,transparent 70%);pointer-events:none}
+.app .home-world-art{width:100%;height:auto;aspect-ratio:auto;object-fit:contain;position:relative;filter:drop-shadow(0 3px 2px #00486d18)}
+.app .home-world-copy{position:relative;padding:12px 0 0}
+.home-world-copy:before{content:'';position:absolute;inset:-12px -10px 0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 38%,var(--frost-home-glow) 25%,transparent 74%)}
+.app .home-world-kicker{font-size:9px;letter-spacing:1.6px;margin:0 0 10px;line-height:1.5;font-weight:800;text-shadow:var(--frost-title-shadow)}
+.app .home-world-copy h2{font-size:clamp(29px,8.6vw,42px);line-height:1.08;letter-spacing:-1.1px;margin:0 0 12px;text-shadow:var(--frost-title-shadow);font-weight:800}
+.app .home-world-copy h2 em{color:var(--blue)}
+.app .home-motto{font-family:Georgia,serif;font-size:14px;line-height:1.5;max-width:29em;margin:0 auto 9px;color:var(--text);text-shadow:var(--frost-title-shadow)}
+.app .home-world-intent{font-size:11px;line-height:1.6;margin:0 0 16px;color:var(--muted);text-shadow:var(--frost-title-shadow)}
+.app .home-play-actions{display:grid;grid-template-columns:1fr;gap:8px;max-width:420px;margin:auto}
+.app .home-play-actions button{min-height:48px;font-size:14px;padding:12px 16px;gap:10px;border-radius:16px}
+.app .home-play-actions .primary{position:relative}
+.app .home-play-actions .primary:before{content:'';pointer-events:none;position:absolute;inset:3px;border:1px solid #e7ffff66;border-radius:12px;background:linear-gradient(130deg,#ecffff3d,transparent 25%,transparent 76%,#c6f6ff1c)}
+.app .home-play-actions .secondary{min-height:44px;background-image:var(--frost-quiet),var(--ice-scene);font-size:12px}
+.app .home-archive-links>summary{background-image:var(--frost-quiet),var(--ice-scene)}
+
+@media(max-width:359px){
+ .app .home-world-copy h2{font-size:29px}.app .home-world-kicker{font-size:8px;letter-spacing:1.2px}
+ .app .home-motto{font-size:13px}.app .home-world-intent{font-size:10px}.app .home-play-actions button{font-size:13px}
+ .app .friend-row{gap:7px}.app .friend-row .blue-pill{padding-inline:10px}
+}
+@media(min-width:600px){.home-world-scene{max-width:610px;margin-inline:auto}.app .home-world-copy{padding-top:6px}.app .home-motto{font-size:17px}.app .home-world-intent{font-size:13px}}
+@media(prefers-reduced-motion:reduce){:is(.app,.overlay) button{transition:none}}
+@media(forced-colors:active){
+ :is(.app,.overlay) button{background:ButtonFace;color:ButtonText;border:1px solid ButtonText;box-shadow:none}
+ .app .home-world-copy:before,.home-world-scene:before{display:none}.app .home-world-copy h2,.app .home-motto,.app .home-world-kicker{color:CanvasText;text-shadow:none}
+ .app .bottom-nav button[aria-current="page"]{outline:2px solid Highlight}
+}

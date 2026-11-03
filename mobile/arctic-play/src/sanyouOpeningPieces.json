@@ -1,0 +1,326 @@
+[
+  {
+    "id": "red-chariot-1",
+    "node": "red:L1-1",
+    "faction": "red",
+    "role": "chariot"
+  },
+  {
+    "id": "red-horse-1",
+    "node": "red:L2-1",
+    "faction": "red",
+    "role": "horse"
+  },
+  {
+    "id": "red-elephant-1",
+    "node": "red:L3-1",
+    "faction": "red",
+    "role": "elephant"
+  },
+  {
+    "id": "red-advisor-1",
+    "node": "red:L4-1",
+    "faction": "red",
+    "role": "advisor"
+  },
+  {
+    "id": "red-general-1",
+    "node": "red:L5-1",
+    "faction": "red",
+    "role": "general"
+  },
+  {
+    "id": "red-advisor-2",
+    "node": "red:L6-1",
+    "faction": "red",
+    "role": "advisor"
+  },
+  {
+    "id": "red-elephant-2",
+    "node": "red:L7-1",
+    "faction": "red",
+    "role": "elephant"
+  },
+  {
+    "id": "red-horse-2",
+    "node": "red:L8-1",
+    "faction": "red",
+    "role": "horse"
+  },
+  {
+    "id": "red-chariot-2",
+    "node": "red:L9-1",
+    "faction": "red",
+    "role": "chariot"
+  },
+  {
+    "id": "red-cannon-1",
+    "node": "red:L2-3",
+    "faction": "red",
+    "role": "cannon"
+  },
+  {
+    "id": "red-flag-1",
+    "node": "red:L4-3",
+    "faction": "red",
+    "role": "flag"
+  },
+  {
+    "id": "red-flag-2",
+    "node": "red:L6-3",
+    "faction": "red",
+    "role": "flag"
+  },
+  {
+    "id": "red-cannon-2",
+    "node": "red:L8-3",
+    "faction": "red",
+    "role": "cannon"
+  },
+  {
+    "id": "red-soldier-1",
+    "node": "red:L1-4",
+    "faction": "red",
+    "role": "soldier"
+  },
+  {
+    "id": "red-fire-1",
+    "node": "red:L3-4",
+    "faction": "red",
+    "role": "fire"
+  },
+  {
+    "id": "red-soldier-2",
+    "node": "red:L5-4",
+    "faction": "red",
+    "role": "soldier"
+  },
+  {
+    "id": "red-fire-2",
+    "node": "red:L7-4",
+    "faction": "red",
+    "role": "fire"
+  },
+  {
+    "id": "red-soldier-3",
+    "node": "red:L9-4",
+    "faction": "red",
+    "role": "soldier"
+  },
+  {
+    "id": "green-chariot-1",
+    "node": "green:L1-1",
+    "faction": "green",
+    "role": "chariot"
+  },
+  {
+    "id": "green-horse-1",
+    "node": "green:L2-1",
+    "faction": "green",
+    "role": "horse"
+  },
+  {
+    "id": "green-elephant-1",
+    "node": "green:L3-1",
+    "faction": "green",
+    "role": "elephant"
+  },
+  {
+    "id": "green-advisor-1",
+    "node": "green:L4-1",
+    "faction": "green",
+    "role": "advisor"
+  },
+  {
+    "id": "green-general-1",
+    "node": "green:L5-1",
+    "faction": "green",
+    "role": "general"
+  },
+  {
+    "id": "green-advisor-2",
+    "node": "green:L6-1",
+    "faction": "green",
+    "role": "advisor"
+  },
+  {
+    "id": "green-elephant-2",
+    "node": "green:L7-1",
+    "faction": "green",
+    "role": "elephant"
+  },
+  {
+    "id": "green-horse-2",
+    "node": "green:L8-1",
+    "faction": "green",
+    "role": "horse"
+  },
+  {
+    "id": "green-chariot-2",
+    "node": "green:L9-1",
+    "faction": "green",
+    "role": "chariot"
+  },
+  {
+    "id": "green-cannon-1",
+    "node": "green:L2-3",
+    "faction": "green",
+    "role": "cannon"
+  },
+  {
+    "id": "green-flag-1",
+    "node": "green:L4-3",
+    "faction": "green",
+    "role": "flag"
+  },
+  {
+    "id": "green-flag-2",
+    "node": "green:L6-3",
+    "faction": "green",
+    "role": "flag"
+  },
+  {
+    "id": "green-cannon-2",
+    "node": "green:L8-3",
+    "faction": "green",
+    "role": "cannon"
+  },
+  {
+    "id": "green-soldier-1",
+    "node": "green:L1-4",
+    "faction": "green",
+    "role": "soldier"
+  },
+  {
+    "id": "green-fire-1",
+    "node": "green:L3-4",
+    "faction": "green",
+    "role": "fire"
+  },
+  {
+    "id": "green-soldier-2",
+    "node": "green:L5-4",
+    "faction": "green",
+    "role": "soldier"
+  },
+  {
+    "id": "green-fire-2",
+    "node": "green:L7-4",
+    "faction": "green",
+    "role": "fire"
+  },
+  {
+    "id": "green-soldier-3",
+    "node": "green:L9-4",
+    "faction": "green",
+    "role": "soldier"
+  },
+  {
+    "id": "blue-chariot-1",
+    "node": "blue:L1-1",
+    "faction": "blue",
+    "role": "chariot"
+  },
+  {
+    "id": "blue-horse-1",
+    "node": "blue:L2-1",
+    "faction": "blue",
+    "role": "horse"
+  },
+  {
+    "id": "blue-elephant-1",
+    "node": "blue:L3-1",
+    "faction": "blue",
+    "role": "elephant"
+  },
+  {
+    "id": "blue-advisor-1",
+    "node": "blue:L4-1",
+    "faction": "blue",
+    "role": "advisor"
+  },
+  {
+    "id": "blue-general-1",
+    "node": "blue:L5-1",
+    "faction": "blue",
+    "role": "general"
+  },
+  {
+    "id": "blue-advisor-2",
+    "node": "blue:L6-1",
+    "faction": "blue",
+    "role": "advisor"
+  },
+  {
+    "id": "blue-elephant-2",
+    "node": "blue:L7-1",
+    "faction": "blue",
+    "role": "elephant"
+  },
+  {
+    "id": "blue-horse-2",
+    "node": "blue:L8-1",
+    "faction": "blue",
+    "role": "horse"
+  },
+  {
+    "id": "blue-chariot-2",
+    "node": "blue:L9-1",
+    "faction": "blue",
+    "role": "chariot"
+  },
+  {
+    "id": "blue-cannon-1",
+    "node": "blue:L2-3",
+    "faction": "blue",
+    "role": "cannon"
+  },
+  {
+    "id": "blue-flag-1",
+    "node": "blue:L4-3",
+    "faction": "blue",
+    "role": "flag"
+  },
+  {
+    "id": "blue-flag-2",
+    "node": "blue:L6-3",
+    "faction": "blue",
+    "role": "flag"
+  },
+  {
+    "id": "blue-cannon-2",
+    "node": "blue:L8-3",
+    "faction": "blue",
+    "role": "cannon"
+  },
+  {
+    "id": "blue-soldier-1",
+    "node": "blue:L1-4",
+    "faction": "blue",
+    "role": "soldier"
+  },
+  {
+    "id": "blue-fire-1",
+    "node": "blue:L3-4",
+    "faction": "blue",
+    "role": "fire"
+  },
+  {
+    "id": "blue-soldier-2",
+    "node": "blue:L5-4",
+    "faction": "blue",
+    "role": "soldier"
+  },
+  {
+    "id": "blue-fire-2",
+    "node": "blue:L7-4",
+    "faction": "blue",
+    "role": "fire"
+  },
+  {
+    "id": "blue-soldier-3",
+    "node": "blue:L9-4",
+    "faction": "blue",
+    "role": "soldier"
+  }
+]
