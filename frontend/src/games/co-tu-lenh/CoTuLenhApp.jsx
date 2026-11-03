@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { applyAction, atPoint, chooseBotMove, createInitialState, legalActions, TYPES, VERSION } from './rules.js';
+import { CoTuLenhClient, getSeat, newSeatToken, saveSeat, inviteUrl } from './onlineClient.js';
 import './coTuLenh.css';
 
 const ROOT='/assets/co-tu-lenh/pieces/';
 const menu=[{id:'local',label:'Pass & Play',description:'Two players on one device'},
   {id:'bot',label:'Quick Play vs Bot',description:'Easy, Medium or Hard'},
-  {id:'practice',label:'Practice & Learn',description:'Undo moves and inspect pieces'}];
+  {id:'practice',label:'Practice & Learn',description:'Undo moves and inspect pieces'},
+  {id:'online',label:'Online with Friends',description:'Private code · two players · server validated'}];
 const steps=[
   ['Find your Commander','The gold-star Commander controls your side. Capture the opposing Commander to win. It travels along clear orthogonal lines but captures only an adjacent piece.'],
   ['Understand terrain','The dark left lane is sea. The centre river separates the two armies. Some heavy units must use the two shallow fords; ships use sea and coastline.'],
@@ -27,6 +29,13 @@ export default function CoTuLenhApp({onExitToLibrary}) {
   const [started,setStarted]=useState(false);
   const [undoStack,setUndoStack]=useState([]);
   const [view,setView]=useState('red');
+  const [joinCode,setJoinCode]=useState(()=>new URLSearchParams(window.location.search).get('room')?.toUpperCase()||'');
+  const [online,setOnline]=useState(null);
+  const [isConnected,setIsConnected]=useState(false);
+  const client=useRef(null);
+  const activeRoomCode=useRef(null);
+  const isOnline=mode==='online';
+  const blockedOnline=isOnline&&(!online||online.room.status!=='playing'||state.turn!==online.team);
   const seq=useRef(0);
   const botTurn=started&&mode==='bot'&&state.turn!==human&&!state.winner;
   const actions=useMemo(()=>selected?legalActions(state,selected):[],[state,selected]);
@@ -38,8 +47,9 @@ export default function CoTuLenhApp({onExitToLibrary}) {
     setMode(nextMode);setUndoStack([]);redraw(createInitialState(victory));
     setStarted(true);setView(nextMode==='bot'?human:'red');setNotice('Red begins. Select a piece to see legal moves.');
   }
-  function move(action){
-    if(botTurn)return;
+  async function move(action){
+    if(botTurn||blockedOnline)return;
+    if(isOnline){try{await client.current?.request('ctl_game_action',{roomCode:online.room.roomCode,token:online.token,revision:online.room.revision,action});}catch(e){setNotice(e.message);}return;}
     try{
       const next=applyAction(state,action);
       setUndoStack(h=>[...h,state].slice(-60));
@@ -47,7 +57,7 @@ export default function CoTuLenhApp({onExitToLibrary}) {
     }catch(error){setNotice(error.message);}
   }
   function clickPoint(x,y){
-    if(botTurn)return;
+    if(botTurn||blockedOnline)return;
     const here=atPoint(state,x,y),own=here.find(p=>p.team===state.turn&&!p.carrier)||here.find(p=>p.team===state.turn);
     const choices=actions.filter(a=>a.x===x&&a.y===y);
     if(choices.length){
@@ -62,6 +72,27 @@ export default function CoTuLenhApp({onExitToLibrary}) {
     if(own){setSelected(own.id);setNotice(labelFor(own));return;}
     setSelected(null);setNotice('Select a friendly piece or a legal target.');
   }
+  function makeClient(){
+    const c=new CoTuLenhClient();
+    c.onPacket=p=>{if(p.type==='ctl_room_state'&&p.payload?.room&&p.payload.room.roomCode===activeRoomCode.current){setOnline(old=>old?{...old,room:p.payload.room}:old);setState(p.payload.room.gameState);}};
+    c.onStatus=setIsConnected;
+    return c;
+  }
+  useEffect(()=>{
+    const c=makeClient();client.current=c;
+    const code=new URLSearchParams(window.location.search).get('room')?.trim().toUpperCase();
+    const saved=code?getSeat(code):null;
+    if(saved){activeRoomCode.current=code;setMode('online');setJoinCode(code);void c.request('ctl_room_sync',{roomCode:code,token:saved.token}).then(res=>{setOnline({room:res.room,team:res.team,token:saved.token});setState(res.room.gameState);setView(res.team);setStarted(true);}).catch(e=>setNotice(`Could not restore room: ${e.message}`));}
+    return()=>{c.close();client.current=null;};
+  },[]);
+  async function openOnline(create){
+    try{const token=newSeatToken();const res=await client.current.request(create?'ctl_room_create':'ctl_room_join',{team:human,token,name:'Commander',mode:victory,...(!create?{roomCode:joinCode}:{} )});
+      const code=res.room.roomCode;activeRoomCode.current=code;saveSeat({roomCode:code,token,team:res.team});
+      setOnline({room:res.room,team:res.team,token});setState(res.room.gameState);setView(res.team);setStarted(true);setNotice(`Connected to room ${code}.`);
+      const url=new URL(window.location.href);url.searchParams.set('game','co-tu-lenh');url.searchParams.set('room',code);window.history.replaceState({},'',url);
+    }catch(error){setNotice(error.message);}
+  }
+  async function startRoom(){if(!online)return;try{await client.current.request('ctl_room_start',{roomCode:online.room.roomCode,token:online.token});}catch(e){setNotice(e.message);}}
   useEffect(()=>{
     if(!botTurn)return;
     const captured=++seq.current;
@@ -87,10 +118,11 @@ export default function CoTuLenhApp({onExitToLibrary}) {
       <h2>Choose your command</h2>
       <div className="ctl-choices">{menu.map(m=><button key={m.id} className={mode===m.id?'active':''} onClick={()=>setMode(m.id)}><b>{m.label}</b><small>{m.description}</small></button>)}</div>
       <div className="ctl-prefs"><label>Victory mode<select value={victory} onChange={e=>setVictory(e.target.value)}><option value="division">Commander or destroy a division</option><option value="commander">Commander capture only</option></select></label>
-        {mode==='bot'&&<><label>Your team<select value={human} onChange={e=>setHuman(e.target.value)}><option value="red">Red · First move</option><option value="blue">Blue · Second move</option></select></label><label>Bot difficulty<select value={difficulty} onChange={e=>setDifficulty(e.target.value)}><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard (2-ply heuristic)</option></select></label></>}
-      </div><button className="ctl-primary" onClick={()=>reset()}>Begin battle</button>
+        {['bot','online'].includes(mode)&&<><label>Your team<select value={human} onChange={e=>setHuman(e.target.value)}><option value="red">Red · First move</option><option value="blue">Blue · Second move</option></select></label>{mode==='bot'&&<label>Bot difficulty<select value={difficulty} onChange={e=>setDifficulty(e.target.value)}><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard (2-ply heuristic)</option></select></label>}</>}
+      </div>{mode==='online'?<div className="ctl-online-join"><label>Private room code<input placeholder="Enter six-letter code to join" value={joinCode} maxLength={6} onChange={e=>setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z2-9]/g,''))}/></label><button className="ctl-primary" onClick={()=>openOnline(false)} disabled={joinCode.length!==6}>Join room</button><button className="ctl-primary" onClick={()=>openOnline(true)}>Create private room</button><p role="status">{notice}</p></div>:<button className="ctl-primary" onClick={()=>reset()}>Begin battle</button>}
     </section>}
     {started&&<div className="ctl-play-layout"><section className="ctl-board-wrap" aria-label="Commander Chess board">
+      {isOnline&&online&&<div className="ctl-online-bar"><b>Room {online.room.roomCode} · {isConnected?'Connected':'Disconnected'}</b><span>Red: {online.room.seats.red.name||'Waiting'} · Blue: {online.room.seats.blue.name||'Waiting'}</span><button onClick={()=>navigator.clipboard?.writeText(inviteUrl(online.room.roomCode))}>Copy invite</button>{online.room.status==='waiting'&&<button onClick={startRoom} disabled={!online.room.seats.red.name||!online.room.seats.blue.name}>Start online match</button>}{!isConnected&&<button onClick={async()=>{try{const c=await client.current.request('ctl_room_sync',{roomCode:online.room.roomCode,token:online.token});setOnline(old=>({...old,room:c.room}));setState(c.room.gameState);}catch(e){setNotice(e.message);}}}>Reconnect</button>}</div>}
       <div className="ctl-score"><span>🔴 Red · {remaining.red} units</span><b>{state.winner?`${state.winner.toUpperCase()} WINS — ${state.winReason}`:`${movingTeam.toUpperCase()} TO MOVE${botTurn?' · Bot thinking':''}`}</b><span>🔵 Blue · {remaining.blue} units</span></div>
       <svg className="ctl-board" viewBox={`0 0 ${W} ${H}`} role="group" aria-label="11 files by 12 ranks, 38 starting units">
         <defs><linearGradient id="ctlIce" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#f0fbff"/><stop offset="1" stopColor="#b2dbe7"/></linearGradient><linearGradient id="ctlWater"><stop stopColor="#1d6595"/><stop offset="1" stopColor="#123d78"/></linearGradient></defs>
@@ -108,7 +140,7 @@ export default function CoTuLenhApp({onExitToLibrary}) {
           const top=stack.find(p=>!p.carrier)||stack[0];const legal=actions.filter(a=>a.x===x&&a.y===y);const highlight=legal.length>0;
           const danger=legal.some(a=>a.risk),capture=legal.some(a=>['capture','bomb','fire'].includes(a.kind));
           const isSelected=selectedPiece?.x===x&&selectedPiece?.y===y;
-          return <g key={`${x}:${y}`} tabIndex={botTurn?-1:0} role="button" aria-label={`${x},${y}${top?' — '+labelFor(top):''}${highlight?' — legal target':''}`} onClick={()=>clickPoint(x,y)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();clickPoint(x,y);}}} style={{cursor:'pointer'}}>
+          return <g key={`${x}:${y}`} tabIndex={botTurn||blockedOnline?-1:0} role="button" aria-label={`${x},${y}${top?' — '+labelFor(top):''}${highlight?' — legal target':''}`} onClick={()=>clickPoint(x,y)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();clickPoint(x,y);}}} style={{cursor:'pointer'}}>
             {highlight&&<circle cx={pt.x} cy={pt.y} r="24" fill={capture?'#f47060':'#a0f6ed'} opacity=".6" stroke={danger?'#ffba41':capture?'#e55449':'#177da1'} strokeWidth={danger?5:2}/>}
             {isSelected&&<circle cx={pt.x} cy={pt.y} r="26" fill="none" stroke="#ffd44a" strokeWidth="4"/>}
             <circle cx={pt.x} cy={pt.y} r="28" fill="transparent"/>
@@ -117,7 +149,7 @@ export default function CoTuLenhApp({onExitToLibrary}) {
         })}
         <text x={W/2} y={H-14} textAnchor="middle" fill="#a4d6e4" fontSize="13">SEA ◀ · SHALLOW FORDS ▥ · 11 × 12 INTERSECTIONS</text>
       </svg>
-      <div className="ctl-toolbar"><button onClick={()=>{seq.current++;if(undoStack.length){setState(undoStack.at(-1));setUndoStack(h=>h.slice(0,-1));setSelected(null);}}} disabled={!undoStack.length}>↶ Undo</button><button onClick={()=>reset()}>↻ Reset</button><button onClick={()=>setView(v=>v==='red'?'blue':'red')}>⇄ Rotate view</button><button onClick={()=>{setStarted(false);setGuide(-1);seq.current++;}}>⚙ Setup</button></div>
+      <div className="ctl-toolbar"><button disabled={isOnline||!undoStack.length} onClick={()=>{seq.current++;if(undoStack.length){setState(undoStack.at(-1));setUndoStack(h=>h.slice(0,-1));setSelected(null);}}} >↶ Undo</button>{!isOnline&&<button onClick={()=>reset()}>↻ Reset</button>}<button onClick={()=>setView(v=>v==='red'?'blue':'red')}>⇄ Rotate view</button><button onClick={()=>{setStarted(false);setGuide(-1);seq.current++;if(isOnline){activeRoomCode.current=null;client.current?.close();client.current=makeClient();setOnline(null);const url=new URL(window.location.href);url.searchParams.delete('room');window.history.replaceState({},'',url);}}}>⚙ Setup</button></div>
       <p className="ctl-message" aria-live="polite">{notice}</p>
       </section>
       <aside className="ctl-sidebar"><div className="ctl-panel"><h2>{selectedPiece?TYPES[selectedPiece.type].label:'Field Guide'}</h2>{selectedPiece?<><img src={graphic(selectedPiece)} alt="" className="ctl-preview"/><strong>{TYPES[selectedPiece.type].native}</strong><p>{labelFor(selectedPiece)}</p><p>{actions.length} legal actions. {selectedPiece.carrier?'Currently embarked.':''}</p></>:<p>Tap a unit to learn its identity and review available movement, transport and attack targets.</p>}</div>
@@ -130,3 +162,4 @@ export default function CoTuLenhApp({onExitToLibrary}) {
     <footer className="ctl-foot">Cờ Tư Lệnh by Nguyễn Quý Hải (Vietnam, 2010). Arctic illustrations are independent adaptations, not official game art. Rules profile: {VERSION}.</footer>
   </main>;
 }
+
