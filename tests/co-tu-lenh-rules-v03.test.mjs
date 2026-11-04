@@ -10,13 +10,13 @@ const make=(profile,pieces,turn='red')=>({rulesVersion:VERSION,mode:profile,rule
 const force=(state,id,type)=>legalActions(state,id).filter(a=>a.kind===type);
 test('profiles match uploaded research catalog and retain 11x12, 38-piece inventory',()=>{
   assert.deepEqual(Object.keys(RULE_PROFILES).sort(),Object.keys(ruleJson.rulesProfiles).sort());
-  assert.equal(DEFAULT_PROFILE,'ancientchess_2015_standard');
+  assert.equal(DEFAULT_PROFILE,'youtuber_rules');
   for(const id of Object.keys(RULE_PROFILES)){
     const game=createInitialState(id);
     assert.equal(game.rulesProfile,id);
     assert.equal(game.pieces.length,38);
-    assert.equal(game.setupVerified,false);
-    assert.equal(game.fordsVerified,false);
+    assert.equal(game.setupVerified,id==='youtuber_rules');
+    assert.equal(game.fordsVerified,id==='youtuber_rules');
     assert.equal(ruleJson.board.initialPositions,null);
     assert.equal(ruleJson.board.fordColumns,null);
   }

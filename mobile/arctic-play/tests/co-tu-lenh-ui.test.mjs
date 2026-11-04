@@ -21,7 +21,7 @@ test('packaged Games route runs Commander local, practice, bot, profiles, tutori
   assert.ok(d.querySelector('[aria-label="Play Shanshui Xiangqi"]'));
   assert.equal(d.querySelectorAll('.hall-card').length,7);
   d.querySelector('[aria-label="Play Cờ Tư Lệnh"]').click();await until(()=>d.querySelector('.ctl-setup'));
-  const profiles=d.querySelector('.ctl-prefs select');assert.equal(profiles.options.length,4);
+  const profiles=d.querySelector('.ctl-prefs select');assert.equal(profiles.options.length,5);
   const ids=[...profiles.options].map(o=>o.value);
   for(const id of ids){
     setSelect(w,d.querySelector('.ctl-prefs select'),id);await new Promise(r=>setTimeout(r,5));
@@ -56,13 +56,13 @@ test('packaged Games route runs Commander local, practice, bot, profiles, tutori
   assert.deepEqual(errors,[]);
 });
 
-async function carrierFixture(t){
+async function carrierFixture(t,profile='ancientchess_2015_long'){
  const errors=[],virtual=new VirtualConsole();virtual.on('jsdomError',e=>errors.push(e.message));
  const dom=new JSDOM('<div id="root"></div>',{url:'https://appassets.androidplatform.net/assets/index.html',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:virtual,beforeParse(w){w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;w.structuredClone=structuredClone;Object.defineProperty(w,'crypto',{value:webcrypto});w.WebSocket=undefined;w.HTMLElement.prototype.scrollIntoView=function(){};verifiedAccount(w);}});
  t.after(()=>dom.window.close());dom.window.eval(bundle);const w=dom.window,d=w.document;
  await until(()=>d.querySelector('.bottom-nav'));button(d,'Games');await until(()=>d.querySelector('[aria-label="Play Cờ Tư Lệnh"]'));d.querySelector('[aria-label="Play Cờ Tư Lệnh"]').click();await until(()=>d.querySelector('.ctl-setup'));
- setSelect(w,d.querySelector('.ctl-prefs select'),'ancientchess_2015_long');[...d.querySelectorAll('.ctl-choices button')].find(b=>b.textContent.includes('Pass & Play')).click();await new Promise(r=>setTimeout(r,10));button(d,'Begin battle');await until(()=>d.querySelector('.ctl-board'));
- let state=createInitialState('ancientchess_2015_long');
+ setSelect(w,d.querySelector('.ctl-prefs select'),profile);[...d.querySelectorAll('.ctl-choices button')].find(b=>b.textContent.includes('Pass & Play')).click();await new Promise(r=>setTimeout(r,10));button(d,'Begin battle');await until(()=>d.querySelector('.ctl-board'));
+ let state=createInitialState(profile);
  const point=(x,y)=>d.querySelectorAll('.ctl-board g[role=button]')[y*11+x];
  async function play(action,choice){
   const p=state.pieces.find(p=>p.id===action.id);point(p.x,p.y).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));await new Promise(r=>setTimeout(r,10));
@@ -97,4 +97,33 @@ test('packaged aircraft action chooser drops Infantry, returns the aircraft, and
  assert.match(f.point(9,2).getAttribute('aria-label'),/Aircraft/);assert.match(f.point(9,5).getAttribute('aria-label'),/Infantry/);
  d.querySelector('[aria-label="Continue with Infantry"]').click();await new Promise(r=>setTimeout(r,10));f.point(10,5).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));
  await until(()=>d.querySelector('.ctl-score b').textContent.includes('BLUE TO MOVE'));assert.deepEqual(f.errors,[]);
+});
+
+
+test('packaged YouTuber Rules is the default and its Navy stack keeps passenger actions in the same turn',{timeout:20000},async t=>{
+ const f=await carrierFixture(t,'youtuber_rules'),{d,w,point}=f;
+ assert.match(d.querySelector('.ctl-sidebar').textContent,/YouTuber Rules/);
+ const act=(id,kind,x,y)=>allLegalActions(f.state()).find(a=>a.id===id&&a.kind===kind&&a.x===x&&a.y===y);
+ await f.play(act('red-15','embark',2,3),'Board Navy');await f.blue();
+ point(2,3).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));await until(()=>d.querySelector('[aria-label="Stack pieces"]'));
+ assert.ok(d.querySelector('[aria-label="Select Infantry in stack"]'));assert.match(d.querySelector('[aria-label="Passengers for carrier travel"]').textContent,/drop-and-return is not part/);
+ point(2,4).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));await until(()=>d.querySelector('[aria-label="Continue stack turn"]'));
+ d.querySelector('[aria-label="Continue with Infantry"]').click();await new Promise(r=>setTimeout(r,10));point(2,5).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));await until(()=>d.querySelector('.ctl-score b').textContent.includes('BLUE TO MOVE'));
+ assert.deepEqual(f.errors,[]);
+});
+
+test('packaged secret deployment conceals the other army and reveals after both players confirm',{timeout:20000},async t=>{
+ const errors=[],virtual=new VirtualConsole();virtual.on('jsdomError',e=>errors.push(e.message));
+ const dom=new JSDOM('<div id="root"></div>',{url:'https://appassets.androidplatform.net/assets/index.html',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:virtual,beforeParse(w){w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;w.structuredClone=structuredClone;Object.defineProperty(w,'crypto',{value:webcrypto});w.WebSocket=undefined;w.HTMLElement.prototype.scrollIntoView=function(){};verifiedAccount(w);}});
+ t.after(()=>dom.window.close());dom.window.eval(bundle);const w=dom.window,d=w.document;
+ await until(()=>d.querySelector('.bottom-nav'));button(d,'Games');await until(()=>d.querySelector('[aria-label="Play Cờ Tư Lệnh"]'));d.querySelector('[aria-label="Play Cờ Tư Lệnh"]').click();await until(()=>d.querySelector('.ctl-setup'));
+ assert.equal(d.querySelector('.ctl-prefs select').value,'youtuber_rules');[...d.querySelectorAll('.ctl-choices button')].find(b=>b.textContent.includes('Pass & Play')).click();await new Promise(r=>setTimeout(r,10));
+ const select=[...d.querySelectorAll('.ctl-prefs label')].find(l=>l.textContent.startsWith('Army deployment')).querySelector('select');setSelect(w,select,'secret');await new Promise(r=>setTimeout(r,10));button(d,'Begin battle');await until(()=>d.querySelector('[aria-label="Secret deployment"]'));
+ const images=()=>[...d.querySelectorAll('.ctl-board image')].map(i=>i.getAttribute('href'));assert.equal(images().length,20);assert.ok(!images().some(s=>s.includes('/blue-')));
+ const point=(x,y)=>d.querySelectorAll('.ctl-board g[role=button]')[y*11+x];point(6,0).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));await new Promise(r=>setTimeout(r,10));point(4,0).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));await until(()=>point(4,0).getAttribute('aria-label').includes('Commander'));
+ button(d,'Confirm deployment');await until(()=>d.querySelector('[aria-label="Pass device for secret deployment"]'));assert.ok(d.querySelector('.ctl-play-layout').hasAttribute('inert'));
+ button(d,'Blue is ready');await until(()=>images().some(s=>s.includes('/blue-')));assert.ok(!images().some(s=>s.includes('/red-')));
+ button(d,'Confirm deployment');await until(()=>!d.querySelector('[aria-label="Secret deployment"]'));assert.equal(images().length,39);assert.match(point(4,0).getAttribute('aria-label'),/Commander/);assert.match(d.querySelector('.ctl-score b').textContent,/RED TO MOVE/);
+ button(d,'Concede');await until(()=>d.querySelector('[aria-label="Confirm concession"]'));button(d,'Keep playing');await until(()=>!d.querySelector('[aria-label="Confirm concession"]'));
+ assert.deepEqual(errors,[]);
 });

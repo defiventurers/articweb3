@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),{EventEmitt
 const {VERSION,legalActions,createInitialState}=require('../server/coTuLenhEngine.cjs'),{createCoTuLenhService}=require('../server/coTuLenhService.js');
 function fixture(){const rooms=new Map(),output=[];const service=createCoTuLenhService({rooms,send:()=>{},ok:(ws,id,type,payload)=>output.push({type,payload}),fail:(ws,id,message)=>output.push({type:'error',message}),saveRoomSafe:()=>{}});const ws=new EventEmitter();ws.readyState=1;return {rooms,call(type,payload={},version=VERSION){service.dispatch(ws,'request',type,{...payload,rulesVersion:version});return output.at(-1);}};}
 test('service refuses missing or older client versions before creating a room',()=>{
- const f=fixture();for(const v of [undefined,'co-tu-lenh-practice-0.3']){const r=f.call('ctl_room_create',{token:'a'.repeat(64)},v===undefined?null:v);assert.equal(r.type,'error');assert.match(r.message,/matching v0.4/);assert.equal(f.rooms.size,0);}
+ const f=fixture();for(const v of [undefined,'co-tu-lenh-practice-0.3']){const r=f.call('ctl_room_create',{token:'a'.repeat(64)},v===undefined?null:v);assert.equal(r.type,'error');assert.match(r.message,/matching v0.5/);assert.equal(f.rooms.size,0);}
 });
 test('server retains the mover seat during a compound turn and validates each continuation and end-turn',()=>{
  const f=fixture(),red='a'.repeat(64),blue='b'.repeat(64),created=f.call('ctl_room_create',{token:red,team:'red',mode:'ancientchess_2015_long'}),code=created.payload.room.roomCode;

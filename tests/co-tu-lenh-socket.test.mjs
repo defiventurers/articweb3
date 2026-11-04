@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {CoTuLenhClient} from '../frontend/src/games/co-tu-lenh/onlineClient.js';
 import {RULE_PROFILES,allLegalActions,applyAction} from '../frontend/src/games/co-tu-lenh/rules.js';
 
-test('production bootstrap serves all four Commander profiles over real sockets with shared adjudication',{timeout:30000},async t=>{
+test('production bootstrap serves all five Commander profiles over real sockets with shared adjudication',{timeout:30000},async t=>{
   const reserved=createServer();reserved.listen(0,'127.0.0.1');await once(reserved,'listening');
   const port=reserved.address().port;await new Promise(r=>reserved.close(r));
   const child=spawn(process.execPath,['-r','./allGamesBackendBootstrap.js','-e','require("./allGamesBackendBootstrap.js").loadAllGamesBackend()'],{
@@ -28,6 +28,7 @@ test('production bootstrap serves all four Commander profiles over real sockets 
     await blue.request('ctl_room_join',{roomCode:code,token:blueToken,team:'blue'});
     const {room}=await red.request('ctl_room_start',{roomCode:code,token:redToken});
     assert.equal(room.gameState.rulesProfile,mode);
+    await assert.rejects(red.request('spectate_room',{roomCode:code}),/private-room protocol/);
     await assert.rejects(blue.request('ctl_game_action',{roomCode:code,token:blueToken,revision:room.revision,action:{}}),/Not your turn/);
     await assert.rejects(red.request('ctl_game_action',{roomCode:code,token:redToken,revision:room.revision,action:{id:'invented'}}),/Illegal move/);
     const action=allLegalActions(room.gameState)[0];assert.ok(action);
@@ -37,4 +38,15 @@ test('production bootstrap serves all four Commander profiles over real sockets 
     const sync=await blue.request('ctl_room_sync',{roomCode:code,token:blueToken});
     assert.deepEqual(sync.room.gameState,next.room.gameState);
   }
+  // Secret setup must also survive the actual bootstrap and reject generic spectators.
+  const red=new CoTuLenhClient(`ws://127.0.0.1:${port}`),blue=new CoTuLenhClient(`ws://127.0.0.1:${port}`);clients.push(red,blue);
+  const rt='c'.repeat(64),bt='d'.repeat(64);
+  const made=await red.request('ctl_room_create',{token:rt,team:'red',mode:'youtuber_rules',deployment:'secret'}),code=made.room.roomCode;
+  await blue.request('ctl_room_join',{roomCode:code,token:bt,team:'blue'});let {room}=await red.request('ctl_room_start',{roomCode:code,token:rt});
+  assert.equal(room.status,'setup');assert.ok(room.gameState.pieces.filter(p=>p.team==='blue').every(p=>p.x===null));
+  await assert.rejects(blue.request('spectate_room',{roomCode:code}),/private-room protocol/);
+  ({room}=await red.request('ctl_setup_move',{roomCode:code,token:rt,revision:room.revision,action:{id:'red-01',x:4,y:0}}));
+  const hidden=await blue.request('ctl_room_sync',{roomCode:code,token:bt});assert.equal(hidden.room.gameState.pieces.find(p=>p.id==='red-01').x,null);
+  ({room}=await red.request('ctl_setup_ready',{roomCode:code,token:rt,revision:room.revision}));
+  const revealed=await blue.request('ctl_setup_ready',{roomCode:code,token:bt,revision:room.revision});assert.equal(revealed.room.status,'playing');assert.equal(revealed.room.gameState.pieces.find(p=>p.id==='red-01').x,4);
 });

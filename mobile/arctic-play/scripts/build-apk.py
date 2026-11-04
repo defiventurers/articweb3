@@ -43,7 +43,7 @@ staged=WORK/'assets';staged.mkdir()
 source_assets=APP/'assets'
 root_names={'index.html','app.js','app.css','bot.js','learn.js','fair-worker.js','shanshui-bot.js','fair-play.css','verifier.js','verify.html','startup.js','theme-init.js','THIRD_PARTY_NOTICES.txt','manifest.webmanifest','app-version.json','game-assets.json','game-assets-sw.js'}
 asset_manifest=json.loads((source_assets/'game-assets.json').read_text())
-allowed=root_names|{'art/co-tu-lenh/rules-profiles-v0.3.json'}|{item['url'] for item in asset_manifest['assets']}
+allowed=root_names|{'art/co-tu-lenh/rules-profiles-v0.3.json','art/co-tu-lenh/youtuber-rules-v1.json'}|{item['url'] for item in asset_manifest['assets']}
 for relative in sorted(allowed):
     parts=pathlib.PurePosixPath(relative).parts
     if relative.startswith('/') or '..' in parts or any(part.startswith('.') for part in parts):raise SystemExit('Invalid declared runtime file.')

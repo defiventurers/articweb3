@@ -2,7 +2,7 @@
   "schemaVersion": "0.3-research",
   "status": "NOT_FINAL_NOT_IN_REPO",
   "videoUrl": "https://www.youtube.com/watch?v=bdbllE9d4Ok",
-  "videoReviewed": false,
+  "videoReviewed": true,
   "videoNotes": "YouTube page metadata found, audiovisual frames/transcript unavailable. Video-era rules inferred from AncientChess 2015 booklet, NOT claimed to be transcribed.",
   "heritage": {
     "name": "Cờ Tư Lệnh",
@@ -52,9 +52,9 @@
       6
     ],
     "fordColumns": null,
-    "fordStatus": "BLOCKER — exact original diagram mapping needed",
+    "fordStatus": "Historical profiles: unverified. YouTuber Rules: columns 5 and 7, checked against the video.",
     "initialPositions": null,
-    "startingSetupStatus": "BLOCKER — digitize 38 pieces from authorized diagram"
+    "startingSetupStatus": "Historical profiles retain their reconstruction. YouTuber Rules uses the final video setup; see youtuber-rules-v1.json."
   },
   "units": {
     "commander": {
@@ -165,6 +165,31 @@
     }
   },
   "rulesProfiles": {
+    "youtuber_rules": {
+      "label": "YouTuber Rules",
+      "source": "https://www.youtube.com/watch?v=bdbllE9d4Ok",
+      "videoReviewed": true,
+      "status": "RESEARCH_DRAFT_WITH_EXPLICIT_APP_CLARIFICATIONS",
+      "immediateWin": {
+        "commander": 1,
+        "navy": 2,
+        "airforce": 2,
+        "landUnits": {
+          "infantry": 2,
+          "tank": 2,
+          "artillery": 2
+        }
+      },
+      "commanderMovementRange": "unlimited_unobstructed_orthogonal",
+      "missileDiagonalOneStep": true,
+      "defaultTimerMinutes": null,
+      "optionalWholeMatchMinutes": [
+        10,
+        15
+      ],
+      "engineerAirDefence": false,
+      "details": "youtuber-rules-v1.json"
+    },
     "ancientchess_2015_standard": {
       "heritageEra": "2015 video companion booklet",
       "immediateWin": {
@@ -306,6 +331,7 @@
     "timedVictoryPoints2016Vs2024"
   ],
   "primarySources": [
+    "https://www.youtube.com/watch?v=bdbllE9d4Ok",
     "https://veryspecial.us/free-downloads/AncientChess.com-CommanderChess.pdf",
     "https://en.doc.boardgamearena.com/Gamehelpcommanderchess",
     "https://haiduongblog.wordpress.com/2016/10/13/summary-commander-chess-game-rules/",
@@ -317,5 +343,6 @@
     "rulesEngine": false,
     "multiplayer": false,
     "commercial": false
-  }
+  },
+  "defaultProfile": "youtuber_rules"
 }

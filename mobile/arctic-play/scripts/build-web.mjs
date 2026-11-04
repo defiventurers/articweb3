@@ -44,6 +44,7 @@ await fs.mkdir(path.join(ctlArt,'board'),{recursive:true});
 await fs.cp(path.join(ctlSource,'pieces'),path.join(ctlArt,'pieces'),{recursive:true,filter:source=>!source.endsWith('.svg')});
 await fs.copyFile(path.join(ctlSource,'board/board-antarctic-11x12.webp'),path.join(ctlArt,'board/board-antarctic-11x12.webp'));
 await fs.copyFile(path.join(ctlSource,'rules-profiles-v0.3.json'),path.join(ctlArt,'rules-profiles-v0.3.json'));
+await fs.copyFile(path.join(ctlSource,'youtuber-rules-v1.json'),path.join(ctlArt,'youtuber-rules-v1.json'));
 const styles=['styles.css','startup.css','ice-theme.css','frostbound.css','archive-world.css','gathering.css','celebration.css','release-controls.css','learning-rules.css','compact-lobby.css','unlocks.css','chaturanga-fast.css','account-entry.css','board-calibration.css','discovery.css','visa-compact.css','visa-welcome.css'];
 const css=await Promise.all(styles.map(name=>fs.readFile(path.join(mobile,'src',name),'utf8')));
 for(const file of ['shared/antarctic-visa/visa.css','shared/fair-play/fair-play.css','frontend/src/games/shanshui-xiangqi/shanshui.css','frontend/src/games/co-tu-lenh/coTuLenh.css'])css.push(await fs.readFile(path.join(root,file),'utf8'));
@@ -51,7 +52,7 @@ css.push('.ctl-catalogue-entry{display:grid;grid-template-columns:minmax(100px,3
 css.push('.shanshui-catalogue-entry{display:grid;grid-template-columns:minmax(100px,35%) 1fr;gap:18px;align-items:center;margin:16px 0 24px;padding:16px;background:var(--surface,#102942);border:1px solid #a789ce77;border-radius:20px}.shanshui-catalogue-entry img{width:100%;border-radius:14px}.shanshui-catalogue-entry h2{font-size:22px;margin:6px 0}.shanshui-catalogue-entry p{font-size:14px;line-height:1.5}.shanshui-online-setup,.shanshui-online-summary{max-width:900px;margin:20px auto;padding:20px}.shanshui-online-setup form,.shanshui-online-summary form{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.shanshui-app input{font:inherit;max-width:100%;padding:10px;border:1px solid #aaa;border-radius:10px}.shanshui-online-seats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}');
 await fs.writeFile(path.join(destination,'app.css'),css.join('\n'));
 for(const file of ['startup.js','theme-init.js'])await fs.copyFile(path.join(mobile,'src',file),path.join(destination,file));
-await fs.writeFile(path.join(destination,'app-version.json'),JSON.stringify({version:release.versionName,versionCode:release.versionCode,capabilities:['dominion-teams-v1','browser-play-v1','fair-play-v1','shanshui-antarctic-v1','co-tu-lenh-practice-v04']}));
+await fs.writeFile(path.join(destination,'app-version.json'),JSON.stringify({version:release.versionName,versionCode:release.versionCode,capabilities:['dominion-teams-v1','browser-play-v1','fair-play-v1','shanshui-antarctic-v1','co-tu-lenh-practice-v05']}));
 const warm=JSON.parse(await fs.readFile(path.join(destination,'game-assets.json')));
 for(const name of [...newArt,...(await fs.readdir(path.join(art,'pieces'))).map(n=>'pieces/'+n)]){const url='art/shanshui/'+name;warm.assets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});}
 warm.assets.push({url:'shanshui-bot.js',bytes:(await fs.stat(path.join(destination,'shanshui-bot.js'))).size});

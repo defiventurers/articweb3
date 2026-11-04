@@ -19,7 +19,7 @@ export class CoTuLenhClient {
         if(['ctl_ack','ctl_room_state'].includes(msg.type)&&msg.payload?.room){
           const room=msg.payload.room;
           if(room.gameId!=='co-tu-lenh'||room.rulesVersion!==VERSION||room.gameState?.rulesVersion!==VERSION){
-            const error=Error('This lobby uses incompatible Commander Chess rules. A matching v0.4 backend is required.');
+            const error=Error('This lobby uses incompatible Commander Chess rules. A matching v0.5 backend is required.');
             for(const [id,item]of this.pending){clearTimeout(item.timer);item.reject(error);this.pending.delete(id);}
             ws.close();return;
           }
