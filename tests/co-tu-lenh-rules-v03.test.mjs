@@ -10,13 +10,13 @@ const make=(profile,pieces,turn='red')=>({rulesVersion:VERSION,mode:profile,rule
 const force=(state,id,type)=>legalActions(state,id).filter(a=>a.kind===type);
 test('profiles match uploaded research catalog and retain 11x12, 38-piece inventory',()=>{
   assert.deepEqual(Object.keys(RULE_PROFILES).sort(),Object.keys(ruleJson.rulesProfiles).sort());
-  assert.equal(DEFAULT_PROFILE,'ancientchess_2015_standard');
+  assert.equal(DEFAULT_PROFILE,'youtuber_rules');
   for(const id of Object.keys(RULE_PROFILES)){
     const game=createInitialState(id);
     assert.equal(game.rulesProfile,id);
     assert.equal(game.pieces.length,38);
-    assert.equal(game.setupVerified,false);
-    assert.equal(game.fordsVerified,false);
+    assert.equal(game.setupVerified,id==='youtuber_rules');
+    assert.equal(game.fordsVerified,id==='youtuber_rules');
     assert.equal(ruleJson.board.initialPositions,null);
     assert.equal(ruleJson.board.fordColumns,null);
   }
@@ -74,7 +74,7 @@ test('air-defence overlay can be toggled and maps to authoritative engine covera
 test('HQ blocks weak capturers while strong eligible attackers can target sheltered Commander',()=>{
   const army=[piece('a','infantry','red',5,4),piece('e','tank','red',7,5),piece('h','headquarters','blue',5,5),piece('c','commander','blue',5,5,{carrier:'h'}),piece('r','commander','red',2,0)];
   const s=make('ancientchess_2015_long',army);
-  const infantry=legalActions(s,'a').find(a=>a.x===5&&a.y===5&&a.kind==='capture');
+  const infantry=legalActions(s,'a').find(a=>a.x===5&&a.y===5&&a.kind==='fire');
   assert.equal(infantry?.targetId,'h');
   // Tank must be within range and on same line to target HQ+Commander.
   s.pieces[0].x=4;s.pieces[0].y=5; s.pieces[1].x=5;s.pieces[1].y=3;

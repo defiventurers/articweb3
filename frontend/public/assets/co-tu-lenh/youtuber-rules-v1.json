@@ -1,0 +1,151 @@
+{
+  "id": "youtuber_rules",
+  "label": "YouTuber Rules",
+  "engineVersion": "co-tu-lenh-practice-0.5",
+  "status": "Research Draft",
+  "source": {
+    "url": "https://www.youtube.com/watch?v=bdbllE9d4Ok",
+    "uploadedVideoSha256": "70f21ba5da75cb76c5379a4fe0b6b249a01ef179cc7727dba8007a0a2b4ff495",
+    "review": "Full narration and visual demonstrations reviewed, including the Blue Infantry correction at 28:18–28:22."
+  },
+  "board": {
+    "columns": 11,
+    "rows": 12,
+    "intersections": 132,
+    "rowZeroAt": "bottom",
+    "redSetup": [
+      [
+        "commander",
+        6,
+        0
+      ],
+      [
+        "navy",
+        1,
+        1
+      ],
+      [
+        "antiair",
+        4,
+        3
+      ],
+      [
+        "headquarters",
+        5,
+        1
+      ],
+      [
+        "antiair",
+        8,
+        3
+      ],
+      [
+        "headquarters",
+        7,
+        1
+      ],
+      [
+        "aircraft",
+        4,
+        1
+      ],
+      [
+        "missile",
+        6,
+        2
+      ],
+      [
+        "aircraft",
+        8,
+        1
+      ],
+      [
+        "navy",
+        2,
+        3
+      ],
+      [
+        "tank",
+        5,
+        3
+      ],
+      [
+        "engineer",
+        3,
+        4
+      ],
+      [
+        "engineer",
+        9,
+        4
+      ],
+      [
+        "tank",
+        7,
+        3
+      ],
+      [
+        "infantry",
+        2,
+        4
+      ],
+      [
+        "artillery",
+        3,
+        2
+      ],
+      [
+        "militia",
+        6,
+        4
+      ],
+      [
+        "artillery",
+        9,
+        2
+      ],
+      [
+        "infantry",
+        10,
+        4
+      ]
+    ],
+    "blueSetup": "same x; y = 11 - red y",
+    "fordColumns": [
+      5,
+      7
+    ],
+    "fordRows": [
+      5,
+      6
+    ]
+  },
+  "appClarifications": [
+    "Red starts. The source gives no first-player procedure.",
+    "Eligible cargo may board without an invented three-piece or per-type quota. The finite 19-piece army bounds any stack. Every descendant must be eligible for its parent and the root carrier.",
+    "Only movement onto the carrier boards. Carrier pickup and passenger drop-and-return remain available in earlier profiles but are not video-confirmed actions here.",
+    "Every original stack member acts at most once per turn. Navy may instead use each of its sea and land weapons once; ranges are measured from its current position after the first shot. Newly boarding ends the turn.",
+    "Navy can pass occupied water points as in the existing engine; the video does not separately settle this obstruction case.",
+    "Passengers remaining aboard are lost when their carrier is destroyed. Interception losses score for the defending side. Destroying HQ with a weak attacker leaves its Commander alive and the attacker in place.",
+    "Last defender means the last living mobile army unit other than Commander or Headquarters; passengers count.",
+    "Hero Artillery gains one step under the general bonus. Commander keeps the existing general Hero bonus; the video does not demonstrate its special case.",
+    "Ordinary flight that encounters defended airspace is intercepted. A defended destination permits the shown successful sacrifice, even when an earlier zone was crossed. Hero Aircraft is immune.",
+    "The Commander must be safe after each component action. Automatic forced capture is proved only within a bounded full-turn escape search; when uncertain play continues and players can concede an agreed result.",
+    "Simultaneous division elimination gives the acting side its completed victory before its own division loss, retaining the existing engine ordering.",
+    "The optional 10/15-minute clock is for the whole match. Tied points draw. The 200 Commander-mate bonus requires a strict captured-point lead; no Commander 100, Hero premium or general mate bonus is added.",
+    "Secret deployment uses empty, unstacked intersections within each side’s five home rows, with terrain restrictions; both armies reveal only after both confirm."
+  ],
+  "videoCues": {
+    "commander": "0:43–2:10",
+    "headquarters": "11:04–12:11",
+    "carriers": "12:15–14:48",
+    "dualNavy": "14:48–16:12",
+    "compoundTurns": "16:13–17:06",
+    "artilleryJump": "17:06–17:35",
+    "defence": "5:29–7:41; 17:35–17:56",
+    "heroes": "17:56–22:32",
+    "victory": "22:35–24:15",
+    "scoring": "24:15–26:12",
+    "setup": "26:15–28:22"
+  }
+}

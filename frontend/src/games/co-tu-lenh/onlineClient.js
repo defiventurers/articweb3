@@ -1,3 +1,4 @@
+import { VERSION } from './rules.js';
 const key=code=>`antarctic-ctl-seat:${code}`;
 export const newSeatToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),x=>x.toString(16).padStart(2,'0')).join('');
 export const getSeat=code=>{try{const x=JSON.parse(localStorage.getItem(key(code))||'null');return x?.roomCode===code&&/^[a-f0-9]{64}$/.test(x.token)?x:null;}catch{return null;}};
@@ -15,6 +16,14 @@ export class CoTuLenhClient {
       ws.onerror=()=>{clearTimeout(timeout);reject(Error('Could not connect to game lobby'));};
       ws.onclose=()=>{clearTimeout(timeout);if(this.socket===ws){this.socket=null;this.onStatus(false);}for(const [id,item]of this.pending){clearTimeout(item.timer);item.reject(Error('Lobby disconnected'));this.pending.delete(id);}reject(Error('Lobby disconnected'));};
       ws.onmessage=e=>{let msg;try{msg=JSON.parse(e.data);}catch{return;}
+        if(['ctl_ack','ctl_room_state'].includes(msg.type)&&msg.payload?.room){
+          const room=msg.payload.room;
+          if(room.gameId!=='co-tu-lenh'||room.rulesVersion!==VERSION||room.gameState?.rulesVersion!==VERSION){
+            const error=Error('This lobby uses incompatible Commander Chess rules. A matching v0.5 backend is required.');
+            for(const [id,item]of this.pending){clearTimeout(item.timer);item.reject(error);this.pending.delete(id);}
+            ws.close();return;
+          }
+        }
         const item=this.pending.get(msg.requestId);if(item){clearTimeout(item.timer);this.pending.delete(msg.requestId);msg.type==='error'?item.reject(Error(msg.payload?.message||'Request rejected')):item.resolve(msg.payload);}
         this.onPacket(msg);
       };
@@ -23,7 +32,7 @@ export class CoTuLenhClient {
   async request(type,payload={}){
     const ws=await this.connect();const id=`ctl-${++this.serial}`;
     return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{this.pending.delete(id);reject(Error('The lobby did not confirm the operation'));},12000);
-      this.pending.set(id,{resolve,reject,timer});ws.send(JSON.stringify({type,requestId:id,payload}));
+      this.pending.set(id,{resolve,reject,timer});ws.send(JSON.stringify({type,requestId:id,payload:{...payload,rulesVersion:VERSION}}));
     });
   }
   close(){const ws=this.socket;this.socket=null;ws?.close();for(const [id,p]of this.pending){clearTimeout(p.timer);p.reject(Error('Session closed'));this.pending.delete(id);}this.onPacket=()=>{};this.onStatus=()=>{};}

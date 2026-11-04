@@ -94,7 +94,7 @@ async function saveRoom(room) {
 
 async function loadRooms() {
   if (!(await initRoomStore())) return [];
-  const result = await getPool().query(`SELECT room_json, created_at FROM rooms WHERE status IN ('waiting','playing','finished','cancelled') ORDER BY updated_at DESC LIMIT 500`);
+  const result = await getPool().query(`SELECT room_json, created_at FROM rooms WHERE status IN ('waiting','setup','playing','finished','cancelled') ORDER BY updated_at DESC LIMIT 500`);
   return result.rows.map(rowToRoom).filter(Boolean).map(sanitizeRoom);
 }
 

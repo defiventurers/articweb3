@@ -18,7 +18,7 @@ test('mobile screen is routed separately from the seven original halls',()=>{
   assert.equal((games.match(/\{ id:\s*'((shogi)|(sannin)|(sanguo)|(sanyou)|(yanyi)|(xiangqi))'/g)||[]).length,6);
 });
 
-test('game uses same v0.3 client and server rules, with both defence overlays',()=>{
+test('game uses same v0.5 client and server rules, with both defence overlays',()=>{
   const wrapper=source('mobile/arctic-play/src/CoTuLenhMobile.jsx');
   const app=source('frontend/src/games/co-tu-lenh/CoTuLenhApp.jsx');
   const rules=source('frontend/src/games/co-tu-lenh/rules.js');
@@ -48,10 +48,10 @@ test('Android version is monotonic and signing identity unchanged',()=>{
   const manifest=source('mobile/arctic-play/android/app/src/main/AndroidManifest.xml');
   const script=source('mobile/arctic-play/scripts/build-apk.py');
   assert.equal(release.packageName,'xyz.arcticdominion.play');
-  assert.equal(release.versionName,'5.7.1');
-  assert.equal(release.versionCode,80);
-  assert.match(manifest,/android:versionCode="80"/);
-  assert.match(manifest,/android:versionName="5\.7\.1"/);
+  assert.equal(release.versionName,'5.7.3');
+  assert.equal(release.versionCode,82);
+  assert.match(manifest,/android:versionCode="82"/);
+  assert.match(manifest,/android:versionName="5\.7\.3"/);
   assert.match(script,/Original signing files are missing/);
   assert.match(script,/Cờ Tư Lệnh/);
 });

@@ -36,7 +36,9 @@ test('Phone interface: seven games, all offline boards, legal taps, English rule
     doc.querySelector(`[data-cell="${action.target}"]`).dispatchEvent(new window.MouseEvent('click',{bubbles:true}));await settle();
     if(game.id==='dominion'){button('Use die 1 (1)').click();await settle();}
     if(doc.querySelector('[aria-label="Choose your move"]')){button(action.promote?'Promote':'Keep unpromoted').click();await settle();}
-    const next=engine.apply(game.id,state,action.id);assert.match(doc.querySelector('.turn-line').textContent,new RegExp(engine.seatName(game.id,engine.turn(next))));
+    const next=engine.apply(game.id,state,action.id),expectedTurn=engine.seatName(game.id,engine.turn(next));
+    await waitFor(()=>doc.querySelector('.turn-line')?.textContent.includes(expectedTurn),`${game.id} accepted move (${doc.querySelector('.selection-hint')?.textContent}; ${doc.querySelector('.toast')?.textContent})`);
+    assert.match(doc.querySelector('.turn-line').textContent,new RegExp(expectedTurn));
     doc.querySelector('[aria-label="Read game rules"]').click();await settle();await waitFor(()=>doc.querySelector('.full-rules-guide'),'full guide');assert.ok(doc.querySelector('.rule-health'));assert.ok(!/[\u4e00-\u9fff]/.test(doc.querySelector('.full-rules-guide').textContent));
     window.arcticBack();await settle();doc.querySelector('[aria-label="Back to games"]').click();await settle();button('Games').click();await settle();
   }

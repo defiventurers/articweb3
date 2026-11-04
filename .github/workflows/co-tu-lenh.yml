@@ -1,0 +1,26 @@
+name: Co Tu Lenh rules and private rooms
+on:
+  pull_request:
+    paths: ['frontend/src/games/co-tu-lenh/**', 'frontend/public/assets/co-tu-lenh/**', 'frontend/scripts/build-co-tu-lenh-engine.cjs', 'server/coTuLenh*', 'tests/co-tu-lenh*', '.github/workflows/co-tu-lenh.yml']
+  push:
+    branches: [main]
+    paths: ['frontend/src/games/co-tu-lenh/**', 'frontend/public/assets/co-tu-lenh/**', 'frontend/scripts/build-co-tu-lenh-engine.cjs', 'server/coTuLenh*', 'tests/co-tu-lenh*', '.github/workflows/co-tu-lenh.yml']
+permissions:
+  contents: read
+jobs:
+  rules-and-rooms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: server
+      - run: node frontend/scripts/build-co-tu-lenh-engine.cjs --check
+      - run: npm run test:co-tu-lenh
+        working-directory: frontend
+      - run: node --test tests/co-tu-lenh-socket.test.mjs
