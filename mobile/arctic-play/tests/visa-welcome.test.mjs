@@ -27,30 +27,30 @@ function fixture(t,{manifestFails=false,artFails=false,authFails=false}={}){
  return {w:dom.window,images,files,errors,get opened(){return opened;},get manifestRequests(){return manifestRequests;},get authPending(){return !!releaseAuth;},completeAuth:()=>releaseAuth()};
 }
 test('welcome uses the supplied artwork and warms all assets while sign-in is still pending',async t=>{
- const f=fixture(t),d=f.w.document;await until(()=>d.querySelector('.visa-art-signin'));
- assert.equal(d.querySelector('.visa-art-image').getAttribute('src'),'art/visa-welcome-v1/screen.png');
- d.querySelector('.visa-art-signin').click();await until(()=>f.authPending);assert.equal(f.opened,undefined);assert.equal(d.querySelector('.visa-art-signin').getAttribute('aria-label'),'Opening sign-in…');assert.ok(d.querySelector('.visa-art-busy'));
- await until(()=>d.querySelector('.visa-art-loading').textContent==='Games ready');
+ const f=fixture(t),d=f.w.document;await until(()=>d.querySelector('.passport-primary'));
+ assert.equal(d.querySelector('.passport-entry-hero img').getAttribute('src'),'art/passport-landing-v1/hosts/passport-polly-welcome.webp');
+ d.querySelector('.passport-primary').click();await until(()=>f.authPending);assert.equal(f.opened,undefined);assert.equal(d.querySelector('.passport-primary').getAttribute('aria-busy'),'true');assert.match(d.querySelector('.passport-primary').textContent,/Opening sign-in/);
+ await until(()=>d.querySelector('.passport-entry-footer [role=status]').textContent==='Games ready');
  assert.equal(f.images.length,4);assert.equal(f.files.length,3);assert.ok(f.files.some(p=>p.endsWith('/fair-worker.js')));
  f.completeAuth();await until(()=>f.opened);assert.equal(f.manifestRequests,1);assert.deepEqual(f.errors,[]);
 });
 test('recovery and returning to welcome share the in-flight asset queue',async t=>{
- const f=fixture(t),d=f.w.document;await until(()=>d.querySelector('.visa-art-recovery'));
- d.querySelector('.visa-art-recovery').click();await until(()=>d.querySelector('#entry-recovery'));
+ const f=fixture(t),d=f.w.document;await until(()=>d.querySelector('.passport-secondary'));
+ d.querySelector('.passport-secondary').click();await until(()=>d.querySelector('#entry-recovery'));
  [...d.querySelectorAll('button')].find(b=>b.textContent==='Back to sign in').click();
- await until(()=>d.querySelector('.visa-art-loading')?.textContent==='Games ready');
+ await until(()=>d.querySelector('.passport-entry-footer [role=status]')?.textContent==='Games ready');
  assert.equal(f.images.length,4);assert.equal(f.manifestRequests,1);assert.deepEqual(f.errors,[]);
 });
 test('a failed manifest retries on resume and artwork failure never blocks sign-in',async t=>{
  const f=fixture(t,{manifestFails:true,artFails:true}),d=f.w.document;
  await until(()=>f.manifestRequests===1);f.w.dispatchEvent(new f.w.Event('pageshow'));
- await until(()=>f.manifestRequests===2);await until(()=>d.querySelector('.visa-art-loading').textContent.includes('Artwork will retry'));
- d.querySelector('.visa-art-signin').click();await until(()=>f.authPending);f.completeAuth();await until(()=>f.opened);
- await until(()=>d.querySelector('.visa-art-signin').disabled===false);assert.equal(f.images.length,4);assert.deepEqual(f.errors,[]);
+ await until(()=>f.manifestRequests===2);await until(()=>d.querySelector('.passport-entry-footer [role=status]').textContent.includes('Artwork will retry'));
+ d.querySelector('.passport-primary').click();await until(()=>f.authPending);f.completeAuth();await until(()=>f.opened);
+ await until(()=>d.querySelector('.passport-primary').disabled===false);assert.equal(f.images.length,4);assert.deepEqual(f.errors,[]);
 });
 test('sign-in errors stay visible and retryable over the welcome artwork',async t=>{
- const f=fixture(t,{authFails:true}),d=f.w.document;await until(()=>d.querySelector('.visa-art-signin'));
- d.querySelector('.visa-art-signin').click();await until(()=>f.authPending);f.completeAuth();
+ const f=fixture(t,{authFails:true}),d=f.w.document;await until(()=>d.querySelector('.passport-primary'));
+ d.querySelector('.passport-primary').click();await until(()=>f.authPending);f.completeAuth();
  await until(()=>d.querySelector('[role=alert]'));assert.match(d.querySelector('[role=alert]').textContent,/temporarily unavailable/);
- assert.equal(d.querySelector('.visa-art-signin').disabled,false);assert.ok(d.querySelector('.visa-art-recovery'));assert.deepEqual(f.errors,[]);
+ assert.equal(d.querySelector('.passport-primary').disabled,false);assert.ok(d.querySelector('.passport-secondary'));assert.deepEqual(f.errors,[]);
 });

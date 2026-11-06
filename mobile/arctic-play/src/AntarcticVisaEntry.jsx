@@ -1,3 +1,4 @@
+import {VisaLandingView} from './VisaLandingView.jsx';
 import React,{useEffect,useRef,useState} from 'react';
 import {PassportCard} from '../../../shared/antarctic-visa/AntarcticVisa.jsx';
 import {deliveryLabel} from '../../../shared/antarctic-visa/model.js';
@@ -29,23 +30,7 @@ export function AntarcticVisaEntry({access,halls,visa,onProfile,assetStatus}){
  if(recover&&!access.accountId)return <AccountEntry compact access={access} halls={halls} forceSignIn initialMode="recover" onClose={()=>setRecover(false)}/>;
  if(visa.record&&(!access.allowed||access.consentNeeded))return <AccountEntry compact access={access} halls={halls}/>;
  const progress=assetStatus?.total?assetStatus.pending===0?(assetStatus.failed?'Artwork will retry automatically.':'Games ready'):`Loading games in the background · ${Math.floor(assetStatus.percent/10)*10}%`:'Preparing games in the background…';
- return <main className="visa-art-screen" data-testid="antarctic-visa" data-visa-error={error?'true':undefined}>
-  <h1 className="visa-art-sr">Get your Antarctic visa.</h1>
-  <p className="visa-art-sr" id="visa-welcome-description">Sign in with one of your accounts. A game wallet is created automatically for you, so you can play, collect, and enjoy board games in the Antarctic. A game-world passport. No real travel document.</p>
-  <div className="visa-art-frame">
-   <img className="visa-art-image" src="art/visa-welcome-v1/screen.png" width="864" height="1536" fetchPriority="high" decoding="async" alt="Antarctic Gaming Co. welcomes you with Abster, Retsba, Pengu and Polly, an Antarctic passport and an icy board-game table."/>
-   {!access.accountId?<>
-    <button type="button" className="visa-art-action visa-art-signin cv-google" aria-label={busy?'Opening sign-in…':'Sign in or create account'} aria-describedby="visa-welcome-description" aria-busy={busy} disabled={busy} onClick={signIn}><span className={busy?'visa-art-busy':'visa-art-sr'}>{busy?'Opening sign-in…':'Sign in or create account'}</span></button>
-    <button type="button" className="visa-art-action visa-art-recovery cv-link" disabled={busy} onClick={()=>setRecover(true)}><span className="visa-art-sr">Use a recovery code</span></button>
-    {error&&<p className="visa-art-notice" role="alert">{error}</p>}
-   </>:<section className="visa-art-account-panel" aria-label="Visa setup">
-    <h2>Preparing your Antarctic visa…</h2>
-    {error?<><p role="alert">{error}</p><button type="button" disabled={busy} onClick={signIn}>Connect your game wallet</button><button type="button" disabled={busy} onClick={()=>setRetry(v=>v+1)}>Retry visa setup</button></>:<p role="status">Getting your seat ready…</p>}
-    <button type="button" disabled={busy} onClick={signOutCloud}>Use another account</button>
-   </section>}
-   <p className="visa-art-loading" role="status" aria-live="polite" aria-atomic="true">{progress}</p>
-  </div>
- </main>;
+ return <VisaLandingView accountId={access.accountId} busy={busy} error={error} progress={progress} onSignIn={signIn} onRecover={()=>setRecover(true)} onRetry={()=>setRetry(v=>v+1)} onSignOut={signOutCloud}/>;
 }
 
 export function VisaPassportSummary({visa}){
