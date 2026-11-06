@@ -168,7 +168,13 @@ public final class MainActivity extends Activity {
             runOnUiThread(()->{try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)).addCategory(Intent.CATEGORY_BROWSABLE));}catch(Exception e){Toast.makeText(MainActivity.this,"A browser is needed to open checkout.",Toast.LENGTH_LONG).show();}});return true;
         }
         @JavascriptInterface public String getInstallationId(){android.content.SharedPreferences prefs=getSharedPreferences("ak-install-v1",MODE_PRIVATE);String id=prefs.getString("id",null);if(id==null){id=java.util.UUID.randomUUID().toString();prefs.edit().putString("id",id).commit();}return id;}
-        @JavascriptInterface public boolean openAuth(String url){if(!AuthBrowserUrl.allowed(url))return false;runOnUiThread(()->{try{authInProgress=true;startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)).addCategory(Intent.CATEGORY_BROWSABLE));}catch(Exception e){authInProgress=false;Toast.makeText(MainActivity.this,"A browser is needed to sign in.",Toast.LENGTH_LONG).show();}});return true;}
+        @JavascriptInterface public boolean openAuth(String url){
+            if(!AuthBrowserUrl.allowed(url))return false;
+            final Intent tab=AuthTabIntent.create(MainActivity.this,url);
+            if(tab==null)return false;
+            runOnUiThread(()->{try{authInProgress=true;startActivity(tab);}catch(Exception e){authInProgress=false;web.evaluateJavascript("window.dispatchEvent(new CustomEvent('arctic-auth-error',{detail:{message:'Sign-in could not open. Try again or use recovery.'}}))",null);}});
+            return true;
+        }
         @JavascriptInterface public String getCloudSession(){ return new CloudVault(MainActivity.this).get(); }
         @JavascriptInterface public boolean setCloudSession(String value){ return new CloudVault(MainActivity.this).put(value); }
         @JavascriptInterface public String getAppInfo() {
