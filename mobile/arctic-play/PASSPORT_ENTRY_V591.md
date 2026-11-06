@@ -7,7 +7,7 @@ Reviewed repository: `main` at `d83f6d4de2c12955c96c8a807d3af02a5cce8819`.
 - A bounded, light icy entry page with the supplied logo and welcoming Polly, real accessible sign-in/recovery buttons, visible errors and actual background-loading status.
 - Android opens the existing allowlisted portal using a browser-owned Custom Tab attached to the app task, retaining the PKCE ticket callback. No embedded OAuth WebView and no automatic full-browser fallback when a Custom Tabs provider is missing.
 - Hosted modal opens automatically, uses matching presentation overrides and attempts automatic app return after verification; manual return remains available where browsers require a gesture.
-- Only build-hashed public SDK bundles become immutable-cacheable. Auth HTML, attempts, identity data, APIs and errors remain uncached. Existing dashboard login-method/security settings remain authoritative.
+- Only build-hashed public SDK bundles become immutable-cacheable. JavaScript/CSS/WASM are gzip-compressed at build time and served with Accept-Encoding negotiation, cutting the current 82 public build files from 6,455,841 to 1,903,255 bytes. Auth HTML, attempts, identity data, APIs and errors remain uncached. Existing dashboard login-method/security settings remain authoritative.
 - Existing game engines, workers, modes and shipped art remain preserved.
 
 ## Important source boundary
