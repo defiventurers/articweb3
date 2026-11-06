@@ -12,6 +12,7 @@ import struct
 import subprocess
 import tempfile
 import zipfile
+from apk_layout import verify_apk_layout
 
 BASE_SHA256='1f25ab4abd8578b399611e0f1ac66e801443c661235dd57c81a2c2788734ae6e'
 CERT_SHA256='20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37'
@@ -114,11 +115,13 @@ def main():
                 if file.is_file():
                     out.write(file,'assets/'+file.relative_to(assets).as_posix())
         run(args.build_tools/'zipalign','-f','4',unsigned,aligned)
+        verify_apk_layout(aligned)
         run(args.java,'-jar',signer,'sign','--ks',args.keystore,'--ks-key-alias','arctic-play','--ks-pass','file:'+str(args.password_file),'--v1-signing-enabled','false','--v2-signing-enabled','true','--v3-signing-enabled','true','--v4-signing-enabled','false','--out',final,aligned)
     report=run(args.java,'-jar',signer,'verify','--verbose','--print-certs',final)
     if CERT_SHA256 not in report:
         raise SystemExit('Unexpected output signing certificate')
     run(args.build_tools/'zipalign','-c','4',final)
+    verify_apk_layout(final)
     with zipfile.ZipFile(args.base_apk) as base,zipfile.ZipFile(final) as update:
         retained=[n for n in base.namelist() if not n.startswith(('META-INF/','assets/')) and n!='AndroidManifest.xml']
         if any(base.read(n)!=update.read(n) for n in retained):

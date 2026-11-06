@@ -6,6 +6,7 @@ outside the repository; keep it to sign future updates with the same identity.
 """
 import argparse, hashlib, json, os, pathlib, secrets, shutil, subprocess, tempfile, zipfile
 import xml.etree.ElementTree as ET
+from apk_layout import verify_apk_layout
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--sdk',required=True,type=pathlib.Path)
@@ -63,6 +64,7 @@ run(args.jdk/'bin/java','-cp',d8,'com.android.tools.r8.D8','--lib',platform,'--m
 with zipfile.ZipFile(base,'a',zipfile.ZIP_DEFLATED) as archive:
     for file in sorted(dex.glob('*.dex')):archive.write(file,file.name)
 aligned=WORK/'aligned.apk';run(align,'-f','-p','4',base,aligned)
+verify_apk_layout(aligned)
 if not args.keystore or not args.password_file:
     raise SystemExit('Supply the original --keystore and --password-file; update builds never create a new app identity.')
 key=args.keystore;password=args.password_file
@@ -71,6 +73,7 @@ apk=OUTPUT/f'AntarcticKingdoms-v{VERSION}.apk'
 run(signer,'sign','--ks',key,'--ks-key-alias','arctic-play','--ks-pass',f'file:{password}','--out',apk,aligned)
 run(signer,'verify','--verbose','--print-certs',apk)
 run(align,'-c','-p','4',apk)
+verify_apk_layout(apk)
 digest=hashlib.sha256(apk.read_bytes()).hexdigest()
 (OUTPUT/f'AntarcticKingdoms-v{VERSION}.apk.sha256').write_text(f'{digest}  {apk.name}\n')
 legacy=OUTPUT/f'ArcticPlay-v{VERSION}.apk'

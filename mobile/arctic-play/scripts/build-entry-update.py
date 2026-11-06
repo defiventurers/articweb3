@@ -6,8 +6,11 @@ and native shell, retaining every engine/worker and the rest of the shipped JS.
 """
 from pathlib import Path
 import argparse,hashlib,json,re,subprocess,zipfile,shutil
+from apk_layout import verify_apk_layout
 p=argparse.ArgumentParser();p.add_argument('--baseline',type=Path,required=True);p.add_argument('--sdk',type=Path,required=True);p.add_argument('--esbuild',type=Path,required=True);p.add_argument('--keystore',type=Path,required=True);p.add_argument('--password-file',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
 root=Path(__file__).resolve().parents[1];work=root/'build/entry-v591';work.mkdir(parents=True,exist_ok=True);a.output.mkdir(parents=True,exist_ok=True)
+release=json.loads((root/'release-config.json').read_text())
+version=release['versionName'];version_code=release['versionCode']
 assert hashlib.sha256(a.baseline.read_bytes()).hexdigest()=='3a8454da624118eba8605a42e9341095e260b5a251b0bf4df20f8599d6462d36','Wrong baseline APK'
 def run(*args):subprocess.run([str(x) for x in args],check=True)
 def tool(name):return next(a.sdk.rglob(name)).resolve()
@@ -44,25 +47,27 @@ artroot=root.parents[1]/'frontend/public/assets/passport-landing-v1'
 new=[]
 for f in sorted(artroot.rglob('*.webp')):
  url='art/passport-landing-v1/'+str(f.relative_to(artroot));files['assets/'+url]=f.read_bytes();new.append({'url':url,'bytes':f.stat().st_size})
-meta=json.loads(files['assets/app-version.json']);meta.update(version='5.9.1',versionCode=89);meta['capabilities'].append('auth-custom-tabs-v1');files['assets/app-version.json']=json.dumps(meta).encode()
-warm=json.loads(files['assets/game-assets.json']);warm['version']='5.9.1';warm['assets']+=new
+meta=json.loads(files['assets/app-version.json']);meta.update(version=version,versionCode=version_code);meta['capabilities'].append('auth-custom-tabs-v1');files['assets/app-version.json']=json.dumps(meta).encode()
+warm=json.loads(files['assets/game-assets.json']);warm['version']=version;warm['assets']+=new
 for entry in warm['assets']:entry['bytes']=len(files['assets/'+entry['url']])
 files['assets/game-assets.json']=json.dumps(warm).encode()
-files['assets/game-assets-sw.js']=files['assets/game-assets-sw.js'].replace(b'ak-public-game-art-bundled-5.9.0',b'ak-public-game-art-bundled-5.9.1')
+files['assets/game-assets-sw.js']=files['assets/game-assets-sw.js'].replace(b'ak-public-game-art-bundled-5.9.0',('ak-public-game-art-bundled-'+version).encode())
 raw=work/'unsigned.apk'
 with zipfile.ZipFile(raw,'w',zipfile.ZIP_DEFLATED) as z:
- for n,data in files.items():z.writestr(n,data)
+ for n,data in files.items():z.writestr(n,data,compress_type=zipfile.ZIP_STORED if n=='resources.arsc' else zipfile.ZIP_DEFLATED)
 aligned=work/'aligned.apk';run(align,'-f','-p','4',raw,aligned)
-apk=a.output/'AntarcticKingdoms-v5.9.1.apk'
+verify_apk_layout(aligned)
+apk=a.output/f'AntarcticKingdoms-v{version}.apk'
 run(signer,'sign','--ks',a.keystore,'--ks-key-alias','arctic-play','--ks-pass','file:'+str(a.password_file),'--out',apk,aligned)
 def certificate(path):
  s=subprocess.check_output([str(signer),'verify','--print-certs',str(path)],text=True)
  return re.search('certificate SHA-256 digest: ([0-9a-f]+)',s).group(1)
 assert certificate(apk)==certificate(a.baseline),'Signing certificate changed'
 run(signer,'verify','--verbose',apk);run(align,'-c','-p','4',apk)
+layout=verify_apk_layout(apk)
 with zipfile.ZipFile(a.baseline) as z:
  art=[n for n in z.namelist() if n.startswith('assets/art/') and not n.endswith('/')]
  assert all(files[n]==z.read(n) for n in art)
  assert all(files[n]==z.read(n) for n in z.namelist() if n.endswith('.js') and n!='assets/app.js' and n!='assets/game-assets-sw.js')
-report={'version':'5.9.1','versionCode':89,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'bytes':apk.stat().st_size,'certificate':certificate(apk),'original_art_preserved':len(art),'preload_entries':len(warm['assets']),'new_art':new,'baseline_js_only_change':'Pure entry render; original account hooks, all games, discovery and workers retained','auth_surface':'Browser-owned Custom Tab in app task; not an embedded WebView or fully native Para SDK','server_optimizations':'Separate source patch; require server deployment','device_auth_tested':False}
-(a.output/'v5.9.1-verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
+report={'version':version,'versionCode':version_code,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'bytes':apk.stat().st_size,'certificate':certificate(apk),'original_art_preserved':len(art),'preload_entries':len(warm['assets']),'new_art':new,'baseline_js_only_change':'Pure entry render; original account hooks, all games, discovery and workers retained','auth_surface':'Browser-owned Custom Tab in app task; not an embedded WebView or fully native Para SDK','server_optimizations':'Separate source patch; require server deployment','device_auth_tested':False,'layout':layout}
+(a.output/f'v{version}-verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
