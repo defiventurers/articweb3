@@ -20,16 +20,16 @@ function fixture(t,{manifestFails=false,artFails=false,authFails=false}={}){
    if(u.pathname.endsWith('/game-assets.json')){manifestRequests++;if(manifestFails){manifestFails=false;throw Error('Offline manifest');}return ok({assets:urls.map(url=>({url,bytes:1}))});}
    if(urls.some(url=>u.pathname.endsWith('/'+url))){files.push(u.pathname);return ok({});}
    if(u.pathname.endsWith('/auth/para/start')){await new Promise(r=>{releaseAuth=r;});if(authFails)return {ok:false,status:503,json:async()=>({error:'Sign-in is temporarily unavailable.'})};return ok({url:'https://articweb3.onrender.com/arctic-play/wallet/?attempt='+'a'.repeat(43)+'&provider=para'});}
-   if(u.pathname.endsWith('/auth/providers'))return ok({});
+   if(u.pathname.endsWith('/capabilities'))return ok({version:2,cloud:true,accountPlay:true});if(u.pathname.endsWith('/auth/providers'))return ok({});
    throw Error('Offline fixture');
   };
  }});t.after(()=>dom.window.close());dom.window.eval(bundle);
  return {w:dom.window,images,files,errors,get opened(){return opened;},get manifestRequests(){return manifestRequests;},get authPending(){return !!releaseAuth;},completeAuth:()=>releaseAuth()};
 }
 test('welcome uses the supplied artwork and warms all assets while sign-in is still pending',async t=>{
- const f=fixture(t),d=f.w.document;await until(()=>d.querySelector('.passport-primary'));
- assert.equal(d.querySelector('.passport-entry-hero img').getAttribute('src'),'art/passport-landing-v1/hosts/passport-polly-welcome.webp');
- d.querySelector('.passport-primary').click();await until(()=>f.authPending);assert.equal(f.opened,undefined);assert.equal(d.querySelector('.passport-primary').getAttribute('aria-busy'),'true');assert.match(d.querySelector('.passport-primary').textContent,/Opening sign-in/);
+ const f=fixture(t),d=f.w.document;await until(()=>d.querySelector('.harbor-nova'));
+ assert.equal(d.querySelector('.harbor-nova').getAttribute('src'),'art/onboarding-v2/nova-welcome.webp');
+ d.querySelector('.passport-primary').click();await until(()=>f.authPending);assert.equal(f.opened,undefined);assert.equal(d.querySelector('.passport-primary').getAttribute('aria-busy'),'true');assert.match(d.querySelector('.passport-primary').textContent,/Opening secure sign-in/);
  await until(()=>d.querySelector('.passport-entry-footer [role=status]').textContent==='Games ready');
  assert.equal(f.images.length,4);assert.equal(f.files.length,3);assert.ok(f.files.some(p=>p.endsWith('/fair-worker.js')));
  f.completeAuth();await until(()=>f.opened);assert.equal(f.manifestRequests,1);assert.deepEqual(f.errors,[]);
