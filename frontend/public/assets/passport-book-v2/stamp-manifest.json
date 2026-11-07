@@ -1,0 +1,81 @@
+[
+  {
+    "id": "xiangqi",
+    "name": "Xiangqi",
+    "title": "River Lantern",
+    "place": "China",
+    "mark": "CN",
+    "period": "10th–13th c.",
+    "art": "lantern-xiangqi-river.webp",
+    "motif": "River crossing",
+    "kind": "origin"
+  },
+  {
+    "id": "shogi",
+    "name": "Shogi",
+    "title": "Second Sunrise",
+    "place": "Japan",
+    "mark": "JP",
+    "period": "15th–16th c. form",
+    "art": "lantern-shogi-second-sunrise.webp",
+    "motif": "Second sunrise",
+    "kind": "origin"
+  },
+  {
+    "id": "sannin",
+    "name": "Sannin Shogi",
+    "title": "Third Path",
+    "place": "Japan",
+    "mark": "JP",
+    "period": "c. 1930",
+    "art": "lantern-sannin-third-path.webp",
+    "motif": "Three paths",
+    "kind": "flag",
+    "flag": "japan"
+  },
+  {
+    "id": "sanguo",
+    "name": "Sanguo Qi",
+    "title": "Changing Banner",
+    "place": "China",
+    "mark": "CN",
+    "period": "Date disputed",
+    "art": "lantern-sanguo-changing-banner.webp",
+    "motif": "Changing banners",
+    "kind": "origin"
+  },
+  {
+    "id": "sanyou",
+    "name": "San You Qi",
+    "title": "Three Signals",
+    "place": "China",
+    "mark": "CN",
+    "period": "17th–18th c.",
+    "art": "lantern-sanyou-three-signals.webp",
+    "motif": "Three signals",
+    "kind": "origin"
+  },
+  {
+    "id": "yanyi",
+    "name": "Sanguo Yan Yi Qi",
+    "title": "Imperial Lantern",
+    "place": "China",
+    "mark": "CN",
+    "period": "2005 edition",
+    "art": "lantern-yanyi-imperial.webp",
+    "motif": "Imperial lantern",
+    "kind": "flag",
+    "flag": "china"
+  },
+  {
+    "id": "dominion",
+    "name": "Chaturanga",
+    "title": "The New Winter",
+    "place": "Indian roots",
+    "mark": "IN",
+    "period": "Modern adaptation",
+    "art": "lantern-chaturanga-new-winter.webp",
+    "motif": "A new winter",
+    "kind": "origin"
+  }
+]

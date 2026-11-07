@@ -18,14 +18,14 @@ saved=json.loads(subprocess.check_output(['node','-e',"const g=require(process.a
 checks=[];errors=[];layouts=[]
 with sync_playwright() as pw:
  browser=pw.chromium.launch(executable_path=a.browser,args=['--no-sandbox','--disable-dev-shm-usage'])
- def context(practice=None,theme='dark',count=0,rooms=None):
-  c=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,reduced_motion='reduce')
+ def context(practice=None,theme='dark',count=0,rooms=None,motion='reduce'):
+  c=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,reduced_motion=motion)
   values={'cloud-session':{'accountId':account,'session':account+'.'+'q'*43},'antarctic-visa.v1.'+account:passport,'theme':theme,'mascot-companions':{'mode':'off','motion':False}}
   values['profile']={'id':'passport-qa','name':'Explorer','avatar':'red'}
   values['eternal-gathering.v1']={'halls':{name:{'learnedAt':1794000000000+i*86400000} for i,name in enumerate(['xiangqi','shogi','sannin','sanguo','sanyou','yanyi','dominion'][:count])}}
   if rooms is not None:values['rooms']=rooms
   if practice:values.update({'practice.xiangqi':practice,'last-table':{'id':'xiangqi'}})
-  c.add_init_script('const seed='+json.dumps(values)+';for(const [key,value]of Object.entries(seed))localStorage.setItem("arctic-play.v1."+key,JSON.stringify(value));window.WebSocket=undefined;window.Android={appReady(){},setDarkTheme(){},getAppInfo:()=>JSON.stringify({packageName:"xyz.arcticdominion.play",versionName:"5.9.5",versionCode:93})};')
+  c.add_init_script('const seed='+json.dumps(values)+';for(const [key,value]of Object.entries(seed))localStorage.setItem("arctic-play.v1."+key,JSON.stringify(value));window.WebSocket=undefined;window.Android={appReady(){},setDarkTheme(){},getAppInfo:()=>JSON.stringify({packageName:"xyz.arcticdominion.play",versionName:"5.9.6",versionCode:94})};')
   def route(r):
    url=r.request.url.split('?')[0]
    fixtures={'/capabilities':{'version':2,'cloud':True,'accountPlay':True},'/passport':{'identity':{'accountId':account,'displayName':'Saved Player'},'passport':passport},'/play-access':{'accountId':account,'online':True,'leaseSeconds':60,'offlineOwned':False,'license':None,'marketingChoiceNeeded':False},'/auth/providers':{}}
@@ -38,7 +38,9 @@ with sync_playwright() as pw:
   page.goto('https://appassets.androidplatform.net/assets/index.html');page.locator('.home-v2').wait_for()
   page.wait_for_function("()=>[...document.querySelectorAll('.home-v2 img')].every(n=>n.complete&&n.naturalWidth>0)")
   return c,page
- def nav(page,label):page.locator('.bottom-nav').get_by_role('button',name=label,exact=True).click()
+ def nav(page,label):
+  page.locator('.bottom-nav').get_by_role('button',name=label,exact=True).click()
+  if label=='Passport':page.get_by_role('button',name='Open your Passport',exact=False).click()
  def stable(page):page.wait_for_function("()=>[...document.querySelectorAll('.passport-book img')].every(n=>n.complete&&n.naturalWidth>0)")
  def shot(page,name):stable(page);page.screenshot(path=str(a.output/(name+'.png')))
  c,page=context(count=3);nav(page,'Passport');page.locator('.passport-book').wait_for();stable(page)
@@ -68,7 +70,7 @@ with sync_playwright() as pw:
  page.locator('.pp-spread').evaluate("n=>{n.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,changedTouches:[new Touch({identifier:1,target:n,clientX:250,clientY:230})]}));n.dispatchEvent(new TouchEvent('touchend',{bubbles:true,changedTouches:[new Touch({identifier:1,target:n,clientX:90,clientY:240})]}))}")
  expect(page.locator('.pp-spread')).to_have_attribute('data-page','2')
  checks.append('Buttons, arrow keys, horizontal swipe and native Back turn the book; reduced-motion preference is respected.')
- page.get_by_role('button',name='Passport settings').click();page.locator('summary').filter(has_text='App & help').click();page.get_by_role('button',name='App updates',exact=False).click();page.locator('.app-updates').wait_for();expect(page.locator('.app-updates')).to_contain_text('5.9.5')
+ page.get_by_role('button',name='Passport settings').click();page.locator('summary').filter(has_text='App & help').click();page.get_by_role('button',name='App updates',exact=False).click();page.locator('.app-updates').wait_for();expect(page.locator('.app-updates')).to_contain_text('5.9.6')
  page.evaluate('window.arcticBack()');page.locator('.pp-settings').wait_for();page.evaluate('window.arcticBack()');page.locator('.passport-book').wait_for()
  page.get_by_role('button',name='Passport settings').click();page.locator('summary').filter(has_text='Account').click();page.locator('.profile-logout').click();page.locator('.logout-panel').wait_for();page.evaluate('window.arcticBack()');page.locator('.pp-settings').wait_for();page.get_by_role('button',name='Back to passport').click()
  checks.append('Account/logout confirmation and app updates remain reachable through grouped settings; Back closes modals before Passport subviews.')
@@ -85,11 +87,43 @@ with sync_playwright() as pw:
  checks.append('Seven migrated stamps automatically show the Crown with a stable date; opening the book never modifies learning records or claims the optional Eighth Lantern story.')
  page.get_by_role('button',name='Play another game',exact=False).click();page.locator('.discovery-search').wait_for();assert page.locator('[data-catalogue-id]').count()==9;checks.append('After earning the Crown, the primary action returns to the real game catalogue.');c.close()
  c,page=context();nav(page,'Passport');page.locator('.pp-next-stamp').click();page.locator('.story-adventure[data-story-game="xiangqi"]').wait_for();page.locator('[data-testid="game-adventure"][data-ready="true"]').wait_for()
- steps=json.loads(subprocess.check_output(['node','-e',"const a=require(process.argv[1]),g=require(process.argv[2]),m=require(process.argv[3]);let p=a.adventurePosition('xiangqi','cannon-bridge',m.preferredSetup('xiangqi','cannon-bridge')),path=[],out=[];while(!p.complete){let move=p.legal[0];out.push({from:g.pieces('xiangqi',p.state).find(s=>s.source===move.source).cell,target:move.target});path.push(move.id);p=a.adventurePosition('xiangqi','cannon-bridge',m.preferredSetup('xiangqi','cannon-bridge'),path);}console.log(JSON.stringify(out));",str(mobile/'build/adventures.cjs'),str(mobile/'build/games.cjs'),str(mobile/'build/minimalLearning.cjs')],text=True))
+ steps=json.loads(subprocess.check_output(['node','-e',"const a=require(process.argv[1]),g=require(process.argv[2]),m=require(process.argv[3]);let p=a.adventurePosition('xiangqi','cannon-bridge',m.preferredSetup('xiangqi','cannon-bridge')),path=[],out=[];while(!p.complete){let move=p.legal[0];out.push({from:g.pieces('xiangqi',p.state).find(s=>s.source===move.source).cell,target:move.target});path.push(move.id);p=a.adventurePosition('xiangqi','cannon-bridge',m.preferredSetup('xiangqi','cannon-bridge'),path);out[out.length-1].stage=p.stage;out[out.length-1].complete=p.complete;}console.log(JSON.stringify(out));",str(mobile/'build/adventures.cjs'),str(mobile/'build/games.cjs'),str(mobile/'build/minimalLearning.cjs')],text=True))
+ page.locator('.story-adventure .board-viewport[aria-busy="false"]').wait_for()
  for step in steps:
-  page.locator('.story-adventure [data-cell="'+step['from']+'"]').press('Enter');page.locator('.story-adventure [data-cell="'+step['target']+'"]').press('Enter')
- page.locator('[data-complete="true"][data-watching="false"]').wait_for();page.get_by_role('button',name='Return to your journey',exact=True).last.click();page.locator('.passport-book').wait_for();expect(page.locator('.pp-book-caption')).to_contain_text('1 / 7');expect(page.locator('.pp-spread')).to_have_attribute('data-page','1');expect(page.locator('.pp-new-stamp')).to_contain_text('River Lantern stamp added');assert page.locator('[data-stamp="xiangqi"]').get_attribute('data-earned')=='true'
+  page.locator('.story-adventure [data-cell="'+step['from']+'"]').press('Enter');expect(page.locator('.story-adventure [data-cell="'+step['from']+'"]')).to_have_attribute('aria-pressed','true');page.locator('.story-adventure [data-cell="'+step['target']+'"]').press('Enter')
+  expect(page.locator('[data-testid="game-adventure"]')).to_have_attribute('data-stage',str(step['stage']))
+  if step['complete']:expect(page.locator('[data-testid="game-adventure"]')).to_have_attribute('data-complete','true')
+ page.locator('[data-complete="true"][data-watching="false"]').wait_for();page.get_by_role('button',name='Return to your journey',exact=True).last.click();page.locator('.passport-book').wait_for();page.get_by_role('button',name='Open your Passport',exact=False).click();expect(page.locator('.pp-book-caption')).to_contain_text('1 / 7');expect(page.locator('.pp-spread')).to_have_attribute('data-page','1');expect(page.locator('.pp-new-stamp')).to_contain_text('River Lantern stamp added');assert page.locator('[data-stamp="xiangqi"]').get_attribute('data-earned')=='true'
  checks.append('The real Xiangqi guided challenge accepts its canonical move and awards a persisted lantern stamp in the new book.')
+ c.close()
+ c,page=context(count=3,motion='no-preference');page.locator('.bottom-nav').get_by_role('button',name='Passport',exact=True).click()
+ expect(page.locator('.pp-volume')).to_have_attribute('data-open','false')
+ assert page.locator('.pp-bound-pages').get_attribute('inert') is not None
+ assert page.locator('.pp-pagination').is_hidden();shot(page,'Passport-cover-closed')
+ before=page.evaluate("localStorage.getItem('arctic-play.v1.eternal-gathering.v1')")
+ page.get_by_role('button',name='Open your Passport',exact=False).click();page.wait_for_timeout(300)
+ assert page.locator('.pp-front-cover').evaluate("n=>getComputedStyle(n).transform.startsWith('matrix3d')")
+ shot(page,'Passport-cover-opening');page.wait_for_function("()=>!document.querySelector('.pp-volume').classList.contains('is-opening')")
+ expect(page.locator('.pp-volume')).to_have_attribute('data-open','true')
+ page.get_by_role('button',name='Next passport page').click();page.wait_for_timeout(220)
+ assert page.locator('.pp-turn-scene.is-turning').count()==1
+ assert page.locator('.pp-turn-back .pp-stamp-name').count()==4
+ shot(page,'Passport-leaf-turning');page.wait_for_function("()=>!document.querySelector('.pp-turn-scene')")
+ expect(page.locator('.pp-spread')).to_have_attribute('data-page','1')
+ for stamp in page.locator('[data-stamp][data-earned="true"]').all():
+  assert stamp.locator('time').get_attribute('datetime').endswith('Z')
+  assert 'UTC' in stamp.locator('time').inner_text()
+  assert stamp.locator('.pp-stamp-name').inner_text()
+ assert page.evaluate("localStorage.getItem('arctic-play.v1.eternal-gathering.v1')")==before
+ page.get_by_role('button',name='Close Passport',exact=True).click();page.wait_for_function("()=>!document.querySelector('.pp-volume').classList.contains('is-opening')")
+ expect(page.locator('.pp-volume')).to_have_attribute('data-open','false')
+ cover=page.locator('.pp-cover-hit-target');cover.scroll_into_view_if_needed();box=cover.bounding_box();x=box['x']+box['width']*.8;y=box['y']+box['height']*.5
+ page.mouse.move(x,y);page.mouse.down();page.mouse.move(x-75,y,steps=6)
+ assert page.locator('.pp-volume.is-dragging').count()==1
+ assert 0<float(page.locator('.pp-volume').evaluate("n=>n.style.getPropertyValue('--cover-progress')"))<1
+ page.mouse.up();page.wait_for_function("()=>!document.querySelector('.pp-volume').classList.contains('is-opening')")
+ expect(page.locator('.pp-volume')).to_have_attribute('data-open','true')
+ checks.append('Closed cover hides page controls; hinged front/back cover, reversible close, finger-following drag and actual two-sided leaf turns work with normal motion. Dates retain original instants and local timezone; opening never changes milestones.')
  c.close();browser.close();assert not errors,errors
- report={'version':'5.9.5','checks':checks,'layoutCases':len(layouts),'layouts':layouts,'pageErrors':errors,'network':'mocked account API; real bundled workers and legal-move engine','androidBridge':'simulated','physicalAndroidTested':False,'liveSignInTested':False}
+ report={'version':'5.9.6','checks':checks,'layoutCases':len(layouts),'layouts':layouts,'pageErrors':errors,'network':'mocked account API; real bundled workers and legal-move engine','androidBridge':'simulated','physicalAndroidTested':False,'liveSignInTested':False}
  (a.output/'Passport-Browser-QA.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({'checks':checks,'layoutCases':len(layouts),'pageErrors':errors},indent=2))
