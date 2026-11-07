@@ -44,6 +44,7 @@ import discovery from './discoveryModel.cjs';
 import {HomeLanding} from './HomeLanding.jsx';
 import {RoomCodeInput} from './RoomCodeInput.jsx';
 import {ChatCamp} from './ChatCamp.jsx';
+import {PassportHub,PassportIcon} from './PassportBook.jsx';
 import {CELEBRATION_ART,festivalStickerText} from './celebration.js';
 import {FestivalStickerAlbum} from './FestivalStickers.jsx';
 import {HallCard,HallDetail,StoryAdventure,LanternPassport,OpeningStory,GatheringInterlude,EighthLantern,WorldGuide,GatheringSettings} from './Gathering.jsx';
@@ -52,7 +53,7 @@ import {JourneyBar,LockedHall,FormationRoute,AccessShop,HallOpened} from './Hall
 import {FoundationGame} from './FoundationGame.jsx';
 import {HALLS,HALL_ORDER,WORLD,GATHERING_KEY,STORY_SETTINGS_KEY,gatheringProgress,visitHall,earnLantern,revealGathering,storySettings,hallPostcard,guestPostcard,hallInvitation} from './gathering.js';
 
-const tabs=[['home','Home',Home],['friends','Friends',Users],['games','Games',Gamepad2],['chats','Chats',MessageCircle],['profile','Profile',User]];
+const tabs=[['home','Home',Home],['friends','Friends',Users],['games','Games',Gamepad2],['chats','Chats',MessageCircle],['profile','Passport',PassportIcon]];
 const openingText=id=>`${seatName(id,game(id).seats[0])} ${id==='dominion'?'rolls':'moves'} first`;
 const Avatar=({color='blue',size=42,name='',online=false,gameId})=><span className="avatar" style={{width:size,height:size}}><img src={asset(gameId==='dominion'?`dominion/${color==='yellow'?'pink':color}-frost-king.webp`:`tokens/token-sanguo-${color==='black'?'blue':color}-general.webp`)} alt={name||'Player avatar'}/>{online&&<i/>}</span>;
 function DominionSetup({mode,onMode,seat,onSeat}){
@@ -136,7 +137,7 @@ function App(){
   function saveStoryOptions(next){const clean=storySettings(next);write(STORY_SETTINGS_KEY,clean);setStoryOptions(clean);}
   function openHall(gameId){if(!HALLS[gameId]||!gate(gameId))return;saveGathering(visitHall(gatheringProgress(read(GATHERING_KEY,{}),read(JOURNAL_KEY,{})),gameId));setPicked(gameId);setSheet('hall');}
   function openHallChallenge(gameId,mission=HALLS[gameId].challenges[0].mission){if(!gate(gameId))return;setStoryLesson({id:gameId,mission,returnScreen:screen==='story'?storyLesson?.returnScreen||'lobby':screen});setPicked(gameId);setSheet(null);setChatOpen(false);setScreen('story');}
-  function closeHallChallenge(){setScreen(storyLesson?.returnScreen||'lobby');if(storyOptions.enabled)setSheet('hall');}
+  function closeHallChallenge(){const target=storyLesson?.returnScreen||'lobby';setScreen(target);if(target==='lobby'&&tab==='profile')setSheet(null);else if(storyOptions.enabled)setSheet('hall');}
   function earnedAtTable(gameId){saveGathering(earnLantern(gatheringProgress(read(GATHERING_KEY,{}),read(JOURNAL_KEY,{})),gameId));}
   function openHallPostcard(gameId){if(world.halls[gameId]?.learnedAt){setPostcard(hallPostcard(gameId));setSheet('postcard');}}
   const ruleClient=useRef(null);if(!ruleClient.current)ruleClient.current=new RuleClient();
@@ -218,7 +219,7 @@ function App(){
   useLayoutEffect(()=>{if(screen==='lobby'){const scroller=document.scrollingElement||document.documentElement;scroller.scrollTop=0;scroller.scrollLeft=0;}},[tab,screen]);
   useEffect(()=>{chatEnd.current?.scrollIntoView({block:'nearest'});},[chatOpen,room?.chat?.length,localChat.length]);
   useEffect(()=>{
-    window.arcticBack=()=>{backRef.current?.();return true;};
+    window.arcticBack=()=>{if(document.dispatchEvent(new Event('ak-passport-back',{cancelable:true})))backRef.current?.();return true;};
     window.arcticJoin=code=>{const parsed=parseInvitation(code);if(!parsed){notify('Enter a valid Antarctic Kingdoms invitation.');return;}setJoinCode(parsed);setSheet('join');};
     window.Android?.appReady?.();
     window.ArcticStartup?.ready();
@@ -392,7 +393,7 @@ function App(){
     {screen==='learn'&&academy&&<HowToPlay key={academy.id} id={academy.id} initialTab={academy.initialTab} initialRole={academy.initialRole} initialMission={academy.initialMission} onGame={(gameId,section)=>openLearning(gameId,section||'start')} onLearningEvent={companion.learned} onClose={()=>setScreen(academy.returnScreen)} preferences={companion.preferences} onDiscovery={learningDiscovery} returnToGame={academy.returnScreen==='match'} onPractice={online?null:()=>run(()=>startPractice('bots',true))}/>}
     {screen==='story'&&storyLesson&&<StoryAdventure key={storyLesson.id+storyLesson.mission} id={storyLesson.id} mission={storyLesson.mission} story={storyOptions.enabled} preferences={companion.preferences} onClose={closeHallChallenge} onDiscovery={learningDiscovery} onLearningEvent={companion.learned} onFree={gameId=>openLearning(gameId,'sandbox')} onPlay={gameId=>{setScreen('lobby');pick(gameId);}}/>}
     {screen==='lobby'&&<>
-      <header className={`lobby-header ${tab==='home'?'world-header':''}`}><button className="avatar-btn" onClick={()=>{setNameDraft(profile.name);setSheet('name');}} aria-label="Edit profile"><Avatar color={profile.avatar} online={connection==='online'}/></button><h1 className={tab==='home'?'brand-wordmark':''}>{tab==='home'?<><span>ANTARCTIC</span><strong>KINGDOMS</strong></>:(storyOptions.enabled?({games:'Games',friends:'Festival Invitations',chats:'Chats & Camp',profile:'Lantern Passport'})[tab]:null)||tabs.find(t=>t[0]===tab)?.[1]}</h1>{headerControls}</header>
+      <header className={`lobby-header ${tab==='home'?'world-header':''}`}><button className="avatar-btn" onClick={()=>{setNameDraft(profile.name);setSheet('name');}} aria-label="Edit profile"><Avatar color={profile.avatar} online={connection==='online'}/></button><h1 className={tab==='home'?'brand-wordmark':''}>{tab==='home'?<><span>ANTARCTIC</span><strong>KINGDOMS</strong></>:(storyOptions.enabled?({games:'Games',friends:'Festival Invitations',chats:'Chats',profile:'Passport'})[tab]:null)||tabs.find(t=>t[0]===tab)?.[1]}</h1>{headerControls}</header>
       <main className="lobby-content" data-view={tab}>
         {tab==='games'&&<>
           <div className="filter-row">{['All','2 players','3 players','4 players','Favorites'].map(item=><button className={filter===item?'active':''} key={item} onClick={()=>setFilter(item)}>{item==='Favorites'&&<Heart size={13}/>} {item}</button>)}</div>
@@ -404,7 +405,7 @@ function App(){
           <div className={'games-grid '+(storyOptions.enabled?'seven-halls-grid':'')}>{chronologicalGames(GAME_LIST).filter(g=>filter==='All'||filter==='Favorites'&&favorites.includes(g.id)||filter===`${g.players} players`).map(g=><HallCard key={g.id} definition={g} access={hallAccess.allowed(g.id)} favorite={favorites.includes(g.id)} onFavorite={toggleFavorite} onPlay={pick} onExplore={openHall} onLearn={gameId=>openLearning(gameId)} onQuickPlay={gameId=>run(()=>startPractice('bots',false,gameId,'red'))} story={storyOptions.enabled}/>)}</div>
           {filter==='Favorites'&&!favorites.length&&<div className="empty"><Heart/><h3>Your favorites belong here</h3><p>Tap a heart on a game to keep it close.</p></div>}
         </>}
-        {tab==='home'&&<HomeLanding onBrowse={()=>setTab('games')} onJoin={()=>{setNameDraft(profile.name);setSheet('join-name');}} onContinue={homeContinue} continueLabel={continueLabel} roomCode={joinCode} onRoomCode={setJoinCode} story={storyOptions.enabled} discovery={<NextDiscovery access={hallAccess} target={discoveryTarget} onOpen={showJourney}/>}/>}
+        {tab==='home'&&<HomeLanding onBrowse={()=>setTab('games')} onLearn={()=>setTab('games')} onJourney={()=>setTab('profile')} onStory={()=>setSheet('world-guide')} onJoin={()=>{setNameDraft(profile.name);setSheet('join-name');}} onContinue={homeContinue} continueLabel={continueLabel} roomCode={joinCode} onRoomCode={setJoinCode} story={storyOptions.enabled} discovery={<NextDiscovery access={hallAccess} target={discoveryTarget} onOpen={showJourney}/>}/>}
 
         {tab==='friends'&&<>
           <div className="friend-intro archive-welcome celebration-friends"><img className="festival-friends-banner" src={CELEBRATION_ART.friends} alt="Friends are welcome at the festival table" width="1200" height="800" loading="lazy"/>{companion.preferences.mode!=='off'&&<img className="archive-guide-art" src="art/brand/hosts-director-v1/polly/wave.webp" alt="Polly welcomes your friends"/>}<p className="world-eyebrow">BRING SOMEONE TO THE TABLE</p><h2>The festival is better<br/>with a friend.</h2><p>Save a name on your phone, then invite your friend to a particular hall.</p></div>
@@ -414,12 +415,12 @@ function App(){
         </>}
         {tab==='chats'&&<>
           <div className="chat-room-actions"><button className="primary" aria-label="Join a room" onClick={()=>setSheet('join')}><Plus size={18}/> Join a room</button><button className="secondary" onClick={()=>setSheet('festival-invite')}><Users size={18}/> Invite friends</button></div>
-          <ChatCamp journey={companion.journey} progress={world} story={storyOptions.enabled} onCamp={()=>openCamp(companion.preferences.guide==='auto'?'polly':companion.preferences.guide)} onMemories={()=>setSheet('memories')} onLearn={()=>setSheet('learning-library')} onDaily={openDaily} onMemory={openPostcard} onChallenge={openHallChallenge} onIntro={()=>setSheet('gathering-intro')} onGuide={()=>setSheet('world-guide')} onPassport={()=>setSheet('passport')} onExplore={openHall}>
+          <ChatCamp journey={companion.journey} progress={world} story={storyOptions.enabled} onCamp={()=>openCamp(companion.preferences.guide==='auto'?'polly':companion.preferences.guide)} onMemories={()=>setSheet('memories')} onLearn={()=>setSheet('learning-library')} onDaily={openDaily} onMemory={openPostcard} onChallenge={openHallChallenge} onIntro={()=>setSheet('gathering-intro')} onGuide={()=>setSheet('world-guide')} onPassport={()=>setSheet('passport')} onExplore={openHall} onFriends={()=>setTab('friends')}>
             {Object.values(savedRooms).sort((a,b)=>(b.at||0)-(a.at||0)).map(saved=><button className="table-row" key={saved.room.roomCode} onClick={()=>run(async()=>{await joinRoom(saved.room.roomCode);if(saved.room.status==='waiting')setScreen('room');else setChatOpen(true);})}><img src={asset(game(saved.room.tableId).icon)} alt=""/><span><strong>{game(saved.room.tableId).name} · {saved.room.roomCode}</strong><small>{saved.room.chat?.at(-1)?.text||'Say hello at your table'}</small></span><MessageCircle size={21}/></button>)}
             {!Object.keys(savedRooms).length&&<div className="chat-tables-empty"><p>Create or join a room to chat while you play.</p><button className="text-button" onClick={()=>setTab('games')}>Find a game <ChevronRight size={17}/></button></div>}
           </ChatCamp>
         </>}
-        {tab==='profile'&&<>
+        {tab==='profile'&&<PassportHub onBrowse={()=>setTab('games')} profile={profile} progress={world} avatar={<Avatar color={profile.avatar} size={48}/>} onEdit={()=>{setNameDraft(profile.name);setSheet('name');}} onHall={openHall} onChallenge={openHallChallenge} onReveal={()=>setSheet('eighth-lantern')} onPostcard={()=>openPostcard(guestPostcard())} onCamp={()=>openCamp(companion.preferences.guide==='auto'?'polly':companion.preferences.guide)} onMemories={()=>setSheet('memories')} onDaily={openDaily}>
           <JourneyBar onJourney={showJourney} access={hallAccess} onFormations={()=>formations()} onPass={()=>accessShop('all-halls-v1')}/>
           <div className="profile-card">{collection.badge&&<span className="supporter-preview">✦ Aurora Companion</span>}<Avatar color={profile.avatar} size={72}/><h2>{profile.name}</h2><p>Ready for one more game</p><div className="profile-session-actions"><button className="pill blue-pill" onClick={()=>{setNameDraft(profile.name);setSheet('name');}}>Edit profile</button><button className="profile-logout-pill" onClick={()=>setSheet('logout')}><LogOut size={15}/> Log out</button></div></div>
           {storyOptions.enabled&&<LanternPassport progress={world} onHall={openHall} onReveal={()=>setSheet('eighth-lantern')} onInterlude={()=>setSheet('gathering-interlude')} onPostcard={()=>openPostcard(guestPostcard())}/>}<div className="profile-options"><button onClick={()=>setSheet('fair-play')}><span className="option-icon"><Shield/></span><span><strong>Fair Play</strong><small>Check moves, dice and onchain receipts</small></span><ChevronRight/></button><button className="profile-logout" onClick={()=>setSheet('logout')}><span className="option-icon"><LogOut/></span><span><strong>Log out</strong><small>Return to welcome · Saved games stay on this phone</small></span><ChevronRight/></button><button onClick={showJourney}><span className="option-icon"><Gamepad2/></span><span><strong>Your discovery journey</strong><small>A glimpse of your next hall</small></span><ChevronRight/></button>{visa.record&&<button onClick={()=>setSheet('antarctic-visa')}><span className="option-icon"><User/></span><span><strong>Your Antarctic Visa</strong><small>Passport and NFT delivery</small></span><ChevronRight/></button>}<button onClick={()=>setSheet('about')}><span className="option-icon"><Settings/></span><span><strong>App information</strong><small>About Antarctic Kingdoms</small></span><ChevronRight/></button>
@@ -433,10 +434,10 @@ function App(){
             <button onClick={()=>setSheet('help')}><span className="option-icon"><BookOpen/></span><span><strong>How to play together</strong><small>Install, invite and start playing</small></span><ChevronRight/></button>
             <button onClick={()=>setSheet('about')}><span className="option-icon"><Shield/></span><span><strong>About Antarctic Kingdoms</strong><small>Version {APP_VERSION} · Seven games</small></span><ChevronRight/></button>
           </div>
-        </>}
+        </PassportHub>}
       </main>
       <nav className="bottom-nav" aria-label="Main navigation">{tabs.map(([key,label,Icon])=><button key={key} className={tab===key?'active':''} onClick={()=>setTab(key)} aria-current={tab===key?'page':undefined}><span><Icon size={24} strokeWidth={tab===key?2.6:1.8}/></span><small>{label}</small></button>)}</nav>
-      <CompanionDock companion={companion} onOpen={openCamp} onSettings={()=>setSheet('mascot-settings')} hidden={!!sheet||chatOpen||['games','home'].includes(tab)}/>
+      <CompanionDock companion={companion} onOpen={openCamp} onSettings={()=>setSheet('mascot-settings')} hidden={!!sheet||chatOpen||['games','home','profile','chats','friends'].includes(tab)}/>
     </>}
 
     {screen==='room'&&room&&<>

@@ -1,0 +1,155 @@
+/* Quiet Passport surfaces; existing game and modal styles remain intact. */
+.app[data-screen="lobby"][data-tab="profile"] .lobby-content,.app[data-screen="lobby"][data-tab="chats"] .lobby-content{overflow-y:auto;overflow-x:hidden;touch-action:pan-y;padding:10px 16px 20px;min-width:0}
+.app[data-screen="lobby"][data-tab="profile"] .header-update,.app[data-screen="lobby"][data-tab="chats"] .header-update{display:none}
+.passport-hub{width:100%;max-width:680px;margin:auto;color:var(--text,#17394f);font:14px/1.45 system-ui,sans-serif;text-align:left;min-width:0}
+.passport-hub button,.passport-book button,.chat-inbox button{font-family:system-ui,sans-serif;letter-spacing:normal;text-transform:none;box-sizing:border-box;cursor:pointer}
+.pp-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 12px;color:var(--muted,#62788b);font-size:12px}
+.pp-toolbar>button{min-height:44px;display:flex;align-items:center;gap:7px;border:1px solid #799bb766;border-radius:12px;padding:6px 10px;background:var(--panel,#e8f1f8);color:var(--text,#17394f)}
+.pp-book-caption{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 3px 10px;font-size:12px;color:var(--text,#b8cee1)}
+.pp-book-caption>span{font-size:9px;letter-spacing:1.4px;font-weight:750}
+.pp-new-stamp{font-size:13px;line-height:1.5;color:var(--text,#2d6773);padding:10px 12px;border:1px solid #b28b4355;border-radius:12px;background:#a8781512;margin:0 0 12px}
+.pp-cover-frame{border:1px solid #6486a3;border-radius:17px;padding:8px 6px 10px;background:linear-gradient(120deg,#1c4864,#0c2e49 48%,#204d68);box-shadow:0 10px 20px #00102130,0 3px 0 #a6bfd3}
+.pp-spread{position:relative;overflow:hidden;outline-offset:5px;border-radius:9px;isolation:isolate;touch-action:pan-y;background:#f8f2e5;color:#243d4a;min-width:0}
+.pp-paper{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-height:384px;background:radial-gradient(ellipse at 60% 5%,#fffdf2,transparent 80%),repeating-linear-gradient(0deg,#e2d1b320 0 1px,transparent 1px 5px),#f4ecd9;animation:pp-turn .24s ease-out;transform-origin:50% 50%;text-align:left}
+.pp-spread:after{position:absolute;content:"";top:0;bottom:0;width:17px;left:calc(50% - 8px);background:linear-gradient(90deg,transparent,#8b714326,#fff8df66,transparent);pointer-events:none;z-index:2}
+.pp-leaf{min-width:0;padding:18px 13px 16px;box-sizing:border-box;border:1px solid #c6ac7333;display:flex;flex-direction:column;align-items:center;gap:10px}
+.passport-hub .pp-kicker,.passport-book .pp-kicker{font:750 8px/1.5 system-ui,sans-serif;letter-spacing:1.2px;color:#5b6b70;display:block;text-align:center}
+.passport-book h2,.passport-book h3{font-family:Georgia,'Times New Roman',serif;font-weight:700;letter-spacing:-.45px;line-height:1.12;color:#173f55;background:none;border:0;padding:0;margin:0;text-align:center;overflow-wrap:anywhere}
+.passport-book h2{font-size:clamp(22px,5.6vw,34px)}
+.passport-book h3{font-size:clamp(18px,4.1vw,25px)}
+.pp-identity-avatar{margin:4px auto 0;display:grid;place-items:center;min-height:55px}
+.pp-identity-avatar .avatar{background:transparent!important;box-shadow:none!important}
+.pp-identity-avatar .avatar img{max-width:52px;max-height:52px}
+.pp-owner{max-width:100%;font:700 20px/1.15 Georgia,serif;text-align:center;overflow-wrap:anywhere;color:#173f55}
+.pp-identity-label{font-size:8px;letter-spacing:2px;color:#657076}
+.passport-book .pp-ink-link{min-height:44px;padding:8px 2px;border:0;background:none;color:#235d75;text-decoration:underline;text-underline-offset:3px;border-radius:4px;box-shadow:none;font-size:11px;line-height:1.3}
+.pp-entry-seal{align-self:center;margin-top:auto;padding:9px 4px;border-top:2px solid #2b6d7e;border-bottom:2px solid #2b6d7e;color:#2b6d7e;font:600 8px/1.65 system-ui,sans-serif;letter-spacing:.8px;text-align:center;transform:rotate(-7deg)}
+.pp-entry-seal strong{display:block;font-size:10px}
+.pp-entry-seal span{display:block;font-size:7px}
+.pp-arrival-route{gap:13px;justify-content:space-between}
+.pp-arrival-route p{font:13px/1.5 system-ui,sans-serif;text-align:center;margin:0;color:#526167}
+.pp-arrival-route>strong{font-size:12px;line-height:1.4;text-align:center;color:#173f55}
+.pp-arrival-route>small{font-size:10px;line-height:1.5;text-align:center;color:#526167}
+.pp-mini-stamps{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;font-size:16px;color:#728284}
+.pp-mini-stamps .lit{color:#99711e}
+.passport-book .pp-crown-preview{width:94px;height:94px;object-fit:contain;max-width:100%}
+.passport-book img.unearned{filter:grayscale(.85);opacity:.32}
+.pp-stamp-pair{display:flex;flex-direction:column;gap:12px;align-items:stretch;width:100%;flex:1;justify-content:space-around}
+.passport-book .pp-stamp,.passport-book .pp-crown-slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;min-height:127px;padding:7px 2px;margin:0;border:0;border-radius:9px;background:none;background-image:none;box-shadow:none;color:#243d4a;text-align:center}
+.passport-book .pp-stamp-art{display:flex;align-items:center;justify-content:center;flex-direction:column;width:70px;height:70px;border-radius:50%;transform:rotate(var(--stamp-angle));color:#778c8c;box-sizing:border-box}
+.passport-book .pp-stamp img{width:100%;height:100%;object-fit:contain;display:block}
+.passport-book .is-empty .pp-stamp-art{border:1px dashed #829798;background:#f7f2e466;gap:3px}
+.pp-stamp-art>span{font:600 7px/1.4 system-ui,sans-serif;letter-spacing:1px}
+.pp-stamp>strong,.pp-crown-slot>strong{font-size:12px;line-height:1.25;max-width:100%;color:#234b5d}
+.pp-stamp>small,.pp-crown-slot>small{font-size:10px;line-height:1.35;color:#687275}
+.passport-book .pp-crown-slot img{width:70px;height:70px;object-fit:contain}
+.pp-crown-page{grid-column:1/-1;padding:24px 23px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:384px;text-align:center;z-index:3;background:radial-gradient(ellipse at 50% 50%,#fcf6dfb3,transparent 70%)}
+.passport-book .pp-crown-page h2{max-width:310px;font-size:26px}
+.passport-book .pp-crown-large{display:block;width:155px;height:155px;object-fit:contain}
+.pp-crown-page>strong{font-size:11px;letter-spacing:1px;color:#7b5b21}
+.pp-crown-page>p{max-width:310px;font-size:13px;line-height:1.5;color:#475b63;margin:0}
+.pp-crown-page>time{font-size:11px;color:#687275}
+.pp-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:13px 2px 12px}
+.pp-pagination button{min-width:44px;min-height:44px;border:1px solid #7294ab77;border-radius:12px;background:var(--panel,#e7f2f8);color:var(--text,#144359);font-size:23px;padding:0}
+.pp-pagination button:disabled{opacity:.32;cursor:default}
+.pp-pagination>div{display:flex;flex-direction:column;text-align:center;gap:3px}
+.pp-pagination strong{font-size:13px;color:var(--text,#b8cee1)}
+.pp-pagination span{font-size:11px;color:var(--muted,#6e8596)}
+.passport-book .pp-next-stamp{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:80px;padding:13px 16px;margin:0;border:1px solid #527f97;border-radius:15px;background:#173e59;color:#eef7ff;text-align:left;box-shadow:none}
+.pp-next-stamp>span:first-child{display:flex;flex-direction:column;gap:3px;min-width:0}
+.pp-next-stamp small{font-size:9px;letter-spacing:1.4px;color:#bfd9e8}
+.pp-next-stamp strong{font-size:17px;line-height:1.3;overflow-wrap:anywhere}
+.pp-next-stamp>span>span{font-size:12px;color:#bfd9e8}
+.passport-hub .pp-extras-entry{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:48px;padding:12px 4px;border:0;background:none;color:var(--text,#387186);font-size:13px;box-shadow:none;text-align:left}
+.pp-subheading{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.pp-subheading>button{min-width:44px;min-height:44px;font-size:22px;border:1px solid #65829b66;border-radius:12px;background:var(--panel,#e7f2f8);color:var(--text,#17394f)}
+.pp-subheading h2{margin:0;font:700 22px/1.25 system-ui,sans-serif;color:var(--text,#17394f)}
+.passport-hub .pp-settings{display:flex;flex-direction:column;gap:12px;background:none;padding:0;border:0;box-shadow:none}
+.pp-settings-group,.pp-access{border:1px solid #668ca866;border-radius:14px;overflow:hidden;background:var(--panel,#f8fcff)}
+.pp-settings-group>summary,.pp-access>summary{font-size:16px;font-weight:650;cursor:pointer;min-height:52px;padding:16px;color:var(--text,#17394f);box-sizing:border-box}
+.passport-hub .profile-options button{min-height:58px;padding:14px 15px;gap:12px;width:100%;color:var(--text,#17394f);background:transparent;border-radius:0;border-width:0 0 1px;border-color:#7490a333;box-shadow:none;margin:0;text-align:left}
+.passport-hub .profile-options button>span:has(>strong){min-width:0;flex:1}
+.passport-hub .profile-options strong{font:650 14px/1.35 system-ui,sans-serif;color:inherit}
+.passport-hub .profile-options small{font:400 12px/1.4 system-ui,sans-serif;color:var(--muted,#6e8596);white-space:normal}
+.passport-hub .profile-options .option-icon{flex-shrink:0;width:32px;height:32px}
+.pp-storage-note{font-size:12px;line-height:1.6;color:var(--muted,#6e8596);margin:8px 2px}
+.pp-discover>p{font-size:14px;line-height:1.6;color:var(--muted,#6e8596)}
+.pp-discover-actions{display:grid;gap:10px;margin:16px 0}
+.pp-discover-actions button{display:flex;align-items:flex-start;flex-direction:column;gap:4px;min-height:65px;padding:14px;border-radius:14px;border:1px solid #7898b066;background:var(--panel,#f4f9fc);color:var(--text,#17394f);font-size:16px;text-align:left}
+.pp-discover-actions small{font-size:12px;color:var(--muted,#6e8596)}
+.pp-keepsake-options{margin-bottom:16px}
+.pp-access .unlock-journey{margin:0;border:0;background:none;color:var(--text,#17394f)}
+.passport-hub button:focus-visible,.passport-book button:focus-visible,.pp-spread:focus-visible,.chat-inbox button:focus-visible{outline:3px solid #ba8b2b;outline-offset:3px}
+.app[data-tab="chats"] .chat-room-actions{display:flex;gap:10px;margin:8px 0 20px}
+.app[data-tab="chats"] .chat-room-actions button{flex:1;min-height:50px;white-space:normal}
+.chat-inbox{max-width:680px;margin:auto;min-width:0}
+.chat-inbox-heading h2{font:700 24px/1.3 system-ui,sans-serif;color:var(--text,#17394f);margin:0 0 6px}
+.chat-inbox-heading p{font-size:14px;line-height:1.5;color:var(--muted,#6e8596);margin:0 0 20px}
+.chat-inbox-rooms .table-row{min-height:78px;width:100%;border-radius:14px;margin:0 0 10px;border:1px solid #6889a466;padding:14px;background:var(--panel,#f4f9fc);box-shadow:none}
+.chat-inbox-rooms .table-row>span{min-width:0}
+.chat-inbox-rooms .table-row strong,.chat-inbox-rooms .table-row small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-inbox-rooms .chat-tables-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:240px;padding:25px;border:1px dashed #799ab166;border-radius:20px;margin:0;color:var(--muted,#6e8596);background:var(--panel,#f4f9fc);text-align:center;box-shadow:none}
+.chat-inbox-rooms .chat-tables-empty:before{content:"";width:90px;height:75px;background:url('art/home-v1/join-friends.webp') center/contain no-repeat}
+.chat-inbox-rooms .chat-tables-empty p{font-size:15px;line-height:1.5;max-width:260px;margin:0}
+.chat-inbox .text-button{min-height:44px;background:none;background-image:none;border:0;box-shadow:none;color:var(--text,#24627d);width:auto;padding:9px 14px}
+.app[data-tab="chats"] .chat-room-actions .secondary{background:var(--panel,#eaf3f8);background-image:none;color:var(--text,#174660);box-shadow:none;border:1px solid #7294ad88}
+.chat-inbox .chat-saved-friends{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:14px 4px;border:0;border-bottom:1px solid #7297b344;border-radius:0;background:none;color:var(--text,#17394f);font-size:14px;box-shadow:none;margin-top:12px}
+.chat-inbox-note{color:var(--muted,#6e8596);font-size:12px;line-height:1.5;margin:16px 2px}
+.app[data-tab="friends"] .friend-intro{padding:12px;margin:0;background:none;border:0;box-shadow:none}
+.app[data-tab="friends"] .friend-intro>img,.app[data-tab="friends"] .friend-intro .world-eyebrow{display:none}
+.app[data-tab="friends"] .friend-intro h2{font:700 24px/1.3 system-ui,sans-serif}
+@keyframes pp-turn{from{opacity:.65;transform:perspective(900px) rotateY(-5deg)}to{opacity:1;transform:perspective(900px) rotateY(0)}}
+@media(max-width:350px){.app[data-screen="lobby"][data-tab="profile"] .lobby-content,.app[data-screen="lobby"][data-tab="chats"] .lobby-content{padding-inline:10px}.pp-toolbar>span{font-size:11px;max-width:140px}.pp-leaf{padding-inline:9px}.pp-stamp>strong{font-size:11px}.pp-paper{min-height:375px}.pp-book-caption>span{font-size:8px}.pp-arrival-route>strong{font-size:11px}}
+@media(min-width:600px){.pp-paper{min-height:440px}.pp-leaf{padding:28px 24px}.passport-book .pp-stamp-art,.passport-book .pp-crown-slot img{width:94px;height:94px}.pp-stamp>strong{font-size:15px}.pp-stamp>small{font-size:12px}.passport-book .pp-kicker{font-size:10px}.passport-book .pp-crown-preview{width:120px;height:120px}}
+@media(prefers-reduced-motion:reduce){.pp-paper{animation:none}.passport-book *{scroll-behavior:auto;transition:none!important}}
+
+.pp-owner-badge{font:600 9px/1.3 system-ui,sans-serif;color:#7a5d21;text-align:center}.pp-friend-memory{padding:14px;border:1px solid #7999b355;border-radius:12px;font-size:13px;color:var(--text,#17394f)}
+
+/* Hinged cover; independently rotating, two-sided leaves. */
+.pp-volume{--open-time:900ms;--cover-progress:0;position:relative;perspective:1300px}.pp-volume.is-open{--cover-progress:1}
+.pp-volume-window{padding:16px 0 25px;overflow:hidden;isolation:isolate}
+.pp-volume-stage{position:relative;perspective:1300px;transform-style:preserve-3d;transform:translateX(calc(-25% * (1 - var(--cover-progress))));transition:transform var(--open-time) cubic-bezier(.24,.65,.2,1);min-height:384px}
+.pp-volume .pp-cover-frame{position:relative;box-sizing:border-box;transform-style:preserve-3d;padding:5px 4px 7px;border-radius:12px;box-shadow:0 8px 16px #00102135,0 4px 0 #d7c9aa,0 7px 0 #16384c}
+.pp-bound-pages{opacity:0;visibility:hidden;transition:opacity 250ms 150ms;pointer-events:none}
+.pp-volume.is-open .pp-bound-pages{opacity:1;visibility:visible;pointer-events:auto}
+.pp-volume .pp-page-stack{position:absolute;inset:6px 0 0 50%;border-radius:8px;background:repeating-linear-gradient(0deg,#d2c3a4 0 1px,#f8f0da 1px 3px);transform:translate3d(3px,5px,-2px);box-shadow:2px 5px 7px #00132260}
+.passport-book .pp-front-cover{position:absolute;left:50%;top:0;bottom:0;width:50%;min-height:44px;padding:0;margin:0;border:0;border-radius:5px 13px 13px 5px;background:#0a3445;background-image:none;box-shadow:3px 5px 12px #00132177;transform-origin:0 50%;transform-style:preserve-3d;transition:transform var(--open-time) cubic-bezier(.24,.65,.2,1),box-shadow var(--open-time);transform:rotateY(calc(-180deg * var(--cover-progress)));z-index:6;touch-action:pan-y;overflow:visible;opacity:1;pointer-events:none}
+.pp-volume.is-open .pp-front-cover{box-shadow:-2px 1px 6px #00132255}
+.pp-volume.is-open:not(.is-opening) .pp-front-cover{z-index:0;visibility:hidden}
+.pp-cover-outside,.pp-cover-inside{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:inherit;overflow:hidden}
+.pp-cover-outside{background:#0a3445;transform:translateZ(2px);border:1px solid #bc9b56;box-shadow:inset 6px 0 8px #001b2a99,inset -2px 0 3px #96b2ba88}
+.passport-book .pp-cover-outside img{display:block;width:100%;height:100%;object-fit:fill;user-select:none;pointer-events:none}
+.pp-cover-inside{background:radial-gradient(ellipse at 50% 50%,#faf3e4,#d7c9aa);transform:rotateY(180deg) translateZ(2px);color:#68736d;flex-direction:column;gap:24px;box-shadow:inset -10px 0 20px #795e3d22;border:5px solid #194357;text-align:center;font:700 12px/1.6 Georgia,serif;letter-spacing:1px}
+.pp-cover-inside small{font:11px/1.6 system-ui,sans-serif;letter-spacing:0}
+.pp-book-opening-controls{display:flex;flex-direction:column;align-items:center;gap:7px;margin:0 0 9px}
+.passport-book .pp-book-opening-controls button{display:flex;align-items:center;justify-content:center;gap:16px;min-width:170px;min-height:44px;padding:10px 16px;border:1px solid #8caaae77;border-radius:12px;background:var(--panel,#f1f7fa);color:var(--text,#204a5e);font-weight:700;font-size:13px;box-shadow:none}
+.pp-book-opening-controls>span{font-size:11px;color:var(--muted,#8296a4)}
+.passport-book:has(.pp-volume.is-closed)>.pp-pagination{display:none}
+.pp-turn-scene{position:absolute;inset:5px 4px 7px;perspective:1300px;z-index:5;pointer-events:none;overflow:visible}
+.pp-still-leaf,.pp-turn-leaf{position:absolute;top:0;height:var(--leaf-height);width:50%;background:#f4ecd9;overflow:hidden}
+.pp-still-leaf{left:0}
+.pp-turn-leaf{left:50%;transform-origin:0 50%;transform-style:preserve-3d;overflow:visible;transition:transform 720ms cubic-bezier(.27,.65,.2,1)}
+.pp-turn-front,.pp-turn-back{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:#f4ecd9;overflow:hidden}
+.pp-turn-front{box-shadow:inset -12px 0 25px #64573c1c}.pp-turn-back{transform:rotateY(180deg);box-shadow:inset 12px 0 25px #64573c1c}
+.pp-turn-scene.next.is-turning .pp-turn-leaf{transform:rotateY(-180deg)}
+.pp-turn-scene.previous .pp-still-leaf{left:50%}.pp-turn-scene.previous .pp-turn-leaf{left:0;transform-origin:100% 50%}.pp-turn-scene.previous.is-turning .pp-turn-leaf{transform:rotateY(180deg)}
+.pp-page-imprint{position:absolute;top:0;width:200%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-height:100%;background:radial-gradient(ellipse at 60% 5%,#fffdf2,transparent 80%),#f4ecd9}
+.pp-page-imprint.left{left:0}.pp-page-imprint.right{right:0}
+.pp-volume .pp-paper{animation:none;min-height:410px}.pp-volume .pp-spread{overflow:visible}.pp-turn-scene .pp-page-imprint *{pointer-events:none!important}
+.passport-book .pp-named-stamp{min-height:158px;gap:0;padding:0}
+.passport-book .pp-named-stamp .pp-stamp-seal{width:100%;max-width:175px;border:1.5px solid #a38137;border-radius:45% 45% 15% 15%;background:#f9f0d74d;box-shadow:inset 0 0 0 3px #f4ebd8,inset 0 0 0 4px #a3813744;padding:8px 6px 7px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:2px;transform:rotate(var(--stamp-angle))}
+.pp-stamp-name{font:750 12px/1.25 system-ui,sans-serif;color:#294b55;max-width:100%;overflow-wrap:anywhere}
+.pp-stamp-picture{position:relative;display:block;width:68px;height:68px}.passport-book .pp-stamp-picture img{object-fit:contain;width:100%;height:100%}
+.pp-stamp-origin{display:flex;align-items:center;justify-content:center;gap:5px;font:650 10px/1.2 system-ui,sans-serif;color:#425c5e}
+.pp-stamp-origin svg{width:18px;height:12px;box-shadow:0 0 0 .5px #6665}
+.pp-origin-mark{font:700 8px/14px system-ui,sans-serif;border:1px solid #718482;border-radius:50%;width:18px;height:14px;letter-spacing:.4px}
+.pp-stamp-era{font:500 9px/1.4 system-ui,sans-serif;color:#657170}
+.pp-stamp-moment{display:flex;flex-direction:column;font:600 9px/1.4 system-ui,sans-serif;color:#425c5e;border-top:1px solid #a3813744;padding-top:3px;margin-top:2px;min-height:24px}.pp-stamp-moment strong{font-size:10px;color:#635121}
+.passport-book .pp-named-stamp.is-empty .pp-stamp-seal{border-style:dashed;border-color:#8c9b93}.passport-book .pp-named-stamp.is-empty img{filter:grayscale(1);opacity:.18}
+.pp-unearned-label{position:absolute;inset:0;display:grid;place-items:center;font:750 8px/1.2 system-ui,sans-serif;letter-spacing:.7px;color:#586f70}
+.pp-origin-note{font:11px/1.5 system-ui,sans-serif;color:var(--muted,#8296a4);margin:8px 3px 12px;text-align:center}
+.passport-book .pp-cover-hit-target{position:absolute;left:50%;top:0;bottom:0;width:50%;min-height:44px;background:transparent;background-image:none;box-shadow:none;border:0;border-radius:10px;padding:0;margin:0;z-index:8;touch-action:pan-y}
+.pp-volume.is-open .pp-cover-hit-target{visibility:hidden;pointer-events:none}.pp-sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+.pp-volume.is-dragging .pp-volume-stage,.pp-volume.is-dragging .pp-front-cover{transition:none!important}.pp-volume.is-dragging .pp-bound-pages{opacity:var(--cover-progress);visibility:visible;transition:none}
+@media(min-width:600px){.pp-volume .pp-paper{min-height:470px}.pp-stamp-picture{width:92px;height:92px}.pp-stamp-name{font-size:15px}.pp-stamp-era,.pp-stamp-origin,.pp-stamp-moment{font-size:11px}.pp-stamp-moment strong{font-size:12px}.passport-book .pp-named-stamp{min-height:186px}}
+@media(prefers-reduced-motion:reduce){.pp-volume-stage,.pp-front-cover,.pp-bound-pages,.pp-turn-leaf{transition:none!important}.pp-turn-scene{display:none}}

@@ -62,13 +62,13 @@ test('Phone update screen: automatically check, retry offline, download once and
   const button=text=>[...doc.querySelectorAll('button')].find(b=>b.textContent.trim()===text);
   try{
     verifiedAccount(window,{fetchImpl:window.fetch});window.eval(fs.readFileSync(new URL('../android/app/src/main/assets/app.js',import.meta.url),'utf8'));
-    await waitFor(()=>button('Profile'));button('Profile').click();await waitFor(()=>doc.querySelector('.profile-options'));
+    await waitFor(()=>button('Passport'));button('Passport').click();await waitFor(()=>doc.querySelector('[aria-label="Passport settings"]'));doc.querySelector('[aria-label="Passport settings"]').click();await waitFor(()=>doc.querySelector('.pp-settings'));[...doc.querySelectorAll('summary')].find(n=>n.textContent==='App & help').click();
     const profileBefore=window.localStorage.getItem('arctic-play.v1.profile');
     const open=()=>[...doc.querySelectorAll('.profile-options button')].find(b=>b.textContent.includes('App updates')).click();
     open();await waitFor(()=>button('Download latest APK'));assert.ok(doc.querySelector('.update-details').textContent.includes(APP_VERSION));button('Download latest APK').click();await waitFor(()=>doc.querySelector('.update-download-note'));assert.deepEqual(downloads,[fixture(APP_VERSION,APP_VERSION_CODE).downloadUrl]);
     response='offline';button('Check for updates').click();await waitFor(()=>button('Retry update check'));assert.ok(doc.querySelector('[role="alert"]'));assert.equal(button('Download update'),undefined,'a failed check cannot retain an outdated download target');
     response='current';button('Retry update check').click();await waitFor(()=>button('Download latest APK'));assert.match(doc.querySelector('.update-status').textContent,/up to date/);
-    window.arcticBack();await waitFor(()=>!doc.querySelector('.app-updates'));assert.ok(doc.querySelector('.profile-card'));
+    window.arcticBack();await waitFor(()=>!doc.querySelector('.app-updates'));assert.ok(doc.querySelector('.pp-settings'));
     assert.equal(window.localStorage.getItem('arctic-play.v1.profile'),profileBefore);assert.deepEqual(errors,[]);
   }finally{dom.window.close();}
 });

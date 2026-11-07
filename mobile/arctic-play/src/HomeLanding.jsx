@@ -1,29 +1,30 @@
-import React from 'react';
-import {ArrowRight,Play,Users} from 'lucide-react';
-import {BRAND} from './brand.js';
-import {CELEBRATION_ART} from './celebration.js';
-import {RoomCodeInput} from './RoomCodeInput.jsx';
+import React,{useLayoutEffect} from 'react';
 
-export function HomeLanding({onBrowse,onJoin,onContinue,continueLabel,roomCode='',onRoomCode,story=true,discovery}){
-  return <section className="home-landing harbor-home" aria-labelledby="home-intention">
-    <p className="home-world-kicker">{story?'WELCOME TO LANTERN HARBOR':'SEVEN REMARKABLE STRATEGY GAMES'}</p>
-    <div className="harbor-panorama"><img className="home-world-art" src={CELEBRATION_ART.home} alt="Polly, Pengu, Retsba and Abster welcome you to Lantern Harbor" fetchPriority="high" width="1200" height="800"/></div>
-    <div className="home-world-copy">
-      <h2 id="home-intention">{story?'An Endless Celebration of Timeless Board Game Classics.':<>Find your next <em>great game.</em></>}</h2>
-      {story?<div className="home-celebration-story">
-        <p>Kingdoms fell. Empires faded. But their wisdom found a secret home.</p>
-        <p>Far from the chaos of the modern world, a hidden kingdom in Antarctica kept the celebration alive.</p>
-        <p className="home-story-finale"><span>Centuries of stories.</span><strong>Take Your Seat. Relive History.</strong></p>
-      </div>:<p className="home-motto">{BRAND.tagline}</p>}
-    </div>
-    {discovery}
-    <div className="home-play-actions">
-      {onContinue&&<button className="secondary resume-table home-continue" onClick={onContinue}><Play size={17}/>{continueLabel||'Continue playing'}</button>}
-      <button className="primary home-explore" onClick={onBrowse}>{story?'Explore the Halls':'Find a game'} <ArrowRight size={22}/></button>
-      <div className="home-join-controls">
-        <button className="secondary home-join-sticker" onClick={onJoin}><Users size={20}/> Join friends</button>
-        <div className="home-room-code"><RoomCodeInput id="home-room-code" value={roomCode} onChange={onRoomCode} onEnter={onJoin}/></div>
-      </div>
-    </div>
-  </section>;
+// Presentation only. All routes and resume authority remain owned by App.
+export function HomeLanding({onBrowse,onLearn,onShop,onSearch,onJoin,onContinue,continueLabel,continueImage,story=true,onStory,gameCount=9,onJourney,discovery}){
+ useLayoutEffect(()=>{document.documentElement.classList.add('home-v2-active');return()=>document.documentElement.classList.remove('home-v2-active');},[]);
+ const base='art/home-v1/',resume=typeof onContinue==='function',lesson=resume&&/learning|lesson/i.test(continueLabel||'');
+ const detail=lesson?'Your last lesson':String(continueLabel||'Your saved game').replace(/^Continue\s+/i,'');
+ const image=resume&&typeof continueImage==='string'&&continueImage.startsWith('art/')?continueImage:null;
+ return <section className="home-landing home-v2" aria-labelledby="home-v2-title">
+  <h2 id="home-v2-title" className="home-v2-title">Antarctic Kingdoms</h2>
+  <section className="home-v2-hero" aria-label="Welcome to Lantern Harbor">
+   <div className="home-v2-scene" aria-hidden="true"/>
+   <img className="home-v2-hosts" src={base+'home-hosts-welcome.webp'} width="1536" height="1024" alt="Nova, Retsba, Pengu and Abster welcome you to Lantern Harbor" fetchPriority="high"/>
+   <div className="home-v2-copy"><p>LANTERN HARBOR</p><h3>Take your<br/>seat.</h3><span>Great games.<br/>Even better company.</span></div>
+  </section>
+  <div className="home-play-actions home-v2-actions">
+   <button type="button" className={'home-v2-primary '+(resume?'home-resume':'home-explore')} onClick={resume?onContinue:onBrowse} aria-label={resume?(continueLabel||'Continue playing'):'Explore the Games'}>
+    <span><strong>{resume?(lesson?'Continue learning':'Continue playing'):'Explore the Games'}</strong><small>{resume?detail:<>{gameCount} games to discover · Find your next favourite</>}</small></span>
+    <img src={image||base+'hall-discovery.webp'} className={image?'home-v2-resume-cover':'home-v2-hall'} width="180" height="120" alt="" decoding="async"/>
+   </button>
+  </div>
+  <div className="home-v2-secondary" aria-label="Learn and play together">
+   <button type="button" className="home-v2-tile" onClick={onLearn||onBrowse}><strong>Learn a game</strong><small>One piece at a time</small><img src={base+'learn-pengu.webp'} width="1199" height="1312" alt="" decoding="async"/></button>
+   <button type="button" className="home-v2-tile home-v2-friends" onClick={onJoin}><strong>Join friends</strong><small>Join with a room code</small><img src={base+'join-friends.webp'} width="1312" height="1199" alt="" decoding="async"/></button>
+  </div>
+  {onShop&&<button type="button" className="home-v2-shop" onClick={onShop}><span><strong>Physical boards</strong><small>Preview the collection</small><em>CONCEPT PREVIEW</em></span><img src={base+'physical-board-preview.webp'} width="1536" height="1024" alt="" decoding="async"/></button>}
+  {onJourney?<button type="button" className="home-v2-journey" onClick={onJourney}><img src={base+'passport-journey.webp'} width="1774" height="887" alt="" decoding="async"/><span><strong>Your Antarctic Passport</strong><small>Discover your next hall</small></span></button>:discovery}
+  {story&&onStory&&<button type="button" className="home-v2-story" onClick={onStory}>Discover the story of Lantern Harbor</button>}
+ </section>;
 }
