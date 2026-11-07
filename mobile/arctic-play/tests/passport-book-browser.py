@@ -18,14 +18,15 @@ saved=json.loads(subprocess.check_output(['node','-e',"const g=require(process.a
 checks=[];errors=[];layouts=[]
 with sync_playwright() as pw:
  browser=pw.chromium.launch(executable_path=a.browser,args=['--no-sandbox','--disable-dev-shm-usage'])
- def context(practice=None,theme='dark',count=0,rooms=None,motion='reduce'):
+ def context(practice=None,theme='dark',count=0,rooms=None,motion='reduce',legacyPage=None):
   c=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,reduced_motion=motion)
   values={'cloud-session':{'accountId':account,'session':account+'.'+'q'*43},'antarctic-visa.v1.'+account:passport,'theme':theme,'mascot-companions':{'mode':'off','motion':False}}
   values['profile']={'id':'passport-qa','name':'Explorer','avatar':'red'}
   values['eternal-gathering.v1']={'halls':{name:{'learnedAt':1794000000000+i*86400000} for i,name in enumerate(['xiangqi','shogi','sannin','sanguo','sanyou','yanyi','dominion'][:count])}}
+  if legacyPage is not None:values['passport-page.v1.passport-qa']=legacyPage
   if rooms is not None:values['rooms']=rooms
   if practice:values.update({'practice.xiangqi':practice,'last-table':{'id':'xiangqi'}})
-  c.add_init_script('const seed='+json.dumps(values)+';for(const [key,value]of Object.entries(seed))localStorage.setItem("arctic-play.v1."+key,JSON.stringify(value));window.WebSocket=undefined;window.Android={appReady(){},setDarkTheme(){},getAppInfo:()=>JSON.stringify({packageName:"xyz.arcticdominion.play",versionName:"5.9.6",versionCode:94})};')
+  c.add_init_script('const seed='+json.dumps(values)+';for(const [key,value]of Object.entries(seed))localStorage.setItem("arctic-play.v1."+key,JSON.stringify(value));window.WebSocket=undefined;window.Android={appReady(){},setDarkTheme(){},getAppInfo:()=>JSON.stringify({packageName:"xyz.arcticdominion.play",versionName:"5.9.8",versionCode:96})};')
   def route(r):
    url=r.request.url.split('?')[0]
    fixtures={'/capabilities':{'version':2,'cloud':True,'accountPlay':True},'/passport':{'identity':{'accountId':account,'displayName':'Saved Player'},'passport':passport},'/play-access':{'accountId':account,'online':True,'leaseSeconds':60,'offlineOwned':False,'license':None,'marketingChoiceNeeded':False},'/auth/providers':{}}
@@ -50,10 +51,14 @@ with sync_playwright() as pw:
   if theme=='light':page.locator('.header-theme').click()
   for width,height in [(320,640),(360,800),(390,844),(412,915),(768,1024),(844,390)]:
    page.set_viewport_size({'width':width,'height':height})
-   for index in range(4):
+   for index in range(6):
     if index:page.get_by_role('button',name='Next passport page').click()
     stable(page)
     assert page.evaluate('()=>document.documentElement.scrollWidth<=innerWidth'),(theme,width,index)
+    metrics=page.locator('.pp-volume-stage').evaluate('n=>{const r=n.getBoundingClientRect();return {width:r.width,height:r.height}}')
+    assert abs(metrics['width']/metrics['height']-176/125)<.02,(theme,width,index,metrics)
+    leaves=page.locator('.pp-paper>.pp-leaf').evaluate_all('nodes=>nodes.map(n=>({scroll:n.scrollHeight,height:n.clientHeight,text:n.innerText}))')
+    assert all(n['scroll']<=n['height']+2 for n in leaves),(theme,width,index,leaves)
     actions=page.locator('.passport-book button').evaluate_all("nodes=>nodes.map(n=>({height:n.getBoundingClientRect().height,width:n.getBoundingClientRect().width,disabled:n.disabled}))")
     assert all(n['height']>=44 for n in actions),(theme,width,index,actions)
     page.locator('.pp-next-stamp').scroll_into_view_if_needed()
@@ -62,15 +67,15 @@ with sync_playwright() as pw:
    page.evaluate('window.arcticBack()');expect(page.locator('.pp-spread')).to_have_attribute('data-page','0')
   page.set_viewport_size({'width':390,'height':844});page.locator('.lobby-content').evaluate('n=>n.scrollTop=0');shot(page,'Passport-arrival-'+theme)
   page.get_by_role('button',name='Next passport page').click();shot(page,'Passport-stamps-'+theme);page.evaluate('window.arcticBack()')
- checks.append('Four spreads at six viewport sizes in both themes: no horizontal overflow, all book buttons at least 44px tall, next action reachable.')
+ checks.append('Six spreads at six viewport sizes in both themes: no horizontal overflow, all book buttons at least 44px tall, next action reachable.')
  page.get_by_role('button',name='Next passport page').click();page.reload();nav(page,'Passport');expect(page.locator('.pp-spread')).to_have_attribute('data-page','1')
- assert page.locator('[data-stamp][data-earned="true"]').count()==3
+ assert page.locator('[data-stamp][data-earned="true"]').count()==2
  checks.append('Old lantern timestamps survive; earned stamps render with dates and the last book page survives reopening.')
  page.locator('.pp-spread').focus();page.keyboard.press('ArrowRight');expect(page.locator('.pp-spread')).to_have_attribute('data-page','2');page.keyboard.press('ArrowLeft');expect(page.locator('.pp-spread')).to_have_attribute('data-page','1')
  page.locator('.pp-spread').evaluate("n=>{n.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,changedTouches:[new Touch({identifier:1,target:n,clientX:250,clientY:230})]}));n.dispatchEvent(new TouchEvent('touchend',{bubbles:true,changedTouches:[new Touch({identifier:1,target:n,clientX:90,clientY:240})]}))}")
  expect(page.locator('.pp-spread')).to_have_attribute('data-page','2')
  checks.append('Buttons, arrow keys, horizontal swipe and native Back turn the book; reduced-motion preference is respected.')
- page.get_by_role('button',name='Passport settings').click();page.locator('summary').filter(has_text='App & help').click();page.get_by_role('button',name='App updates',exact=False).click();page.locator('.app-updates').wait_for();expect(page.locator('.app-updates')).to_contain_text('5.9.6')
+ page.get_by_role('button',name='Passport settings').click();page.locator('summary').filter(has_text='App & help').click();page.get_by_role('button',name='App updates',exact=False).click();page.locator('.app-updates').wait_for();expect(page.locator('.app-updates')).to_contain_text('5.9.8')
  page.evaluate('window.arcticBack()');page.locator('.pp-settings').wait_for();page.evaluate('window.arcticBack()');page.locator('.passport-book').wait_for()
  page.get_by_role('button',name='Passport settings').click();page.locator('summary').filter(has_text='Account').click();page.locator('.profile-logout').click();page.locator('.logout-panel').wait_for();page.evaluate('window.arcticBack()');page.locator('.pp-settings').wait_for();page.get_by_role('button',name='Back to passport').click()
  checks.append('Account/logout confirmation and app updates remain reachable through grouped settings; Back closes modals before Passport subviews.')
@@ -82,10 +87,10 @@ with sync_playwright() as pw:
  checks.append('Chats contains only room conversations, Join, Invite and Saved friends; learning, Camp and stories remain accessible from Passport extras.')
  c.close()
  c,page=context(rooms={'ABC234':{'room':{'roomCode':'ABC234','tableId':'xiangqi','status':'waiting','chat':[{'text':'Ready for a rematch?'}]},'at':1234}});nav(page,'Chats');expect(page.locator('.table-row')).to_contain_text('Xiangqi · ABC234');expect(page.locator('.table-row')).to_contain_text('Ready for a rematch?');checks.append('Saved room conversations retain their game, room code, latest message and existing reconnect button.');c.close()
- c,page=context(count=7);nav(page,'Passport');page.locator('.pp-next-stamp').click();expect(page.locator('.pp-spread')).to_have_attribute('data-page','3');expect(page.locator('.pp-crown-page')).to_contain_text('CROWN STAMP EARNED');assert 'unearned' not in page.locator('.pp-crown-large').get_attribute('class');shot(page,'Passport-crown-earned')
+ c,page=context(count=7);nav(page,'Passport');page.locator('.pp-next-stamp').click();expect(page.locator('.pp-spread')).to_have_attribute('data-page','5');expect(page.locator('.pp-crown-page')).to_contain_text('CROWN STAMP EARNED');assert 'unearned' not in page.locator('.pp-crown-large').get_attribute('class');shot(page,'Passport-crown-earned')
  before=page.evaluate("localStorage.getItem('arctic-play.v1.eternal-gathering.v1')");page.reload();nav(page,'Passport');expect(page.locator('.pp-crown-page')).to_contain_text('CROWN STAMP EARNED');assert page.evaluate("localStorage.getItem('arctic-play.v1.eternal-gathering.v1')")==before
  checks.append('Seven migrated stamps automatically show the Crown with a stable date; opening the book never modifies learning records or claims the optional Eighth Lantern story.')
- page.get_by_role('button',name='Play another game',exact=False).click();page.locator('.discovery-search').wait_for();assert page.locator('[data-catalogue-id]').count()==9;checks.append('After earning the Crown, the primary action returns to the real game catalogue.');c.close()
+ page.get_by_role('button',name='Play another game',exact=False).click();page.get_by_role('button',name='All games',exact=False).first.click();page.locator('.discovery-search').wait_for();assert page.locator('[data-catalogue-id]').count()==9;checks.append('After earning the Crown, the primary action returns to the real game catalogue.');c.close()
  c,page=context();nav(page,'Passport');page.locator('.pp-next-stamp').click();page.locator('.story-adventure[data-story-game="xiangqi"]').wait_for();page.locator('[data-testid="game-adventure"][data-ready="true"]').wait_for()
  steps=json.loads(subprocess.check_output(['node','-e',"const a=require(process.argv[1]),g=require(process.argv[2]),m=require(process.argv[3]);let p=a.adventurePosition('xiangqi','cannon-bridge',m.preferredSetup('xiangqi','cannon-bridge')),path=[],out=[];while(!p.complete){let move=p.legal[0];out.push({from:g.pieces('xiangqi',p.state).find(s=>s.source===move.source).cell,target:move.target});path.push(move.id);p=a.adventurePosition('xiangqi','cannon-bridge',m.preferredSetup('xiangqi','cannon-bridge'),path);out[out.length-1].stage=p.stage;out[out.length-1].complete=p.complete;}console.log(JSON.stringify(out));",str(mobile/'build/adventures.cjs'),str(mobile/'build/games.cjs'),str(mobile/'build/minimalLearning.cjs')],text=True))
  page.locator('.story-adventure .board-viewport[aria-busy="false"]').wait_for()
@@ -99,7 +104,9 @@ with sync_playwright() as pw:
  c,page=context(count=3,motion='no-preference');page.locator('.bottom-nav').get_by_role('button',name='Passport',exact=True).click()
  expect(page.locator('.pp-volume')).to_have_attribute('data-open','false')
  assert page.locator('.pp-bound-pages').get_attribute('inert') is not None
- assert page.locator('.pp-pagination').is_hidden();shot(page,'Passport-cover-closed')
+ assert page.locator('.pp-pagination').is_hidden()
+ box=page.locator('.pp-cover-hit-target').bounding_box();assert abs(box['width']/box['height']-88/125)<.02,box
+ shot(page,'Passport-cover-closed')
  before=page.evaluate("localStorage.getItem('arctic-play.v1.eternal-gathering.v1')")
  page.get_by_role('button',name='Open your Passport',exact=False).click();page.wait_for_timeout(300)
  assert page.locator('.pp-front-cover').evaluate("n=>getComputedStyle(n).transform.startsWith('matrix3d')")
@@ -107,7 +114,7 @@ with sync_playwright() as pw:
  expect(page.locator('.pp-volume')).to_have_attribute('data-open','true')
  page.get_by_role('button',name='Next passport page').click();page.wait_for_timeout(220)
  assert page.locator('.pp-turn-scene.is-turning').count()==1
- assert page.locator('.pp-turn-back .pp-stamp-name').count()==4
+ assert page.locator('.pp-turn-back .pp-stamp-name').count()==2
  shot(page,'Passport-leaf-turning');page.wait_for_function("()=>!document.querySelector('.pp-turn-scene')")
  expect(page.locator('.pp-spread')).to_have_attribute('data-page','1')
  for stamp in page.locator('[data-stamp][data-earned="true"]').all():
@@ -124,6 +131,11 @@ with sync_playwright() as pw:
  page.mouse.up();page.wait_for_function("()=>!document.querySelector('.pp-volume').classList.contains('is-opening')")
  expect(page.locator('.pp-volume')).to_have_attribute('data-open','true')
  checks.append('Closed cover hides page controls; hinged front/back cover, reversible close, finger-following drag and actual two-sided leaf turns work with normal motion. Dates retain original instants and local timezone; opening never changes milestones.')
+ c.close()
+ c,page=context(count=3,legacyPage=3);nav(page,'Passport');expect(page.locator('.pp-spread')).to_have_attribute('data-page','5')
+ assert page.evaluate("JSON.parse(localStorage.getItem('arctic-play.v1.passport-page.v1.passport-qa'))")==3
+ assert page.evaluate("JSON.parse(localStorage.getItem('arctic-play.v1.passport-page.v2.passport-qa'))")==5
+ checks.append('An existing Crown reading position migrates from old spread four to compact spread six without rewriting its old record.')
  c.close();browser.close();assert not errors,errors
- report={'version':'5.9.6','checks':checks,'layoutCases':len(layouts),'layouts':layouts,'pageErrors':errors,'network':'mocked account API; real bundled workers and legal-move engine','androidBridge':'simulated','physicalAndroidTested':False,'liveSignInTested':False}
+ report={'version':'5.9.8','checks':checks,'layoutCases':len(layouts),'layouts':layouts,'pageErrors':errors,'network':'mocked account API; real bundled workers and legal-move engine','androidBridge':'simulated','physicalAndroidTested':False,'liveSignInTested':False}
  (a.output/'Passport-Browser-QA.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({'checks':checks,'layoutCases':len(layouts),'pageErrors':errors},indent=2))

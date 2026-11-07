@@ -1,6 +1,6 @@
 import {HALL_ORDER,HALLS} from './gathering.js';
 
-export const PASSPORT_PAGES=['Arrival','Lanterns I','Lanterns II','The Crown'];
+export const PASSPORT_PAGES=['Arrival','Lanterns I','Lanterns II','Lanterns III','Lanterns IV','The Crown'];
 const names={xiangqi:'Xiangqi',shogi:'Shogi',sannin:'Sannin Shogi',sanguo:'Sanguo Qi',sanyou:'San You Qi',yanyi:'Sanguo Yan Yi Qi',dominion:'Chaturanga'};
 const validTime=value=>Number.isFinite(value)&&value>0&&value<=8640000000000000?value:null;
 // A read-only projection of existing learning records. Never grants game access.
@@ -28,3 +28,6 @@ export function passportMoment(value){
  const date=new Date(value);
  return {iso:date.toISOString(),date:passportDate(value),time:date.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',timeZoneName:'short'}),full:date.toLocaleString(undefined,{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZoneName:'long'})};
 }
+
+// Preserve reading position when migrating the four taller spreads to six compact spreads.
+export function migratePassportPage(value){return Number.isInteger(value)&&value>=0&&value<4?[0,1,3,5][value]:0;}

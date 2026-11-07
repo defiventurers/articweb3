@@ -6,13 +6,14 @@ import * as adapter from '../../../frontend/src/games/shanshui-xiangqi/mobileAda
 import {capital,teamLabel} from '../../../frontend/src/games/shanshui-xiangqi/presentation.js';
 import {RoomClient,bindRoomLifecycle,requireServiceFeature,INVITE_ROOT} from './network.js';
 import {read,write} from './storage.js';
+import {useConquestOutcome} from './useConquestOutcome.jsx';
 const assets={root:'art/shanshui',yanYiRoot:'art/yanyi/pieces'};
 const saveKey=account=>'shanshui-room.v1.'+account;
 
 // Uses the current authenticated transport, outside the seven-hall ledger.
 export function ShanshuiMobile({access,profile,credentials,onExit,initialCode=''}){
- const [online,setOnline]=useState(!!initialCode);
- if(!online)return <ShanshuiApp assets={assets} workerUrl="shanshui-bot.js" onExit={onExit} onOnline={()=>setOnline(true)}/>;
+ const [online,setOnline]=useState(!!initialCode),[status,setStatus]=useState(null);useConquestOutcome(status||{id:'shanshui',enabled:false});
+ if(!online)return <ShanshuiApp onMatchStatus={setStatus} assets={assets} workerUrl="shanshui-bot.js" onExit={onExit} onOnline={()=>setOnline(true)}/>;
  return <ShanshuiOnline initialCode={initialCode} access={access} profile={profile} credentials={credentials} onExit={()=>setOnline(false)}/>;
 }
 export function ShanshuiOnline({access,profile,credentials,onExit,initialCode=''}){
@@ -23,6 +24,7 @@ export function ShanshuiOnline({access,profile,credentials,onExit,initialCode=''
  const seats=adapter.definition(room?.tableId||tableId).seats,state=room?.gameState;
  const me=room?.players.find(p=>p.id===profile.id),active=state&&rules.controllingSeat(state);
  const legal=useMemo(()=>state?rules.getLegalActions(state):[],[state]);
+ useConquestOutcome({scope:access.accountId,id:'shanshui',enabled:!!state,mode:'online',seat:rules.teamOf(me?.seat),outcome:state?.outcome,actions:room?.revision||0,matchId:room?.roomCode});
  const canAct=access.allowed&&status==='online'&&!busy&&room?.status==='playing'&&!state?.outcome&&me?.seat===active;
  useEffect(()=>{const unstatus=client.onStatus(setStatus),unlisten=client.listen(value=>{if(value.room&&adapter.isShanshui(value.room.tableId))setRoom(value.room);if(value.error)setError(value.error);}),unbind=bindRoomLifecycle(client);return()=>{unstatus();unlisten();unbind();client.close();};},[client]);
  useEffect(()=>{setSelected(null);if(room&&session)write(saveKey(access.accountId),{roomCode:room.roomCode,...session});},[room,session,access.accountId]);

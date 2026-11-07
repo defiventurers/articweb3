@@ -1,7 +1,7 @@
 import React,{useState,useEffect,useRef} from 'react';
 
 // Presentation only. The book never writes learning or access records.
-export function PassportVolume({page,onTurn,children}){
+export function PassportVolume({page,pageCount=6,onTurn,children}){
  const [open,setOpen]=useState(false),[opening,setOpening]=useState(false),[flip,setFlip]=useState(null),[dragProgress,setDragProgress]=useState(null);
  const root=useRef(null),timer=useRef(null),drag=useRef(null),opener=useRef(null),openValue=useRef(false),busy=useRef(false),suppressClick=useRef(false);
  const reduced=()=>typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -14,7 +14,7 @@ export function PassportVolume({page,onTurn,children}){
   busy.current=true;timer.current=setTimeout(()=>{busy.current=false;setOpening(false);if(next)focusPage();else opener.current?.focus({preventScroll:true});},900);
  }
  function turn(next){
-  if(busy.current||next===page||next<0||next>3)return;
+  if(busy.current||next===page||next<0||next>=pageCount)return;
   if(!openValue.current){onTurn(next);reveal(true);return;}
   if(reduced()){onTurn(next);return;}
   const paper=root.current?.querySelector('.pp-paper');
@@ -52,7 +52,7 @@ export function PassportVolume({page,onTurn,children}){
     </div>}
    </div>
    <div className="pp-front-cover" aria-hidden="true">
-    <span className="pp-cover-outside"><img src="art/passport-book-v2/company-passport-cover.webp" width="1024" height="1536" alt="Gold engraved Antarctic Gaming Co. mountain and star logo on a navy passport cover" draggable="false"/></span>
+    <span className="pp-cover-outside"><img src="art/passport-frost-v1/company-passport-frost.webp" width="1024" height="1536" alt="Frosted sapphire passport with the gold Antarctic Gaming Co. mountain and star logo" draggable="false"/></span>
     <span className="pp-cover-inside" aria-hidden="true"><span>ANTARCTIC<br/>GAMING CO.</span><small>A Kingdom of<br/>shared discoveries.</small></span>
    </div>
    <button ref={opener} type="button" className="pp-cover-hit-target" aria-label="Open Antarctic Passport" aria-expanded={open} tabIndex={open?-1:0} disabled={opening||open} onClick={()=>{if(suppressClick.current){suppressClick.current=false;return;}reveal(true);}}
