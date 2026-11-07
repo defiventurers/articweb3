@@ -11,12 +11,13 @@ const practicePoint = (army, role) => {
   const base = role === 'king' ? [1, 1] : role === 'advisor' ? [0, 1] : role === 'elephant' ? [4, 2] : role === 'mountain-soldier' ? [4, 5] : role === 'river-soldier' ? [5, 4] : [3, 3];
   return { row: ARMY_META[army].rowSign === 1 ? base[0] : 12 - base[0], col: ARMY_META[army].colSign === 1 ? base[1] : 12 - base[1] };
 };
-export function ShanshuiApp({ onExit = () => {}, assets, workerUrl, onOnline }) {
+export function ShanshuiApp({ onMatchStatus, onExit = () => {}, assets, workerUrl, onOnline }) {
   const [mode, setMode] = useState('menu'), [state, setState] = useState(createInitialState), [history, setHistory] = useState([]);
   const [selected, setSelected] = useState(null), [humanTeam, setHumanTeam] = useState('white'), [difficulty, setDifficulty] = useState('medium');
   const [theme, setTheme] = useState('dark'), [rotation, setRotation] = useState(90), [rules, setRules] = useState(null), [chapter, setChapter] = useState(0);
   const [army, setArmy] = useState('red'), [role, setRole] = useState('king'), [locked, setLocked] = useState(false), [notice, setNotice] = useState(''), [thinking, setThinking] = useState(false), [saved, setSaved] = useState(savedGame), [confirm, setConfirm] = useState(null);
   const playing = ['bot', 'local', 'four'].includes(mode), sandbox = mode === 'explore' || mode === 'practice';
+  useEffect(()=>{onMatchStatus?.({id:'shanshui',enabled:playing,mode:mode==='bot'?'bots':mode,seat:humanTeam,outcome:state.outcome,actions:history.length});},[onMatchStatus,playing,mode,humanTeam,state.outcome,history.length]);
   const piece = state.pieces.find(p => p.id === selected), activeTeam = teamOf(state.turn), humanTurn = mode !== 'bot' || activeTeam === humanTeam;
   const actions = useMemo(() => playing ? getLegalActions(state) : mode === 'practice' && piece ? pseudoActions(state, piece) : [], [mode, state, selected]);
   const chosenActions = actions.filter(a => a.pieceId === selected);

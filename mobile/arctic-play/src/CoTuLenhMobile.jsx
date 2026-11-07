@@ -1,4 +1,5 @@
-import React from 'react';
+import React,{useState} from 'react';
+import {useConquestOutcome} from './useConquestOutcome.jsx';
 import CoTuLenhApp from '../../../frontend/src/games/co-tu-lenh/CoTuLenhApp.jsx';
 
 /**
@@ -7,7 +8,8 @@ import CoTuLenhApp from '../../../frontend/src/games/co-tu-lenh/CoTuLenhApp.jsx'
  * This route is separate from the seven heritage hall catalogue and avoids existing unlock gates.
  */
 export function CoTuLenhMobile({onExit}) {
-  return <CoTuLenhApp
+  const [status,setStatus]=useState(null);useConquestOutcome(status||{id:'co-tu-lenh',enabled:false});
+  return <CoTuLenhApp onMatchStatus={setStatus}
     onExitToLibrary={onExit}
     assetBase="art/co-tu-lenh"
     wsEndpoint="wss://articweb3.onrender.com"

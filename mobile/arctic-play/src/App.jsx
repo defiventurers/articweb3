@@ -1,3 +1,6 @@
+import {GamesAdventure,useConquestOutcome} from './GamesAdventure.jsx';
+import {DiscoveryGames} from './DiscoveryGames.jsx';
+import {DISCOVERY_CATALOGUE} from './gameCatalogue.js';
 import {ShanshuiMobile} from './ShanshuiMobile.jsx';
 import {CoTuLenhMobile} from './CoTuLenhMobile.jsx';
 import {secureUuid} from './uuid.js';
@@ -111,6 +114,7 @@ function App(){
   const update=useRequiredUpdate();
   const toggleTheme=()=>setTheme(current=>current==='dark'?'light':'dark');
   const [shanshuiInvite,setShanshuiInvite]=useState('');
+  const [gamesQuery,setGamesQuery]=useState(''),[gamesIntent,setGamesIntent]=useState('play');
   const [filter,setFilter]=useState('All'),[favorites,setFavorites]=useState(()=>read('favorites',[]));
   const [challengeId,setChallengeId]=useState(null);
   useEffect(()=>{window.arcticChallenge=value=>{if(/^[A-Za-z0-9_-]{24}$/.test(value)){setChallengeId(value);setSheet('friend-challenge');}};return()=>delete window.arcticChallenge;},[]);
@@ -151,6 +155,7 @@ function App(){
   const me=room?.players.find(p=>p.id===profile.id);
   const humans=online?room.players.filter(p=>!p.bot).map(p=>p.seat):local?.humans||[];
   const perspective=id?matchPerspective({id,online,seat:me?.seat,mode:local?.mode,humans,turn:state?.turn}):'red';
+  useConquestOutcome({scope:playAccess.accountId||'device',id,enabled:screen==='match',matchId:online?room?.roomCode:local?.matchId,mode:online?'online':local?.mode,seat:online?me?.seat:local?.humans?.[0],outcome,actions:online?room?.revision:local?.actionLog?.length,eligible:online?!!me?.seat:local?.progressEligible!==false});
   const canAct=playAccess.allowed&&!!state&&!outcome&&!busy&&!loadingLegal&&!(online&&room?.fair?.pending)&&(online?connection==='online'&&me?.seat===turn(state):humans.includes(turn(state)));
   const pocket=useMemo(()=>state?hand(id,state):[],[id,state]);
   const visible=useMemo(()=>state?pieces(id,state):[],[id,state]);
@@ -395,16 +400,7 @@ function App(){
     {screen==='lobby'&&<>
       <header className={`lobby-header ${tab==='home'?'world-header':''}`}><button className="avatar-btn" onClick={()=>{setNameDraft(profile.name);setSheet('name');}} aria-label="Edit profile"><Avatar color={profile.avatar} online={connection==='online'}/></button><h1 className={tab==='home'?'brand-wordmark':''}>{tab==='home'?<><span>ANTARCTIC</span><strong>KINGDOMS</strong></>:(storyOptions.enabled?({games:'Games',friends:'Festival Invitations',chats:'Chats',profile:'Passport'})[tab]:null)||tabs.find(t=>t[0]===tab)?.[1]}</h1>{headerControls}</header>
       <main className="lobby-content" data-view={tab}>
-        {tab==='games'&&<>
-          <div className="filter-row">{['All','2 players','3 players','4 players','Favorites'].map(item=><button className={filter===item?'active':''} key={item} onClick={()=>setFilter(item)}>{item==='Favorites'&&<Heart size={13}/>} {item}</button>)}</div>
-
-          <JourneyBar onJourney={showJourney} access={hallAccess} onFormations={()=>formations()} onPass={()=>accessShop('all-halls-v1')}/>
-          <p className="games-chronology">7 halls · Oldest roots first</p>
-          <article className="ctl-catalogue-entry" aria-label="Cờ Tư Lệnh — Vietnamese Commander Chess"><img loading="lazy" src="art/co-tu-lenh/board/board-antarctic-11x12.webp" alt="Cờ Tư Lệnh Arctic board with 11 columns and 12 rows"/><div><small>VIETNAM · 2010 · MODERN STRATEGY GAME · RESEARCH DRAFT</small><h2>Cờ Tư Lệnh</h2><p>Command penguin explorers across icy land and sea. Play local, bots, guided practice, or server-validated private rooms. Choose versioned 2015/2024 rules and optional defence-range rings.</p><button className="primary" aria-label="Play Cờ Tư Lệnh" onClick={()=>setScreen('co-tu-lenh')}>Play Commander Chess</button></div></article>
-          <article className="shanshui-catalogue-entry"><img src="art/shanshui/starting-position-light.webp" alt="Four armies on the Mountain and River Chess board"/><div><small>NEW · CHINESE XIANGQI ADAPTATION</small><h2>Shanshui Xiangqi</h2><p>Four armies. One shared victory. Two-player teams, four-player 2v2, bots and guided practice.</p><button className="primary" aria-label="Play Shanshui Xiangqi" onClick={()=>{setShanshuiInvite('');setScreen('shanshui');}}>Play Shanshui Xiangqi</button></div></article>
-          <div className={'games-grid '+(storyOptions.enabled?'seven-halls-grid':'')}>{chronologicalGames(GAME_LIST).filter(g=>filter==='All'||filter==='Favorites'&&favorites.includes(g.id)||filter===`${g.players} players`).map(g=><HallCard key={g.id} definition={g} access={hallAccess.allowed(g.id)} favorite={favorites.includes(g.id)} onFavorite={toggleFavorite} onPlay={pick} onExplore={openHall} onLearn={gameId=>openLearning(gameId)} onQuickPlay={gameId=>run(()=>startPractice('bots',false,gameId,'red'))} story={storyOptions.enabled}/>)}</div>
-          {filter==='Favorites'&&!favorites.length&&<div className="empty"><Heart/><h3>Your favorites belong here</h3><p>Tap a heart on a game to keep it close.</p></div>}
-        </>}
+        {tab==='games'&&<GamesAdventure catalogue={DISCOVERY_CATALOGUE} scope={playAccess.accountId||'device'} accessState={hallAccess.state()} isOpen={gameId=>!DISCOVERY_CATALOGUE.find(g=>g.id===gameId)?.legacy||hallAccess.allowed(gameId).open} onPlay={gameId=>gameId==='co-tu-lenh'?setScreen('co-tu-lenh'):gameId==='shanshui'?setScreen('shanshui'):pick(gameId)} onLearn={gameId=>gameId==='co-tu-lenh'?setScreen('co-tu-lenh'):gameId==='shanshui'?setScreen('shanshui'):openLearning(gameId)} onJourney={showJourney} intent={gamesIntent} onIntent={setGamesIntent} query={gamesQuery} renderGrid={conquests=><DiscoveryGames conquests={conquests} query={gamesQuery} onQuery={setGamesQuery} filter={filter} onFilter={setFilter} favorites={favorites} onFavorite={toggleFavorite} isOpen={gameId=>!DISCOVERY_CATALOGUE.find(g=>g.id===gameId)?.legacy||hallAccess.allowed(gameId).open} onPlay={gameId=>gameId==='co-tu-lenh'?setScreen('co-tu-lenh'):gameId==='shanshui'?setScreen('shanshui'):pick(gameId)} onLearn={gameId=>gameId==='co-tu-lenh'?setScreen('co-tu-lenh'):gameId==='shanshui'?setScreen('shanshui'):openLearning(gameId)} intent={gamesIntent} onIntent={setGamesIntent} onFocusHandled={()=>{}} onJourney={showJourney}/>}/>}
         {tab==='home'&&<HomeLanding onBrowse={()=>setTab('games')} onLearn={()=>setTab('games')} onJourney={()=>setTab('profile')} onStory={()=>setSheet('world-guide')} onJoin={()=>{setNameDraft(profile.name);setSheet('join-name');}} onContinue={homeContinue} continueLabel={continueLabel} roomCode={joinCode} onRoomCode={setJoinCode} story={storyOptions.enabled} discovery={<NextDiscovery access={hallAccess} target={discoveryTarget} onOpen={showJourney}/>}/>}
 
         {tab==='friends'&&<>
