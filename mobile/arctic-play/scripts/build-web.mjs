@@ -45,7 +45,7 @@ await fs.cp(path.join(ctlSource,'pieces'),path.join(ctlArt,'pieces'),{recursive:
 await fs.copyFile(path.join(ctlSource,'board/board-antarctic-11x12.webp'),path.join(ctlArt,'board/board-antarctic-11x12.webp'));
 await fs.copyFile(path.join(ctlSource,'rules-profiles-v0.3.json'),path.join(ctlArt,'rules-profiles-v0.3.json'));
 await fs.copyFile(path.join(ctlSource,'youtuber-rules-v1.json'),path.join(ctlArt,'youtuber-rules-v1.json'));
-const styles=['styles.css','startup.css','ice-theme.css','frostbound.css','archive-world.css','gathering.css','celebration.css','release-controls.css','learning-rules.css','compact-lobby.css','unlocks.css','chaturanga-fast.css','account-entry.css','board-calibration.css','discovery.css','visa-compact.css','visa-welcome.css','passport-entry.css','harbor-onboarding.css','home-redesign.css','passport-book.css'];
+const styles=['styles.css','startup.css','ice-theme.css','frostbound.css','archive-world.css','gathering.css','celebration.css','release-controls.css','learning-rules.css','compact-lobby.css','unlocks.css','chaturanga-fast.css','account-entry.css','board-calibration.css','discovery.css','visa-compact.css','visa-welcome.css','passport-entry.css','harbor-onboarding.css','home-redesign.css','passport-book.css','passport-frost.css'];
 const css=await Promise.all(styles.map(name=>fs.readFile(path.join(mobile,'src',name),'utf8')));
 for(const file of ['shared/antarctic-visa/visa.css','shared/fair-play/fair-play.css','frontend/src/games/shanshui-xiangqi/shanshui.css','frontend/src/games/co-tu-lenh/coTuLenh.css'])css.push(await fs.readFile(path.join(root,file),'utf8'));
 css.push('.ctl-catalogue-entry{display:grid;grid-template-columns:minmax(100px,35%) 1fr;gap:18px;align-items:center;margin:16px 0 24px;padding:16px;background:var(--surface,#102942);border:1px solid #638da988;border-radius:20px}.ctl-catalogue-entry img{width:100%;max-height:270px;object-fit:contain;border-radius:14px}.ctl-catalogue-entry h2{font-size:22px;margin:6px 0}.ctl-catalogue-entry p{font-size:14px;line-height:1.5}@media(max-width:440px){.ctl-catalogue-entry{grid-template-columns:1fr}.ctl-catalogue-entry img{max-height:150px}}');
@@ -54,6 +54,7 @@ await fs.cp(path.join(root,'frontend/public/assets/passport-landing-v1'),path.jo
 await fs.cp(path.join(root,'frontend/public/assets/onboarding-v2'),path.join(destination,'art/onboarding-v2'),{recursive:true});
 await fs.cp(path.join(root,'frontend/public/assets/home-v1'),path.join(destination,'art/home-v1'),{recursive:true});
 await fs.cp(path.join(root,'frontend/public/assets/passport-book-v1'),path.join(destination,'art/passport-book-v1'),{recursive:true});
+for(const folder of ['passport-book-v2','passport-frost-v1'])await fs.cp(path.join(root,'frontend/public/assets',folder),path.join(destination,'art',folder),{recursive:true});
 await fs.writeFile(path.join(destination,'app.css'),css.join('\n'));
 for(const file of ['startup.js','theme-init.js'])await fs.copyFile(path.join(mobile,'src',file),path.join(destination,file));
 await fs.writeFile(path.join(destination,'app-version.json'),JSON.stringify({version:release.versionName,versionCode:release.versionCode,capabilities:['dominion-teams-v1','browser-play-v1','fair-play-v1','shanshui-antarctic-v1','co-tu-lenh-practice-v05']}));
@@ -64,6 +65,7 @@ for(const name of ['board/board-antarctic-11x12.webp',...(await fs.readdir(path.
 for(const name of (await fs.readdir(path.join(destination,'art/onboarding-v2'))).filter(n=>n.endsWith('.webp'))){const url='art/onboarding-v2/'+name;warm.assets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});}
 for(const name of (await fs.readdir(path.join(destination,'art/home-v1'))).filter(n=>n.endsWith('.webp'))){const url='art/home-v1/'+name;warm.assets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});}
 for(const name of ['lantern-stamp.webp','crown-stamp.webp']){const url='art/passport-book-v1/'+name;warm.assets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});}
+for(const folder of ['passport-book-v2','passport-frost-v1'])for(const name of (await fs.readdir(path.join(destination,'art',folder))).filter(n=>n.endsWith('.webp'))){const url='art/'+folder+'/'+name;warm.assets.push({url,bytes:(await fs.stat(path.join(destination,url))).size});}
 for(const item of warm.assets)item.bytes=(await fs.stat(path.join(destination,item.url))).size;
 await fs.writeFile(path.join(destination,'game-assets.json'),JSON.stringify(warm));
 await fs.writeFile(path.join(destination,'game-assets-sw.js'),(await fs.readFile(path.join(root,'shared/game-assets/game-assets-sw.js'),'utf8')).replace('__GAME_ASSET_CACHE_VERSION__','ak-public-game-art-bundled-'+release.versionName));

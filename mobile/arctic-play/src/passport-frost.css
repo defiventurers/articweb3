@@ -1,0 +1,42 @@
+/* Leaf 88:125; spread 176:125. Height follows width and never printed content. */
+.passport-book{max-width:520px;margin-inline:auto}
+.pp-toolbar{margin-bottom:6px}.pp-book-caption{font-size:11px;margin-bottom:4px}.pp-book-caption>span{font-size:8px;letter-spacing:1px}
+.pp-volume-window{padding:12px 0 16px}
+.pp-volume .pp-volume-stage{left:50%;width:min(calc(130% - 30% * var(--cover-progress)),520px);min-height:0;height:auto;aspect-ratio:176 / 125;transform:translateX(calc(-75% + 25% * var(--cover-progress)));transition:transform var(--open-time) cubic-bezier(.24,.65,.2,1),width var(--open-time) cubic-bezier(.24,.65,.2,1)}
+.pp-volume .pp-cover-frame{position:absolute;inset:0;height:100%;padding:4px 3px 5px;border-color:#84bad1;background:linear-gradient(120deg,#3e7896,#113a56 47%,#6ba1b8);box-shadow:0 7px 14px #00152238,0 3px 0 #bedae8,0 5px 0 #173d54}
+.pp-volume .pp-spread{height:100%;overflow:hidden;border-radius:6px;background:#eef9ff}
+.pp-volume .pp-paper,.pp-volume .pp-page-imprint{height:100%;min-height:0;background:radial-gradient(ellipse at 0 0,#b8dff0a6,transparent 45%),radial-gradient(ellipse at 100% 100%,#c6e9f7b3,transparent 45%),repeating-linear-gradient(135deg,#80b3ca0c 0 1px,transparent 1px 11px),#f0faff}
+.pp-volume .pp-leaf{min-height:0;padding:10px 9px;gap:6px;border-color:#8bbbd64d;justify-content:space-between;overflow:hidden}
+.pp-volume .pp-spread:after{background:linear-gradient(90deg,transparent,#38698522,#f7ffff99,transparent);width:13px;left:calc(50% - 6px)}
+.pp-volume .pp-page-stack{inset:5px 2px 1px 50%;background:repeating-linear-gradient(0deg,#9dbacb 0 1px,#e6f6ff 1px 3px);border-radius:8px}
+.pp-volume .pp-front-cover{background:none;box-shadow:none;border-radius:8px}
+.pp-volume .pp-cover-outside{background:transparent;border:0;box-shadow:none}
+.passport-book .pp-cover-outside img{object-fit:contain;width:100%;height:100%}
+.pp-volume .pp-cover-inside{border:4px solid #2a607f;background:radial-gradient(ellipse at 10% 0%,#a9d8f0,transparent 65%),repeating-linear-gradient(135deg,#80b3ca0c 0 1px,transparent 1px 11px),#eaf7ff;color:#426878;gap:15px;font-size:10px}
+.pp-volume .pp-cover-inside small{font-size:10px}
+.pp-volume.is-dragging .pp-volume-stage{transition:none}
+.pp-volume .pp-book-opening-controls{margin-bottom:5px;gap:5px}.pp-volume .pp-book-opening-controls>span{font-size:10px}
+.pp-pagination{margin:7px 2px 10px}.pp-pagination strong{font-size:12px}.pp-pagination span{font-size:10px}
+.pp-volume .pp-kicker{font-size:7px;letter-spacing:.9px}
+.pp-volume h2{font-size:19px;line-height:1.05}.pp-volume h3{font-size:16px;line-height:1.15}
+.pp-volume .pp-identity-avatar{margin:0;min-height:36px}.pp-volume .pp-identity-avatar .avatar{width:36px!important;height:36px!important}.pp-volume .pp-identity-avatar img{max-width:36px;max-height:36px}
+.pp-volume .pp-owner{font-size:16px}.pp-volume .pp-identity-label{font-size:7px;letter-spacing:1.3px}.pp-volume .pp-owner-badge{font-size:7px;line-height:1.2}
+.pp-volume .pp-ink-link{font-size:10px;line-height:1.3;min-height:44px;padding:4px 0;width:100%}
+.pp-volume .pp-entry-seal{font-size:6px;line-height:1.35;letter-spacing:.4px;padding:5px 3px;border-color:#4b8ba7;transform:rotate(-5deg);margin-top:0}.pp-volume .pp-entry-seal strong{font-size:8px}.pp-volume .pp-entry-seal span{font-size:6px}
+.pp-volume .pp-arrival-route p,.pp-volume .pp-crown-story p{font:11px/1.4 system-ui,sans-serif;margin:0;color:#416677;text-align:center}
+.pp-volume .pp-arrival-route>strong{font-size:10px;line-height:1.3}.pp-volume .pp-arrival-route>small{font-size:9px;line-height:1.35}
+.pp-volume .pp-mini-stamps{font-size:13px;gap:3px}.pp-volume .pp-mini-stamps .lit{color:#9a762b}
+.passport-book .pp-volume .pp-crown-preview{width:60px;height:60px}
+.pp-volume .pp-lantern-leaf{gap:5px;justify-content:flex-start}
+.passport-book .pp-volume .pp-named-stamp{min-height:0;flex:1;justify-content:center}
+.passport-book .pp-volume .pp-stamp-seal{max-width:162px;padding:7px 5px 6px;gap:2px;border-color:#7e9fa7;background:#e7f7ff80;box-shadow:inset 0 0 0 3px #edf9ff,inset 0 0 0 4px #6f9cb344}
+.pp-volume .pp-stamp-name{font-size:12px}.pp-volume .pp-stamp-picture{width:66px;height:66px}.pp-volume .pp-stamp-era{font-size:9px}.pp-volume .pp-stamp-origin{font-size:10px}
+.pp-volume .pp-stamp-moment{font-size:9px;line-height:1.35;min-height:24px;border-color:#649ab544}.pp-volume .pp-stamp-moment strong{font-size:10px;color:#4a6472}
+.passport-book .pp-volume .pp-crown-slot{min-height:0;flex:1;justify-content:center;gap:7px}.passport-book .pp-volume .pp-crown-slot img{width:92px;height:92px}.pp-volume .pp-crown-slot strong{font-size:12px}.pp-volume .pp-crown-slot small{font-size:9px}
+.pp-volume .pp-crown-page{grid-column:auto;min-height:0;padding:10px 9px;gap:6px;z-index:auto;background:none;justify-content:space-between}
+.passport-book .pp-volume .pp-crown-page h2{font-size:18px}.passport-book .pp-volume .pp-crown-large{width:90px;height:90px}.pp-volume .pp-crown-page>strong{font-size:7px;letter-spacing:.5px;color:#4c768a}.pp-volume .pp-crown-page>time{font:9px/1.4 system-ui,sans-serif;color:#4b6c7c;display:flex;flex-direction:column;gap:1px}
+.pp-volume .pp-crown-story{justify-content:center;gap:10px}.pp-volume .pp-crown-story h3{font-size:18px}.pp-volume .pp-crown-story .pp-ink-link{margin:0}
+.pp-turn-scene{inset:4px 3px 5px}.pp-turn-front,.pp-turn-back,.pp-still-leaf{background:#f0faff}
+.pp-next-stamp{margin-top:5px!important}.passport-hub .pp-extras-entry{min-height:44px;font-size:12px;padding-block:8px}
+@media(max-width:350px){.pp-volume .pp-leaf{padding:7px 6px;gap:4px}.pp-volume h2{font-size:16px}.pp-volume h3{font-size:14px}.pp-volume .pp-owner{font-size:14px}.pp-volume .pp-stamp-picture{width:52px;height:52px}.pp-volume .pp-stamp-name{font-size:11px}.pp-volume .pp-stamp-origin{font-size:9px}.passport-book .pp-volume .pp-stamp-seal{padding:6px 4px 5px}.pp-volume .pp-entry-seal{padding-block:3px}.pp-volume .pp-arrival-route>small{font-size:8px}.passport-book .pp-volume .pp-crown-preview{width:48px;height:48px}.passport-book .pp-volume .pp-crown-large{width:72px;height:72px}.pp-volume .pp-crown-page h2{font-size:16px}.pp-volume .pp-crown-story{gap:5px}.pp-volume .pp-crown-story h3{font-size:16px}.pp-volume .pp-crown-story p{font-size:10px}}
+@media(min-width:600px){.pp-volume h2{font-size:25px}.pp-volume h3{font-size:21px}.pp-volume .pp-leaf{padding:15px}.pp-volume .pp-stamp-name{font-size:15px}.pp-volume .pp-stamp-picture{width:100px;height:100px}.pp-volume .pp-stamp-origin,.pp-volume .pp-stamp-era,.pp-volume .pp-stamp-moment{font-size:12px}.pp-volume .pp-stamp-moment strong{font-size:12px}.passport-book .pp-volume .pp-stamp-seal{max-width:190px;padding:10px}.passport-book .pp-volume .pp-crown-preview{width:100px;height:100px}.passport-book .pp-volume .pp-crown-large{width:140px;height:140px}.pp-volume .pp-crown-page h2{font-size:25px}.pp-volume .pp-kicker{font-size:9px}.pp-volume .pp-arrival-route p,.pp-volume .pp-crown-story p{font-size:14px}.pp-volume .pp-arrival-route>strong{font-size:13px}.pp-volume .pp-arrival-route>small{font-size:11px}.pp-volume .pp-ink-link{font-size:13px}.pp-volume .pp-entry-seal{font-size:8px}.pp-volume .pp-entry-seal strong{font-size:10px}.pp-volume .pp-entry-seal span{font-size:8px}.pp-volume .pp-owner{font-size:21px}.pp-volume .pp-crown-page>time{font-size:12px}}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {passportSnapshot,passportDate,passportPage,passportMoment,STAMP_ORIGINS} from '../src/passportBookModel.js';
+import {passportSnapshot,passportDate,passportPage,passportMoment,STAMP_ORIGINS,migratePassportPage} from '../src/passportBookModel.js';
 import {HALL_ORDER,gatheringProgress,visitHall,earnLantern,revealGathering} from '../src/gathering.js';
 
 test('visits, reveal flags, invalid dates and extra catalogue games cannot award the Crown',()=>{
@@ -21,7 +21,7 @@ test('the seventh existing legal-move milestone awards a stable cosmetic Crown w
  assert.equal(passportSnapshot(revealGathering(p,5000)).crownedAt,1006);
 });
 test('corrupt or stale page values fall back to Arrival',()=>{
- for(const value of [-1,4,'2',null,{},NaN])assert.equal(passportPage(value),0);
+ for(const value of [-1,6,'2',null,{},NaN])assert.equal(passportPage(value),0);
  assert.equal(passportPage(3),3);
 });
 
@@ -35,4 +35,10 @@ test('each founding game has distinct art; uncertain or ancient periods never re
  assert.equal(new Set(Object.values(STAMP_ORIGINS).map(x=>x.art)).size,7);
  for(const id of ['xiangqi','shogi','sanguo','sanyou','dominion']){assert.equal(STAMP_ORIGINS[id].kind,'origin');assert.equal(STAMP_ORIGINS[id].flag,undefined);}
  assert.equal(STAMP_ORIGINS.sannin.flag,'japan');assert.equal(STAMP_ORIGINS.yanyi.flag,'china');
+});
+
+test('compact book keeps six legal spreads and migrates old reading positions without touching progress',()=>{
+ assert.equal(passportPage(5),5);assert.equal(passportPage(6),0);
+ assert.deepEqual([0,1,2,3].map(migratePassportPage),[0,1,3,5]);
+ for(const value of [null,'3',{},-1,4,Infinity])assert.equal(migratePassportPage(value),0);
 });

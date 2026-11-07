@@ -22,7 +22,7 @@ with sync_playwright() as pw:
   c=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,reduced_motion='reduce')
   values={'cloud-session':{'accountId':account,'session':account+'.'+'q'*43},'antarctic-visa.v1.'+account:passport,'theme':theme,'mascot-companions':{'mode':'off','motion':False}}
   if practice:values.update({'practice.xiangqi':practice,'last-table':{'id':'xiangqi'}})
-  c.add_init_script('const seed='+json.dumps(values)+';for(const [key,value]of Object.entries(seed))localStorage.setItem("arctic-play.v1."+key,JSON.stringify(value));window.WebSocket=undefined;window.Android={appReady(){},setDarkTheme(){},getAppInfo:()=>JSON.stringify({packageName:"xyz.arcticdominion.play",versionName:"5.9.6",versionCode:94})};')
+  c.add_init_script('const seed='+json.dumps(values)+';for(const [key,value]of Object.entries(seed))localStorage.setItem("arctic-play.v1."+key,JSON.stringify(value));window.WebSocket=undefined;window.Android={appReady(){},setDarkTheme(){},getAppInfo:()=>JSON.stringify({packageName:"xyz.arcticdominion.play",versionName:"5.9.7",versionCode:95})};')
   def route(r):
    url=r.request.url.split('?')[0]
    fixtures={'/capabilities':{'version':2,'cloud':True,'accountPlay':True},'/passport':{'identity':{'accountId':account,'displayName':'Saved Player'},'passport':passport},'/play-access':{'accountId':account,'online':True,'leaseSeconds':60,'offlineOwned':False,'license':None,'marketingChoiceNeeded':False},'/auth/providers':{}}
@@ -94,8 +94,8 @@ with sync_playwright() as pw:
  checks.append('Home Passport opens the new book; story opens the world guide.')
  page.get_by_role('button',name='Passport',exact=True).click()
  page.get_by_role('button',name='Passport settings').click();page.locator('summary').filter(has_text='App & help').click();page.locator('.profile-options').get_by_role('button',name='App updates',exact=False).click();page.locator('.app-updates').wait_for()
- expect(page.locator('.app-updates')).to_contain_text('5.9.6')
- checks.append('Manual updates remain accessible in Passport settings and report installed version 5.9.6.')
+ expect(page.locator('.app-updates')).to_contain_text('5.9.7')
+ checks.append('Manual updates remain accessible in Passport settings and report installed version 5.9.7.')
  c.close()
  c,page=context(saved['practice'])
  assert page.locator('.home-v2-primary').get_attribute('aria-label')=='Continue Xiangqi'
@@ -106,6 +106,6 @@ with sync_playwright() as pw:
  checks.append('Continue uses the saved game’s cover and restores its moved piece at the saved destination.')
  c.close();browser.close()
  assert not errors,errors
- report={'version':'5.9.6','checks':checks,'layouts':layouts,'pageErrors':errors,'network':'mocked fixtures','physicalAndroidTested':False,'liveSignInTested':False}
+ report={'version':'5.9.7','checks':checks,'layouts':layouts,'pageErrors':errors,'network':'mocked fixtures','physicalAndroidTested':False,'liveSignInTested':False}
  (a.output/'Home-Browser-QA.json').write_text(json.dumps(report,indent=2)+'\n')
  print(json.dumps(report,indent=2))
