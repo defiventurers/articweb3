@@ -17,7 +17,7 @@ const steps=[
 // Immutable board geometry taken from the user-approved 11-by-12 coordinate master.
 const W=1199,H=1312,X=148,Y=183,STEP_X=90.4,STEP_Y=900/11;
 const labelFor=p=>p?`${p.team.toUpperCase()} ${TYPES[p.type].label}${p.hero?' ★ Hero':''}`:'';
-export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-lenh', wsEndpoint=null, inviteBaseUrl=null}) {
+export default function CoTuLenhApp({onMatchStatus,onExitToLibrary, assetBase='/assets/co-tu-lenh', wsEndpoint=null, inviteBaseUrl=null}) {
   const graphic=p=>`${assetBase}/pieces/${p.team}-${p.type}.webp`;
   const boardImage=`${assetBase}/board/board-antarctic-11x12.webp`;
   const [mode,setMode]=useState('bot');
@@ -53,6 +53,7 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
   const seq=useRef(0);
   const botTurn=started&&!arranging&&mode==='bot'&&state.turn!==human&&!isFinished(state);
   const actions=useMemo(()=>!selected?[]:arranging?Array.from({length:132},(_,i)=>({id:selected,kind:'deploy',x:i%11,y:Math.floor(i/11)})).filter(a=>canDeploy(state,editorTeam,selected,a.x,a.y)):legalActions(state,selected),[state,selected,arranging,editorTeam]);
+  useEffect(()=>{onMatchStatus?.({id:'co-tu-lenh',enabled:started,mode:isOnline?'online':mode==='bot'?'bots':mode,seat:isOnline?online?.team:human,outcome:state.winner||state.draw?{winner:state.winner,draw:state.draw}:null,actions:isOnline?online?.room?.revision||0:undoStack.length,matchId:isOnline?online?.room?.roomCode:undefined,eligible:!arranging});},[onMatchStatus,started,mode,human,state.winner,state.draw,undoStack.length,online,arranging]);
   const movingTeam=state.turn;
   const defenceZones=useMemo(()=>showDefence&&!arranging?airDefenceZones(state):[],[state,showDefence,arranging]);
   const currentProfile=profileFor(state);
