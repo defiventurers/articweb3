@@ -1,4 +1,4 @@
-# Mascot names — v5.9.9 candidate
+# Mascot names — v5.9.9
 
 Accepted 9 November 2026. Rename the pink, red, blue and green companions to Nova, Rocco, Piko and Ziggy respectively. Keep legacy IDs `polly`, `retsba`, `pengu`, `abster` for saved progress, ownership, asset URLs and network compatibility. This supersedes the older display names in project instructions.
 
@@ -12,8 +12,8 @@ Reviewed `main` at `797df870bdca917c3d7f96980dd482b113b03f50`. Its mobile source
 - Twenty-two relevant source regression tests passed: mascot names, celebrations, collections, director and Gathering suites.
 - The actual patched shipped runtime passed 28 authored reaction cases and all four guide-name checks. Old capitalised names remain only in four compatibility constants in that runtime.
 - Current source app bundled successfully with all imports resolved. This source compilation was a check, not the payload used for the APK candidate.
-- Candidate manifest reports v5.9.9 / versionCode 97. ZIP integrity, Android resource storage/alignment and zipalign checks passed. All 425 other non-signature APK entries, including artwork and native DEX, are byte-identical to the v5.9.8 baseline.
-- No Android device installation, signed release, backend deployment or image editing is claimed. Names baked into artwork are outside this text-only change. Generated server bundles and development bot player names are unchanged; regenerate canonical server bundles through their existing pipeline before a later backend release.
+- Release manifest reports v5.9.9 / versionCode 97. ZIP integrity, Android resource storage/alignment and zipalign checks passed. All 425 other non-signature APK entries, including artwork and native DEX, are byte-identical to the v5.9.8 baseline.
+- Signed with the original release certificate; APK Signature Schemes v2 and v3 verified. No Android device installation, backend deployment or image editing is claimed. Names baked into artwork are outside this text-only change. Generated server bundles and development bot player names are unchanged; regenerate canonical server bundles through their existing pipeline before a later backend release.
 
 ## Reproduce or sign
 
@@ -32,4 +32,4 @@ To finish the installable update, repeat the command with `--keystore /path/to/o
 
 The runtime regression can also be rerun with `node mobile/arctic-play/tests/mascot-apk-runtime.mjs` after the patch script has generated the runtime. Source regression suites require their usual generated CJS test modules under `mobile/arctic-play/build/`.
 
-The remaining release blocker is access to the original signing key. No replacement signing identity is generated.
+The original signing backup was recovered and the installable APK was signed successfully. Its SHA-256 is `ac3126941da3bf29231f3a8d5d99da2f096535543e922838d049e4e8756b095e`. Device installation remains untested. No replacement signing identity was generated.
