@@ -16,10 +16,10 @@ const PIECE_ASSET_TYPE = {
 const PIECE_EMOJI = { king: "👑", elephant: "🦣", horse: "🦄", ship: "🚢", pawn: "🐧" };
 
 const TEAM_INFO = [
-  { team: "red", name: "RETSBA", side: "Left side", color: "red" },
-  { team: "blue", name: "PENGU", side: "Right side", color: "blue" },
-  { team: "green", name: "ABSTER", side: "Bottom side", color: "green" },
-  { team: "yellow", name: "POLLY", side: "Top side", color: "pink" }
+  { team: "red", name: "ROCCO", side: "Left side", color: "red" },
+  { team: "blue", name: "PIKO", side: "Right side", color: "blue" },
+  { team: "green", name: "ZIGGY", side: "Bottom side", color: "green" },
+  { team: "yellow", name: "NOVA", side: "Top side", color: "pink" }
 ];
 
 export function StartingPositionsBoard() {

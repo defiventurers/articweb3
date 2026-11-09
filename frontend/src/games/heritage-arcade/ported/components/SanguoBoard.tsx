@@ -24,9 +24,9 @@ const arcticBoardImage = `${heritageAsset}/board/sanguo-arctic-board.png`;
 const useRailDemo = () => new URLSearchParams(window.location.search).has("rail-demo");
 
 const factions: Record<Faction, { name: string; short: string; color: string; base: string }> = {
-  red: { name: "Retsba Legion", short: "RED · SHU", color: "#ef5750", base: `${heritageAsset}/tokens/token-sanguo-red-general.webp` },
-  blue: { name: "Pengu Order", short: "BLUE · WEI", color: "#318eed", base: `${heritageAsset}/tokens/token-sanguo-blue-general.webp` },
-  green: { name: "Abster Tribe", short: "GREEN · WU", color: "#43b86a", base: `${heritageAsset}/tokens/token-sanguo-green-general.webp` },
+  red: { name: "Rocco Legion", short: "RED · SHU", color: "#ef5750", base: `${heritageAsset}/tokens/token-sanguo-red-general.webp` },
+  blue: { name: "Piko Order", short: "BLUE · WEI", color: "#318eed", base: `${heritageAsset}/tokens/token-sanguo-blue-general.webp` },
+  green: { name: "Ziggy Tribe", short: "GREEN · WU", color: "#43b86a", base: `${heritageAsset}/tokens/token-sanguo-green-general.webp` },
 };
 
 const teamCoinAssets: Record<Faction, Record<Role, string>> = {

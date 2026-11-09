@@ -1,9 +1,9 @@
 /* Four Penguin Hosts: friendly heritage guides only. They never render inside board cells or replace a source-native animal, token, card, or counter. */
 export const HOST_META = Object.freeze({
-  polly: { name: "Polly Clan", short: "Polly", color: "#f38eaa", beak: "#ffc75f", mood: "welcome" },
-  retsba: { name: "Retsba Legion", short: "Retsba", color: "#e65054", beak: "#68bdf0", mood: "focus" },
-  pengu: { name: "Pengu Order", short: "Pengu", color: "#58a8f4", beak: "#ffc75f", mood: "calm" },
-  abster: { name: "Abster Tribe", short: "Abster", color: "#3ca96b", beak: "#ffc75f", mood: "bright" }
+  polly: { name: "Nova Clan", short: "Nova", color: "#f38eaa", beak: "#ffc75f", mood: "welcome" },
+  retsba: { name: "Rocco Legion", short: "Rocco", color: "#e65054", beak: "#68bdf0", mood: "focus" },
+  pengu: { name: "Piko Order", short: "Piko", color: "#58a8f4", beak: "#ffc75f", mood: "calm" },
+  abster: { name: "Ziggy Tribe", short: "Ziggy", color: "#3ca96b", beak: "#ffc75f", mood: "bright" }
 });
 
 const HOST_BY_GAME = Object.freeze({

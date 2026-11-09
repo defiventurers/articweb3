@@ -107,9 +107,9 @@ describe("Yan Yi English play screen", () => {
     }
     const soldier = [...container.querySelectorAll(".yy-piece")].find(b => b.getAttribute("aria-label")?.startsWith("green Soldier") && (b as HTMLButtonElement).style.top === `${YAN_YI_Y[4] / 15.36}%`)!;
     expect((soldier as HTMLButtonElement).style.left).toBe(`${YAN_YI_X[13] / 15.36}%`); await click(soldier); expect(container.querySelectorAll(".yy-node.legal").length).toBeGreaterThan(0);
-    await click(container.querySelector(".yy-node.legal")!); expect(container.querySelector(".yy-match-status")?.textContent).toContain("Wei / Pengu Order to move");
+    await click(container.querySelector(".yy-node.legal")!); expect(container.querySelector(".yy-match-status")?.textContent).toContain("Wei / Piko Order to move");
     expect(JSON.parse(localStorage.getItem("arctic-sanguo-yan-yi-v1")!).state.ply).toBe(1);
-    await click(button("Undo")); expect(container.querySelector(".yy-match-status")?.textContent).toContain("Wu / Abster Tribe to move"); expect(JSON.parse(localStorage.getItem("arctic-sanguo-yan-yi-v1")!).state.ply).toBe(0);
+    await click(button("Undo")); expect(container.querySelector(".yy-match-status")?.textContent).toContain("Wu / Ziggy Tribe to move"); expect(JSON.parse(localStorage.getItem("arctic-sanguo-yan-yi-v1")!).state.ply).toBe(0);
   });
   it("inspects an opponent with no actionable destinations and opens the actual Free Play rules", async () => {
     await render(); await click(button("Begin the campaign")); await click(container.querySelector('button[aria-label^="blue Horse,"]')!); expect(container.querySelectorAll(".yy-node.legal")).toHaveLength(0);

@@ -6,7 +6,7 @@ import { TutorialBoard } from "../components/TutorialBoard.jsx";
 const KINGDOMS = [
   {
     id: "retsba",
-    name: "RETSBA",
+    name: "ROCCO",
     color: "red",
     image: "/assets/how-to-play/retsba-kingdom.png",
     emblem: "🔥",
@@ -14,7 +14,7 @@ const KINGDOMS = [
   },
   {
     id: "pengu",
-    name: "PENGU",
+    name: "PIKO",
     color: "blue",
     image: "/assets/how-to-play/pengu-kingdom.png",
     emblem: "❄️",
@@ -22,7 +22,7 @@ const KINGDOMS = [
   },
   {
     id: "abster",
-    name: "ABSTER",
+    name: "ZIGGY",
     color: "green",
     image: "/assets/how-to-play/abster-kingdom.png",
     emblem: "🌌",
@@ -30,7 +30,7 @@ const KINGDOMS = [
   },
   {
     id: "polly",
-    name: "POLLY",
+    name: "NOVA",
     color: "pink",
     image: "/assets/how-to-play/polly-kingdom.png",
     emblem: "💎",

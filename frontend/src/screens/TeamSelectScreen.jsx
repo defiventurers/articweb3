@@ -4,10 +4,10 @@ import { selectRoomTeam } from "../network/socketClient.js";
 import { soundManager } from "../utils/soundManager.js";
 
 const OPTIONS = {
-  retsba: { name: "RETSBA", team: "red" },
-  abster: { name: "ABSTER", team: "green" },
-  polly: { name: "POLLY", team: "yellow" },
-  pengu: { name: "PENGU", team: "blue" }
+  retsba: { name: "ROCCO", team: "red" },
+  abster: { name: "ZIGGY", team: "green" },
+  polly: { name: "NOVA", team: "yellow" },
+  pengu: { name: "PIKO", team: "blue" }
 };
 
 export function TeamSelectScreen({ room, profile, onRoomUpdate, onContinue, onBack }) {

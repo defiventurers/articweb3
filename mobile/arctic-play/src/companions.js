@@ -32,14 +32,14 @@ const voices={
     breathe:[()=>"Unclench your hands. Breathe out. You can bring focus without bringing tension.",()=>"Even a focused penguin takes a break. Come back when you feel ready."],
   },
   pengu:{
-    hello:[c=>`Hello, ${c.name||'Explorer'}. I’m Pengu. I like making a new board feel a little more familiar.`,()=>"A calm welcome from me. Every game has its own paths; we can take our time."],
+    hello:[c=>`Hello, ${c.name||'Explorer'}. I’m Piko. I like making a new board feel a little more familiar.`,()=>"A calm welcome from me. Every game has its own paths; we can take our time."],
     encourage:[()=>"You don’t need to remember everything at once. The game’s legal highlights are here to help.",()=>"Questions belong at the table. There’s no hurry to know every rule."],
     thought:[()=>"Our Antarctic home is imaginary. The games keep their own names, origins and traditions.",()=>"A shared rule gives two strangers a way to begin playing together. I rather like that."],
     celebrate:[()=>"A gentle high five! Another moment of curiosity in the Archive.",()=>"A little happy waddle for you. Enjoy the moment."],
     breathe:[()=>"Breathe in slowly, then out. Let your eyes rest before you return to the board.",()=>"The board will still be here. A comfortable pause is always welcome."],
   },
   abster:{
-    hello:[c=>`Hi, ${c.name||'Explorer'}! I’m Abster. I’ll bring a little patience and plenty of curiosity.`,()=>"Welcome to my patch of the Archive. Shall we notice something new together?"],
+    hello:[c=>`Hi, ${c.name||'Explorer'}! I’m Ziggy. I’ll bring a little patience and plenty of curiosity.`,()=>"Welcome to my patch of the Archive. Shall we notice something new together?"],
     encourage:[()=>"You can explore without getting everything right. A new possibility is a fine place to start.",()=>"Small discoveries count. Notice one thing you didn’t see before."],
     thought:[()=>"Sometimes I look away for a moment and return with fresher eyes.",()=>"A familiar board can hide a new pattern. That’s what keeps me curious."],
     celebrate:[()=>"Flipper high five! A tiny happy waddle for a curious explorer.",()=>"A little burst of green cheer. It’s good to make time for play."],

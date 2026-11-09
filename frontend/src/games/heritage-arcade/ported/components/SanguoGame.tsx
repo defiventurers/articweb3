@@ -9,7 +9,7 @@ import { updateMatchJournal, type MatchJournal } from "../game/sanguoPresentatio
 import "../styles/sanguo-desktop.css";
 import "../styles/sanguo-tactical.css";
 
-const names = { red: "Red · Retsba / Shu", green: "Green · Abster / Wu", blue: "Blue · Pengu / Wei" };
+const names = { red: "Red · Rocco / Shu", green: "Green · Ziggy / Wu", blue: "Blue · Piko / Wei" };
 const portraits = { red: "retsba", green: "abster", blue: "pengu" };
 type LocalMatch = { state: SanguoState; humans: SanguoFaction[]; difficulty: BotDifficulty; bannermen: boolean; history: SanguoState[] };
 const roomFromUrl = () => (new URLSearchParams(window.location.search).get("room") || "").trim().toUpperCase();

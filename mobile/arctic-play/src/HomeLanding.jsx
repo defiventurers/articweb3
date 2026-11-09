@@ -10,7 +10,7 @@ export function HomeLanding({onBrowse,onLearn,onShop,onSearch,onJoin,onContinue,
   <h2 id="home-v2-title" className="home-v2-title">Antarctic Kingdoms</h2>
   <section className="home-v2-hero" aria-label="Welcome to Lantern Harbor">
    <div className="home-v2-scene" aria-hidden="true"/>
-   <img className="home-v2-hosts" src={base+'home-hosts-welcome.webp'} width="1536" height="1024" alt="Nova, Retsba, Pengu and Abster welcome you to Lantern Harbor" fetchPriority="high"/>
+   <img className="home-v2-hosts" src={base+'home-hosts-welcome.webp'} width="1536" height="1024" alt="Nova, Rocco, Piko and Ziggy welcome you to Lantern Harbor" fetchPriority="high"/>
    <div className="home-v2-copy"><p>LANTERN HARBOR</p><h3>Take your<br/>seat.</h3><span>Great games.<br/>Even better company.</span></div>
   </section>
   <div className="home-play-actions home-v2-actions">

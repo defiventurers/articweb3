@@ -74,10 +74,10 @@ const PIECE_OPTIONS = [
 ];
 
 const TEAM_NAME = {
-  red: "RETSBA",
-  blue: "PENGU",
-  green: "ABSTER",
-  yellow: "POLLY"
+  red: "ROCCO",
+  blue: "PIKO",
+  green: "ZIGGY",
+  yellow: "NOVA"
 };
 
 const EMPTY_DICE = { values: [null, null], used: [false, false], rolled: false };
