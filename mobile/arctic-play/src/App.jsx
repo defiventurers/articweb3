@@ -46,6 +46,7 @@ import {HomeLanding} from './HomeLanding.jsx';
 import {RoomCodeInput} from './RoomCodeInput.jsx';
 import {ChatCamp} from './ChatCamp.jsx';
 import {PassportHub,PassportIcon} from './PassportBook.jsx';
+import {PassportWallet} from './PassportWallet.jsx';
 import {CELEBRATION_ART,festivalStickerText} from './celebration.js';
 import {FestivalStickerAlbum} from './FestivalStickers.jsx';
 import {HallCard,HallDetail,StoryAdventure,LanternPassport,OpeningStory,GatheringInterlude,EighthLantern,WorldGuide,GatheringSettings} from './Gathering.jsx';
@@ -117,6 +118,7 @@ function App(){
   useEffect(()=>{window.arcticChallenge=value=>{if(/^[A-Za-z0-9_-]{24}$/.test(value)){setChallengeId(value);setSheet('friend-challenge');}};return()=>delete window.arcticChallenge;},[]);
   const [puzzle,setPuzzle]=useState(null),[postcard,setPostcard]=useState(null),reactionAt=useRef(0);
   const [sheet,setSheet]=useState(null),[picked,setPicked]=useState('shogi'),[seat,setSeat]=useState('red');
+  useEffect(()=>{const open=()=>setSheet('wallet');window.addEventListener('ak-open-wallet',open);return()=>window.removeEventListener('ak-open-wallet',open);},[]);
   const [boardToolsTarget,setBoardToolsTarget]=useState(null);
   const [dominionConfirm,setDominionConfirm]=useState(false),[dicePending,setDicePending]=useState(false),diceLock=useRef(false),turnPromptSeen=useRef(null),diceContext=useRef(null);
   const [dominionMode,setDominionMode]=useState('2v2'),[roomPostcardDraft,setRoomPostcardDraft]=useState(null);
@@ -525,6 +527,7 @@ function App(){
     {sheet==='camp-studio'&&<Sheet title="Your Camp studio" onClose={()=>setSheet('companions')}><CampStudio journey={companion.journey} host={companion.campHost} preferences={companion.preferences} onMemory={openPostcard}/></Sheet>}
     {sheet==='board-positions'&&<Sheet title="San You Qi board editor" wide onClose={()=>setSheet(null)}><BoardCalibrator onClose={()=>setSheet(null)}/></Sheet>}
     {sheet==='antarctic-visa'&&<Sheet title="Your Antarctic Visa" onClose={()=>setSheet(null)}><VisaPassportSummary visa={visa}/></Sheet>}
+    {sheet==='wallet'&&<Sheet title="Wallet" onClose={()=>setSheet(null)}><PassportWallet/></Sheet>}
     {sheet==='online-account'&&<Sheet title="Online account" onClose={()=>setSheet(null)}><AccountEntry access={playAccess} halls={hallAccess} forceSignIn onClose={()=>setSheet(null)}/></Sheet>}
     {sheet==='account'&&<Sheet title="Progress & recovery" onClose={()=>setSheet(null)}><AccountPanel onLogout={()=>setSheet('logout')} onOffline={()=>accessShop('offline-access-v1')} onAccessRefresh={playAccess.refresh}/></Sheet>}
     {sheet==='updates'&&<Sheet title="App updates" onClose={()=>setSheet(null)}>{window.Android?<AppUpdates onRelease={update.accept}/>:<BrowserUpdates/>}</Sheet>}

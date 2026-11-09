@@ -1,9 +1,10 @@
+import {openPassportWallet} from './PassportWallet.jsx';
 import {VisaLandingView} from './VisaLandingView.jsx';
 import React,{useEffect,useRef,useState} from 'react';
 import {PassportCard} from '../../../shared/antarctic-visa/AntarcticVisa.jsx';
 import {deliveryLabel} from '../../../shared/antarctic-visa/model.js';
 import {AccountEntry} from './AccountEntry.jsx';
-import {cloudRequest,startParaSignIn,startGameWallet,signOutCloud,cloudSnapshot} from './cloud.js';
+import {cloudRequest,startParaSignIn,signOutCloud,cloudSnapshot} from './cloud.js';
 import {read,write} from './storage.js';
 
 export function useVisaPassport(access){
@@ -36,5 +37,5 @@ export function AntarcticVisaEntry({access,halls,visa,onProfile,assetStatus}){
 export function VisaPassportSummary({visa}){
  const [busy,setBusy]=useState(false),[error,setError]=useState('');const p=visa.record;
  if(!p)return <p>Your Antarctic visa has not been issued yet.</p>;
- return <section className="av-profile-visa"><PassportCard assets="art/passport-v2" compact name={p.playerName} wallet={p.wallet} passport={p}/><p className="muted">NFT delivery address</p><code className="av-full-wallet">{p.wallet}</code><div className="av-deliveries">{p.deliveries.map(d=><div key={d.kind+':'+(d.achievement||'')}><span>{d.kind==='visa'?'Permanent Antarctic visa':d.kind==='achievement'?(d.title||'Achievement NFT'):'Arrival collectible'}</span><strong>{deliveryLabel(d.status)}</strong>{d.explorerUrl&&<a href={d.explorerUrl} target="_blank" rel="noreferrer">View transaction ↗</a>}</div>)}</div>{cloudSnapshot().session?.wallet?.provider!=='para'&&<button className="secondary full" onClick={()=>startParaSignIn().catch(e=>setError(e.message))}>Connect a Para game wallet</button>}{cloudSnapshot().session?.wallet?.provider==='para'&&<button className="secondary full" onClick={()=>startGameWallet('manage').catch(e=>setError(e.message))}>My wallet & NFTs</button>}<button className="primary full" disabled={busy} onClick={async()=>{setBusy(true);setError('');try{const v=await cloudRequest('/passport');if(v.passport)visa.setRecord(v.passport);}catch(e){setError(e.message);}finally{setBusy(false);}}}>{busy?'Checking…':'Refresh NFT delivery'}</button>{error&&<p role="alert">{error}</p>}</section>;
+ return <section className="av-profile-visa"><PassportCard assets="art/passport-v2" compact name={p.playerName} wallet={p.wallet} passport={p}/><p className="muted">NFT delivery address</p><code className="av-full-wallet">{p.wallet}</code><div className="av-deliveries">{p.deliveries.map(d=><div key={d.kind+':'+(d.achievement||'')}><span>{d.kind==='visa'?'Permanent Antarctic visa':d.kind==='achievement'?(d.title||'Achievement NFT'):'Arrival collectible'}</span><strong>{deliveryLabel(d.status)}</strong>{d.explorerUrl&&<a href={d.explorerUrl} target="_blank" rel="noreferrer">View transaction ↗</a>}</div>)}</div>{cloudSnapshot().session?.wallet?.provider!=='para'&&<button className="secondary full" onClick={()=>startParaSignIn().catch(e=>setError(e.message))}>Connect a Para game wallet</button>}{cloudSnapshot().session?.wallet?.provider==='para'&&<button className="secondary full" onClick={openPassportWallet}>My wallet & NFTs</button>}<button className="primary full" disabled={busy} onClick={async()=>{setBusy(true);setError('');try{const v=await cloudRequest('/passport');if(v.passport)visa.setRecord(v.passport);}catch(e){setError(e.message);}finally{setBusy(false);}}}>{busy?'Checking…':'Refresh NFT delivery'}</button>{error&&<p role="alert">{error}</p>}</section>;
 }

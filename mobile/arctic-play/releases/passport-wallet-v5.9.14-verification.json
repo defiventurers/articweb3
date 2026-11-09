@@ -1,0 +1,41 @@
+{
+  "version": "5.9.14",
+  "versionCode": 102,
+  "baselineVersion": "5.9.13",
+  "baselineSha256": "73bc6303b1fbead9ea62ed58224c683fb318c9f23ee317967defba9e594b29f7",
+  "reviewedSourceBranch": "main",
+  "reviewedSourceCommit": "7267d327c714a33601f1a599aaaea6efa7982dac",
+  "sourceParentCommit": "2d4f3c38350bd9dce4716d9436cc28e3175c768c",
+  "walletNetwork": 46630,
+  "liveProviderSampleTested": true,
+  "bytes": 49792346,
+  "sha256": "7bebeac7e8e8ac094dbf5ff3442feead6b66a7c2650f57db56b6a1f33160aea0",
+  "signingStatus": "signed with original certificate",
+  "certificateSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+  "layout": {
+    "resourcesCompression": "stored",
+    "resourcesOffset": 565236,
+    "resourcesAligned": true,
+    "zipIntegrity": "passed"
+  },
+  "changedEntries": [
+    "AndroidManifest.xml",
+    "assets/app-version.json",
+    "assets/app.css",
+    "assets/app.js",
+    "assets/game-assets-sw.js",
+    "assets/game-assets.json",
+    "assets/index.html"
+  ],
+  "unchangedEntries": 427,
+  "artworkNativeDexAndGameWorkersUnchanged": true,
+  "deviceInstallationTested": false,
+  "tests": {
+    "walletPortfolio": 8,
+    "walletUI": 5,
+    "compactGameRegression": 13,
+    "sourceAppCompiled": true,
+    "livePublicRpcAndNftApi": true,
+    "androidDevice": false
+  }
+}
