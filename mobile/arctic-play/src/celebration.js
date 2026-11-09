@@ -8,8 +8,8 @@ export const CELEBRATION_ART={
   finale:root+'scenes/eighth-lantern-celebration.webp',
 };
 export const HALL_ART=Object.fromEntries(['xiangqi','shogi','sannin','sanguo','sanyou','yanyi','dominion'].map(id=>[id,{
-  image:'art/tables-3d-v3/'+id+'.webp',
-  card:'art/tables-3d-v3/'+id+'.webp',
+  image:id==='dominion'?'art/chaturanga-heritage-v1/cover.webp':'art/tables-3d-v3/'+id+'.webp',
+  card:id==='dominion'?'art/chaturanga-heritage-v1/cover.webp':'art/tables-3d-v3/'+id+'.webp',
 }]));
 const sticker=(id,host,label,gameId=null)=>({id:'festival-'+id,host,label,gameId,image:root+'stickers/'+id+'.webp'});
 export const FESTIVAL_STICKERS=[

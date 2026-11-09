@@ -1,3 +1,4 @@
+import {CH_HISTORY} from './chaturangaHeritage.js';
 // Researched names and dated evidence. A documented date is not an invention date.
 export const GAME_HISTORY={
   shogi:{sortYear:1058,english:'Generals’ Game',literal:'Generals’ board game; commonly called Japanese chess.',period:'Japan · Roots: 11th c. · Modern form: 15th–16th c.',detail:'Shogi is attested in 11th-century Japan, including pieces found with a wooden tablet dated 1058. The Japan Shogi Association places the development of modern hon-shogi in the 15th–16th centuries; no exact invention year is established.',sources:[['Japan Shogi Association · history','https://www.shogi.or.jp/history/story/'],['Shogi.cz · name meaning','https://shogi.cz/en/about-us/']]},
@@ -12,3 +13,5 @@ export const GAME_HISTORY={
 // Sort by the earliest dated roots above, including the stated disputed range
 // for Sanguo Qi. These anchors do not assert exact invention years.
 export const chronologicalGames=games=>[...games].sort((a,b)=>GAME_HISTORY[a.id].sortYear-GAME_HISTORY[b.id].sortYear);
+
+Object.assign(GAME_HISTORY.dominion,CH_HISTORY);
