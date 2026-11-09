@@ -1,3 +1,4 @@
+import {CompactHallPanel} from '../../../shared/compact-panels/CompactGamePanels.jsx';
 import React,{useEffect,useState} from 'react';
 import {PassportBook} from './PassportBook.jsx';
 import {ArrowRight,BookOpen,Check,ChevronRight,Compass,Flag,Heart,Pause,Play,Share2,Sparkles,Users,Volume2,LockKeyhole} from 'lucide-react';
@@ -26,7 +27,7 @@ let audio=null;
 export function stopHallSound(){if(audio){audio.close().catch(()=>{});audio=null;}}
 function soundHall(id){stopHallSound();const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return false;try{audio=new Audio();const context=audio,{notes,wave}=HALLS[id].motif;for(const [i,note] of notes.entries()){const oscillator=context.createOscillator(),gain=context.createGain(),start=context.currentTime+i*.21;oscillator.type=wave;oscillator.frequency.value=note;gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(.035,start+.025);gain.gain.exponentialRampToValueAtTime(.0001,start+.45);oscillator.connect(gain);gain.connect(context.destination);oscillator.start(start);oscillator.stop(start+.5);}setTimeout(()=>{if(audio===context)stopHallSound();},notes.length*210+600);return true;}catch{return false;}}
 
-export function HallDetail({id,progress,preferences,onChallenge,onPlay,onQuickPlay,onInvite,onRules,onFree,onNext,onPostcard,onSound,soundEnabled}){const hall=HALLS[id],heritage=GAME_HERITAGE[id],stamp=progress.halls[id];const[audioError,setAudioError]=useState('');useEffect(()=>()=>stopHallSound(),[]);return <article className="hall-detail" data-hall={id}>
+function useHallDetailTree({id,progress,preferences,onChallenge,onPlay,onQuickPlay,onInvite,onRules,onFree,onNext,onPostcard,onSound,soundEnabled}){const hall=HALLS[id],heritage=GAME_HERITAGE[id],stamp=progress.halls[id];const[audioError,setAudioError]=useState('');useEffect(()=>()=>stopHallSound(),[]);return <article className="hall-detail" data-hall={id}>
   <div className="hall-door-art celebration-door"><img className="hall-story-scene" src={HALL_ART[id].image} alt={`${game(id).name}: a sculpted game table with raised miniature pieces in ${hall.name}`} width="1200" height="800"/><span className="hall-door-marker"><Flag size={15}/> Hall {hall.chapter} · {game(id).players} players</span></div>
   <h2 className="hall-game-name"><GameTitle id={id}/></h2><GamePeriod id={id}/><p className="world-eyebrow">THE ETERNAL GATHERING · ANTARCTIC FICTION</p><h3 className="hall-name">{hall.name}</h3><p className="hall-signature">“{hall.signature}”</p>
   <div className="hall-main-actions"><button className="primary" onClick={()=>onQuickPlay(id)}><Play size={17}/> Quick play (vs bot)</button><button className="secondary" onClick={()=>onInvite(id)}><Users size={17}/> Invite friends</button></div>
@@ -38,6 +39,8 @@ export function HallDetail({id,progress,preferences,onChallenge,onPlay,onQuickPl
   {stamp.learnedAt&&<div className="hall-memory">{preferences.mode!=='off'?<img className="hall-earned-sticker" src={hallSticker(id).image} alt="" loading="lazy"/>:<Lantern lit/>}<div><strong>{hall.memory}</strong><p>{hall.memoryLine}</p><button className="text-button" onClick={()=>onPostcard(id)}><Share2 size={16}/> Preview your postcard</button></div></div>}
   <div className="hall-clue"><small>A CLUE BETWEEN HALLS</small><p>{hall.clue}</p><button className="secondary full" onClick={()=>onNext(hall.next)}>Visit {HALLS[hall.next].name}<ChevronRight size={16}/></button><small>Earn your next invitation through play, a Lantern Key, or permanent access.</small></div>
 </article>;}
+
+export function HallDetail(props){return <CompactHallPanel {...props} tree={useHallDetailTree(props)}/>;}
 
 export function StoryAdventure({id,mission,preferences,onClose,onDiscovery,onLearningEvent,onFree,onPlay,story=true}){const hall=HALLS[id],challenge=hall.challenges.find(c=>c.mission===mission)||hall.challenges[0],[complete,setComplete]=useState(false);return <div className="story-adventure" data-story-game={id}>
   <header className="page-header"><button className="icon-btn" onClick={onClose} aria-label="Back to journey">←</button><div><small>{game(id).name}</small><h1>First Move Adventure</h1></div><span aria-hidden="true">✦</span></header>
