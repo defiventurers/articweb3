@@ -1,4 +1,5 @@
 // Illustration and friendly chat only. Never an authority for game rules.
+import {GUIDES,LEGACY_GUIDE_NAMES} from './brand.js';
 const root='art/celebration/';
 export const CELEBRATION_ART={
   home:root+'scenes/lantern-harbor-festival.webp',
@@ -25,8 +26,7 @@ export const FESTIVAL_STICKERS=[
   sticker('abster-fire-flag','abster','A spark of strategy!','sanyou'),
   sticker('abster-eureka','abster','Found a clever move!'),
 ];
-const names={polly:'Polly',retsba:'Retsba',pengu:'Pengu',abster:'Abster'};
 // Ordinary readable text lets older app versions display the same message.
-export function festivalStickerText(id){const s=FESTIVAL_STICKERS.find(item=>item.id===id);return s?`🎉 ${names[s.host]}: ${s.label}`:null;}
-export function parseFestivalSticker(text){return typeof text==='string'?FESTIVAL_STICKERS.find(s=>festivalStickerText(s.id)===text)||null:null;}
+export function festivalStickerText(id){const s=FESTIVAL_STICKERS.find(item=>item.id===id);return s?`🎉 ${GUIDES[s.host].name}: ${s.label}`:null;}
+export function parseFestivalSticker(text){return typeof text==='string'?FESTIVAL_STICKERS.find(s=>festivalStickerText(s.id)===text||text===`🎉 ${LEGACY_GUIDE_NAMES[s.host]}: ${s.label}`)||null:null;}
 export function hallSticker(id){return FESTIVAL_STICKERS.find(s=>s.gameId===id);}

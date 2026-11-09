@@ -3,10 +3,10 @@ import { devFillRoom } from "../network/socketClient.js";
 import { soundManager } from "../utils/soundManager.js";
 
 const TEAM_LABELS = {
-  green: "Abster",
-  red: "Retsba",
-  blue: "Pengu",
-  yellow: "Polly"
+  green: "Ziggy",
+  red: "Rocco",
+  blue: "Piko",
+  yellow: "Nova"
 };
 
 const TEAM_EMOJIS = {

@@ -72,7 +72,7 @@ export function ShanshuiApp({ onExit = () => {}, assets, workerUrl, onOnline }) 
       <section className="shanshui-mode-grid">{MODES.map(m => <button key={m.id} onClick={() => start(m.id)}><strong>{m.title}</strong><span>{m.detail}</span><b>→</b></button>)}{onOnline && <button onClick={() => onOnline('two')}><strong>Private online table</strong><span>Invite one friend or choose four-player 2v2.</span><b>→</b></button>}</section>
       {saved && <button className="shanshui-resume" onClick={() => { setState(saved.state); setMode(saved.mode); setHumanTeam(saved.humanTeam); setDifficulty(saved.difficulty); setHistory([]); setSelected(null); }}>Resume saved game · move {saved.state.ply + 1} →</button>}
       <section className="shanshui-learn"><button onClick={() => setRules('quick')}>Quick rules</button><button onClick={() => { setRules('full'); setChapter(0); }}>Full rules</button><button onClick={() => practice()}>Learn piece movement</button><button onClick={() => start('explore', { ...createInitialState(), pieces: [] })}>Arrange the board freely</button></section>
-      <aside className="shanshui-guide"><PenguinHost host="pengu" size="mini"/><p><strong>Pengu’s first tip</strong>Two-player mode gives you two armies. Only the highlighted army moves on each turn.</p></aside>
+      <aside className="shanshui-guide"><PenguinHost host="pengu" size="mini"/><p><strong>Piko’s first tip</strong>Two-player mode gives you two armies. Only the highlighted army moves on each turn.</p></aside>
       <p className="shanshui-edition">Chinese Xiangqi adaptation · Antarctic v1. Four-player 2v2 and the digital completion rules are labelled in Full rules.</p>
     </div> : <div className="shanshui-play-layout">
       <section className="shanshui-table">

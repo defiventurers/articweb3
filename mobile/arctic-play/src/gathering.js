@@ -18,16 +18,16 @@ export const OPENING=[
 ];
 
 export const CAST={
-  polly:{title:'The Heart',trait:'Adventurous and welcoming',arc:'Polly worries the Gathering might seem intimidating. She makes a first move feel like an invitation, and every newcomer feel included.',line:'Hey! We saved you a seat!'},
-  retsba:{title:'The Rival',trait:'Competitive, friendly and fair',arc:'Retsba loves tactics and rematches. Learning to celebrate another player’s clever move is part of his own story.',line:'Okay, that move was impressive.'},
-  pengu:{title:'The Keeper',trait:'Observant, calm and careful',arc:'Pengu keeps names, origins and rules straight. He learns that protecting accuracy and welcoming discovery belong together.',line:'Every hall has a story worth knowing.'},
-  abster:{title:'The Inventor',trait:'Curious and thoughtful',arc:'Abster makes playful displays and notices unusual patterns. He celebrates experiments and second tries as much as winning.',line:'Wait… I think I found something!'},
+  polly:{title:'The Heart',trait:'Adventurous and welcoming',arc:'Nova worries the Gathering might seem intimidating. She makes a first move feel like an invitation, and every newcomer feel included.',line:'Hey! We saved you a seat!'},
+  retsba:{title:'The Rival',trait:'Competitive, friendly and fair',arc:'Rocco loves tactics and rematches. Learning to celebrate another player’s clever move is part of his own story.',line:'Okay, that move was impressive.'},
+  pengu:{title:'The Keeper',trait:'Observant, calm and careful',arc:'Piko keeps names, origins and rules straight. He learns that protecting accuracy and welcoming discovery belong together.',line:'Every hall has a story worth knowing.'},
+  abster:{title:'The Inventor',trait:'Curious and thoughtful',arc:'Ziggy makes playful displays and notices unusual patterns. He celebrates experiments and second tries as much as winning.',line:'Wait… I think I found something!'},
 };
 
 export const HALLS={
   xiangqi:{chapter:1,name:'The River Between Stars',place:'The River Gate',signature:'Two palaces. One river. A thousand possibilities.',question:'Some boundaries separate us. How can a game bring us to the same table?',
-    scene:['An ice river divides two glowing palaces. Red and blue banners move beneath the aurora as lantern-bearing penguins gather beside the bridge. The River Gate looks impassable in the snow, until Pengu invites you to look more closely.',
-      'The river is not a puzzle to erase. It is a reminder that different pieces follow different rules. Retsba has arranged a Cannon, one intervening screen and a surprising capture. Make the move yourself, and your River Lantern will shine.'],
+    scene:['An ice river divides two glowing palaces. Red and blue banners move beneath the aurora as lantern-bearing penguins gather beside the bridge. The River Gate looks impassable in the snow, until Piko invites you to look more closely.',
+      'The river is not a puzzle to erase. It is a reminder that different pieces follow different rules. Rocco has arranged a Cannon, one intervening screen and a surprising capture. Make the move yourself, and your River Lantern will shine.'],
     architecture:'Two winter palaces, a luminous ice channel and bridges reflected in moon lanterns.',atmosphere:'Still water, distant bells and the anticipation before a brilliant capture.',
     hosts:['pengu','retsba'],dialogue:[['pengu','The river changes a Soldier’s choices. The Cannon has a different surprise.'],['retsba','One screen. Not zero. Not two. Ready to see it?'],['pengu','The rules lead the celebration. Watch the highlighted route.']],
     memory:'River Lantern',memoryLine:'Distance can be part of the strategy.',fact:'A Cannon captures across exactly one intervening piece. A Soldier gains sideways moves after crossing the river.',
@@ -37,8 +37,8 @@ export const HALLS={
     evidence:'Living Chinese tradition. Movement reference: World Xiangqi Federation, World Xiangqi Rules (2018). This app’s edition excludes tournament perpetual-chase and repetition adjudication.',
     sources:[['World Xiangqi Federation · 2018 rules','https://www.wxf-xiangqi.org/images/wxf-rules/2018_World_XiangQi_Rules_English2018.pdf']]},
   shogi:{chapter:2,name:'The Hall of Second Sunrises',place:'The Second Sunrise Hall',signature:'Here, even a fallen piece may have another story to tell.',question:'Can something that leaves the board return with a new purpose?',
-    scene:['Beyond the river stands a Japanese-inspired winter pavilion. Its red lanterns dim and then reappear on the other side of the hall. Polly insists the palace is simply very fond of second chances.',
-      'Pengu explains the real surprise: captured pieces can return under a new player’s command. Their next appearance follows the drop rules, not magic. On this arranged teaching board, a captured Pawn is waiting in your hand. Give it a legal place to begin again.'],
+    scene:['Beyond the river stands a Japanese-inspired winter pavilion. Its red lanterns dim and then reappear on the other side of the hall. Nova insists the palace is simply very fond of second chances.',
+      'Piko explains the real surprise: captured pieces can return under a new player’s command. Their next appearance follows the drop rules, not magic. On this arranged teaching board, a captured Pawn is waiting in your hand. Give it a legal place to begin again.'],
     architecture:'A snow-lit winter pavilion with indigo-red banners and returning piece silhouettes.',atmosphere:'A quiet wooden pulse, snowflakes and a rising phrase that finds its way home.',
     hosts:['polly','pengu'],dialogue:[['polly','I knew that little piece had another chapter!'],['pengu','A captured piece can return unpromoted. A drop uses your turn.'],['polly','A second chance still needs the right square. I like that.']],
     memory:'Second Sunrise',memoryLine:'A good idea may have another turn.',fact:'Captured pieces can be dropped back into play. Pawn-file, immobility and Pawn-drop-mate restrictions still apply.',
@@ -48,7 +48,7 @@ export const HALLS={
     evidence:'Living Japanese tradition. Rules and forbidden-drop reference: Japan Shogi Association. The game uses this app’s documented Heritage Arcade edition.',
     sources:[['Japan Shogi Association · basic rules','https://www.shogi.or.jp/knowledge/shogi/'],['Japan Shogi Association · illegal moves','https://www.shogi.or.jp/knowledge/shogi/05.php']]},
   sannin:{chapter:3,name:'The Garden of Three Paths',place:'The Three-Path Garden',signature:'Two rivals make a contest. Three make a story nobody can predict.',question:'What changes when there are three minds at a table?',
-    scene:['Three illuminated paths wind through the ice toward the central Pleasure Garden. Retsba arrived expecting one rival. Polly has invited another friend. Suddenly every decision has a third perspective.',
+    scene:['Three illuminated paths wind through the ice toward the central Pleasure Garden. Rocco arrived expecting one rival. Nova has invited another friend. Suddenly every decision has a third perspective.',
       'This is Kokusai Sannin Shogi: a 1930s Japanese variant, not ordinary two-player Shogi. Three armies meet on a 127-cell hexagonal board. Drops, promotion, alliances and special royal powers transform the experience. In this arranged scene, guide a safe, unallied King into the Garden according to the chosen rules.'],
     architecture:'Three entrances converge on an ice garden; the true hexagonal board remains visible.',atmosphere:'Three small phrases meeting in the centre, with room for an unexpected reply.',
     hosts:['pengu','polly'],dialogue:[['retsba','I prepared a plan for my rival.'],['polly','Which one? We brought two.'],['pengu','The Pleasure Garden has special royal and alliance rules. Let’s explore this edition carefully.']],
@@ -60,7 +60,7 @@ export const HALLS={
     sources:[['Sannin Shogi · background and bibliography','https://en.wikipedia.org/wiki/Sannin_shogi']]},
   sanguo:{chapter:4,name:'The Hall of Changing Banners',place:'The Hall of Changing Banners',signature:'Kingdoms change hands. The story continues.',question:'Who commands a kingdom after its leader is defeated?',
     scene:['Three ice citadels face one another beneath enormous banners. When a kingdom falls at the festival table, its surviving pieces do not simply vanish. Their command changes in this chosen digital ruleset.',
-      'Abster notices the pieces still wear their original colours. Retsba points to the ring around each one: that shows who controls it now. The next chapter does not erase a piece’s appearance. Try an arranged inherited position and read the controller before choosing a move.'],
+      'Ziggy notices the pieces still wear their original colours. Rocco points to the ring around each one: that shows who controls it now. The next chapter does not erase a piece’s appearance. Try an arranged inherited position and read the controller before choosing a move.'],
     architecture:'Three sector citadels joined around a shared centre, with banner light moving between towers.',atmosphere:'Three alternating low notes answered by a bright changing-banner chime.',
     hosts:['retsba','abster'],dialogue:[['abster','The banner changed. Why didn’t the piece change colour?'],['retsba','Because the next chapter doesn’t erase the first. Read the owner ring.'],['abster','Right—watch who commands, not just the colour I see.']],
     memory:'Changing Banner',memoryLine:'Watch who commands, not just the colour you see.',fact:'In this digital edition, a defeated kingdom’s surviving army transfers automatically, while artwork colours remain and owner rings show control.',
@@ -71,7 +71,7 @@ export const HALLS={
     sources:[['Sanguo Qi · historical bibliography','https://en.wikipedia.org/wiki/Game_of_the_Three_Kingdoms']]},
   sanyou:{chapter:5,name:'The Three Friends Observatory',place:'The Three Friends Observatory',signature:'Three friends. New rules. A world of unexpected moves.',question:'What happens when familiar strategy meets surprising pieces?',
     scene:['High in the mountains, three extraordinary paths lead into an observatory. Signals shaped like Fire and Flags illuminate the night. River, mountain and fort motifs trace the routes below the sky.',
-      'Abster has found a hall where familiar chess instincts cannot explain everything. Pengu agrees: the actual paths and rule markers matter. Fire advances on a forward diagonal; a Flag has its own changing possibilities. Curiosity, rather than guessing, opens this hall.'],
+      'Ziggy has found a hall where familiar chess instincts cannot explain everything. Piko agrees: the actual paths and rule markers matter. Fire advances on a forward diagonal; a Flag has its own changing possibilities. Curiosity, rather than guessing, opens this hall.'],
     architecture:'An angular three-way mountain observatory, with signal flags and terrain marks inspired by the actual board.',atmosphere:'A small bright spark, two measured Flag beats and a spacious observatory echo.',
     hosts:['abster','pengu'],dialogue:[['abster','A Fire! A Flag! I can’t explain this board with yesterday’s pattern.'],['pengu','That is a good reason to look more closely. Terrain restricts different pieces differently.'],['abster','Two clear steps for the Flag. I think I found something!']],
     memory:'Three Signals',memoryLine:'Curiosity notices what experience misses.',fact:'At home, a Flag needs exactly two clear forward steps. Fire moves one forward diagonal step and never retreats in this edition.',
@@ -82,7 +82,7 @@ export const HALLS={
     sources:[['Three Friends Chess · historical bibliography','https://en.wikipedia.org/wiki/Game_of_the_Three_Friends']]},
   yanyi:{chapter:6,name:'The Yellow Lantern Court',place:'The Yellow Lantern Court',signature:'Three kingdoms. One imperial light. Every decision has consequences.',question:'Can a single central figure change every plan?',
     scene:['At the centre of an illuminated cross-shaped battlefield stands the yellow Han Emperor. Three surrounding armies watch the silent fourth light. It cannot simply be claimed because it is beautiful: its activation has special rules.',
-      'Retsba studies the alliances; Pengu keeps the changing loyalties clear. The Emperor, three Han Chariots and Cannon retain their dignified yellow artwork when command changes. Make the Horse activation on the real teaching board, then explore who can capture whom after alliances form.'],
+      'Rocco studies the alliances; Piko keeps the changing loyalties clear. The Emperor, three Han Chariots and Cannon retain their dignified yellow artwork when command changes. Make the Horse activation on the real teaching board, then explore who can capture whom after alliances form.'],
     architecture:'A yellow-gold ceremonial imperial pavilion within a landscape watched by three surrounding armies.',atmosphere:'A low suspended tone, a warm golden bell and an unresolved reply from three directions.',
     hosts:['retsba','pengu'],dialogue:[['retsba','Three armies, and everyone is watching that one light.'],['pengu','Han is a separate imperial force. A Horse capture is one activation route in our chosen rules.'],['retsba','After the change, read the owner rings—and protect the allied Kings.']],
     memory:'Imperial Lantern',memoryLine:'One decision can change every alliance.',fact:'A Horse can activate Han by capturing the Emperor. Han’s surviving fighters transfer control and the other two teams become allies.',
@@ -93,7 +93,7 @@ export const HALLS={
     sources:[]},
   dominion:{chapter:7,name:'The Four Clans Arena',place:'The Four Clans Arena',signature:'Four clans. One frozen arena. A new tradition begins.',question:'What new tradition will the four Antarctic clans create together?',
     scene:['After celebrating games from distant cultures, the hosts reveal a table they have been making for their own Gathering. Four kingdoms assemble on an 8 × 8 ice battlefield: Frost Kings, Aurora Unicorns, War Mammoths, Icebreakers and Snow Guards.',
-      'Polly welcomes the teams, Pengu explains the fair rules, Retsba studies the opening and Abster brings the great arena lanterns to life. Two dice activate particular piece families. This is the festival’s modern Chaturanga-inspired creation. Traditions are inherited—and new ones can begin tonight.'],
+      'Nova welcomes the teams, Piko explains the fair rules, Rocco studies the opening and Ziggy brings the great arena lanterns to life. Two dice activate particular piece families. This is the festival’s modern Chaturanga-inspired creation. Traditions are inherited—and new ones can begin tonight.'],
     architecture:'A four-quadrant ice arena beneath a glowing ceremonial crown and the aurora.',atmosphere:'Four confident pulses, a playful dice beat and a shared rising finish.',
     hosts:['polly','pengu','retsba','abster'],dialogue:[['polly','We’ve celebrated so many remarkable traditions. This table is ours to begin.'],['pengu','Two dice, up to two moves. You can end your turn after rolling. The original royal King holds each kingdom together.'],['retsba','A friendly match. I am still planning to win.'],['abster','And I’m planning the rematch lights!']],
     memory:'The New Winter',memoryLine:'A tradition can begin tonight.',fact:'Each die activates a piece family and can be spent independently. After rolling, you may end your turn with zero or one move. Capturing an original royal King eliminates its kingdom in this adaptation.',
@@ -103,8 +103,8 @@ export const HALLS={
     evidence:'A modern game created for this collection and inspired by four-player Chaturanga traditions. The selected dice and elimination rules are defined by the existing Chaturanga engine and bundled rulebook.',sources:[]},
 };
 
-export const INTERLUDE=[['polly','Three halls already! Retsba, must every welcome become a tournament?'],['retsba','A very friendly tournament. With a rematch.'],['abster','Wait—look at the pattern between the lanterns!'],['pengu','Every guest finds a different route. There is no required order.'],['polly','Then let’s keep exploring. There is always room at the next table.']];
-export const REVEAL=[['polly','Pengu, why is there an eighth lantern? We only have seven halls.'],['retsba','Perhaps it’s another competition!'],['abster','Or something we haven’t invented yet!'],['pengu','Neither. Look at the empty chair.'],['pengu','The eighth lantern was never for another game.'],['polly','It was for our next guest.'],['pengu','The eighth light was always for you.']];
+export const INTERLUDE=[['polly','Three halls already! Rocco, must every welcome become a tournament?'],['retsba','A very friendly tournament. With a rematch.'],['abster','Wait—look at the pattern between the lanterns!'],['pengu','Every guest finds a different route. There is no required order.'],['polly','Then let’s keep exploring. There is always room at the next table.']];
+export const REVEAL=[['polly','Piko, why is there an eighth lantern? We only have seven halls.'],['retsba','Perhaps it’s another competition!'],['abster','Or something we haven’t invented yet!'],['pengu','Neither. Look at the empty chair.'],['pengu','The eighth lantern was never for another game.'],['polly','It was for our next guest.'],['pengu','The eighth light was always for you.']];
 
 const time=value=>Number.isFinite(value)&&value>0?value:null;
 export function gatheringProgress(value={},journal={}){

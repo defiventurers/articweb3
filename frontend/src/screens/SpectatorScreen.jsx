@@ -5,7 +5,7 @@ import { addressUrl, txUrl, shortHash, shortAddress } from "../utils/explorerLin
 import { ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { shortVerificationStatus, verifyDiceProofs } from "../utils/diceProofVerifier.js";
 
-const TEAM_LABELS = { green: "Abster", red: "Retsba", blue: "Pengu", yellow: "Polly" };
+const TEAM_LABELS = { green: "Ziggy", red: "Rocco", blue: "Piko", yellow: "Nova" };
 const PIECE_LETTER = { king: "K", elephant: "E", horse: "H", ship: "S", pawn: "P" };
 
 export function SpectatorScreen({ initialRoomCode = "", onBack }) {

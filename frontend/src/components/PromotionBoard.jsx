@@ -16,10 +16,10 @@ const PIECE_ASSET_TYPE = {
 const PIECE_EMOJI = { king: "👑", elephant: "🦣", horse: "🦄", ship: "🚢", pawn: "🐧" };
 
 const TEAM_NAME = {
-  red: "RETSBA",
-  blue: "PENGU",
-  green: "ABSTER",
-  yellow: "POLLY"
+  red: "ROCCO",
+  blue: "PIKO",
+  green: "ZIGGY",
+  yellow: "NOVA"
 };
 
 const PROMOTION_PIECES = {

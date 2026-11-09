@@ -3,11 +3,14 @@
 export const BRAND={name:'Antarctic Kingdoms',company:'Antarctic Gaming Co.',tagline:'Remarkable games. An endless celebration.',icon:'art/brand/icon.webp'};
 
 export const GUIDES={
-  polly:{name:'Polly',clan:'Polly Clan',color:'#f5a9cd',image:'art/brand/hosts-director-v1/polly/listening.webp',role:'Your welcoming practice guide',detail:'Start with one move. Learn at your own pace, then bring a friend.'},
-  retsba:{name:'Retsba',clan:'Retsba Legion',color:'#f17b86',image:'art/brand/hosts-director-v1/retsba/listening.webp',role:'Your focused tactics guide',detail:'Look for captures, read the formation and protect your royal piece.'},
-  pengu:{name:'Pengu',clan:'Pengu Order',color:'#8eb9ff',image:'art/brand/hosts-director-v1/pengu/listening.webp',role:'Your calm rules guide',detail:'Every board has its own paths. Let the legal highlights show the way.'},
-  abster:{name:'Abster',clan:'Abster Tribe',color:'#68d7a8',image:'art/brand/hosts-director-v1/abster/listening.webp',role:'Your patient puzzle guide',detail:'Pause, notice the pattern and explore another possibility.'},
+  polly:{name:'Nova',clan:'Nova Clan',color:'#f5a9cd',image:'art/brand/hosts-director-v1/polly/listening.webp',role:'Your welcoming practice guide',detail:'Start with one move. Learn at your own pace, then bring a friend.'},
+  retsba:{name:'Rocco',clan:'Rocco Legion',color:'#f17b86',image:'art/brand/hosts-director-v1/retsba/listening.webp',role:'Your focused tactics guide',detail:'Look for captures, read the formation and protect your royal piece.'},
+  pengu:{name:'Piko',clan:'Piko Order',color:'#8eb9ff',image:'art/brand/hosts-director-v1/pengu/listening.webp',role:'Your calm rules guide',detail:'Every board has its own paths. Let the legal highlights show the way.'},
+  abster:{name:'Ziggy',clan:'Ziggy Tribe',color:'#68d7a8',image:'art/brand/hosts-director-v1/abster/listening.webp',role:'Your patient puzzle guide',detail:'Pause, notice the pattern and explore another possibility.'},
 };
+
+// Read old authored chat messages without changing host IDs or player text.
+export const LEGACY_GUIDE_NAMES=Object.freeze({polly:'Polly',retsba:'Retsba',pengu:'Pengu',abster:'Abster'});
 
 // Edition descriptions follow the supplied catalogue and the existing rulebooks.
 // The fictional Archive never substitutes for a game's documented origin.

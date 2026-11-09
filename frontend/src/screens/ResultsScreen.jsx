@@ -7,7 +7,7 @@ import { recordVaultActivity } from "../network/socketClient.js";
 import { addressUrl, txUrl, shortHash, shortAddress } from "../utils/explorerLinks.js";
 import { shortVerificationStatus, verifyDiceProofs } from "../utils/diceProofVerifier.js";
 
-const TEAM_LABELS = { green: "Abster", red: "Retsba", blue: "Pengu", yellow: "Polly" };
+const TEAM_LABELS = { green: "Ziggy", red: "Rocco", blue: "Piko", yellow: "Nova" };
 
 export function ResultsScreen({ room, profile, onBackToLobby }) {
   const { data: abstractClient } = useAbstractClient();

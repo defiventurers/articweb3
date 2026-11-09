@@ -1,4 +1,5 @@
 import {gatheringProgress} from './gathering.js';
+import {GUIDES,LEGACY_GUIDE_NAMES} from './brand.js';
 import catalogue from './collectionCatalog.cjs';
 export const {PRODUCTS,PACK_ID,productById}=catalogue;
 export const HOST_IDS=['polly','pengu','retsba','abster'];
@@ -20,5 +21,5 @@ export function appearanceFor(choices={},entitlements={},chapter={},journey={},g
 }
 export function portraitFor(host,outfit){return outfit==='founder'?`art/collections/aurora/${host}.webp`:outfit==='court'?`art/collections/lantern-court/${host}.webp`:null;}
 // Readable backwards-compatible transport; this text is never a receipt.
-export function illustratedText(id){const r=ILLUSTRATED_REACTIONS.find(r=>r.id===id);return r?`🐧 ${r.host[0].toUpperCase()+r.host.slice(1)}: ${r.label} · Little Victories`:null;}
-export function parseIllustrated(text){return ILLUSTRATED_REACTIONS.find(r=>text===illustratedText(r.id))||null;}
+export function illustratedText(id){const r=ILLUSTRATED_REACTIONS.find(r=>r.id===id);return r?`🐧 ${GUIDES[r.host].name}: ${r.label} · Little Victories`:null;}
+export function parseIllustrated(text){return ILLUSTRATED_REACTIONS.find(r=>text===illustratedText(r.id)||text===`🐧 ${LEGACY_GUIDE_NAMES[r.host]}: ${r.label} · Little Victories`)||null;}

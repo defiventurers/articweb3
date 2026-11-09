@@ -1,13 +1,17 @@
 # Four Penguin Hosts: Heritage Catalogue Direction
 
+## Accepted mascot names — 9 November 2026
+
+The user-approved display names are Nova (pink, legacy ID `polly`), Rocco (red, `retsba`), Piko (blue, `pengu`), and Ziggy (green, `abster`). This naming decision supersedes the older Polly/Retsba/Pengu/Abster display names in historical project instructions. IDs, asset paths, saved preferences, entitlements and heritage roles remain stable. This update changes names only; it does not approve a visual redesign or alter the older visual specifications below.
+
 ## Host identities
 
 | Host | Visual identity | Friendly catalogue role | Must never become |
 |---|---|---|---|
-| **Polly Clan** | Pink penguin, open smile, warm gold beak, paired dice | The welcoming practice host for turns, cowrie casts, and first-time invitations. | A competitive counter or a replacement for a source-native animal. |
-| **Retsba Legion** | Red penguin, focused brow, blue beak, paired dice | The bold but kind tactics host for graph pressure, captures, formations, and clear legal moves. | A violent mascot, weapon carrier, or a replacement for a tiger, leopard, vulture, crow, penguin, goat, or guard role. |
-| **Pengu Order** | Blue penguin, calm eyes, gold beak, paired dice | The route-and-rules host for sequences, protected spaces, card order, and How to Play moments. | A player piece or a source claim. |
-| **Abster Tribe** | Green penguin, bright attentive expression, gold beak, paired dice | The patient flow host for sowing, circles, puzzles, and resourceful replay cues. | A playable fish, stone, cowrie, or any source-native role. |
+| **Nova Clan** | Pink penguin, open smile, warm gold beak, paired dice | The welcoming practice host for turns, cowrie casts, and first-time invitations. | A competitive counter or a replacement for a source-native animal. |
+| **Rocco Legion** | Red penguin, focused brow, blue beak, paired dice | The bold but kind tactics host for graph pressure, captures, formations, and clear legal moves. | A violent mascot, weapon carrier, or a replacement for a tiger, leopard, vulture, crow, penguin, goat, or guard role. |
+| **Piko Order** | Blue penguin, calm eyes, gold beak, paired dice | The route-and-rules host for sequences, protected spaces, card order, and How to Play moments. | A player piece or a source claim. |
+| **Ziggy Tribe** | Green penguin, bright attentive expression, gold beak, paired dice | The patient flow host for sowing, circles, puzzles, and resourceful replay cues. | A playable fish, stone, cowrie, or any source-native role. |
 
 ## Safe integration rule
 
@@ -17,26 +21,26 @@
 
 | Heritage game | Lead host | Supporting host | Host moment |
 |---|---|---|---|
-| Nine Ice Forts | Retsba Legion | Pengu Order | Formation scout and mill-reading cue. |
-| Four-Wing Ice Hunt | Retsba Legion | Polly Clan | Lattice guide beside the preserved leopard and penguin roles. |
-| Fishflow | Abster Tribe | Polly Clan | Calm sowing-current and practice welcome. |
-| Break the Ice | Polly Clan | Pengu Order | Cowrie-cast host and exact-finish route cue. |
-| Ice Hunters | Retsba Legion | Pengu Order | Strategic host outside the preserved tiger-and-goat board roles. |
-| Sixteen Ice Warriors | Retsba Legion | Pengu Order | Formation and capture-chain explainer. |
-| Glacier Trail | Polly Clan | Pengu Order | Stored-throw and protected-house wayfinder. |
-| Crown Run | Polly Clan | Retsba Legion | Court welcome with a respectful royal-route cue. |
-| Forty Glacier Guards | Retsba Legion | Abster Tribe | Large-board formation helper and calm scan cue. |
-| Sky Temple Run | Pengu Order | Polly Clan | Route-to-temple guide, never a pilgrim counter. |
-| Ice Rings | Retsba Legion | Abster Tribe | Circular capture coach outside the ring board. |
-| Cowrie Kingdoms | Polly Clan | Pengu Order | Route host for cowrie patterns and paired runners. |
-| Two Stones | Retsba Legion | Abster Tribe | Tiny-board blockade guide with no stone replacement. |
-| Aurora Vulture | Pengu Order | Retsba Legion | Non-competitive star-map guide beside preserved vulture and crow roles. |
-| Khasi Fishflow | Abster Tribe | Polly Clan | Sowing-flow companion outside the existing pits and stones. |
-| Seven Ice Rings | Abster Tribe | Pengu Order | Circular sowing and capture-preview host. |
-| Ruma Ice Puzzle | Abster Tribe | Pengu Order | Patient solo-puzzle and undo reassurance. |
-| Polar Tablan | Pengu Order | Polly Clan | Boustrophedon route and scoring-row guide. |
-| Sige | Pengu Order | Retsba Legion | Outer/inner route and centre split explainer. |
-| Aurora Ganjifa Academy | Pengu Order | Polly Clan | Card-order host with no substitution for the card artwork. |
+| Nine Ice Forts | Rocco Legion | Piko Order | Formation scout and mill-reading cue. |
+| Four-Wing Ice Hunt | Rocco Legion | Nova Clan | Lattice guide beside the preserved leopard and penguin roles. |
+| Fishflow | Ziggy Tribe | Nova Clan | Calm sowing-current and practice welcome. |
+| Break the Ice | Nova Clan | Piko Order | Cowrie-cast host and exact-finish route cue. |
+| Ice Hunters | Rocco Legion | Piko Order | Strategic host outside the preserved tiger-and-goat board roles. |
+| Sixteen Ice Warriors | Rocco Legion | Piko Order | Formation and capture-chain explainer. |
+| Glacier Trail | Nova Clan | Piko Order | Stored-throw and protected-house wayfinder. |
+| Crown Run | Nova Clan | Rocco Legion | Court welcome with a respectful royal-route cue. |
+| Forty Glacier Guards | Rocco Legion | Ziggy Tribe | Large-board formation helper and calm scan cue. |
+| Sky Temple Run | Piko Order | Nova Clan | Route-to-temple guide, never a pilgrim counter. |
+| Ice Rings | Rocco Legion | Ziggy Tribe | Circular capture coach outside the ring board. |
+| Cowrie Kingdoms | Nova Clan | Piko Order | Route host for cowrie patterns and paired runners. |
+| Two Stones | Rocco Legion | Ziggy Tribe | Tiny-board blockade guide with no stone replacement. |
+| Aurora Vulture | Piko Order | Rocco Legion | Non-competitive star-map guide beside preserved vulture and crow roles. |
+| Khasi Fishflow | Ziggy Tribe | Nova Clan | Sowing-flow companion outside the existing pits and stones. |
+| Seven Ice Rings | Ziggy Tribe | Piko Order | Circular sowing and capture-preview host. |
+| Ruma Ice Puzzle | Ziggy Tribe | Piko Order | Patient solo-puzzle and undo reassurance. |
+| Polar Tablan | Piko Order | Nova Clan | Boustrophedon route and scoring-row guide. |
+| Sige | Piko Order | Rocco Legion | Outer/inner route and centre split explainer. |
+| Aurora Ganjifa Academy | Piko Order | Nova Clan | Card-order host with no substitution for the card artwork. |
 
 ## Shared visual behaviour
 

@@ -1,1 +1,1 @@
-{"name":"antarctic-build-tools","private":true,"dependencies":{"jsdom":"30.0.1","lucide-react":"1.34.0","react":"19.2.7","react-dom":"19.2.7","rolldown":"1.2.15","sharp":"0.35.1","vite":"8.0.16","vitest":"5.0.0"}}
+{"name":"antarctic-build-tools","private":true,"dependencies":{"acorn":"8.16.0","jsdom":"30.0.1","lucide-react":"1.34.0","react":"19.2.7","react-dom":"19.2.7","rolldown":"1.2.15","sharp":"0.35.1","vite":"8.0.16","vitest":"5.0.0"}}

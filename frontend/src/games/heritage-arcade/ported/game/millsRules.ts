@@ -5,10 +5,10 @@ export type MillsPhase = "placing" | "moving" | "capture" | "finished";
 
 export type Clan = { id: ClanId; name: string; short: string; color: string; accent: string; portrait: string };
 export const CLANS: Record<ClanId, Clan> = {
-  polly: { id: "polly", name: "Polly Clan", short: "POL", color: "#F26B8A", accent: "#FFD3DE", portrait: "/assets/heritage-arcade/board/ppba-polly-token.png" },
-  retsba: { id: "retsba", name: "Retsba Legion", short: "RET", color: "#E84A3F", accent: "#FFD4CE", portrait: "/assets/heritage-arcade/board/ppba-retsba-token.png" },
-  pengu: { id: "pengu", name: "Pengu Order", short: "PEN", color: "#2387E8", accent: "#CFE8FF", portrait: "/assets/heritage-arcade/board/ppba-pengu-token.png" },
-  abster: { id: "abster", name: "Abster Tribe", short: "ABS", color: "#169A55", accent: "#CEF6DA", portrait: "/assets/heritage-arcade/board/ppba-abster-token.png" },
+  polly: { id: "polly", name: "Nova Clan", short: "NOV", color: "#F26B8A", accent: "#FFD3DE", portrait: "/assets/heritage-arcade/board/ppba-polly-token.png" },
+  retsba: { id: "retsba", name: "Rocco Legion", short: "ROC", color: "#E84A3F", accent: "#FFD4CE", portrait: "/assets/heritage-arcade/board/ppba-retsba-token.png" },
+  pengu: { id: "pengu", name: "Piko Order", short: "PIK", color: "#2387E8", accent: "#CFE8FF", portrait: "/assets/heritage-arcade/board/ppba-pengu-token.png" },
+  abster: { id: "abster", name: "Ziggy Tribe", short: "ZIG", color: "#169A55", accent: "#CEF6DA", portrait: "/assets/heritage-arcade/board/ppba-abster-token.png" },
 };
 export const ALL_CLANS = Object.keys(CLANS) as ClanId[];
 

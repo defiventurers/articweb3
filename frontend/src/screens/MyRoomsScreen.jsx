@@ -140,7 +140,7 @@ function statusClass(status) {
 }
 
 function teamLabel(team) {
-  return { green: "Abster", red: "Retsba", blue: "Pengu", yellow: "Polly" }[team] || team || "—";
+  return { green: "Ziggy", red: "Rocco", blue: "Piko", yellow: "Nova" }[team] || team || "—";
 }
 
 function formatEntry(value) {

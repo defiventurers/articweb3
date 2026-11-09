@@ -17,7 +17,7 @@ export type YanYiState = {
   opening: Record<YanYiFaction, boolean>; checks: Record<YanYiFaction, { target: YanYiFaction | null; count: number; positions?: string[] }>;
   winner: YanYiFaction | null; draw: boolean; options: YanYiOptions; ply: number; note: string; events: YanYiEvent[];
 };
-export const YAN_YI_NAMES: Record<YanYiFaction, string> = { blue: "Wei / Pengu Order", green: "Wu / Abster Tribe", red: "Shu / Retsba Legion" };
+export const YAN_YI_NAMES: Record<YanYiFaction, string> = { blue: "Wei / Piko Order", green: "Wu / Ziggy Tribe", red: "Shu / Rocco Legion" };
 export const YAN_YI_COLORS = { blue: "#58bfff", green: "#55e5a3", red: "#ff807b", han: "#efc879" };
 export const YAN_YI_ROLE_NAMES: Record<YanYiRole, string> = { king: "King", advisor: "Shield Guard (Advisor)", elephant: "Royal Mammoth (Elephant)", horse: "Ice Unicorn (Horse)", chariot: "War Chariot", cannon: "Frost Cannon", soldier: "Penguin Spearman (Soldier)", emperor: "Han Emperor" };
 export const YAN_YI_ROLE_SHORT: Record<YanYiRole, string> = { king: "King", advisor: "Advisor", elephant: "Elephant", horse: "Horse", chariot: "Chariot", cannon: "Cannon", soldier: "Soldier", emperor: "Emperor" };

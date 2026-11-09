@@ -1,12 +1,13 @@
 {
   "name": "arctic-play-android",
-  "version": "5.9.5",
+  "version": "5.9.9",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node scripts/build-web.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:current": "node --test tests/interface.test.mjs tests/visa-entry.test.mjs tests/visa-welcome.test.mjs tests/offline-license.test.mjs tests/unlocks.test.mjs tests/discovery.test.mjs tests/asset-warmup.test.mjs tests/startup.test.mjs tests/games.test.mjs tests/required-updates.test.mjs tests/updates.test.mjs",
-    "test:co-tu-lenh": "node --test tests/co-tu-lenh-mobile.test.mjs ../../tests/co-tu-lenh-rules.test.mjs ../../tests/co-tu-lenh-rules-v03.test.mjs ../../tests/co-tu-lenh-carriers-v04.test.mjs ../../tests/co-tu-lenh-client.test.mjs ../../tests/co-tu-lenh-youtuber.test.mjs ../../tests/co-tu-lenh-youtuber-service.test.cjs"
+    "test:co-tu-lenh": "node --test tests/co-tu-lenh-mobile.test.mjs ../../tests/co-tu-lenh-rules.test.mjs ../../tests/co-tu-lenh-rules-v03.test.mjs ../../tests/co-tu-lenh-carriers-v04.test.mjs ../../tests/co-tu-lenh-client.test.mjs ../../tests/co-tu-lenh-youtuber.test.mjs ../../tests/co-tu-lenh-youtuber-service.test.cjs",
+    "test:mascots": "node --test tests/mascot-names.test.mjs tests/celebration.test.mjs tests/collections.test.mjs"
   }
 }
