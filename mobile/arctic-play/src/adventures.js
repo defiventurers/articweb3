@@ -43,10 +43,10 @@ export const ADVENTURES={
     {key:'palace-home',short:'A safe palace',title:'The Generals need a little privacy',host:'abster',task:'Step the General safely sideways. Compare what opening the central file changes.',why:'The Generals cannot face each other on an empty file. Your General also stays inside its own 3 × 3 palace.',after:'Your General stayed inside its palace and out of an open facing line. When that file is open, answering the attack is essential.',hint:'With “File open”, Red is in check. A sideways blue point is a safe reply.',variants:[['open','File open','With both screens removed, the Generals face each other. Red must answer check.'],['closed','File screened','The central Soldiers keep the Generals from facing each other.']]},
   ]},
   dominion:{title:'A two-dice snow day',subtitle:'Wake your team, spend two dice and watch the royal Kings.',stamp:'Snow-Day Flipper',accent:'#79bce0',welcome:'This is four-player Chaturanga. Dice wake specific helpers, and royal Kings can be captured. Let’s try one whole little turn.',missions:[
-    {key:'two-dice',short:'Two dice',title:'Two dice, two little moves',host:'polly',task:'Spend practice die 1 on a Guard, then die 3 on a Unicorn.',why:'Each die buys one move by a piece it activates. Either die may go first in a match; this guided example starts with 1.',after:'You spent both dice in Red’s turn. Now the next kingdom can roll.',hint:'First move the glowing Guard. The next gold ring will guide you to the Unicorn.'},
-    {key:'guard-nibble',short:'A nibble',title:'A Guard captures at an angle',host:'retsba',task:'Use die 1 to capture the rival diagonally forward.',why:'A Snow Guard walks straight into an empty square, but captures one square diagonally forward. Its forward rotates with its kingdom.',after:'Your Guard made a diagonal capture. A straight step and a capture have different shapes here.',hint:'The rival’s orange ring is diagonally ahead of your Guard.'},
-    {key:'icebreaker-hop',short:'A hop',title:'An Icebreaker hops over the middle',host:'pengu',task:'Jump exactly two squares diagonally. Try an occupied and a clear middle square.',why:'Die 4 or 6 activates the Icebreaker. It jumps exactly two diagonal squares and may hop over a piece in the middle.',after:'That was a two-square diagonal jump. A middle piece would stay where it was; only the landing square matters for a capture.',hint:'The blue destination is exactly two diagonal squares away.',variants:[['occupied','Middle occupied','The Icebreaker can jump over this piece.'],['clear','Middle clear','An empty middle square permits the same two-square jump.']]},
-    {key:'royal-watch',short:'Royal watch',title:'One royal King holds a kingdom together',host:'abster',task:'Use die 3 to capture Green’s original royal Frost King.',why:'There is no check restriction here. Capturing an original royal King eliminates its whole kingdom. Promoted fighting Kings are different.',after:'Green’s original royal King was captured, so Green’s remaining army was removed. Other kingdoms continue.',hint:'Your Unicorn can make an L-shaped capture onto Green’s royal King.'},
+    {key:'two-dice',short:'Two dice',title:'Two dice, two little moves',host:'polly',task:'Spend practice die 5 on a Guard, then die 3 on a Unicorn.',why:'Each die buys one move by a piece it activates. Either die may go first in a match; this guided example starts with 1.',after:'You spent both dice in Red’s turn. Now the next kingdom can roll.',hint:'First move the glowing Guard. The next gold ring will guide you to the Unicorn.'},
+    {key:'guard-nibble',short:'A nibble',title:'A Guard captures at an angle',host:'retsba',task:'Use die 5 to capture the rival diagonally forward.',why:'A Snow Guard walks straight into an empty square, but captures one square diagonally forward. Its forward rotates with its kingdom.',after:'Your Guard made a diagonal capture. A straight step and a capture have different shapes here.',hint:'The rival’s orange ring is diagonally ahead of your Guard.'},
+    {key:'icebreaker-hop',short:'A hop',title:'An Icebreaker hops over the middle',host:'pengu',task:'Jump exactly two squares diagonally. Try an occupied and a clear middle square.',why:'Die 2 activates the Boat / Icebreaker. It jumps exactly two diagonal squares and may hop over a piece in the middle.',after:'That was a two-square diagonal jump. A middle piece would stay where it was; only the landing square matters for a capture.',hint:'The blue destination is exactly two diagonal squares away.',variants:[['occupied','Middle occupied','The Icebreaker can jump over this piece.'],['clear','Middle clear','An empty middle square permits the same two-square jump.']]},
+    {key:'royal-watch',short:'Royal watch',title:'One royal King holds a kingdom together',host:'abster',task:'Use die 3 to capture Green’s original royal Frost King.',why:'There is no check restriction here. Capturing an original royal King freezes that kingdom; its remaining pieces stay on the board. Promoted fighting Kings are different.',after:'Green’s original royal King was captured. Its army is frozen, and the other kingdoms continue.',hint:'Your Unicorn can make an L-shaped capture onto Green’s royal King.'},
   ]},
 };
 
@@ -154,17 +154,17 @@ function fixture(id,key,variant){
     return finish(unit,a=>a.target==='9,3'||a.target==='9,5');
   }
   if(key==='two-dice'){
-    state.dice={rolled:true,values:[1,3],used:[false,false]};unit=findUnit(id,state,'pawn');
+    state.dice={rolled:true,values:[5,3],used:[false,false]};unit=findUnit(id,state,'pawn');
     return finish(unit,a=>a.raw.dieIndex===0,{stageCount:2});
   }
   if(key==='icebreaker-hop'){
     unit=findUnit(id,state,'ship');const middle=findUnit(id,state,'pawn');keep(id,state,[unit.id,middle.id]);
     relocate(id,state,unit.id,'4,2');if(variant==='occupied')relocate(id,state,middle.id,'3,3');else remove(id,state,middle.id);
-    state.dice={rolled:true,values:[4,6],used:[false,true]};
+    state.dice={rolled:true,values:[2,5],used:[false,true]};
     return finish(unit,a=>a.target==='2,4',{notice:[{cell:'3,3',label:'Middle square'},{cell:'2,4',label:'Two-square landing'}]});
   }
   if(key==='royal-watch'){
-    unit=findUnit(id,state,'horse');relocate(id,state,unit.id,'5,3');state.dice={rolled:true,values:[3,6],used:[false,true]};
+    unit=findUnit(id,state,'horse');relocate(id,state,unit.id,'5,3');state.dice={rolled:true,values:[3,5],used:[false,true]};
     return finish(unit,a=>a.target==='7,4',{notice:[{cell:'7,4',label:'Green original royal King'}]});
   }
 

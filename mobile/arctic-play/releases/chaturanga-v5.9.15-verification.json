@@ -1,0 +1,50 @@
+{
+  "version": "5.9.15",
+  "versionCode": 103,
+  "baselineVersion": "5.9.14",
+  "baselineSha256": "7bebeac7e8e8ac094dbf5ff3442feead6b66a7c2650f57db56b6a1f33160aea0",
+  "reviewedSourceBranch": "main",
+  "reviewedSourceCommit": "7267d327c714a33601f1a599aaaea6efa7982dac",
+  "sourceParentCommit": "04c686b1c9208cbfc0670e9dff01b04b291ef55a",
+  "rulesProfile": "chaturanga-long-dice-v1",
+  "bytes": 50615822,
+  "sha256": "27ab56bc1c8f2575f6d6ea0573432ac354102283e725d5bb33d1ed37b3cc2488",
+  "signingStatus": "signed with original certificate",
+  "certificateSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+  "layout": {
+    "resourcesCompression": "stored",
+    "resourcesOffset": 565232,
+    "resourcesAligned": true,
+    "zipIntegrity": "passed"
+  },
+  "changedEntries": [
+    "AndroidManifest.xml",
+    "assets/app-version.json",
+    "assets/app.css",
+    "assets/app.js",
+    "assets/bot.js",
+    "assets/fair-worker.js",
+    "assets/game-assets-sw.js",
+    "assets/game-assets.json",
+    "assets/learn.js",
+    "assets/art/chaturanga-heritage-v1/court.webp",
+    "assets/art/chaturanga-heritage-v1/cover.webp"
+  ],
+  "unchangedEntries": 425,
+  "existingArtworkAndNativeDexUnchanged": true,
+  "workersPatchedForChaturanga": true,
+  "onlineServiceDeploymentTested": false,
+  "deviceInstallationTested": false,
+  "tests": {
+    "targetedRulesServerAndRandomness": 34,
+    "learningAdventure": 11,
+    "walletUI": 5,
+    "compactMenuUI": 13,
+    "chaturangaUI": 5,
+    "workerRegressionGroups": 9,
+    "existingServerRegression": 11,
+    "sourceAppCompiled": true,
+    "preExistingFairPlayFailuresReproducedOnParent": 3,
+    "physicalAndroidTested": false
+  }
+}
