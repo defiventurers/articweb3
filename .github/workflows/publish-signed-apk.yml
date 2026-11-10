@@ -1,0 +1,52 @@
+name: Publish verified Android APK
+on:
+  push:
+    branches: [arctic-play-releases]
+    paths: ['release-staging/v5.10.0/**']
+permissions:
+  contents: write
+concurrency:
+  group: arctic-play-verified-apk
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble the already signed and verified APK
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,pathlib,re,datetime,os
+          staging=pathlib.Path('release-staging/v5.10.0')
+          manifest=json.loads((staging/'manifest.json').read_text())
+          expected='62686ae9800ce2154c1c08e21f796914a77e09a3d8d218e7a44e1b0762c0a387'
+          assert manifest['sha256']==expected
+          assert manifest['packageName']=='xyz.arcticdominion.play' and manifest['versionName']=='5.10.0' and manifest['versionCode']==104
+          data=bytearray()
+          for part in manifest['parts']:
+              assert re.fullmatch(r'apk-part-\d{2}\.bin',part['file'])
+              chunk=(staging/part['file']).read_bytes()
+              assert len(chunk)==part['bytes'] and hashlib.sha256(chunk).hexdigest()==part['sha256']
+              data.extend(chunk)
+          assert len(data)==manifest['sizeBytes'] and hashlib.sha256(data).hexdigest()==expected
+          destination=pathlib.Path('releases');destination.mkdir(exist_ok=True)
+          (destination/'ArcticPlay-v5.10.0.apk').write_bytes(data)
+          feed={key:manifest[key] for key in ['schemaVersion','packageName','versionName','versionCode','downloadUrl','sizeBytes','sha256','releaseNotes']}
+          feed['publishedAt']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+          (destination/'latest.json').write_text(json.dumps(feed,indent=2,ensure_ascii=False)+'\n')
+          record=json.loads((staging/'verification.json').read_text())
+          record.update(publication='published',sourceCommit=manifest['sourceCommit'],publicationCommit=os.environ['GITHUB_SHA'])
+          (destination/'v5.10.0-verification.json').write_text(json.dumps(record,indent=2,ensure_ascii=False)+'\n')
+          print('Verified signed APK: '+expected)
+          PY
+      - name: Publish the stable download and update feed atomically
+        shell: bash
+        run: |
+          git config user.name 'Antarctic release automation'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add releases/ArcticPlay-v5.10.0.apk releases/latest.json releases/v5.10.0-verification.json
+          git rm -r -- release-staging/v5.10.0
+          git commit -m 'Publish original-certificate Antarctic Kingdoms v5.10.0 APK'
+          git push origin HEAD:arctic-play-releases

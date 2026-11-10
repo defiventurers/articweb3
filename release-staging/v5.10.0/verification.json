@@ -1,0 +1,106 @@
+{
+  "version": "5.10.0",
+  "versionCode": 104,
+  "apk": {
+    "file": "AntarcticKingdoms-v5.10.0.apk",
+    "updateFile": "ArcticPlay-v5.10.0.apk",
+    "bytes": 57557582,
+    "sha256": "62686ae9800ce2154c1c08e21f796914a77e09a3d8d218e7a44e1b0762c0a387",
+    "package": "xyz.arcticdominion.play",
+    "version": "5.10.0",
+    "versionCode": 104,
+    "minSdk": 24,
+    "targetSdk": 36,
+    "games": [
+      "Shogi",
+      "Sannin Shogi",
+      "Sanguo Qi",
+      "San You Qi",
+      "Sanguo Yan Yi Qi",
+      "Xiangqi",
+      "Chaturanga",
+      "Shanshui Xiangqi",
+      "Cờ Tư Lệnh"
+    ]
+  },
+  "aab": {
+    "file": "AntarcticKingdoms-v5.10.0.aab",
+    "version": "5.10.0",
+    "versionCode": 104,
+    "package": "xyz.arcticdominion.play",
+    "sha256": "91eaae9298b7e972e332ae3c09e0e582907d9c65a2cf289918ab02110dfea6ed",
+    "bytes": 57556786,
+    "bundletool": "1.18.3",
+    "bundleValidation": "passed",
+    "jarSignature": "verified",
+    "targetSdk": 36,
+    "playConsoleSubmission": false,
+    "deviceInstallationTested": false,
+    "signing": "original Android update identity"
+  },
+  "signingCertificateSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+  "sourceBaseCommit": "7c0cdd74f2bb4e75bf2ff38021f287273f314503",
+  "reviewedMainCommit": "7267d327c714a33601f1a599aaaea6efa7982dac",
+  "branch": "codex/nov14-launch-completion",
+  "checks": [
+    {
+      "check": "Launch services, passport, Para, signed Commander/Shanshui and beacon retry",
+      "passed": 29
+    },
+    {
+      "check": "Commander native rules, carriers, clients, service and sockets",
+      "passed": 76
+    },
+    {
+      "check": "Sannin native rules",
+      "passed": 24
+    },
+    {
+      "check": "Independent replay, signatures, Merkle inclusion and beacon verification",
+      "passed": 7
+    },
+    {
+      "check": "Paired long-dice beacon mapping",
+      "passed": 1
+    },
+    {
+      "check": "Chaturanga release UI flows",
+      "passed": 5
+    },
+    {
+      "check": "Local EVM passport/keepsake and proof registry integration",
+      "passed": 2
+    },
+    {
+      "check": "React/Vite testnet build",
+      "status": "passed"
+    },
+    {
+      "check": "Signed APK verification and alignment",
+      "status": "passed"
+    },
+    {
+      "check": "Signed AAB and bundletool validation",
+      "status": "passed"
+    },
+    {
+      "check": "390px story/home browser review",
+      "status": "passed"
+    },
+    {
+      "check": "Wallet portfolio",
+      "passed": 8
+    },
+    {
+      "check": "Clean artwork pack restoration produces identical runtime outputs",
+      "status": "passed",
+      "files": 333
+    }
+  ],
+  "deviceInstallationTested": false,
+  "playStoreSubmitted": false,
+  "onchainDeployed": false,
+  "productionParaConfigured": false,
+  "renderUserResetExecuted": false,
+  "publication": "pending"
+}

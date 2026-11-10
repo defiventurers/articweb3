@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "packageName": "xyz.arcticdominion.play",
+  "versionName": "5.10.0",
+  "versionCode": 104,
+  "downloadUrl": "https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/ArcticPlay-v5.10.0.apk",
+  "sizeBytes": 57557582,
+  "sha256": "62686ae9800ce2154c1c08e21f796914a77e09a3d8d218e7a44e1b0762c0a387",
+  "sourceCommit": "e85dd2bd491e8a17fb7d31f73ba671658c0bbfd8",
+  "parts": [
+    {
+      "file": "apk-part-00.bin",
+      "bytes": 8388608,
+      "sha256": "b928d6bf091817b69755e7164e79687716fcaa3ad65744e2d900ef84ec31d40c"
+    },
+    {
+      "file": "apk-part-01.bin",
+      "bytes": 8388608,
+      "sha256": "4b0c42ebeb1698ac9203b5b0e922fb5d7a129ad6d03b6233cd5ab07c8281391f"
+    },
+    {
+      "file": "apk-part-02.bin",
+      "bytes": 8388608,
+      "sha256": "01055923d1fa15d9ba430796ac59dcb120ef137560615a2c78a9130c7cfa8e77"
+    },
+    {
+      "file": "apk-part-03.bin",
+      "bytes": 8388608,
+      "sha256": "90c3d509d7a5a5a2d27bc09e3f702024081ca20d431c0e14617673f7c37b0563"
+    },
+    {
+      "file": "apk-part-04.bin",
+      "bytes": 8388608,
+      "sha256": "aaa113245a56d15cb124226db220d5249a8299e6d9f4157620968e63fc686e25"
+    },
+    {
+      "file": "apk-part-05.bin",
+      "bytes": 8388608,
+      "sha256": "9b6c214320e3f7f98f63a2918d375fdaf2ca551754413cbe217cca1e3f75b7cb"
+    },
+    {
+      "file": "apk-part-06.bin",
+      "bytes": 7225934,
+      "sha256": "30b8e09d446668a323663dba001b3a6884e92cc4838e655be960b574c3fbb792"
+    }
+  ],
+  "releaseNotes": [
+    "Explore nine game stories across Indian, Chinese, Japanese and Vietnamese halls.",
+    "Meet Nova, Rocco, Piko and Ziggy using the final approved character references.",
+    "Play Chaturanga with paired icy long dice, a toggleable move guide and updated four-team miniatures.",
+    "Check signed online game records and public randomness. Blockchain receipts stay pending until a funded recorder is configured.",
+    "Passport-first NFT delivery, nine earned achievements and real aggregate launch counts are prepared; live minting awaits setup.",
+    "Play the matching browser edition or install its web app. Google Play submission is a separate process.",
+    "Install over the existing Android app with its original signing identity."
+  ]
+}
