@@ -7,6 +7,8 @@ const { createArcticPlayWorkerPool } = require('./arcticPlayWorkerPool');
 const {serveArcticPlayWeb}=require('./arcticPlayWeb');
 const {serveGameWallet}=require('./gameWalletWeb');
 const TEAM_CAPABILITY='dominion-teams-v1';
+const LONG_DICE_CAPABILITY='chaturanga-long-dice-v1';
+const dominionLongReady=engine.create('dominion',{rulesProfile:LONG_DICE_CAPABILITY}).rulesProfile===LONG_DICE_CAPABILITY;
 const dominionTeamsReady=engine.create('dominion',{teamMode:'2v2'}).teamMode==='2v2';
 const ROOM_GAME_ID = 'arctic-play';
 const hash = token => createHash('sha256').update(String(token || '')).digest('hex');
@@ -22,9 +24,10 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
   const proofParts=new WeakMap();
   function settleAccess(room){if(room.status!=='finished'||settling.has(room.matchId))return;settling.add(room.matchId);access.recordRoom(room).then(()=>{for(const [ws,s]of subscriptions)if(s.roomCode===room.roomCode&&ws.readyState===1)send(ws,{type:'ap_access_refresh',payload:{}});}).catch(e=>console.error('[arctic-play] Unlock save pending:',e.message)).finally(()=>settling.delete(room.matchId));}
   function requireTeamClient(room,payload){
+    if(room.gameState?.rulesProfile===LONG_DICE_CAPABILITY&&!(Array.isArray(payload.capabilities)&&payload.capabilities.includes(LONG_DICE_CAPABILITY)))throw new Error('This table uses four-sided Chaturanga dice. Update the app to join.');
     if(room.tableId?.startsWith('shanshui') && !(Array.isArray(payload.capabilities)&&payload.capabilities.includes('shanshui-antarctic-v1')))throw new Error('This Shanshui table requires the Antarctic v1 client. Update the app.');
     if(room.tableId?.startsWith('shanshui') && room.gameState?.rulesetVersion!=='shanshui-antarctic-v1')throw new Error('This Shanshui room uses a different ruleset. Create a new room.');
-    if(room.gameState?.teamMode==='2v2'&&!(Array.isArray(payload.capabilities)&&payload.capabilities.includes(TEAM_CAPABILITY)))throw new Error('This 2v2 table needs the latest app. Update Antarctic Kingdoms or open the invitation in your browser.');
+    if(room.gameState?.teamMode==='2v2'&&room.gameState?.rulesProfile!==LONG_DICE_CAPABILITY&&!(Array.isArray(payload.capabilities)&&payload.capabilities.includes(TEAM_CAPABILITY)))throw new Error('This 2v2 table needs the latest app. Update Antarctic Kingdoms or open the invitation in your browser.');
   }
   function codeOf(value) { return String(value || '').toUpperCase().replace(/\s/g,''); }
   function getRoom(code) {
@@ -132,8 +135,10 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
         if([...rooms.values()].filter(r=>r.gameId===ROOM_GAME_ID&&r.status==='waiting'&&r.hostId===id).length>=5) throw new Error('You already have five waiting rooms. Reuse one of them.');
         let code; do {code=Array.from(randomBytes(6),x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');} while(rooms.has(code));
         if(payload.teamMode!=null&&(!['2v2','free-for-all'].includes(payload.teamMode)||definition.id!=='dominion'))throw new Error('Choose a supported Arctic Dominion mode.');
-        if(payload.teamMode==='2v2'&&!dominionTeamsReady)throw new Error('Team tables are awaiting a game-rules update. Choose free-for-all for now.');
-        const gameState=engine.create(definition.id,{teamMode:payload.teamMode});
+        if(payload.rulesProfile!=null&&(definition.id!=='dominion'||payload.rulesProfile!==LONG_DICE_CAPABILITY))throw new Error('Choose a supported rules edition.');
+        if(payload.rulesProfile===LONG_DICE_CAPABILITY&&(!dominionLongReady||!payload.capabilities?.includes(LONG_DICE_CAPABILITY)))throw new Error('Update the app and game service for four-sided Chaturanga dice.');
+        if(payload.teamMode==='2v2'&&payload.rulesProfile!==LONG_DICE_CAPABILITY&&!dominionTeamsReady)throw new Error('Team tables are awaiting a game-rules update. Choose free-for-all for now.');
+        const gameState=engine.create(definition.id,{teamMode:payload.teamMode,rulesProfile:payload.rulesProfile});
         requireTeamClient({gameState,tableId:definition.id},payload);
         if(payload.seat!=null&&!definition.seats.includes(payload.seat))throw new Error('Choose a kingdom at this table.');
         const seat=payload.seat||definition.seats[0];
@@ -246,7 +251,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
     const url=new URL(req.url,'https://articweb3.onrender.com');
     if(serveGameWallet(req,res,url))return true;
     if(serveArcticPlayWeb(req,res,url))return true;
-    if(url.pathname==='/arctic-play/health') {res.writeHead(200,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,version:engine.VERSION,capabilities:[...(dominionTeamsReady?[TEAM_CAPABILITY]:[]),...(browserAssetsReady?['browser-play-v1']:[]),'hall-access-v1','account-play-v1','shanshui-antarctic-v1'],accessSync:access.configured(),webAppUrl:browserAssetsReady?'https://articweb3.onrender.com/arctic-play/app/':null,buildCommit:process.env.RENDER_GIT_COMMIT||null,games:engine.GAME_LIST.map(g=>({id:g.id,name:g.name,players:g.players}))}));return true;}
+    if(url.pathname==='/arctic-play/health') {res.writeHead(200,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,version:engine.VERSION,capabilities:[...(dominionLongReady?[LONG_DICE_CAPABILITY]:[]),...(dominionTeamsReady?[TEAM_CAPABILITY]:[]),...(browserAssetsReady?['browser-play-v1']:[]),'hall-access-v1','account-play-v1','shanshui-antarctic-v1'],accessSync:access.configured(),webAppUrl:browserAssetsReady?'https://articweb3.onrender.com/arctic-play/app/':null,buildCommit:process.env.RENDER_GIT_COMMIT||null,games:engine.GAME_LIST.map(g=>({id:g.id,name:g.name,players:g.players}))}));return true;}
     if(url.pathname==='/arctic-play/join') {
       const code=codeOf(url.searchParams.get('room'));const valid=/^[A-Z2-9]{6}$/.test(code);const safe=valid?code:'------';
       res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"});

@@ -1,3 +1,4 @@
+import {CH_RULES} from './chaturangaHeritage.js';
 // The Android app shares rule authorities with Heritage Arcade without editing them.
 import * as sh from '../../../frontend/src/games/shogi-frozen-shogunate/rules.js';
 import * as ss from '../../../frontend/src/games/sannin-shogi/rules.js';
@@ -14,6 +15,7 @@ import {yanYiGuardianPoint} from './yanYiBoardArtwork.js';
 import {tokenCutoutAsset} from './tokenCutouts.js';
 import * as xq from '../../../frontend/src/games/heritage-arcade/ported/game/xiangqiRules.ts';
 import {createDominion,dominionActions,applyDominion,pieceArt,PIECE_NAMES} from './dominion.js';
+import {isLongDiceState,chooseLongDiceBot,longDiceResult} from './chaturangaLongDice.js';
 
 export const VERSION = 'arctic-play-1.0.0';
 export const COLORS = { red: '#ed5269', blue: '#348ff4', black: '#348ff4', green: '#31b788', yellow:'#ffb7e1', han: '#e4b848' };
@@ -50,6 +52,7 @@ export function create(id,options={}) {
   }
 }
 export function result(state) {
+  if(isLongDiceState(state))return longDiceResult(state);
   if (state.mobileResult) return state.mobileResult;
   if (state.gameOver) return {winner:state.winner||null,winners:state.winningSeats,winningTeam:state.winningTeam,draw:!state.winner,reason:state.winningTeam?'Both opposing royal kingdoms eliminated':state.winner?'Last surviving royal kingdom':'No royal kingdom remains'};
   if (state.outcome) return {winner:state.outcome.winner || state.outcome.winners?.join(' + ') || null, reason:state.outcome.reason || state.outcome.type || 'Game over', draw:state.outcome.type === 'draw'};
@@ -135,6 +138,7 @@ export function pieces(id,state) {
 }
 const values={king:1000,general:1000,emperor:50,rook:10,chariot:10,icebreaker:10,bishop:9,horse:5,rider:5,cannon:6,elephant:3,seer:3,gold:5,silver:4,knight:3,lance:3,advisor:2,guard:2,pawn:1,soldier:1,scout:1,fire:5,flag:5};
 export function chooseBot(id,state) {
+  if(id==='dominion'&&isLongDiceState(state))return chooseLongDiceBot(state);
   if(id==='dominion'&&!state.dice.rolled&&!result(state))return 'roll|control:roll';
   const legal=actions(id,state);
   // Casual Dominion bots spend usable dice; voluntary End turn is a player choice.
@@ -189,3 +193,5 @@ RULES.sanyou[3].paragraphs.push('A move recreating a prior complete position is 
 RULES.dominion[2].paragraphs[1]='Snow Guard: one empty square forward, or one forward diagonal to capture. In the Red-at-bottom view, Red advances up, Green left, Blue down and Pink right. A piece may capture an enemy on its destination but cannot land on a friendly piece.';
 RULES.dominion[3].paragraphs[0]='A Snow Guard reaching its far edge promotes automatically according to the landing square. With each kingdom viewed from its own bottom edge, read its far edge from left to right. Green, Blue and Pink: Icebreaker, Unicorn, Mammoth, King, King, Mammoth, Unicorn, Icebreaker. Red: Icebreaker, Mammoth, Unicorn, King, King, Unicorn, Mammoth, Icebreaker.';
 import {sanyouBoardGeometry} from './sanyouCalibration.js';
+
+RULES.dominion=CH_RULES;

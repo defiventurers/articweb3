@@ -1,3 +1,4 @@
+import {CH_PRESENTATION} from './chaturangaHeritage.js';
 import {pieces} from './games.ts';
 
 // App presentation versions are independent of the online ruleset protocol.
@@ -41,3 +42,5 @@ export function parseInvitation(value){
   }catch{}}
   return codes.size===1?[...codes][0]:null;
 }
+
+Object.assign(GAME_PRESENTATION.dominion,CH_PRESENTATION);

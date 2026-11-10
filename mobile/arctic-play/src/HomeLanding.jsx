@@ -1,11 +1,12 @@
 import React,{useLayoutEffect} from 'react';
 
 // Presentation only. Routes, saved-game authority and unlocks stay owned by App.
-export function HomeLanding({onBrowse,onLearn,onShop,onSearch,onJoin,onContinue,continueLabel,continueImage,story=true,onStory,gameCount=9,onJourney,discovery}){
+export function HomeLanding({onBrowse,onChaturanga,onLearn,onShop,onSearch,onJoin,onContinue,continueLabel,continueImage,story=true,onStory,gameCount=9,onJourney,discovery}){
  useLayoutEffect(()=>{document.documentElement.classList.add('home-v2-active');return()=>document.documentElement.classList.remove('home-v2-active');},[]);
  const base='art/home-v1/',resume=typeof onContinue==='function',lesson=resume&&/learning|lesson/i.test(continueLabel||'');
  const detail=lesson?'Your last lesson':String(continueLabel||'Your saved game').replace(/^Continue\s+/i,'');
  const image=resume&&typeof continueImage==='string'&&continueImage.startsWith('art/')?continueImage:null;
+ const chaturanga=!resume||/chaturanga/i.test(continueLabel||'');
  const Arrow=()=> <svg className="home-gold-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>;
  return <section className="home-landing home-v2 home-heritage" aria-labelledby="home-v2-title">
   <section className="home-v2-hero" aria-label="Welcome to Lantern Harbor">
@@ -16,9 +17,9 @@ export function HomeLanding({onBrowse,onLearn,onShop,onSearch,onJoin,onContinue,
    <p className="home-heritage-signature"><span aria-hidden="true">✧</span> YOUR SEAT IN THE STORY <span aria-hidden="true">✧</span></p>
   </section>
   <div className="home-play-actions home-v2-actions">
-   <button type="button" className={'home-v2-primary '+(resume?'home-resume':'home-explore')} onClick={resume?onContinue:onBrowse} aria-label={resume?(continueLabel||'Continue playing'):'Explore the Games'}>
-    <span><em>YOUR NEXT MOVE</em><strong>{resume?(lesson?'Continue learning':'Continue playing'):'Explore the Games'}</strong><small>{resume?detail:<>{gameCount} games · Find your next favourite</>}</small></span>
-    <img src={image||base+'hall-discovery.webp'} className={image?'home-v2-resume-cover':'home-v2-hall'} width="180" height="120" alt="" decoding="async"/>
+   <button type="button" className={'home-v2-primary '+(resume?'home-resume':'home-explore')+(chaturanga?' home-chaturanga':'')} onClick={resume?onContinue:(onChaturanga||onBrowse)} aria-label={resume?(continueLabel||'Continue playing'):'Enter Chaturanga'}>
+    <span><em>{chaturanga?'INDIAN ROOTS · ICY COURT':'YOUR NEXT MOVE'}</em><strong>{resume?(lesson?'Continue learning':'Continue playing'):'Chaturanga'}</strong><small>{resume?detail:'Four kingdoms · Two long dice'}</small></span>
+    <img src={chaturanga?'art/chaturanga-heritage-v1/cover.webp':image||base+'hall-discovery.webp'} className={chaturanga||image?'home-v2-resume-cover':'home-v2-hall'} width="180" height="120" alt="" decoding="async"/>
     <Arrow/>
    </button>
   </div>
