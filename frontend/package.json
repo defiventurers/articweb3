@@ -4,14 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --mode testnet",
-    "dev:testnet": "vite --mode testnet",
-    "dev:mainnet": "vite --mode mainnet",
+    "dev": "npm run build:browser-app && vite --mode testnet",
+    "dev:testnet": "npm run build:browser-app && vite --mode testnet",
+    "dev:mainnet": "npm run build:browser-app && vite --mode mainnet",
     "check:testnet": "node scripts/check-env.mjs testnet",
     "check:mainnet": "node scripts/check-env.mjs mainnet",
     "build": "npm run build:testnet",
-    "build:testnet": "npm run check:testnet && vite build --mode testnet",
-    "build:mainnet": "npm run check:mainnet && vite build --mode mainnet",
+    "build:testnet": "npm run build:browser-app && npm run check:testnet && vite build --mode testnet",
+    "build:mainnet": "npm run build:browser-app && npm run check:mainnet && vite build --mode mainnet",
     "preview": "vite preview",
     "preview:mainnet": "vite preview --mode mainnet",
     "test:ruma": "node --test unit/ruma-rules.node.test.js",
@@ -47,7 +47,8 @@
     "assets:shanshui": "node scripts/build-shanshui-assets.mjs",
     "test:co-tu-lenh": "node --test ../tests/co-tu-lenh-rules.test.mjs ../tests/co-tu-lenh-service.test.cjs ../tests/co-tu-lenh-art.test.mjs ../tests/co-tu-lenh-rules-v03.test.mjs ../tests/co-tu-lenh-service-v03.test.cjs ../tests/co-tu-lenh-carriers-v04.test.mjs ../tests/co-tu-lenh-service-v04.test.cjs ../tests/co-tu-lenh-client.test.mjs ../tests/co-tu-lenh-youtuber.test.mjs ../tests/co-tu-lenh-youtuber-service.test.cjs",
     "build:co-tu-lenh-engine": "node scripts/build-co-tu-lenh-engine.cjs",
-    "check:co-tu-lenh-engine": "node scripts/build-co-tu-lenh-engine.cjs --check"
+    "check:co-tu-lenh-engine": "node scripts/build-co-tu-lenh-engine.cjs --check",
+    "build:browser-app": "node scripts/build-browser-app.mjs"
   },
   "dependencies": {
     "@abstract-foundation/agw-client": "1.12.3",

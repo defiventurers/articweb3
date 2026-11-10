@@ -56,7 +56,7 @@ test('Chaturanga teaches a whole two-dice turn and the difference between a roya
   const p=start('dominion','two-dice'),first=p.legal[0],half=a.adventurePosition('dominion','two-dice','default',[first.id]);
   assert.equal(half.complete,false);assert.equal(half.state.turn,'red');assert.deepEqual(half.state.dice.used,[true,false]);assert.ok(half.legal.every(a=>a.raw.dieIndex===1));
   const done=a.adventurePosition('dominion','two-dice','default',[first.id,half.legal[0].id]);assert.equal(done.complete,true);assert.equal(done.state.turn,'blue');
-  const eliminated=finish('dominion','royal-watch').state;assert.ok(eliminated.eliminatedTeams.includes('green'));assert.ok(!eliminated.board.flat().some(p=>p?.team==='green'));assert.equal(eliminated.gameOver,false);
+  const eliminated=finish('dominion','royal-watch').state;assert.ok(eliminated.frozenTeams.includes('green'));assert.ok(eliminated.board.flat().some(p=>p?.team==='green'));assert.equal(eliminated.gameOver,false);
   assert.ok(!finish('dominion','guard-nibble').state.eliminatedTeams.length);
 });
 

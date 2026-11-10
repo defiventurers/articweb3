@@ -1,0 +1,1 @@
+{"name":"antarctic-launch-workspace","private":true,"scripts":{"dev":"node server/scripts/preview-launch.mjs"}}

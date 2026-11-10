@@ -1,0 +1,666 @@
+{
+  "status": "DRAFT art derived from latest user-approved character identities",
+  "sourceAtlas": "exec-bf3ebce9-2109-431d-9ac6-22545abca509.png",
+  "sourceSha256": "1d98e535fc5c03b99f526e705c7d27df0825ed8ddb2967cbcba0663c7a501e7d",
+  "sourceDimensions": [
+    1402,
+    1122
+  ],
+  "sourceMode": "RGBA",
+  "extraction": "Rectangular cropping and centered transparent padding only; original RGBA pixels retained before lossless encoding. No alpha thresholding, retouching, hue changes, background removal, or art edits.",
+  "columns": [
+    "frost-king",
+    "war-mammoth",
+    "aurora-unicorn",
+    "icebreaker",
+    "snow-guard"
+  ],
+  "rows": [
+    "red",
+    "blue",
+    "green",
+    "pink"
+  ],
+  "sprites": [
+    {
+      "file": "red-frost-king.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        0,
+        0,
+        280,
+        280
+      ],
+      "paddingOffset": [
+        20,
+        20
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        48,
+        4,
+        255,
+        275
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 5,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 90490
+    },
+    {
+      "file": "red-war-mammoth.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        280,
+        0,
+        570,
+        280
+      ],
+      "paddingOffset": [
+        15,
+        20
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        26,
+        31,
+        280,
+        276
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 3,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 88582
+    },
+    {
+      "file": "red-aurora-unicorn.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        570,
+        0,
+        820,
+        280
+      ],
+      "paddingOffset": [
+        35,
+        20
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        18,
+        21,
+        232,
+        276
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 3,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 80698
+    },
+    {
+      "file": "red-icebreaker.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        820,
+        0,
+        1110,
+        280
+      ],
+      "paddingOffset": [
+        15,
+        20
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        19,
+        62,
+        273,
+        277
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 2,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 71004
+    },
+    {
+      "file": "red-snow-guard.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        1110,
+        0,
+        1402,
+        280
+      ],
+      "paddingOffset": [
+        14,
+        20
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        30,
+        17,
+        270,
+        277
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 3,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 82222
+    },
+    {
+      "file": "blue-frost-king.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        0,
+        280,
+        280,
+        555
+      ],
+      "paddingOffset": [
+        20,
+        22
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        44,
+        3,
+        248,
+        271
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 8,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 82638
+    },
+    {
+      "file": "blue-war-mammoth.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        280,
+        280,
+        570,
+        555
+      ],
+      "paddingOffset": [
+        15,
+        22
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        28,
+        20,
+        280,
+        272
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 7,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 91580
+    },
+    {
+      "file": "blue-aurora-unicorn.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        570,
+        280,
+        820,
+        555
+      ],
+      "paddingOffset": [
+        35,
+        22
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        13,
+        11,
+        224,
+        270
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 4,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 83088
+    },
+    {
+      "file": "blue-icebreaker.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        820,
+        280,
+        1110,
+        555
+      ],
+      "paddingOffset": [
+        15,
+        22
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        20,
+        51,
+        273,
+        271
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 4,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 74150
+    },
+    {
+      "file": "blue-snow-guard.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        1110,
+        280,
+        1402,
+        555
+      ],
+      "paddingOffset": [
+        14,
+        22
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        27,
+        10,
+        270,
+        271
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 5,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 80770
+    },
+    {
+      "file": "green-frost-king.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        0,
+        555,
+        280,
+        830
+      ],
+      "paddingOffset": [
+        20,
+        22
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        47,
+        3,
+        256,
+        270
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 9,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 98364
+    },
+    {
+      "file": "green-war-mammoth.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        280,
+        555,
+        570,
+        830
+      ],
+      "paddingOffset": [
+        15,
+        22
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        23,
+        19,
+        280,
+        270
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 6,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 93748
+    },
+    {
+      "file": "green-aurora-unicorn.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        570,
+        555,
+        820,
+        830
+      ],
+      "paddingOffset": [
+        35,
+        22
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        19,
+        12,
+        229,
+        269
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 4,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 86032
+    },
+    {
+      "file": "green-icebreaker.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        820,
+        555,
+        1110,
+        830
+      ],
+      "paddingOffset": [
+        15,
+        22
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        19,
+        53,
+        274,
+        270
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 5,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 74972
+    },
+    {
+      "file": "green-snow-guard.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        1110,
+        555,
+        1402,
+        830
+      ],
+      "paddingOffset": [
+        14,
+        22
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        22,
+        7,
+        270,
+        271
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 7,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 92792
+    },
+    {
+      "file": "pink-frost-king.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        0,
+        830,
+        280,
+        1122
+      ],
+      "paddingOffset": [
+        20,
+        14
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        55,
+        3,
+        251,
+        280
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 8,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 82136
+    },
+    {
+      "file": "pink-war-mammoth.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        280,
+        830,
+        570,
+        1122
+      ],
+      "paddingOffset": [
+        15,
+        14
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        22,
+        21,
+        281,
+        279
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 3,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 94306
+    },
+    {
+      "file": "pink-aurora-unicorn.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        570,
+        830,
+        820,
+        1122
+      ],
+      "paddingOffset": [
+        35,
+        14
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        12,
+        14,
+        215,
+        280
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 4,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 82500
+    },
+    {
+      "file": "pink-icebreaker.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        820,
+        830,
+        1110,
+        1122
+      ],
+      "paddingOffset": [
+        15,
+        14
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        20,
+        57,
+        274,
+        279
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 4,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 74146
+    },
+    {
+      "file": "pink-snow-guard.webp",
+      "dimensions": [
+        320,
+        320
+      ],
+      "sourceCrop": [
+        1110,
+        830,
+        1402,
+        1122
+      ],
+      "paddingOffset": [
+        14,
+        14
+      ],
+      "sourceMeaningfulAlphaBBox": [
+        19,
+        8,
+        269,
+        280
+      ],
+      "meaningfulAlphaThreshold": 16,
+      "meaningfulBorderPixels": 0,
+      "maxSourceBorderAlpha": 5,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "losslessRGBAIdentical": true,
+      "bytes": 82984
+    }
+  ]
+}

@@ -6,10 +6,10 @@ const secret=()=>randomBytes(32).toString('base64url');
 const valid=x=>typeof x==='string'&&/^[A-Za-z0-9_-]{43}$/.test(x);
 const chains=require('./gameWalletChains.json');
 const DEFAULT_PUBLIC_KEY='beta_a42ff79ffe66ed951ec89a1678783131';
-function createParaGameWallet({enabled=process.env.AK_PARA_ENABLED!=='false',apiKey=process.env.AK_PARA_API_KEY||DEFAULT_PUBLIC_KEY,audience=process.env.AK_PARA_APP_KEY_ID||(apiKey===DEFAULT_PUBLIC_KEY?'5ae54490-27ad-4a09-86b2-51fd84a2a40e':null),environment=process.env.AK_PARA_ENVIRONMENT||'BETA',chainId=Number(process.env.AK_PARA_CHAIN_ID||(environment==='BETA'?46630:4663)),productionApproved=process.env.AK_PARA_PRODUCTION_APPROVED==='true',fetcher=fetch,websiteReturnUri=process.env.AK_GOOGLE_WEBSITE_RETURN_URI||'https://arcticdominion.xyz/'}={}){
+function createParaGameWallet({enabled=process.env.AK_PARA_ENABLED!=='false',apiKey=process.env.AK_PARA_API_KEY||DEFAULT_PUBLIC_KEY,audience=process.env.AK_PARA_APP_KEY_ID||(apiKey===DEFAULT_PUBLIC_KEY?'5ae54490-27ad-4a09-86b2-51fd84a2a40e':null),environment=process.env.AK_PARA_ENVIRONMENT||'BETA',chainId=Number(process.env.AK_PARA_CHAIN_ID||46630),productionApproved=process.env.AK_PARA_PRODUCTION_APPROVED==='true',fetcher=fetch,websiteReturnUri=process.env.AK_GOOGLE_WEBSITE_RETURN_URI||'https://arcticdominion.xyz/'}={}){
  if(!['BETA','PRODUCTION'].includes(environment)||!chains[chainId])throw Error('Unsupported Para environment.');
  const base=environment==='BETA'?'https://api.beta.getpara.com':'https://api.getpara.com';
- const ready=!!(enabled&&apiKey&&audience&&((environment==='BETA'&&/^beta_/i.test(apiKey))||(environment==='PRODUCTION'&&/^prod_/i.test(apiKey)))&&((environment==='BETA'&&chains[chainId].testnet)||(environment==='PRODUCTION'&&!chains[chainId].testnet&&productionApproved)));
+ const ready=!!(enabled&&apiKey&&audience&&((environment==='BETA'&&/^beta_/i.test(apiKey))||(environment==='PRODUCTION'&&/^prod_/i.test(apiKey)))&&((environment==='BETA'&&chains[chainId].testnet)||(environment==='PRODUCTION'&&productionApproved)));
  const web=new URL(websiteReturnUri);if(web.protocol!=='https:'||web.username||web.password||web.search||web.hash)throw Error('Invalid website return URI.');
  let keys,keysAt=0;
  function config(){return {enabled:ready,provider:'para',apiKey:ready?apiKey:null,environment,chainId,chain:chains[chainId],loginMethods:'dashboard',walletCreation:'automatic',...(ready?{}:{reason:'Para sign-in needs its server configuration. Your saved games are preserved.'})};}
@@ -39,7 +39,9 @@ function createParaGameWallet({enabled=process.env.AK_PARA_ENABLED!=='false',api
    const b=await body(req);if(!valid(b.challenge))throw error('Start sign-in again.');
    const purpose=['manage','link'].includes(b.purpose)?b.purpose:'login';
    const actor=purpose!=='login'?await authenticated(req,(a,c)=>({accountId:a.id,sessionHash:hash(c.key)})):{};
-   const attempt=secret(),expires=now()+600000;await store.transact('para-wallet-attempt',hash(attempt),()=>({challenge:b.challenge,platform:['android','website'].includes(b.platform)?b.platform:'web',purpose,...actor,expires}));
+   const allowedWebOrigin=['https://arcticdominion.xyz','https://www.arcticdominion.xyz'].includes(req.headers.origin)?req.headers.origin:null;
+   const browserReturn=allowedWebOrigin&&b.returnPath==='/play/'?allowedWebOrigin+'/play/':null;
+   const attempt=secret(),expires=now()+600000;await store.transact('para-wallet-attempt',hash(attempt),()=>({challenge:b.challenge,platform:['android','website'].includes(b.platform)?b.platform:'web',browserReturn,purpose,...actor,expires}));
    return {url:'https://articweb3.onrender.com/arctic-play/wallet/?attempt='+attempt+'&provider=para'};
   }
   if(path==='/auth/para/attempt'&&method==='POST'){
@@ -59,7 +61,7 @@ function createParaGameWallet({enabled=process.env.AK_PARA_ENABLED!=='false',api
    const wallet={provider:'para',address:v.address,identity:v.key,walletId:v.walletId,network:environment,chainId};
    if(a.purpose==='manage')return {managed:true,wallet,collectibles:ctx.walletInventory?await ctx.walletInventory(a.accountId):[]};
    const ticket=secret();await store.transact('auth-ticket',hash(ticket),()=>({provider:'para-wallet',key:v.key,email:v.email,displayName:v.name,wallet,challenge:a.challenge,...(a.accountId?{accountId:a.accountId,linkSessionHash:a.sessionHash}:{}),expires:now()+120000}));
-   return {returnTo:a.platform==='android'?'arcticplay://auth?ticket='+ticket:a.platform==='website'?web.href+'?auth_ticket='+ticket:'/arctic-play/app/?auth_ticket='+ticket};
+   return {returnTo:a.platform==='android'?'arcticplay://auth?ticket='+ticket:a.platform==='website'?web.href+'?auth_ticket='+ticket:(a.browserReturn||'/arctic-play/app/')+'?auth_ticket='+ticket};
   }
  }
  return {route,config,claimsOf};

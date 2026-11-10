@@ -1,11 +1,34 @@
 const {getAddress}=require('ethers');
 const {createPassportStore}=require('./antarcticPassportStore');
 const CHAINS=Object.fromEntries(Object.values(require('./gameWalletChains.json')).map(c=>[c.id,{name:c.name,explorer:c.blockExplorers.default.url,testnet:c.testnet}]));
-function createPassportRoutes({store=createPassportStore(),chainId=Number(process.env.AK_VISA_CHAIN_ID||11124),accountStore,deliveryEnabled=process.env.AK_VISA_DELIVERY_ENABLED==='true'}={}){
+function createPassportRoutes({store=createPassportStore(),chainId=Number(process.env.AK_VISA_CHAIN_ID||46630),accountStore,deliveryEnabled=process.env.AK_VISA_DELIVERY_ENABLED==='true'}={}){
  if(!CHAINS[chainId])throw Error('Unsupported passport network.');
  function response(p){if(!p)return null;return {...p,network:CHAINS[p.chainId]?.name,deliveries:p.deliveries.map(d=>({...d,status:!deliveryEnabled&&d.status==='queued'?'awaiting_setup':d.status,...(/^0x[0-9a-f]{64}$/i.test(d.transactionHash||'')?{explorerUrl:CHAINS[p.chainId].explorer+'/tx/'+d.transactionHash}:{})}))};}
- async function syncAchievements(accountId){if(!accountStore||!store.configured||!store.enqueueAchievement)return;const account=await accountStore.get('account',accountId);for(const a of require('./antarcticAchievements').earnedAchievements(account))await store.enqueueAchievement(accountId,a);}
+ async function syncAchievements(accountId){
+  if(!accountStore||!store.configured||!store.enqueueAchievement)return;
+  let account=await accountStore.get('account',accountId);if(!account)return;
+  const wins={...account.verifiedSupplementalWins},history=await accountStore.get('fair-owner',accountId);
+  for(const match of (history?.matches||[]).filter(m=>m.closed&&['co-tu-lenh','shanshui','shanshui-2v2'].includes(m.gameId)).slice(0,100)){
+   const game=match.gameId==='co-tu-lenh'?'co-tu-lenh':'shanshui-xiangqi';if(wins[game])continue;
+   const saved=await accountStore.get('fair-match',match.matchId),bundle=saved?.bundle,result=bundle?.closure?.result;
+   if(!saved?.owners?.includes(accountId)||!result||result.draw)continue;
+   const winners=require('../mobile/arctic-play/src/unlockModel.cjs').winningSeats(result),seats=saved.ownerSeats?.[accountId]||[];
+   if(seats.some(s=>winners.includes(s.seat)&&!bundle.events.some(e=>e.kind==='resign'&&e.signed.intent.actor===s.actor)))wins[game]={matchId:match.matchId,at:bundle.closure.closedAt||match.updatedAt};
+  }
+  if(Object.keys(wins).length>Object.keys(account.verifiedSupplementalWins||{}).length){await accountStore.transact('account',accountId,a=>a?({...a,verifiedSupplementalWins:{...a.verifiedSupplementalWins,...wins}}):null);account={...account,verifiedSupplementalWins:wins};}
+  for(const a of require('./antarcticAchievements').earnedAchievements(account))await store.enqueueAchievement(accountId,a);
+ }
  async function route(ctx){const {path,method,authenticated,req,body,error,now}=ctx;
+  const metadata=/^\/passport\/metadata\/(\d+)\/([1-9]\d{0,30})\.json$/.exec(path);
+  if(metadata&&method==='GET'){
+   const id=Number(metadata[1]);if(!CHAINS[id]||!store.confirmedToken)throw error('Passport metadata is unavailable.',404);
+   const record=await store.confirmedToken(id,metadata[2]);if(!record)throw error('This passport has no confirmed delivery yet.',404);
+   const account=accountStore?await accountStore.get('account',record.account_id):null;
+   const earned=require('./antarcticAchievements').earnedAchievements(account);
+   return {name:'Antarctic Passport #'+metadata[2],description:'A free account-bound Antarctic Kingdoms passport. Metadata updates with service-verified game achievements. '+(CHAINS[id].testnet?'Testnet collectible: no real-world value.':'Game collectible.'),image:'https://articweb3.onrender.com/arctic-play/app/art/passport-book-v2/company-passport-cover.webp',external_url:'https://articweb3.onrender.com/arctic-play/app/',attributes:[{trait_type:'Network',value:CHAINS[id].name},{trait_type:'Arrival',value:new Date(Number(record.created_at)).toISOString()},...earned.map(a=>({trait_type:a.title,value:'Earned'}))],properties:{chainId:id,metadata:'mutable',achievementAuthority:'server-validated match results',personalData:'excluded',updatedAt:Math.max(Number(record.created_at),...Object.values(account?.accessProgress?.wins||{}).map(w=>w.at||0))}};
+  }
+  const keepsake=/^\/passport\/achievement-metadata\/([0-9a-f]{1,64})\.json$/i.exec(path);
+  if(keepsake&&method==='GET'){const n=BigInt('0x'+keepsake[1]);const achievement=require('./antarcticAchievements').ACHIEVEMENTS.find(a=>BigInt(a.tokenId)===n);if(n!==1n&&!achievement)throw error('Unknown achievement.',404);return {name:achievement?.title||'Antarctic Arrival',description:'Free Antarctic Kingdoms achievement keepsake. Initially issued on Robinhood Chain testnet; no real-world value.',image:'https://articweb3.onrender.com/arctic-play/app/art/passport-book-v2/company-passport-cover.webp',attributes:[{trait_type:'Edition',value:'Testnet launch'},{trait_type:'Award',value:achievement?.code||'arrival'}]};}
   if(path==='/passport/config'&&method==='GET')return {version:1,registration:store.configured,deliveryEnabled,chainId,network:CHAINS[chainId].name,visa:'soulbound',arrival:'transferable'};
   if(path==='/passport/achievements/sync'&&method==='POST'){const id=await authenticated(req,a=>a.id);await syncAchievements(id);return {passport:response(await store.get(id))};}
   if(path==='/passport'&&method==='GET'){const identity=await authenticated(req,a=>({accountId:a.id,displayName:a.identity?.displayName||'',provider:a.identity?.provider||'recovery',wallet:a.gameWallet||a.privyWallet||null}));await syncAchievements(identity.accountId);return {identity,passport:response(await store.get(identity.accountId))};}

@@ -1,4 +1,7 @@
+import {CompactGamePanel,CompactInfoPanel,CompactRoomPanel} from '../../../shared/compact-panels/CompactGamePanels.jsx';
 import {ShanshuiMobile} from './ShanshuiMobile.jsx';
+import {CulturalGames,GameIntroduction,InstallWebApp,useLaunchVisit} from './LaunchExperience.jsx';
+import {LaunchDashboard} from './LaunchDashboard.jsx';
 import {CoTuLenhMobile} from './CoTuLenhMobile.jsx';
 import {secureUuid} from './uuid.js';
 import {useGameAssetWarmup} from './gameAssets.js';
@@ -9,7 +12,9 @@ import {GAME_LIST,game,create,actions,apply,result,turn,hand,pieces,inCheck,COLO
 import {Board} from './Board.jsx';
 import {BoardCalibrator} from './BoardCalibrator.jsx';
 import {matchPerspective} from './boardView.js';
-import {DiceTray,DominionTurnPrompt} from './DiceTray.jsx';
+import {DiceTray,DominionTurnPrompt,DominionRollGuide,usePostRollHelp,rollActionId} from './DiceTray.jsx';
+import {LONG_DICE_PROFILE,needsKingReturn} from './chaturangaLongDice.js';
+import {ChaturangaBoardSpace} from './ChaturangaRelease.jsx';
 import {roomClient,INVITE_ROOT,WEB_APP_URL,requireServiceFeature,browserRoomLink,bindRoomLifecycle} from './network.js';
 import {DOMINION_TEAMS,teamFor,teamName,teamGame} from './dominionTeams.js';
 import {read,write,getProfile,saveRoom,forgetRoom} from './storage.js';
@@ -45,6 +50,7 @@ import {HomeLanding} from './HomeLanding.jsx';
 import {RoomCodeInput} from './RoomCodeInput.jsx';
 import {ChatCamp} from './ChatCamp.jsx';
 import {PassportHub,PassportIcon} from './PassportBook.jsx';
+import {PassportWallet} from './PassportWallet.jsx';
 import {CELEBRATION_ART,festivalStickerText} from './celebration.js';
 import {FestivalStickerAlbum} from './FestivalStickers.jsx';
 import {HallCard,HallDetail,StoryAdventure,LanternPassport,OpeningStory,GatheringInterlude,EighthLantern,WorldGuide,GatheringSettings} from './Gathering.jsx';
@@ -55,7 +61,7 @@ import {HALLS,HALL_ORDER,WORLD,GATHERING_KEY,STORY_SETTINGS_KEY,gatheringProgres
 
 const tabs=[['home','Home',Home],['friends','Friends',Users],['games','Games',Gamepad2],['chats','Chats',MessageCircle],['profile','Passport',PassportIcon]];
 const openingText=id=>`${seatName(id,game(id).seats[0])} ${id==='dominion'?'rolls':'moves'} first`;
-const Avatar=({color='blue',size=42,name='',online=false,gameId})=><span className="avatar" style={{width:size,height:size}}><img src={asset(gameId==='dominion'?`dominion/${color==='yellow'?'pink':color}-frost-king.webp`:`tokens/token-sanguo-${color==='black'?'blue':color}-general.webp`)} alt={name||'Player avatar'}/>{online&&<i/>}</span>;
+const Avatar=({color='blue',size=42,name='',online=false,gameId})=><span className="avatar" style={{width:size,height:size}}><img src={asset(gameId==='dominion'?`launch-v1/chaturanga-pieces/${color==='yellow'?'pink':color}-frost-king.webp`:`tokens/token-sanguo-${color==='black'?'blue':color}-general.webp`)} alt={name||'Player avatar'}/>{online&&<i/>}</span>;
 function DominionSetup({mode,onMode,seat,onSeat}){
   const alliance=teamFor(seat)||teamFor('red');
   const seats=mode==='2v2'?alliance.seats:game('dominion').seats;
@@ -82,6 +88,8 @@ function Sheet({title,onClose,children,wide=false,focusId}){
 }
 
 function App(){
+  useLaunchVisit();
+  const [introduction,setIntroduction]=useState(null);
   const assetStatus=useGameAssetWarmup();
   useEffect(startCloud,[]);
   useEffect(()=>{const update=()=>setJournal(read(JOURNAL_KEY,{}));window.addEventListener('arctic-cloud-progress',update);return()=>window.removeEventListener('arctic-cloud-progress',update);},[]);
@@ -116,6 +124,7 @@ function App(){
   useEffect(()=>{window.arcticChallenge=value=>{if(/^[A-Za-z0-9_-]{24}$/.test(value)){setChallengeId(value);setSheet('friend-challenge');}};return()=>delete window.arcticChallenge;},[]);
   const [puzzle,setPuzzle]=useState(null),[postcard,setPostcard]=useState(null),reactionAt=useRef(0);
   const [sheet,setSheet]=useState(null),[picked,setPicked]=useState('shogi'),[seat,setSeat]=useState('red');
+  useEffect(()=>{const open=()=>setSheet('wallet');window.addEventListener('ak-open-wallet',open);return()=>window.removeEventListener('ak-open-wallet',open);},[]);
   const [boardToolsTarget,setBoardToolsTarget]=useState(null);
   const [dominionConfirm,setDominionConfirm]=useState(false),[dicePending,setDicePending]=useState(false),diceLock=useRef(false),turnPromptSeen=useRef(null),diceContext=useRef(null);
   const [dominionMode,setDominionMode]=useState('2v2'),[roomPostcardDraft,setRoomPostcardDraft]=useState(null);
@@ -233,6 +242,7 @@ function App(){
     return()=>{delete window.arcticBack;delete window.arcticJoin;};
   },[]);
   backRef.current=()=>{
+    if(introduction){setIntroduction(null);return;}
     if(update.required)return;
     const learningClose=[...document.querySelectorAll('[data-learning-dialog] button[aria-label="Close"]')].at(-1);
     if(learningClose){learningClose.click();return;}
@@ -290,10 +300,10 @@ function App(){
     if(!gate(forGame))return;
     if(!UNLOCKS.CATALOG[forGame].starter){await requireServiceFeature('hall-access-v1');await hallAccess.ensureOnline();}
     if(forGame==='dominion'&&!confirmed){if(!game('dominion').seats.includes(seat))setSeat('red');setPicked(forGame);setRoomPostcardDraft(postcardMemory);setSheet('dominion-room');return;}
-    if(forGame==='dominion'&&dominionMode==='2v2')await requireServiceFeature('dominion-teams-v1');
+    if(forGame==='dominion')await requireServiceFeature(LONG_DICE_PROFILE);
     if(UNLOCKS.CATALOG[forGame].starter)await hallAccess.refresh();
     await roomClient.detach();
-    const response=await roomClient.call('ap_room_create',{...hallAccess.credentials(),tableId:forGame,name:profile.name,playerId:profile.id,seat:forGame===picked?seat:'red',...(forGame==='dominion'?{teamMode:dominionMode}:{})});
+    const response=await roomClient.call('ap_room_create',{...hallAccess.credentials(),tableId:forGame,name:profile.name,playerId:profile.id,seat:forGame===picked?seat:'red',...(forGame==='dominion'?{teamMode:dominionMode,rulesProfile:LONG_DICE_PROFILE}:{})});
     const saved={roomCode:response.room.roomCode,playerId:profile.id,seatToken:response.seatToken};
     roomClient.useSession(saved);setSession(saved);sessionRef.current=saved;receiveRoom(response.room);
     setPicked(forGame);setLocal(null);setScreen('room');if(postcardMemory){setPostcard({...postcardMemory,withInvitation:true});setSheet('postcard');}else setSheet(null);
@@ -335,7 +345,7 @@ function App(){
     await roomClient.detach();setSession(null);sessionRef.current=null;setRoom(null);roomRef.current=null;
     clearTimeout(toastTimer.current);setNotice('');
     companion.metric('practice_started');
-    const match={id:gameId,matchId:secureUuid(),state:create(gameId,{teamMode:gameId==='dominion'?dominionMode:undefined}),mode,humans:mode==='hotseat'?game(gameId).seats:[humanSeat],history:[],actionLog:[],progressEligible:mode==='bots',guide};
+    const match={id:gameId,matchId:secureUuid(),state:create(gameId,{teamMode:gameId==='dominion'?dominionMode:undefined,rulesProfile:gameId==='dominion'?LONG_DICE_PROFILE:undefined}),mode,humans:mode==='hotseat'?game(gameId).seats:[humanSeat],history:[],actionLog:[],progressEligible:mode==='bots',guide};
     write('last-table',{id:gameId,at:Date.now()});setLocal(match);setTrail(null);setLocalChat([]);setSheet(null);setChatOpen(false);setScreen('match');
   }
   async function resumePractice(gameId){
@@ -347,13 +357,14 @@ function App(){
     if(diceLock.current||!canAct)return;
     const action=legal.find(a=>a.id===actionId);if(!action)return;
     const expectedContext=diceContext.current;diceLock.current=true;setDicePending(true);
-    try{if(online&&action.id!=='roll|control:roll')await requireServiceFeature('dominion-flex-dice-v1');if(diceContext.current!==expectedContext)return;setSheet(null);await commit(action);}
+    try{if(online&&state.rulesProfile===LONG_DICE_PROFILE)await requireServiceFeature(LONG_DICE_PROFILE);else if(online&&action.id!=='roll|control:roll')await requireServiceFeature('dominion-flex-dice-v1');if(diceContext.current!==expectedContext)return;setSheet(null);await commit(action);}
     catch(e){notify(e.message);}finally{diceLock.current=false;setDicePending(false);}
   }
   const turnPromptKey=id==='dominion'&&state?`${online?room.matchId:local?.matchId}:${state.mobileTurnNumber||0}:${state.turn}`:null;
   diceContext.current=screen+':'+turnPromptKey+':'+state?.dice?.rolled+':'+sheet;
+  usePostRollHelp({id,state,legal,canAct,screen,sheet,matchId:online?room?.matchId:local?.matchId,onOpen:()=>setSheet('dominion-roll-help')});
   useEffect(()=>{
-    if(screen==='match'&&id==='dominion'&&canAct&&!state.dice.rolled&&!sheet&&!chatOpen&&!promotion&&turnPromptSeen.current!==turnPromptKey){turnPromptSeen.current=turnPromptKey;openTurnChoices();}
+    if(screen==='match'&&id==='dominion'&&canAct&&!state.dice.rolled&&!needsKingReturn(state)&&!sheet&&!chatOpen&&!promotion&&turnPromptSeen.current!==turnPromptKey){turnPromptSeen.current=turnPromptKey;openTurnChoices();}
   },[screen,id,canAct,state?.dice?.rolled,turnPromptKey,sheet,chatOpen,promotion]);
   async function commit(action){
     if(!playAccess.allowed)return;
@@ -364,7 +375,7 @@ function App(){
   function target(cell){const choices=selectedActions.filter(a=>a.target===cell);if(!choices.length)return;if(choices.length>1)setPromotion(choices);else commit(choices[0]);}
   async function leave(){await command('ap_room_leave');forgetRoom(room.roomCode);setSavedRooms(read('rooms',{}));roomClient.useSession(null);setSession(null);sessionRef.current=null;setRoom(null);roomRef.current=null;setSheet(null);setScreen('lobby');}
   function undo(){if(!local?.history.length)return;const previous=[...local.history];let next=previous.pop();while(previous.length&&!local.humans.includes(turn(next)))next=previous.pop();workerSequence.current++;companionMatch.current=null;setLocal({...local,state:next,history:previous,progressEligible:false,guide:false});setTrail(null);setSheet(null);}
-  function restart(){if(!gate(id))return;workerSequence.current++;companionMatch.current=null;setLocal({...local,matchId:secureUuid(),state:create(id,{teamMode:local.state?.teamMode}),history:[],actionLog:[],progressEligible:local.mode==='bots',guide:false});setTrail(null);setSheet(null);setSelected(null);setLocalChat([]);}
+  function restart(){if(!gate(id))return;workerSequence.current++;companionMatch.current=null;setLocal({...local,matchId:secureUuid(),state:create(id,{teamMode:local.state?.teamMode,rulesProfile:id==='dominion'?LONG_DICE_PROFILE:undefined}),history:[],actionLog:[],progressEligible:local.mode==='bots',guide:false});setTrail(null);setSheet(null);setSelected(null);setLocalChat([]);}
   async function postTableText(text){if(online)await command('ap_room_chat',{text});else setLocalChat(current=>[...current,{id:secureUuid(),name:local.mode==='hotseat'?`${turnName} player`:profile.name,seat:turn(state),text,at:new Date().toISOString()}].slice(-100));}
   async function sendChat(e){e.preventDefault();const text=chatText.trim();if(!text)return;await run(async()=>{await postTableText(text);setChatText('');});}
   async function sendReaction(reaction){if(Date.now()-reactionAt.current<1500)return false;if(illustratedText(reaction)&&!collection.entitlements?.['little-victories-v1']?.active)return false;const text=festivalStickerText(reaction)||illustratedText(reaction)||reactionText(companion.preferences.guide==='auto'?companion.host:companion.preferences.guide,reaction);if(!text)return false;reactionAt.current=Date.now();try{await postTableText(text);companion.metric('reaction_sent',illustratedText(reaction)?'little-victories-v1':undefined);return true;}catch(e){notify(e.message);return false;}}
@@ -386,6 +397,8 @@ function App(){
   const postcardInvitation=postcard?.withInvitation&&room&&room.tableId===postcard.gameId&&['waiting','playing'].includes(room.status)&&(!room.gameState||!result(room.gameState))?{code:room.roomCode,url:INVITE_ROOT+room.roomCode}:null;
   if(update.required)return <RequiredUpdate update={update} theme={theme} onTheme={toggleTheme}/>;
   if(!playAccess.owner&&(!visa.record||!playAccess.allowed||playAccess.consentNeeded))return <AntarcticVisaEntry assetStatus={assetStatus} access={playAccess} halls={hallAccess} visa={visa} onProfile={name=>{const next={...profile,name};setProfile(next);setNameDraft(name);write('profile',next);}}/>;
+  function launchPlay(gameId){setIntroduction(null);if(gameId==='co-tu-lenh')setScreen('co-tu-lenh');else if(gameId==='shanshui-xiangqi'){setShanshuiInvite('');setScreen('shanshui');}else pick(gameId);}
+  if(introduction)return <GameIntroduction key={introduction} id={introduction} quiet={companion.preferences.mode==='off'} onClose={()=>setIntroduction(null)} onProceed={()=>launchPlay(introduction)} onLearn={()=>{const target=introduction;setIntroduction(null);if(game(target))openLearning(target);else launchPlay(target);}}/>;
   if(screen==='shanshui')return <ShanshuiMobile initialCode={shanshuiInvite} access={playAccess} profile={profile} credentials={hallAccess.credentials} onExit={()=>{setScreen('lobby');setTab('games');}}/>;
   if(screen==='co-tu-lenh')return <CoTuLenhMobile onExit={()=>{setScreen('lobby');setTab('games');}}/>;
   const headerControls=<HeaderControls theme={theme} onTheme={toggleTheme} onUpdates={()=>setSheet('updates')} checking={update.checking}/>;
@@ -399,16 +412,13 @@ function App(){
           <div className="filter-row">{['All','2 players','3 players','4 players','Favorites'].map(item=><button className={filter===item?'active':''} key={item} onClick={()=>setFilter(item)}>{item==='Favorites'&&<Heart size={13}/>} {item}</button>)}</div>
 
           <JourneyBar onJourney={showJourney} access={hallAccess} onFormations={()=>formations()} onPass={()=>accessShop('all-halls-v1')}/>
-          <p className="games-chronology">7 halls · Oldest roots first</p>
-          <article className="ctl-catalogue-entry" aria-label="Cờ Tư Lệnh — Vietnamese Commander Chess"><img loading="lazy" src="art/co-tu-lenh/board/board-antarctic-11x12.webp" alt="Cờ Tư Lệnh Arctic board with 11 columns and 12 rows"/><div><small>VIETNAM · 2010 · MODERN STRATEGY GAME · RESEARCH DRAFT</small><h2>Cờ Tư Lệnh</h2><p>Command penguin explorers across icy land and sea. Play local, bots, guided practice, or server-validated private rooms. Choose versioned 2015/2024 rules and optional defence-range rings.</p><button className="primary" aria-label="Play Cờ Tư Lệnh" onClick={()=>setScreen('co-tu-lenh')}>Play Commander Chess</button></div></article>
-          <article className="shanshui-catalogue-entry"><img src="art/shanshui/starting-position-light.webp" alt="Four armies on the Mountain and River Chess board"/><div><small>NEW · CHINESE XIANGQI ADAPTATION</small><h2>Shanshui Xiangqi</h2><p>Four armies. One shared victory. Two-player teams, four-player 2v2, bots and guided practice.</p><button className="primary" aria-label="Play Shanshui Xiangqi" onClick={()=>{setShanshuiInvite('');setScreen('shanshui');}}>Play Shanshui Xiangqi</button></div></article>
-          <div className={'games-grid '+(storyOptions.enabled?'seven-halls-grid':'')}>{chronologicalGames(GAME_LIST).filter(g=>filter==='All'||filter==='Favorites'&&favorites.includes(g.id)||filter===`${g.players} players`).map(g=><HallCard key={g.id} definition={g} access={hallAccess.allowed(g.id)} favorite={favorites.includes(g.id)} onFavorite={toggleFavorite} onPlay={pick} onExplore={openHall} onLearn={gameId=>openLearning(gameId)} onQuickPlay={gameId=>run(()=>startPractice('bots',false,gameId,'red'))} story={storyOptions.enabled}/>)}</div>
-          {filter==='Favorites'&&!favorites.length&&<div className="empty"><Heart/><h3>Your favorites belong here</h3><p>Tap a heart on a game to keep it close.</p></div>}
+          <CulturalGames filter={filter} favorites={favorites} onFavorite={toggleFavorite} onIntroduce={setIntroduction} onPlay={launchPlay} onLearn={openLearning} access={hallAccess} progress={world.halls}/>
+          <InstallWebApp/>
         </>}
-        {tab==='home'&&<HomeLanding onBrowse={()=>setTab('games')} onLearn={()=>setTab('games')} onJourney={()=>setTab('profile')} onStory={()=>setSheet('world-guide')} onJoin={()=>{setNameDraft(profile.name);setSheet('join-name');}} onContinue={homeContinue} continueLabel={continueLabel} roomCode={joinCode} onRoomCode={setJoinCode} story={storyOptions.enabled} discovery={<NextDiscovery access={hallAccess} target={discoveryTarget} onOpen={showJourney}/>}/>}
+        {tab==='home'&&<HomeLanding onChaturanga={()=>pick('dominion')} onBrowse={()=>setTab('games')} onLearn={()=>setTab('games')} onJourney={()=>setTab('profile')} onStory={()=>setSheet('world-guide')} onJoin={()=>{setNameDraft(profile.name);setSheet('join-name');}} onContinue={homeContinue} continueLabel={continueLabel} roomCode={joinCode} onRoomCode={setJoinCode} story={storyOptions.enabled} discovery={<NextDiscovery access={hallAccess} target={discoveryTarget} onOpen={showJourney}/>}/>}
 
         {tab==='friends'&&<>
-          <div className="friend-intro archive-welcome celebration-friends"><img className="festival-friends-banner" src={CELEBRATION_ART.friends} alt="Friends are welcome at the festival table" width="1200" height="800" loading="lazy"/>{companion.preferences.mode!=='off'&&<img className="archive-guide-art" src="art/brand/hosts-director-v1/polly/wave.webp" alt="Nova welcomes your friends"/>}<p className="world-eyebrow">BRING SOMEONE TO THE TABLE</p><h2>The festival is better<br/>with a friend.</h2><p>Save a name on your phone, then invite your friend to a particular hall.</p></div>
+          <div className="friend-intro archive-welcome celebration-friends"><img className="festival-friends-banner" src={CELEBRATION_ART.friends} alt="Friends are welcome at the festival table" width="1200" height="800" loading="lazy"/>{companion.preferences.mode!=='off'&&<img className="archive-guide-art" src="art/launch-v1/hosts/polly.webp" alt="Nova welcomes your friends"/>}<p className="world-eyebrow">BRING SOMEONE TO THE TABLE</p><h2>The festival is better<br/>with a friend.</h2><p>Save a name on your phone, then invite your friend to a particular hall.</p></div>
           <button className="primary full" onClick={()=>setSheet('festival-invite')}><Users size={18}/> Create a hall invitation</button><form className="inline-form" onSubmit={e=>{e.preventDefault();if(!friendDraft.trim())return;const next=[...friends,{id:secureUuid(),name:friendDraft.trim().slice(0,24)}];setFriends(next);write('friends',next);setFriendDraft('');}}><input value={friendDraft} onChange={e=>setFriendDraft(e.target.value)} placeholder="Friend’s name" maxLength={24} aria-label="Friend’s name"/><button className="primary" type="submit"><Plus size={19}/>Add</button></form>
           {friends.map((f,index)=><div className="friend-row" key={f.id}><Avatar color={['blue','green','red'][index%3]}/><span><strong>{f.name}</strong><small>Saved on your phone</small></span><button className="pill blue-pill" onClick={()=>room?shareRoom():setSheet('festival-invite')}>Invite</button><button className="icon-btn" aria-label={`Remove ${f.name}`} onClick={()=>{const next=friends.filter(x=>x.id!==f.id);setFriends(next);write('friends',next);}}><X size={16}/></button></div>)}
           {!friends.length&&<p className="muted center">Add a name above to start your friends list.</p>}
@@ -459,7 +469,7 @@ function App(){
       <div className={`players-strip ${definition.players===4?'four-players':''}`}>{definition.seats.map(color=>{const player=online?room.players.find(p=>p.seat===color):{name:local.mode==='hotseat'?`${seatName(id,color)} player`:local.humans.includes(color)?profile.name:`${seatName(id,color)} bot`,bot:local.mode!=='hotseat'&&!local.humans.includes(color)};const eliminated=state.eliminatedTeams?.includes(color),current=turn(state)===color&&!outcome;return <div className={`player-pill ${current?'current':''} ${eliminated?'eliminated':''}`} key={color}><Avatar color={color} gameId={id} size={36} online={online&&!!player?.connected}/><span><strong>{player?.name||seatName(id,color)}</strong>{id==='dominion'&&teamGame(state)&&<small>{teamName(color)}</small>}<small>{eliminated?'Eliminated':current?(canAct?'Your turn':thinking?'Thinking…':`${seatName(id,color)}’s turn`):player?.bot?'Bot':seatName(id,color)}</small></span></div>;})}</div>
       {online&&connection!=='online'&&<button className="offline-banner" onClick={()=>run(()=>roomClient.connect())}><WifiOff size={15}/> Connection interrupted. Tap to reconnect.</button>}
       {id!=='dominion'&&<p className="board-perspective" role="status"><i style={{background:COLORS[perspective]}}/>{seatName(id,perspective)} at the bottom{!online&&local.mode==='hotseat'?` · Pass the phone to ${seatName(id,perspective)}`:''}</p>}
-      <main className={`match-content ${id==='dominion'?'dominion-match':''}`}>{!outcome&&<MatchDiscovery id={id} access={hallAccess} eligible={online||local.progressEligible!==false} onJourney={showJourney}/>}<div className={`match-board-wrap personal-table trim-${collection.table}`}><Board id={id} state={state} legal={legal} selected={selected} suggested={suggested} trail={trail} onSelect={setSelected} onTarget={target} canAct={canAct} perspective={perspective} compactControls={id==='dominion'} controlsTarget={id==='dominion'?boardToolsTarget:null}/></div>{id==='dominion'&&!outcome&&<DiceTray state={state} legal={legal} canAct={canAct} onAction={commit} onChoices={openTurnChoices}/>}
+      <main className={`match-content ${id==='dominion'?'dominion-match':''}`}>{!outcome&&<MatchDiscovery id={id} access={hallAccess} eligible={online||local.progressEligible!==false} onJourney={showJourney}/>}<ChaturangaBoardSpace id={id}><div className={`match-board-wrap personal-table trim-${collection.table}`}><Board id={id} state={state} legal={legal} selected={selected} suggested={suggested} trail={trail} onSelect={setSelected} onTarget={target} canAct={canAct} perspective={perspective} compactControls={id==='dominion'} controlsTarget={id==='dominion'?boardToolsTarget:null}/></div></ChaturangaBoardSpace>{id==='dominion'&&!outcome&&<DiceTray state={state} legal={legal} canAct={canAct} onAction={commit} onChoices={openTurnChoices} onRoll={()=>chooseDice(rollActionId(state))} onSelect={setSelected}/>}
         <section className="command-area">
           {id==='dominion'&&<div className={'board-controls-slot '+(outcome?'finished':'')} ref={setBoardToolsTarget}/>}
           {id!=='dominion'&&local?.guide&&!online&&<div className="first-move-guide" role="status">{companion.preferences.mode!=='off'&&<img className="guide-face" src={GUIDES[GAME_HERITAGE[id].host].image} alt={GUIDES[GAME_HERITAGE[id].host].name}/>}<span><strong>{id==='dominion'&&!state.dice.rolled?'1. Roll both dice':selected?`${id==='dominion'?'3':'2'}. Choose a highlighted destination`:`${id==='dominion'?'2':'1'}. Select the piece with the gold ring`}</strong><small>{id==='dominion'&&!state.dice.rolled?'The dice activate pieces for this turn. Each die permits one move.':selected?'Blue dots are empty legal destinations. Orange rings mark captures.':'This is an offline learning table. Every highlighted move follows the real rules.'}</small></span></div>}
@@ -482,6 +492,7 @@ function App(){
     {sheet==='fair-play'&&<Sheet title="Fair Play" wide onClose={()=>setSheet(null)}><FairPlayHub room={session?room:null} session={session} client={roomClient} onClose={()=>setSheet(null)}/></Sheet>}
     {chatOpen&&screen==='match'&&<Sheet title={online?'Campfire · Private table chat':'Table notes'} onClose={()=>setChatOpen(false)}><p className="muted">{online?'Only the players in this private room can read this conversation.':'These notes are saved for this session on this phone.'}</p><div className="chat-history">{currentChats.length?currentChats.map(message=><article className={`chat-message ${message.playerId===profile.id?'mine':''}`} key={message.id}><strong style={{color:COLORS[message.seat]}}>{message.name}</strong><ReactionContent text={message.text} preferences={companion.preferences}/><time>{new Date(message.at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</time></article>):<div className="empty compact"><MessageCircle/><p>Say hello and enjoy the game.</p></div>}<div ref={chatEnd}/></div><ReactionPicker host={companion.host} preferences={companion.preferences} onReact={sendReaction} disabled={busy||(online&&connection!=='online')}/><form className="inline-form" onSubmit={sendChat}><input value={chatText} onChange={e=>setChatText(e.target.value)} autoFocus placeholder={online?'Message your table…':'Write a note…'} maxLength={500} aria-label="Chat message"/><button type="submit" className="primary" aria-label="Send message" disabled={busy||!chatText.trim()||(online&&connection!=='online')}><Send size={20}/></button></form></Sheet>}
     {sheet==='game'&&<Sheet title={game(picked).name} onClose={()=>setSheet(null)}>
+      <CompactGamePanel id={picked} onPractice={()=>openLearning(picked,'sandbox')}>
       {storyOptions.enabled&&<div className="hall-game-intro"><p className="world-eyebrow">THE ETERNAL GATHERING</p><h3>{HALLS[picked].name}</h3><p>{HALLS[picked].signature}</p><button className="text-button" onClick={()=>openHall(picked)}>Explore this hall <ChevronRight size={16}/></button></div>}<div className="game-sheet-heading"><img src={asset(game(picked).icon)} alt=""/><div><p>{game(picked).subtitle}</p><small>{game(picked).players} players · {openingText(picked)}</small></div></div>
       {read(`practice.${picked}`,null)&&<button className="primary full" onClick={()=>resumePractice(picked)}>Continue saved practice</button>}
       <button className="learn-mode-row" onClick={()=>openLearning(picked)}><BookOpen size={22}/><span><strong>How to play</strong><small>Learn one move at a time</small></span><ChevronRight size={20}/></button>
@@ -497,12 +508,14 @@ function App(){
         <button className="text-button" onClick={()=>openLearning(picked,'full-rules')}><BookOpen size={17}/>Full Rules with the mascots</button>
         <HeritageLabel id={picked} onClick={()=>setSheet('heritage')}/>
       </details>
+      </CompactGamePanel>
     </Sheet>}
-    {sheet==='dominion-turn'&&id==='dominion'&&state&&!state.dice.rolled&&<Sheet title={dominionConfirm?'Are you sure?':'Your turn'} focusId={dominionConfirm?'dominion-no-skip':'dominion-roll-both'} onClose={()=>{if(!dicePending)setSheet(null);}}><DominionTurnPrompt state={state} confirm={dominionConfirm} busy={dicePending||busy} onOne={()=>chooseDice('roll-one|control:roll-one')} onBoth={()=>chooseDice('roll|control:roll')} onAskSkip={()=>setDominionConfirm(true)} onSkip={()=>chooseDice('skip|control:skip')}/></Sheet>}
-    {sheet==='dominion-room'&&<Sheet title="Create Chaturanga table" onClose={()=>setSheet(null)}><p className="muted">Choose your mode, team and kingdom before inviting friends.</p><DominionSetup mode={dominionMode} onMode={setDominionMode} seat={seat} onSeat={setSeat}/><button className="primary full" disabled={busy} onClick={()=>run(()=>createRoom('dominion',roomPostcardDraft,true))}><Users size={18}/> Create room</button><p className="muted">Friends can join from the Android app or Safari. Empty seats can be filled with bots.</p></Sheet>}
+    {sheet==='dominion-turn'&&id==='dominion'&&state&&!state.dice.rolled&&!needsKingReturn(state)&&<Sheet title={dominionConfirm?'Are you sure?':'Your turn'} focusId={dominionConfirm?'dominion-no-skip':'dominion-roll-both'} onClose={()=>{if(!dicePending)setSheet(null);}}><DominionTurnPrompt state={state} confirm={dominionConfirm} busy={dicePending||busy||!canAct} onBoth={()=>chooseDice(rollActionId(state))} onAskSkip={()=>setDominionConfirm(true)} onSkip={()=>chooseDice('skip|control:skip')}/></Sheet>}
+    {sheet==='dominion-roll-help'&&id==='dominion'&&state?.dice?.rolled&&<Sheet title="Your rolled moves" onClose={()=>setSheet(null)}><DominionRollGuide state={state} legal={legal} onClose={()=>setSheet(null)} onSelect={setSelected}/></Sheet>}
+    {sheet==='dominion-room'&&<Sheet title="Create Chaturanga table" onClose={()=>setSheet(null)}><CompactRoomPanel><p className="muted">Choose your mode, team and kingdom before inviting friends.</p><DominionSetup mode={dominionMode} onMode={setDominionMode} seat={seat} onSeat={setSeat}/><button className="primary full" disabled={busy} onClick={()=>run(()=>createRoom('dominion',roomPostcardDraft,true))}><Users size={18}/> Create room</button><p className="muted">Friends can join from the Android app or Safari. Empty seats can be filled with bots.</p></CompactRoomPanel></Sheet>}
     {(sheet==='join'||sheet==='join-name')&&<Sheet title={sheet==='join-name'?'Your name':'Join a room'} focusId={sheet==='join-name'?'join-name':undefined} onClose={()=>setSheet(null)}><p className="muted">{sheet==='join-name'&&parseInvitation(joinCode)?<>Joining room <strong className="join-code-summary">{joinCode}</strong>. What should your friends call you? <button type="button" className="text-button join-change-code" onClick={()=>setSheet('join')}>Change room</button></>:'Enter your name and the room code your friend shared.'}</p><form className="join-room-form" onSubmit={e=>{e.preventDefault();run(()=>joinRoom(joinCode,nameDraft));}}><label className="field-label" htmlFor="join-name">Your name</label><input id="join-name" value={nameDraft} onChange={e=>setNameDraft(e.target.value)} maxLength={24} autoComplete="nickname" required/>{(sheet==='join'||!parseInvitation(joinCode))&&<><label className="field-label" htmlFor="room-code-1">Room code</label><RoomCodeInput id="room-code" value={joinCode} onChange={setJoinCode} required onInvalidPaste={()=>notify('Paste a valid room code or Antarctic Kingdoms invitation.')}/></>}<button className="primary full" type="submit" disabled={busy||!parseInvitation(joinCode)||!nameDraft.trim()}>Join table <ChevronRight size={18}/></button></form></Sheet>}
     {sheet==='name'&&<Sheet title="Your profile" onClose={()=>setSheet(null)}><div className="avatar-picker">{['blue','green','red'].map(color=><button className={profile.avatar===color?'selected':''} aria-label={`${color} avatar`} key={color} onClick={()=>{const next={...profile,avatar:color};setProfile(next);write('profile',next);}}><Avatar color={color} size={72}/></button>)}</div><label className="field-label" htmlFor="display-name">Display name</label><input className="text-input" id="display-name" value={nameDraft} onChange={e=>setNameDraft(e.target.value)} maxLength={24} autoComplete="nickname"/><button className="primary full" onClick={updateProfile}>Save profile</button><p className="muted center">Your name is shown to friends at the table.</p></Sheet>}
-    {sheet==='heritage'&&<Sheet title="Origins & this edition" onClose={()=>setSheet(null)}><HeritageDetails id={picked}/><button className="primary full" onClick={()=>openLearning(picked,'quick-rules')}>Learn your first move</button><button className="text-button" onClick={()=>setSheet('game')}>Back to game</button></Sheet>}
+    {sheet==='heritage'&&<Sheet title="Origins & this edition" onClose={()=>setSheet(null)}><CompactInfoPanel><HeritageDetails id={picked}/><button className="primary full" onClick={()=>openLearning(picked,'quick-rules')}>Learn your first move</button><button className="text-button" onClick={()=>setSheet('game')}>Back to game</button></CompactInfoPanel></Sheet>}
     {sheet==='options'&&<Sheet title="Your game" onClose={()=>setSheet(null)}>{id==='sanyou'&&<button className="mode-row" onClick={()=>setSheet('board-positions')}><Settings/><span><strong>Board positions</strong><small>Adjust points or import your web editor file</small></span><ChevronRight/></button>}<button className="mode-row" onClick={()=>openLearning(id)}><BookOpen/><span><strong>How to play</strong><small>Three guided ways to learn</small></span><ChevronRight/></button>{online?<><button className="mode-row" onClick={()=>{setSheet(null);setScreen('room');}}><Users/><span><strong>Private table</strong><small>Room {room.roomCode}</small></span><ChevronRight/></button><button className="mode-row" onClick={roomPostcard}><Share2/><span><strong>Penguin invitation postcard</strong><small>Preview and share your private table</small></span><ChevronRight/></button><button className="mode-row" onClick={shareRoom}><Share2/><span><strong>Share room invitation</strong><small>Friends can rejoin their saved seats</small></span><ChevronRight/></button><button className="mode-row danger" onClick={()=>setSheet('leave')}><LogOut/><span><strong>Leave this match</strong><small>{['sannin','sanyou','dominion'].includes(id)?'A bot takes over your seat':'Resign from the game'}</small></span><ChevronRight/></button></>:<><button className="mode-row" onClick={undo} disabled={!local.history.length}><Undo2/><span><strong>Undo your last turn</strong><small>Available in offline practice</small></span><ChevronRight/></button><button className="mode-row" onClick={()=>setSheet('restart')}><RotateCcw/><span><strong>New game</strong><small>Start again with the same seats</small></span><ChevronRight/></button>{thinking&&<button className="text-button" onClick={()=>{worker.current?.terminate();worker.current=null;setRefresh(n=>n+1);}}>Retry bot move</button>}</>}</Sheet>}
     {sheet==='leave'&&<Sheet title="Leave this table?" onClose={()=>setSheet(null)}><p>{room?.status==='playing'?['sannin','sanyou','dominion'].includes(room.tableId)?'A casual bot will take over your seat. This cannot be undone.':'You will resign from this match. The other players can continue.':'Your seat will become available to another friend.'}</p><p className="muted">To pause and come back, use the back arrow instead. Your seat stays saved on this phone.</p><button className="primary full danger-bg" disabled={busy} onClick={()=>run(leave)}>Leave table</button><button className="secondary full" onClick={()=>setSheet(null)}>Keep my seat</button></Sheet>}
     {sheet==='restart'&&<Sheet title="Start a new game?" onClose={()=>setSheet(null)}><p>Your current practice position will be replaced.</p><button className="primary full" onClick={restart}>Start new game</button><button className="secondary full" onClick={()=>setSheet(null)}>Keep playing</button></Sheet>}
@@ -522,6 +535,7 @@ function App(){
     {sheet==='camp-studio'&&<Sheet title="Your Camp studio" onClose={()=>setSheet('companions')}><CampStudio journey={companion.journey} host={companion.campHost} preferences={companion.preferences} onMemory={openPostcard}/></Sheet>}
     {sheet==='board-positions'&&<Sheet title="San You Qi board editor" wide onClose={()=>setSheet(null)}><BoardCalibrator onClose={()=>setSheet(null)}/></Sheet>}
     {sheet==='antarctic-visa'&&<Sheet title="Your Antarctic Visa" onClose={()=>setSheet(null)}><VisaPassportSummary visa={visa}/></Sheet>}
+    {sheet==='wallet'&&<Sheet title="Wallet" onClose={()=>setSheet(null)}><PassportWallet/></Sheet>}
     {sheet==='online-account'&&<Sheet title="Online account" onClose={()=>setSheet(null)}><AccountEntry access={playAccess} halls={hallAccess} forceSignIn onClose={()=>setSheet(null)}/></Sheet>}
     {sheet==='account'&&<Sheet title="Progress & recovery" onClose={()=>setSheet(null)}><AccountPanel onLogout={()=>setSheet('logout')} onOffline={()=>accessShop('offline-access-v1')} onAccessRefresh={playAccess.refresh}/></Sheet>}
     {sheet==='updates'&&<Sheet title="App updates" onClose={()=>setSheet(null)}>{window.Android?<AppUpdates onRelease={update.accept}/>:<BrowserUpdates/>}</Sheet>}
@@ -553,4 +567,4 @@ class StartupBoundary extends React.Component {
   componentDidCatch(error){window.ArcticStartup?.fail(error);}
   render(){return this.state.failed?null:this.props.children;}
 }
-createRoot(document.getElementById('root')).render(<StartupBoundary><App/></StartupBoundary>);
+createRoot(document.getElementById('root')).render(<StartupBoundary>{new URLSearchParams(location.search).get('view')==='launch-dashboard'?<LaunchDashboard/>:<App/>}</StartupBoundary>);

@@ -1,3 +1,4 @@
+import {LONG_DICE_PROFILE} from './chaturangaLongDice.js';
 import {GAME_LIST,create,actions,apply,pieces,board} from './games.ts';
 
 export const LEARNING_KEY='how-to-play.v1';
@@ -13,7 +14,7 @@ export const LESSONS={
   sanyou:{board:'Three arms · 156 intersections · Red → Green → Blue',goal:'Keep your General safe and become the last surviving kingdom.',turn:'Follow the connected lines. A checked kingdom answers immediately, then an interrupted turn resumes.',move:'Tap the glowing Soldier, then a blue dot. Your first step follows your army’s forward route.',capture:'The enemy is on your Soldier’s route. Tap your Soldier, then the orange ring to try a capture.',special:'This is a Flag. At home it travels exactly two clear forward steps. Tap it and choose a blue dot.',cheer:['A tiny step on a very special board!','You found the capture route!','Two clear steps. Your Flag is on its way!'],remember:['Fire takes one forward diagonal step and never retreats. An enemy-territory Flag becomes Chariot-like; Soldiers gain sideways movement.','Rivers block Chariots and some Horse legs; mountains block Cannons. A Cannon cannot pass through a fort into the opposite kingdom.','A junction is not permission to turn. Use the legal highlights for the approved central routes, gates and terrain.']},
   yanyi:{board:'Three kingdoms + yellow Han · 225 cross intersections',goal:'Checkmate rival kingdoms and finish with the last surviving King.',turn:'Wu (Green) → Wei (Blue) → Shu (Red). A single checked kingdom answers immediately.',move:'Tap the glowing Soldier, then a blue dot. Soldiers here can step sideways at home; this is not ordinary Xiangqi.',capture:'An enemy Soldier is on your path. Tap your Soldier, then the orange ring. Active Kings are checkmated, not captured directly.',special:'We placed Shu’s Red Horse beside Han. Tap it, then the yellow Emperor. Shu gains Han; Wu and Wei ally.',cheer:['One little step on the cross!','A capture, with your own King still safe.','Han is awake! Yellow art stays yellow; the owner ring shows control.'],remember:['Horse legs and Elephant eyes are not blocked by pieces in this edition. Their whole routes must still stay on the cross.','A Horse at another kingdom’s alliance point allies with it; the third kingdom gets Han. Capturing the Emperor is the other activation route.','Allies cannot capture or check each other. Checkmate transfers surviving armies. First-round Cannons stop at the starting Soldier line.']},
   xiangqi:{board:'Two armies · 90 intersections · Red moves first',goal:'Checkmate or stalemate the other General.',turn:'Move one piece per turn, on intersections. Keep your own General safe.',move:'Tap the glowing Soldier, then a blue dot. It moves one point forward. After the river, it can also step sideways.',capture:'An enemy Soldier is straight ahead. Tap your Soldier, then the orange ring to capture it.',special:'A Cannon captures over exactly one screen. Tap your Cannon, then the enemy behind the single piece between them.',cheer:['Your first step across the board!','You found the capture. Flippers up!','One screen is just right for a Cannon!'],remember:['General and Advisors stay in the palace. Elephants cannot cross the river, and a piece can block their eyes.','A blocked Horse leg stops that L-shaped move. The two Generals cannot face each other on an empty file.','Blue represents traditional Black. This edition does not adjudicate tournament perpetual chase or repetition.']},
-  dominion:{board:'Four kingdoms · 8 × 8 squares · Green → Red → Blue → Pink',goal:'Capture the other original royal Frost Kings. Be the last kingdom standing.',turn:'Roll two dice, then spend each die on one move. Use either die first.',move:'These practice dice are fixed at 1 and 3. The 1 wakes a Guard or King. Tap the glowing Guard, then a blue dot.',capture:'Your Guard captures one diagonal step forward. Tap it, then the orange ring. This uses the practice die showing 1.',special:'A 3 wakes the Aurora Unicorn. Tap it, then a blue dot to jump two squares one way and one across: an L!',cheer:['One die, one tiny move!','A diagonal capture. Your Guard has it!','A lovely L-shaped leap!'],remember:['Dice: 1 or 5 = Guard or King; 2 = Mammoth; 3 = Unicorn; 4 or 6 = Icebreaker. Each die buys one move.','There is no check or checkmate restriction. Losing your original royal King removes your whole army.','Guards promote at the far edge according to the landing square. Promoted Kings are fighters; losing one does not eliminate the kingdom.']},
+  dominion:{board:'Four kingdoms · 8 × 8 squares · Green → Red → Blue → Pink',goal:'Capture the other original royal Frost Kings. Be the last kingdom standing.',turn:'Roll two dice, then spend each die on one move. Use either die first.',move:'These practice dice are fixed at 5 and 3. The 5 wakes a Guard or King. Tap the glowing Guard, then a blue dot.',capture:'Your Guard captures one diagonal step forward. Tap it, then the orange ring. This uses the practice die showing 5.',special:'A 3 wakes the Aurora Unicorn. Tap it, then a blue dot to jump two squares one way and one across: an L!',cheer:['One die, one tiny move!','A diagonal capture. Your Guard has it!','A lovely L-shaped leap!'],remember:['Dice: 2 = Boat / Icebreaker; 3 = Knight / Unicorn; 4 = Rook / Mammoth; 5 = King or Pawn. Each die buys one move.','There is no check or checkmate restriction. Losing your original royal King freezes your remaining army.','Guards promote at the far edge according to the landing square. Promoted Kings are fighters; losing one does not eliminate the kingdom.']},
 };
 
 const shogiPieces=[
@@ -61,11 +62,11 @@ export const PIECE_GUIDES={
     ['emperor','Han Emperor','The inactive Emperor does not move.','A Horse captures it to activate Han. The three yellow Chariots and Cannon then show their new owner’s ring.'],
   ],
   dominion:[
-    ['king','Frost King','One square in any direction.','Die 1 or 5. Your original royal King is vital; a promoted fighting King is not royal.'],
-    ['elephant','War Mammoth','Slide any clear distance along a row or column.','Die 2. This Mammoth moves like a rook, not a Xiangqi Elephant.'],
+    ['king','Frost King','One square in any direction.','Die 5. Your original royal King is vital; a promoted fighting King is not royal.'],
+    ['elephant','War Mammoth','Slide any clear distance along a row or column.','Die 4. This Mammoth moves like a rook, not a Xiangqi Elephant.'],
     ['horse','Aurora Unicorn','Jump two squares one way and one across: an L.','Die 3. It can jump over intervening pieces.'],
-    ['ship','Icebreaker','Jump exactly two squares diagonally.','Die 4 or 6. The middle square may be occupied.'],
-    ['pawn','Snow Guard','One empty square forward; capture one diagonal step forward.','Die 1 or 5. Promotes automatically on the far edge. Forward rotates with your kingdom.'],
+    ['ship','Icebreaker','Jump exactly two squares diagonally.','Die 2. The middle square may be occupied.'],
+    ['pawn','Snow Guard','One empty square forward; capture one diagonal step forward.','Die 5. Promotes automatically on the far edge. Forward rotates with your kingdom.'],
   ],
 };
 
@@ -100,11 +101,11 @@ function fewDropSpots(id,position){
   const royal=pieces(id,position.state).find(p=>p.owner===position.state.turn&&p.label==='King'),anchor=byId.get(royal?.cell)||cells[0];
   return {...position,legal:[...position.legal].sort((a,b)=>{const x=byId.get(a.target),y=byId.get(b.target);return Math.hypot(x.x-anchor.x,x.y-anchor.y)-Math.hypot(y.x-anchor.x,y.y-anchor.y);}).slice(0,4)};
 }
-export function teachingState(id){const state=create(id);state.turn='red';if(id==='dominion')state.currentPlayerIndex=1;return state;}
+export function teachingState(id){const state=create(id,{rulesProfile:id==='dominion'?LONG_DICE_PROFILE:undefined});state.turn='red';if(id==='dominion')state.currentPlayerIndex=1;return state;}
 export function lessonPosition(id,kind){
   if(!Object.hasOwn(LESSONS,id)||!CHALLENGES.includes(kind))throw new Error('Choose a lesson from this game.');
   const state=teachingState(id),pawn=findUnit(id,state,pawnRole(id));
-  if(id==='dominion')state.dice={rolled:true,values:kind==='special'?[3,4]:[1,3],used:[false,false]};
+  if(id==='dominion')state.dice={rolled:true,values:kind==='special'?[3,4]:[5,3],used:[false,false]};
   if(kind==='move')return describe(id,state,a=>a.source===`piece:${pawn.id}`&&a.kind==='move'&&!a.promote);
   if(kind==='capture'){
     // An arranged teaching position, not a recorded or saved match. Relocate one
@@ -151,7 +152,7 @@ export function piecePosition(id,role){
   const state=teachingState(id),chosen=findUnit(id,state,role)||(id==='yanyi'&&role==='emperor'?state.pieces.find(p=>p.role==='emperor'):null);
   if(!chosen)throw new Error('Choose a piece from the guide.');
   if(id==='dominion'){
-    state.dice={rolled:true,values:[({king:1,pawn:1,elephant:2,horse:3,ship:4})[role],6],used:[false,true]};
+    state.dice={rolled:true,values:[({king:5,pawn:5,elephant:4,horse:3,ship:2})[role],5],used:[false,true]};
     state.board=state.board.map(row=>row.map(p=>p&&p.team===state.turn&&!p.isRoyal&&p.id!==chosen.id?null:p));
   }else if(id==='shogi')state.board=state.board.map(p=>p&&p.side===state.turn&&p.type!=='king'&&p.id!==chosen.id?null:p);
   else state.pieces=state.pieces.filter(p=>owner(id,p)!==state.turn||['king','general'].includes(unitRole(id,p))||p.id===chosen.id);

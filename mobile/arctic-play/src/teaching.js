@@ -7,7 +7,7 @@ export const TURN_STEPS={
   sanyou:['Choose one controlled piece.','Follow the highlighted lines, gates and terrain.','Answer check immediately; keep your General safe.'],
   yanyi:['Choose an active piece you control.','Move to a highlighted point; allies are not targets.','Protect your King and any allied King. Watch Han activation.'],
   xiangqi:['Choose a piece from your army.','Move to a highlighted intersection.','Answer check; never leave the Generals facing on an empty file.'],
-  dominion:['Choose one or two dice.','Use either die to move a piece it activates.','Spend the other die if possible; protect your royal King.'],
+  dominion:['Roll both long dice.','Use either die to move a piece it activates.','Spend the other die if possible; protect your royal King.'],
 };
 const TERMS={
   check:['Check','Your royal piece is under attack. Your reply must make it safe.'],

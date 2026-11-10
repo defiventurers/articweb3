@@ -7,24 +7,29 @@ const { createArcticPlayWorkerPool } = require('./arcticPlayWorkerPool');
 const {serveArcticPlayWeb}=require('./arcticPlayWeb');
 const {serveGameWallet}=require('./gameWalletWeb');
 const TEAM_CAPABILITY='dominion-teams-v1';
+const LONG_DICE_CAPABILITY='chaturanga-long-dice-v1';
+const dominionLongReady=engine.create('dominion',{rulesProfile:LONG_DICE_CAPABILITY}).rulesProfile===LONG_DICE_CAPABILITY;
 const dominionTeamsReady=engine.create('dominion',{teamMode:'2v2'}).teamMode==='2v2';
 const ROOM_GAME_ID = 'arctic-play';
 const hash = token => createHash('sha256').update(String(token || '')).digest('hex');
 const nameOf = value => String(value || 'Player').replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,24) || 'Player';
 const publicPlayer = p => ({id:p.id,name:p.name,seat:p.seat,ready:p.ready,bot:!!p.bot});
 
-function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},loadSavedRoom=async()=>null,companyOptions,accessOptions={},requireLogin=true}) {
+function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},loadSavedRoom=async()=>null,companyOptions,accessOptions={},fairOptions={},requireLogin=true}) {
   const subscriptions = new Map(), bots = new Map(), writes = new Map(), rates = new WeakMap(), processing = new Set();
   const workers=createArcticPlayWorkerPool();
-  const company=require('./companyService').createCompanyService(companyOptions);
+  const company=require('./companyService').createCompanyService({...companyOptions,launchOptions:{rooms,...companyOptions?.launchOptions}});
+  const fair=require('./fairPlayService').createFairPlayService({store:company.store,engine:require('./fairPlayEngine.cjs'),saveRoom:room=>persist(room,true),...fairOptions});
+  company.attachProofService(fair);
   const access=require('./companyAccess').createAccessService({store:company.store,withAccount:company.withAccountSession,onVerifiedProgress:company.syncPassportAchievements,...accessOptions});
   const settling=new Set();
   const proofParts=new WeakMap();
   function settleAccess(room){if(room.status!=='finished'||settling.has(room.matchId))return;settling.add(room.matchId);access.recordRoom(room).then(()=>{for(const [ws,s]of subscriptions)if(s.roomCode===room.roomCode&&ws.readyState===1)send(ws,{type:'ap_access_refresh',payload:{}});}).catch(e=>console.error('[arctic-play] Unlock save pending:',e.message)).finally(()=>settling.delete(room.matchId));}
   function requireTeamClient(room,payload){
+    if(room.gameState?.rulesProfile===LONG_DICE_CAPABILITY&&!(Array.isArray(payload.capabilities)&&payload.capabilities.includes(LONG_DICE_CAPABILITY)))throw new Error('This table uses four-sided Chaturanga dice. Update the app to join.');
     if(room.tableId?.startsWith('shanshui') && !(Array.isArray(payload.capabilities)&&payload.capabilities.includes('shanshui-antarctic-v1')))throw new Error('This Shanshui table requires the Antarctic v1 client. Update the app.');
     if(room.tableId?.startsWith('shanshui') && room.gameState?.rulesetVersion!=='shanshui-antarctic-v1')throw new Error('This Shanshui room uses a different ruleset. Create a new room.');
-    if(room.gameState?.teamMode==='2v2'&&!(Array.isArray(payload.capabilities)&&payload.capabilities.includes(TEAM_CAPABILITY)))throw new Error('This 2v2 table needs the latest app. Update Antarctic Kingdoms or open the invitation in your browser.');
+    if(room.gameState?.teamMode==='2v2'&&room.gameState?.rulesProfile!==LONG_DICE_CAPABILITY&&!(Array.isArray(payload.capabilities)&&payload.capabilities.includes(TEAM_CAPABILITY)))throw new Error('This 2v2 table needs the latest app. Update Antarctic Kingdoms or open the invitation in your browser.');
   }
   function codeOf(value) { return String(value || '').toUpperCase().replace(/\s/g,''); }
   function getRoom(code) {
@@ -50,19 +55,19 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
     subscriptions.set(ws,{roomCode:room.roomCode,playerId:player.id});
   }
   function view(room) {
-    return {roomCode:room.roomCode,matchId:room.matchId,tableId:room.tableId,rulesetVersion:room.rulesetVersion,status:room.status,hostId:room.hostId,revision:room.revision,createdAt:room.createdAt,players:Object.values(room.players).map(p=>({...publicPlayer(p),connected:p.bot || [...subscriptions].some(([ws,s])=>ws.readyState===1&&s.roomCode===room.roomCode&&s.playerId===p.id)})),gameState:room.gameState,chat:room.chat || []};
+    return {roomCode:room.roomCode,matchId:room.matchId,tableId:room.tableId,rulesetVersion:room.rulesetVersion,status:room.status,hostId:room.hostId,revision:room.revision,createdAt:room.createdAt,players:Object.values(room.players).map(p=>({...publicPlayer(p),connected:p.bot || [...subscriptions].some(([ws,s])=>ws.readyState===1&&s.roomCode===room.roomCode&&s.playerId===p.id)})),gameState:room.gameState,chat:room.chat || [],fair:fair.summary(room)};
   }
   function broadcast(room) {
     const packet={type:'ap_room_update',payload:{room:view(room)}};
     for(const [ws,s] of subscriptions) if(s.roomCode===room.roomCode && ws.readyState===1) send(ws,packet);
   }
-  function persist(room) {
+  function persist(room,strict=false) {
     room.updatedAt=new Date().toISOString();
     const snapshot=JSON.parse(JSON.stringify(room));
     const previous=writes.get(room.roomCode) || Promise.resolve();
-    const next=previous.catch(()=>{}).then(()=>saveRoomSafe(snapshot)).catch(error=>console.error('[arctic-play] Room persistence failed:',error.message));
+    const next=previous.catch(()=>{}).then(()=>saveRoomSafe(snapshot)).catch(error=>{if(strict)throw error;console.error('[arctic-play] Room persistence failed:',error.message);});
     writes.set(room.roomCode,next);
-    next.finally(()=>{if(writes.get(room.roomCode)===next) writes.delete(room.roomCode);});
+    next.then(()=>{if(writes.get(room.roomCode)===next)writes.delete(room.roomCode);},()=>{if(writes.get(room.roomCode)===next)writes.delete(room.roomCode);});
     return next;
   }
   function advance(room) {
@@ -80,7 +85,10 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
       if(room.status!=='playing' || !Object.values(room.players).find(p=>p.seat===engine.turn(room.gameState))?.bot) return;
       const revision=room.revision;processing.add(room.roomCode);
       try {
-        const state=await workers.run({tableId:room.tableId,state:room.gameState,bot:true});
+        const bot=Object.values(room.players).find(p=>p.seat===engine.turn(room.gameState));
+        let state;
+        if(room.fair?.bundle){const actionId=room.fair.pending?.signed.intent.actionId||await workers.run({tableId:room.tableId,state:room.gameState,choiceOnly:true});const signed=await fair.botIntent(room,bot,actionId);state=await fair.apply(room,{signed,actorId:bot.id,actionId,run:roll=>workers.run({tableId:room.tableId,state:room.gameState,actionId,roll}),onPending:async()=>broadcast(room)});}
+        else state=await workers.run({tableId:room.tableId,state:room.gameState,bot:true});
         if(room.revision===revision&&room.status==='playing'){room.gameState=state;room.actionCount=(room.actionCount||0)+1;advance(room);}
       } catch(error) { console.error('[arctic-play] Bot move failed:',error.message); }
       finally {processing.delete(room.roomCode);schedule(room);}
@@ -132,13 +140,16 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
         if([...rooms.values()].filter(r=>r.gameId===ROOM_GAME_ID&&r.status==='waiting'&&r.hostId===id).length>=5) throw new Error('You already have five waiting rooms. Reuse one of them.');
         let code; do {code=Array.from(randomBytes(6),x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');} while(rooms.has(code));
         if(payload.teamMode!=null&&(!['2v2','free-for-all'].includes(payload.teamMode)||definition.id!=='dominion'))throw new Error('Choose a supported Arctic Dominion mode.');
-        if(payload.teamMode==='2v2'&&!dominionTeamsReady)throw new Error('Team tables are awaiting a game-rules update. Choose free-for-all for now.');
-        const gameState=engine.create(definition.id,{teamMode:payload.teamMode});
+        if(payload.rulesProfile!=null&&(definition.id!=='dominion'||payload.rulesProfile!==LONG_DICE_CAPABILITY))throw new Error('Choose a supported rules edition.');
+        if(payload.rulesProfile===LONG_DICE_CAPABILITY&&(!dominionLongReady||!payload.capabilities?.includes(LONG_DICE_CAPABILITY)))throw new Error('Update the app and game service for four-sided Chaturanga dice.');
+        if(payload.teamMode==='2v2'&&payload.rulesProfile!==LONG_DICE_CAPABILITY&&!dominionTeamsReady)throw new Error('Team tables are awaiting a game-rules update. Choose free-for-all for now.');
+        const gameState=engine.create(definition.id,{teamMode:payload.teamMode,rulesProfile:payload.rulesProfile});
         requireTeamClient({gameState,tableId:definition.id},payload);
         if(payload.seat!=null&&!definition.seats.includes(payload.seat))throw new Error('Choose a kingdom at this table.');
         const seat=payload.seat||definition.seats[0];
         const created=newPlayer(id,payload.name,seat);token=created.token;created.player.accessOwner=grant.owner;
         room={gameId:ROOM_GAME_ID,tableId:definition.id,rulesetVersion:engine.VERSION,roomCode:code,roomMode:'free',visibility:'private',status:'waiting',matchId:randomUUID(),hostId:id,players:{[id]:created.player},gameState,chat:[],revision:0,createdAt:Date.now()};
+        room.fairEnabled=fair.enabled()&&Array.isArray(payload.capabilities)&&payload.capabilities.includes('fair-play-v1');if(room.fairEnabled)created.player.fairKey=await fair.validateKey(payload.fairKey);
         room.accessVersion=1;room.actionCount=0;rooms.set(code,room);attach(ws,room,created.player);await persist(room);
       } else if(type==='ap_room_join') {
         rate(ws,'join',30);
@@ -154,11 +165,13 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
           const seat=payload.seat||definition.seats.find(s=>!used.includes(s));
           if(!seat) throw new Error('This table is full. Ask your friend to create a new room.');
           const created=newPlayer(id,payload.name,seat);token=created.token;created.player.accessOwner=grant.owner;
+          if(room.fairEnabled){if(!payload.capabilities?.includes('fair-play-v1'))throw Error('Update the app to join this signed table.');created.player.fairKey=await fair.validateKey(payload.fairKey);}
           room.players[id]=created.player;room.revision++;attach(ws,room,created.player);await persist(room);
         }
         broadcast(room);
       } else {
         room=getRoom(payload.roomCode);requireTeamClient(room,payload);me=authenticate(room,payload);requireRoomAccount(me,actor);attach(ws,room,me);
+        if(type==='ap_fair_get'){if(!room.fair?.bundle)throw Error('This table has no signed proof.');return ok(ws,requestId,type+'_ok',{bundle:fair.bundle(room)});}
         if(type==='ap_room_get') {
           broadcast(room);schedule(room);
           if(payload.verifyStored) {
@@ -189,7 +202,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
           const definition=engine.game(room.tableId), used=Object.values(room.players).map(p=>p.seat),empty=definition.seats.filter(s=>!used.includes(s));
           if(empty.length && !payload.fillWithBots) throw new Error('Invite a friend to every seat, or choose Start with bots.');
           for(const seat of empty){const created=newPlayer(`bot-${randomUUID()}`,`${engine.seatName(room.tableId,seat)} bot`,seat,true);room.players[created.player.id]=created.player;}
-          room.status='playing';advance(room);
+          await fair.start(room);room.status='playing';advance(room);
         } else if(type==='ap_game_action') {
           if(room.status!=='playing') throw new Error('This match is not in progress.');
           if(payload.revision!==room.revision) throw new Error('The board changed. Wait for the refreshed position and try again.');
@@ -200,7 +213,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
           processing.add(room.roomCode);
           const revision=room.revision;
           try {
-            const state=await workers.run({tableId:room.tableId,state:room.gameState,actionId:payload.actionId});
+            const state=room.fair?.bundle?await fair.apply(room,{signed:payload.fairIntent,actorId:me.id,actionId:payload.actionId,run:roll=>workers.run({tableId:room.tableId,state:room.gameState,actionId:payload.actionId,roll}),onPending:async()=>broadcast(room)}):await workers.run({tableId:room.tableId,state:room.gameState,actionId:payload.actionId});
             if(room.revision!==revision||room.status!=='playing') throw new Error('The table changed while validating the move. Reconnect and try again.');
             room.gameState=state;room.actionCount=(room.actionCount||0)+1;advance(room);
           } finally {processing.delete(room.roomCode);schedule(room);}
@@ -212,6 +225,8 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
           // Chat never changes the board revision, so typing cannot invalidate a move.
           broadcast(room);await persist(room);
         } else if(type==='ap_room_leave') {
+          if(room.status==='playing'&&processing.has(room.roomCode))throw Error('Wait for the recorded move before leaving this seat.');
+          if(room.status==='playing'&&room.fair?.bundle){await fair.apply(room,{signed:payload.fairIntent,actorId:me.id,actionId:null,kind:'resign'});}
           if(room.status==='playing')room.progressDisqualified=true;
           me.left=true;
           if(room.status==='waiting') {
@@ -219,7 +234,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
             if(!Object.keys(room.players).length) room.status='cancelled';
             else if(room.hostId===me.id) room.hostId=Object.keys(room.players)[0];
           } else if(room.status==='playing') {
-            if(['yanyi','sanguo','shogi','xiangqi'].includes(room.tableId)) room.gameState=engine.forfeit(room.tableId,room.gameState,me.seat);
+            if(!room.fair?.bundle&&['yanyi','sanguo','shogi','xiangqi'].includes(room.tableId)) room.gameState=engine.forfeit(room.tableId,room.gameState,me.seat);
             else {me.bot=true;me.ready=true;me.name+=' (bot)';me.tokenHash=null;}
             if(!Object.values(room.players).some(p=>!p.bot&&!p.left)&&!engine.result(room.gameState)) room.gameState={...room.gameState,mobileResult:{winner:null,draw:true,reason:'All players left the table.'}};
           }
@@ -246,7 +261,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
     const url=new URL(req.url,'https://articweb3.onrender.com');
     if(serveGameWallet(req,res,url))return true;
     if(serveArcticPlayWeb(req,res,url))return true;
-    if(url.pathname==='/arctic-play/health') {res.writeHead(200,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,version:engine.VERSION,capabilities:[...(dominionTeamsReady?[TEAM_CAPABILITY]:[]),...(browserAssetsReady?['browser-play-v1']:[]),'hall-access-v1','account-play-v1','shanshui-antarctic-v1'],accessSync:access.configured(),webAppUrl:browserAssetsReady?'https://articweb3.onrender.com/arctic-play/app/':null,buildCommit:process.env.RENDER_GIT_COMMIT||null,games:engine.GAME_LIST.map(g=>({id:g.id,name:g.name,players:g.players}))}));return true;}
+    if(url.pathname==='/arctic-play/health') {res.writeHead(200,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,version:engine.VERSION,capabilities:[...(dominionLongReady?[LONG_DICE_CAPABILITY]:[]),...(dominionTeamsReady?[TEAM_CAPABILITY]:[]),...(browserAssetsReady?['browser-play-v1']:[]),...(fair.enabled()?['fair-play-v1']:[]),'heritage-intros-v1','launch-dashboard-v1','hall-access-v1','account-play-v1','shanshui-antarctic-v1'],accessSync:access.configured(),webAppUrl:browserAssetsReady?'https://articweb3.onrender.com/arctic-play/app/':null,buildCommit:process.env.RENDER_GIT_COMMIT||null,games:engine.GAME_LIST.map(g=>({id:g.id,name:g.name,players:g.players}))}));return true;}
     if(url.pathname==='/arctic-play/join') {
       const code=codeOf(url.searchParams.get('room'));const valid=/^[A-Z2-9]{6}$/.test(code);const safe=valid?code:'------';
       res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"});
@@ -255,7 +270,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
     return false;
   }
   function close(){for(const timer of bots.values())clearTimeout(timer);bots.clear();subscriptions.clear();workers.close();company.close().catch(()=>{});}
-  return {dispatch,restoreRoom,handleHttp,disconnected,close,view};
+  return {dispatch,restoreRoom,handleHttp,disconnected,close,view,store:company.store,withAccountSession:company.withAccountSession};
 }
 module.exports={createArcticPlayService,ROOM_GAME_ID};
 

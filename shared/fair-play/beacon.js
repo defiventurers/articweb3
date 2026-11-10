@@ -13,10 +13,12 @@ export async function verifySignedBeacon(beacon,round,chainInfo) {
 export const verifyBeacon=(beacon,round)=>verifySignedBeacon(beacon,round,QUICKNET);
 export async function diceValues(beacon,intent,count) {
   if(![1,2].includes(count)) throw Error('Invalid dice count.');
+  const longDice=intent.actionId==='roll-long|control:roll-long';
+  if(longDice&&count!==2)throw Error('Long dice are always rolled as a pair.');
   const values=[]; let draw=0;
   while(values.length<count && draw<128) {
     const hash=await hashObject({domain:'AK-DICE-V1',beacon:beacon.randomness,intent,draw:draw++});
-    for(let i=0;i<hash.length && values.length<count;i+=8) { const word=parseInt(hash.slice(i,i+8),16); if(word<4294967292) values.push(word%6+1); }
+    for(let i=0;i<hash.length && values.length<count;i+=8) { const word=parseInt(hash.slice(i,i+8),16); if(longDice)values.push(word%4+2);else if(word<4294967292) values.push(word%6+1); }
   }
   if(values.length!==count) throw Error('Randomness mapping failed.');
   return values;

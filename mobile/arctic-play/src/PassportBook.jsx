@@ -3,6 +3,7 @@ import {PASSPORT_PAGES,passportSnapshot,passportDate,passportPage,passportMoment
 
 import {PassportVolume} from './PassportVolume.jsx';
 import {PassportFlag} from './PassportFlag.jsx';
+import {WalletEntry} from './PassportWallet.jsx';
 const art='art/passport-book-v1/';
 const stampArt='art/passport-book-v2/';
 export function PassportIcon(props){return <svg {...props} width={props.size||24} height={props.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={props.strokeWidth||1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="15" height="19" rx="2.5"/><path d="M8 3v18M12 16h4"/><circle cx="14" cy="9.5" r="3"/><path d="M11 9.5h6M14 6.5c1.5 2 1.5 4 0 6"/></svg>;}
@@ -34,6 +35,7 @@ export function PassportBook({progress={},name='Explorer',avatar,badge,ownerKey=
  }
  return <section className="passport-book" aria-label="Your Antarctic Passport">
   <div className="pp-book-caption"><span>ANTARCTIC KINGDOMS</span><strong>{snapshot.count} / 7 lantern stamps</strong></div>
+  <WalletEntry/>
   {fresh&&<p className="pp-new-stamp" role="status">{snapshot.crownedAt?'Your seventh lantern. Your Antarctic Crown.':fresh.title+' stamp added to your Passport.'}</p>}
   <PassportVolume page={page} onTurn={turn}><div className="pp-spread" data-page={page} tabIndex="0" role="group" aria-label={'Passport page '+(page+1)+': '+PASSPORT_PAGES[page]} onKeyDown={e=>{if(e.target!==e.currentTarget)return;if(e.key==='ArrowRight'){e.preventDefault();document.dispatchEvent(new CustomEvent('ak-passport-turn',{detail:page+1}));}if(e.key==='ArrowLeft'){e.preventDefault();document.dispatchEvent(new CustomEvent('ak-passport-turn',{detail:page-1}));}}} onTouchStart={e=>{start.current={x:e.changedTouches[0].clientX,y:e.changedTouches[0].clientY};}} onTouchEnd={e=>{if(!start.current)return;const dx=e.changedTouches[0].clientX-start.current.x,dy=e.changedTouches[0].clientY-start.current.y;start.current=null;if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.5)document.dispatchEvent(new CustomEvent('ak-passport-turn',{detail:page+(dx<0?1:-1)}));}}>
    <div className="pp-paper" key={page}>

@@ -2,16 +2,16 @@
 import {GUIDES,LEGACY_GUIDE_NAMES} from './brand.js';
 const root='art/celebration/';
 export const CELEBRATION_ART={
-  home:root+'scenes/lantern-harbor-festival.webp',
-  friends:root+'scenes/festival-friends.webp',
-  passport:root+'scenes/lantern-passport.webp',
-  finale:root+'scenes/eighth-lantern-celebration.webp',
+  home:'art/launch-v1/home-hosts-final.webp',
+  friends:'art/launch-v1/home-hosts-final.webp',
+  passport:'art/home-v1/passport-journey.webp',
+  finale:'art/launch-v1/home-hosts-final.webp',
 };
 export const HALL_ART=Object.fromEntries(['xiangqi','shogi','sannin','sanguo','sanyou','yanyi','dominion'].map(id=>[id,{
-  image:'art/tables-3d-v3/'+id+'.webp',
-  card:'art/tables-3d-v3/'+id+'.webp',
+  image:id==='dominion'?'art/launch-v1/india-hall.webp':'art/tables-3d-v3/'+id+'.webp',
+  card:id==='dominion'?'art/launch-v1/india-hall.webp':'art/tables-3d-v3/'+id+'.webp',
 }]));
-const sticker=(id,host,label,gameId=null)=>({id:'festival-'+id,host,label,gameId,image:root+'stickers/'+id+'.webp'});
+const sticker=(id,host,label,gameId=null)=>({id:'festival-'+id,host,label,gameId,image:GUIDES[host].image});
 export const FESTIVAL_STICKERS=[
   sticker('polly-seat','polly','Saved you a seat!'),
   sticker('polly-second-chance','polly','Another chance!','shogi'),

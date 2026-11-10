@@ -8,7 +8,7 @@ let root, element;
 beforeEach(() => { localStorage.clear(); element = document.createElement('div'); document.body.append(element); root = createRoot(element); });
 afterEach(() => { act(() => root.unmount()); element.remove(); });
 function render() { act(() => root.render(<ShanshuiApp onExit={vi.fn()}/>)); }
-function click(text) { const button = [...element.querySelectorAll('button')].find(b => b.textContent.trim() === text || b.textContent.trim().startsWith(text)); expect(button, text).toBeTruthy(); act(() => button.click()); }
+function click(text) { const scope=element.querySelector('[role="dialog"]')||element; const button = [...scope.querySelectorAll('button')].find(b => b.textContent.trim() === text || b.textContent.trim().startsWith(text)); expect(button, text).toBeTruthy(); act(() => button.click()); }
 describe('Shanshui shared Android/web experience', () => {
   it('plays legal moves, advances army order, keeps state through undo and shows both board themes', () => {
     render(); click('Two players'); expect(element.querySelectorAll('[data-shanshui-point]')).toHaveLength(169);
@@ -22,14 +22,14 @@ describe('Shanshui shared Android/web experience', () => {
     expect(element.querySelector('svg image').getAttribute('href')).toContain('board-light.webp');
   });
   it('opens an empty editor, validates before play, loads the full starting position and locks editing', () => {
-    render(); click('Arrange the board freely'); expect(element.querySelectorAll('svg image')).toHaveLength(1);
+    render(); click('Learn'); click('Arrange the board freely'); expect(element.querySelectorAll('svg image')).toHaveLength(1);
     click('Validate & play locally'); expect(element.querySelector('[role="alert"]').textContent).toContain('exactly one General');
     click('Starting position'); expect(element.querySelectorAll('svg image')).toHaveLength(69);
     click('Lock arrangement'); expect(element.textContent).toContain('Arrangement locked');
     click('Validate & play locally'); expect(element.querySelector('.shanshui-turn h2').textContent).toBe('Red to move');
   });
   it('teaches a single piece without match turns and provides quick/full rules progress', () => {
-    render(); click('Full rules'); expect(element.querySelector('progress').value).toBe(1);
+    render(); click('Learn'); click('Full rules'); expect(element.querySelector('progress').value).toBe(1);
     click('Next'); expect(element.querySelector('progress').value).toBe(2);
     act(() => element.querySelector('[aria-label="Close dialog"]').click()); click('Learn piece movement');
     expect(element.querySelectorAll('svg image')).toHaveLength(2); expect(element.textContent).toContain('no opponents, turns or match result');

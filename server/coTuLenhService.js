@@ -5,13 +5,14 @@ const hash=s=>createHash('sha256').update(String(s)).digest('hex');
 const goodToken=t=>typeof t==='string'&&/^[a-f0-9]{64}$/.test(t);
 const codeOf=c=>String(c||'').trim().toUpperCase();
 const auth=(seat,token)=>goodToken(token)&&seat?.digest&&timingSafeEqual(Buffer.from(seat.digest,'hex'),Buffer.from(hash(token),'hex'));
-function createCoTuLenhService({rooms,send,ok,fail,saveRoomSafe,now=Date.now}){
+function createCoTuLenhService({rooms,send,ok,fail,saveRoomSafe,now=Date.now,proofOptions={}}){
   const sessions=new Map();let closed=false;
+  const proofs=require('./coTuLenhProofs').createCoTuLenhProofs({rooms,ok,fail,publish,confirm:(...args)=>confirm(...args),baseDispatch,saveRoomSafe,proofOptions});
   const isRoom=r=>r?.gameId===ID;
   function view(room,team){
     let gameState=room.gameState;
     if(gameState.phase==='setup')gameState={...gameState,lastMove:gameState.lastMove?.team===team?gameState.lastMove:null,pieces:gameState.pieces.map(p=>p.team===team?p:{id:p.id,type:p.type,team:p.team,alive:true,hero:false,carrier:null,x:null,y:null,hidden:true})};
-    return {gameId:ID,rulesVersion:VERSION,roomCode:room.roomCode,status:room.status,revision:room.revision,createdAt:room.createdAt,updatedAt:room.updatedAt,gameState,
+    return {gameId:ID,rulesVersion:VERSION,roomCode:room.roomCode,status:room.status,revision:room.revision,createdAt:room.createdAt,updatedAt:room.updatedAt,gameState,fair:proofs.summary(room),
       seats:Object.fromEntries(['red','blue'].map(t=>[t,room.seats[t]?{name:room.seats[t].name,connected:sessions.get(`${room.roomCode}:${t}`)?.readyState===1}:{name:null,connected:false}]))};
   }
   function publish(room){
@@ -32,7 +33,7 @@ function createCoTuLenhService({rooms,send,ok,fail,saveRoomSafe,now=Date.now}){
     room.gameState=next;room.status='finished';room.revision++;publish(room);return true;
   }
   const ticker=setInterval(()=>{for(const room of rooms.values())if(isRoom(room))expireRoom(room);},1000);ticker.unref?.();
-  function dispatch(ws,id,type,payload={}){
+  function baseDispatch(ws,id,type,payload={}){
     if(closed)return reject(ws,id,'Service unavailable');
     if(!payload||typeof payload!=='object'||Array.isArray(payload))return reject(ws,id,'Invalid payload');
     if(payload.rulesVersion!==VERSION)return reject(ws,id,'YouTuber Rules require the matching v0.5 app and backend.');
@@ -45,6 +46,7 @@ function createCoTuLenhService({rooms,send,ok,fail,saveRoomSafe,now=Date.now}){
       const room={roomCode:freshCode(),gameId:ID,roomMode:'co-tu-lenh-private',visibility:'private',rulesetVersion:VERSION,status:'waiting',revision:0,createdAt:now(),updatedAt:now(),seats:{red:null,blue:null},
         gameState:createInitialState(profile,{deployment:payload.deployment,timeLimitMinutes:payload.timeLimitMinutes})};
       room.seats[team]={name:String(payload.name||'Commander').slice(0,24),digest:hash(payload.token)};
+      proofs.attach(room,team,payload);
       rooms.set(room.roomCode,room);bind(ws,room,team);publish(room);return confirm(ws,id,room,team);
     }
     if(type==='ctl_room_list')return ok(ws,id,'ctl_room_list_ack',{rooms:[]});
@@ -55,7 +57,7 @@ function createCoTuLenhService({rooms,send,ok,fail,saveRoomSafe,now=Date.now}){
       const team=payload.team;if(!['red','blue'].includes(team))return reject(ws,id,'Choose a team');
       const seat=room.seats[team];if(seat&&!auth(seat,payload.token))return reject(ws,id,'Team already claimed');
       if(!seat){if(room.status!=='waiting')return reject(ws,id,'Match already started');room.seats[team]={name:String(payload.name||'Commander').slice(0,24),digest:hash(payload.token)};room.revision++;}
-      bind(ws,room,team);expireRoom(room);publish(room);return confirm(ws,id,room,team);
+      proofs.attach(room,team,payload);bind(ws,room,team);expireRoom(room);publish(room);return confirm(ws,id,room,team);
     }
     const team=['red','blue'].find(t=>auth(room.seats[t],payload.token));if(!team)return reject(ws,id,'No authorized seat for this room');
     if(expireRoom(room))return confirm(ws,id,room,team);
@@ -88,6 +90,7 @@ function createCoTuLenhService({rooms,send,ok,fail,saveRoomSafe,now=Date.now}){
     }
     return reject(ws,id,'Unknown Commander Chess request');
   }
-  return {dispatch,restoreRoom(room){if(isRoom(room))room.gameState=room.gameState||createInitialState();},close(){closed=true;clearInterval(ticker);sessions.clear();}};
+  function dispatch(ws,id,type,payload={}){if(closed)return reject(ws,id,'Service unavailable');const room=rooms.get(codeOf(payload?.roomCode));return payload?.capabilities?.includes(proofs.capability)||room?.fairEnabled||type==='ctl_fair_get'?proofs.dispatch(ws,id,type,payload):baseDispatch(ws,id,type,payload);}
+  return {dispatch,restoreRoom(room){if(isRoom(room))room.gameState=room.gameState||createInitialState();},close(){closed=true;clearInterval(ticker);sessions.clear();proofs.close().catch(()=>{});}};
 }
 module.exports={createCoTuLenhService};

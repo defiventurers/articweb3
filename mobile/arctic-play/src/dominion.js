@@ -2,21 +2,24 @@
 // also permits ending a rolled turn with either or both dice unused.
 // Online rolls are generated inside the server's rule worker.
 import rules from '../../../server/gameRules.js';
+import {LONG_DICE_PROFILE,isLongDiceState,createLongDiceGame,longDiceActions,applyLongDice} from './chaturangaLongDice.js';
 import {DOMINION_TEAMS,teammates,teamGame} from './dominionTeams.js';
 
 export const PIECE_NAMES=rules.PIECE_NAME;
 export const DICE_ROLES=rules.DICE_ROLLS;
-export const pieceArt=(team,type)=>`dominion/${team==='yellow'?'pink':team}-${({king:'frost-king',horse:'aurora-unicorn',elephant:'war-mammoth',ship:'icebreaker',pawn:'snow-guard'})[type]}.webp`;
+export const pieceArt=(team,type)=>`launch-v1/chaturanga-pieces/${team==='yellow'?'pink':team}-${({king:'frost-king',horse:'aurora-unicorn',elephant:'war-mammoth',ship:'icebreaker',pawn:'snow-guard'})[type]}.webp`;
 const normalize=state=>{const {updatedAt,...position}=state;return {...position,turn:rules.currentTeam(state),selected:null,legalMoves:[]};};
 const finish=(before,next,extra={})=>normalize({...next,mobileTurnNumber:(before.mobileTurnNumber||0)+(rules.currentTeam(before)!==rules.currentTeam(next)?1:0),...extra});
 
 export function createDominion(options={}){
+  if(options.rulesProfile===LONG_DICE_PROFILE)return createLongDiceGame(options);
   const state=rules.createInitialGameState();
   state.board=state.board.map((row,r)=>row.map((piece,c)=>piece?{...piece,id:`${piece.team}-${piece.type}-${r}-${c}`}:null));
   return normalize({...state,mobileTurnNumber:0,teamMode:options.teamMode==='2v2'?'2v2':'free-for-all'});
 }
 
 export function dominionActions(state){
+  if(isLongDiceState(state))return longDiceActions(state);
   if(state.gameOver||state.mobileResult)return [];
   if(!state.dice.rolled)return [
     {id:'roll|control:roll',kind:'roll',source:'control:roll',target:null,promote:false,raw:{kind:'roll',count:2}},
@@ -48,6 +51,7 @@ function rollD6(){
 }
 
 export function applyDominion(state,action,verifiedRoll){
+  if(isLongDiceState(state))return applyLongDice(state,action,verifiedRoll);
   if(action.kind==='roll'){
     const count=action.raw.count===1?1:2;
     if(verifiedRoll&&(!Array.isArray(verifiedRoll.values)||verifiedRoll.values.length!==count||verifiedRoll.values.some(v=>!Number.isInteger(v)||v<1||v>6)))throw Error('The verified dice do not match this roll.');

@@ -14,7 +14,7 @@ function serveArcticPlayWeb(req,res,url){
   if(!file.startsWith(ROOT+path.sep)||!type||relative.includes('\0')||relative.includes('\\'))return error(404,'Game file not found.');
   let stat;try{stat=fs.statSync(file);}catch{return error(404,'Game file not found.');}
   if(!stat.isFile())return error(404,'Game file not found.');
-  res.writeHead(200,{'Content-Type':type,'Content-Length':stat.size,'Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://articweb3.onrender.com wss://articweb3.onrender.com https://raw.githubusercontent.com; worker-src 'self'; font-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'"});
+  res.writeHead(200,{'Content-Type':type,'Content-Length':stat.size,'Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://articweb3.onrender.com wss://articweb3.onrender.com https://raw.githubusercontent.com https://rpc.testnet.chain.robinhood.com https://rpc.mainnet.chain.robinhood.com https://api.testnet.abs.xyz https://api.mainnet.abs.xyz https://arb1.arbitrum.io/rpc https://sepolia-rollup.arbitrum.io/rpc https://robinhoodchain.blockscout.com https://explorer.testnet.chain.robinhood.com; worker-src 'self'; font-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'"});
   if(req.method==='HEAD')res.end();else fs.createReadStream(file).on('error',()=>res.destroy()).pipe(res);
   return true;
 }

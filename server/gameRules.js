@@ -260,4 +260,4 @@ function cloneBoard(board) { return board.map((row) => row.map((piece) => (piece
 function rollD6() { return Math.floor(Math.random() * 6) + 1; }
 function touch(state) { return { ...state, updatedAt: Date.now() }; }
 
-module.exports = { DICE_ROLLS, PLAYERS, TEAM_LABEL, PIECE_NAME, createInitialGameState, currentTeam, rollDiceForState, selectSquare, endTurn, applyMove, hasAnyLegalMoveForTeam, pickBotMove, getPlacements };
+module.exports = { DICE_ROLLS, PLAYERS, TEAM_LABEL, PIECE_NAME, PROMOTION_PIECES, createInitialGameState, currentTeam, rollDiceForState, selectSquare, endTurn, applyMove, hasAnyLegalMoveForTeam, pickBotMove, getPlacements };

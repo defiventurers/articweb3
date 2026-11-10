@@ -42,7 +42,7 @@ run(aapt,'compile','--dir',APP/'res','-o',compiled)
 # never become installable assets, even when a checkout contains old output.
 staged=WORK/'assets';staged.mkdir()
 source_assets=APP/'assets'
-root_names={'index.html','app.js','app.css','bot.js','learn.js','fair-worker.js','shanshui-bot.js','fair-play.css','verifier.js','verify.html','startup.js','theme-init.js','THIRD_PARTY_NOTICES.txt','manifest.webmanifest','app-version.json','game-assets.json','game-assets-sw.js'}
+root_names={'index.html','app.js','app.css','bot.js','learn.js','fair-worker.js','shanshui-bot.js','fair-play.css','verifier.js','verify.html','startup.js','theme-init.js','THIRD_PARTY_NOTICES.txt','manifest.webmanifest','app-version.json','game-assets.json','game-assets-sw.js','pwa-sw.js'}
 asset_manifest=json.loads((source_assets/'game-assets.json').read_text())
 allowed=root_names|{'art/co-tu-lenh/rules-profiles-v0.3.json','art/co-tu-lenh/youtuber-rules-v1.json'}|{item['url'] for item in asset_manifest['assets']}
 for relative in sorted(allowed):
@@ -51,10 +51,10 @@ for relative in sorted(allowed):
     if 'sanyou' in parts or 'sanyou-gold-v1' in parts or 'tables-3d-v1' in parts or 'tables-3d-v2' in parts:raise SystemExit('Retired artwork in runtime manifest.')
     dest=staged/relative;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source_assets/relative,dest)
 base=WORK/'base.apk' 
-run(aapt,'link','-I',platform,'--manifest',APP/'AndroidManifest.xml','--min-sdk-version','24','--target-sdk-version','35','--java',generated,'-A',staged,'-o',base,compiled)
+run(aapt,'link','-I',platform,'--manifest',APP/'AndroidManifest.xml','--min-sdk-version','24','--target-sdk-version','36','--java',generated,'-A',staged,'-o',base,compiled)
 classes=WORK/'classes';classes.mkdir()
 sources=list((APP/'java').rglob('*.java'))+list(generated.rglob('*.java'))
-compiler=[args.jdk/'bin/java','-jar',args.javac_jar] if args.javac_jar else [args.jdk/'bin/javac']
+compiler=[args.jdk/'bin/java','-jar',args.javac_jar] if args.javac_jar else [args.jdk/'bin/javac'] if (args.jdk/'bin/javac').exists() else [args.jdk/'bin/java','com.sun.tools.javac.Main']
 run(*compiler,'-encoding','UTF-8','-source','8','-target','8','-classpath',platform,'-d',classes,*sources)
 jar=WORK/'classes.jar'
 with zipfile.ZipFile(jar,'w',zipfile.ZIP_DEFLATED) as archive:
@@ -78,6 +78,6 @@ digest=hashlib.sha256(apk.read_bytes()).hexdigest()
 (OUTPUT/f'AntarcticKingdoms-v{VERSION}.apk.sha256').write_text(f'{digest}  {apk.name}\n')
 legacy=OUTPUT/f'ArcticPlay-v{VERSION}.apk'
 shutil.copyfile(apk,legacy)  # Existing 1.4 clients trust this exact stable URL.
-metadata={'file':apk.name,'updateFile':legacy.name,'bytes':apk.stat().st_size,'sha256':digest,'package':'xyz.arcticdominion.play','version':VERSION,'versionCode':VERSION_CODE,'minSdk':24,'targetSdk':35,'games':['Shogi','Sannin Shogi','Sanguo Qi','San You Qi','Sanguo Yan Yi Qi','Xiangqi','Chaturanga','Shanshui Xiangqi','Cờ Tư Lệnh']}
+metadata={'file':apk.name,'updateFile':legacy.name,'bytes':apk.stat().st_size,'sha256':digest,'package':'xyz.arcticdominion.play','version':VERSION,'versionCode':VERSION_CODE,'minSdk':24,'targetSdk':36,'games':['Shogi','Sannin Shogi','Sanguo Qi','San You Qi','Sanguo Yan Yi Qi','Xiangqi','Chaturanga','Shanshui Xiangqi','Cờ Tư Lệnh']}
 (OUTPUT/'build-info.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(json.dumps(metadata,indent=2))

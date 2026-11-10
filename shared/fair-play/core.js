@@ -130,7 +130,7 @@ export async function verifyBundle(bundle,{engine,rulesHash,trustedKeys=[],verif
     if(event.kind!==intent.kind) fail('The recorded action type has changed.');
     if(event.kind==='action') {
       if(actor.seat!==engine.turn(state)) fail('A move was made by the wrong player.');
-      const action=engine.actions(header.gameId,state).find(a=>a.id===intent.actionId);
+      const action=engine.validateAction?engine.validateAction(header.gameId,state,intent.actionId):engine.actions(header.gameId,state).find(a=>a.id===intent.actionId);
       if(!action) fail('A recorded move breaks the published rules.');
       let context={};
       if(action.kind==='roll') { if(!event.rng || !verifyRandomness) fail('A roll has no independently checkable randomness.'); const r=await verifyRandomness(event.rng,{intent,header}); context={roll:{values:r.values}}; rolls++; }

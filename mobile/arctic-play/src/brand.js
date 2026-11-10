@@ -3,10 +3,10 @@
 export const BRAND={name:'Antarctic Kingdoms',company:'Antarctic Gaming Co.',tagline:'Remarkable games. An endless celebration.',icon:'art/brand/icon.webp'};
 
 export const GUIDES={
-  polly:{name:'Nova',clan:'Nova Clan',color:'#f5a9cd',image:'art/brand/hosts-director-v1/polly/listening.webp',role:'Your welcoming practice guide',detail:'Start with one move. Learn at your own pace, then bring a friend.'},
-  retsba:{name:'Rocco',clan:'Rocco Legion',color:'#f17b86',image:'art/brand/hosts-director-v1/retsba/listening.webp',role:'Your focused tactics guide',detail:'Look for captures, read the formation and protect your royal piece.'},
-  pengu:{name:'Piko',clan:'Piko Order',color:'#8eb9ff',image:'art/brand/hosts-director-v1/pengu/listening.webp',role:'Your calm rules guide',detail:'Every board has its own paths. Let the legal highlights show the way.'},
-  abster:{name:'Ziggy',clan:'Ziggy Tribe',color:'#68d7a8',image:'art/brand/hosts-director-v1/abster/listening.webp',role:'Your patient puzzle guide',detail:'Pause, notice the pattern and explore another possibility.'},
+  polly:{name:'Nova',clan:'Nova Clan',color:'#f5a9cd',image:'art/launch-v1/hosts/polly.webp',role:'Your welcoming practice guide',detail:'Start with one move. Learn at your own pace, then bring a friend.'},
+  retsba:{name:'Rocco',clan:'Rocco Legion',color:'#f17b86',image:'art/launch-v1/hosts/retsba.webp',role:'Your focused tactics guide',detail:'Look for captures, read the formation and protect your royal piece.'},
+  pengu:{name:'Piko',clan:'Piko Order',color:'#8eb9ff',image:'art/launch-v1/hosts/pengu.webp',role:'Your rules and Fair Play guide',detail:'Every board has its own paths. Let the legal highlights show the way.'},
+  abster:{name:'Ziggy',clan:'Ziggy Tribe',color:'#68d7a8',image:'art/launch-v1/hosts/abster.webp',role:'Your puzzle and reflection guide',detail:'Pause, notice the pattern and explore another possibility.'},
 };
 
 // Read old authored chat messages without changing host IDs or player text.
@@ -21,7 +21,7 @@ export const GAME_HERITAGE={
   sanyou:{origin:'China',kind:'Qing-era variant · digital edition',name:'San You Qi · Three Friends Chess',host:'pengu',story:'A meeting of three armies, with Fire, Flags and distinctive terrain.',edition:'The approved 156-intersection digital board, with its river, mountain, fort and central continuation rules. The digital topology and chosen restrictions are explained in the complete rulebook.'},
   yanyi:{origin:'Three Kingdoms theme',kind:'Chosen free-play ruleset',name:'Sanguo Yan Yi Qi',host:'retsba',story:'Three rival armies share a board with the separate yellow Han imperial force.',edition:'The selected free-play rules already used by Heritage Arcade, including Han activation and takeover. The historical setting is a theme; this listing does not claim the game itself is ancient.'},
   xiangqi:{origin:'China',kind:'Living tradition',name:'Xiangqi',host:'pengu',story:'The strategy of rivers, palaces, horses, chariots and screened Cannon captures.',edition:'The 90-intersection Heritage Arcade edition. Blue represents the traditional Black side. Tournament perpetual-chase and repetition adjudication are not included in this edition.'},
-  dominion:{origin:'Modern adaptation',kind:'Chaturanga-inspired',name:'Chaturanga',host:'polly',story:'Four penguin kingdoms meet on an 8 × 8 battlefield, with dice activating their armies.',edition:'Our Chaturanga edition: choose one die, two dice or a confirmed skip before rolling, independently spent activations, optional End turn after rolling, Guard promotion and elimination on royal King capture. This is a modern Chaturanga-inspired adaptation, not a claim to reproduce every historical Chaturanga ruleset.'},
+  dominion:{origin:'Modern adaptation',kind:'Chaturanga-inspired',name:'Chaturanga',host:'polly',story:'Four penguin kingdoms meet on an 8 × 8 battlefield, with dice activating their armies.',edition:'Our Chaturanga edition: roll both four-sided long dice or confirm a skipped turn before rolling, independently spent activations, optional End turn after rolling, Guard promotion and elimination on royal King capture. This is a modern Chaturanga-inspired adaptation, not a claim to reproduce every historical Chaturanga ruleset.'},
 };
 
 export const JOURNAL_KEY='archive-journal';
