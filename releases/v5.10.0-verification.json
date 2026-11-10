@@ -102,5 +102,7 @@
   "onchainDeployed": false,
   "productionParaConfigured": false,
   "renderUserResetExecuted": false,
-  "publication": "pending"
+  "publication": "published",
+  "sourceCommit": "e85dd2bd491e8a17fb7d31f73ba671658c0bbfd8",
+  "publicationCommit": "d1015489766fa25d4ce2b980aa2c48dce35b3719"
 }

@@ -1,18 +1,19 @@
 {
   "schemaVersion": 1,
   "packageName": "xyz.arcticdominion.play",
-  "versionName": "3.0.0",
-  "versionCode": 17,
-  "downloadUrl": "https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/ArcticPlay-v3.0.0.apk",
-  "sizeBytes": 9509243,
-  "sha256": "b6dac97a7dbec0ab9767555fc05fdd4471bc9155d61a8db69cd4f1002aedaa9c",
-  "publishedAt": "2026-10-17T21:44:01.384025Z",
+  "versionName": "5.10.0",
+  "versionCode": 104,
+  "downloadUrl": "https://raw.githubusercontent.com/defiventurers/articweb3/arctic-play-releases/releases/ArcticPlay-v5.10.0.apk",
+  "sizeBytes": 57557582,
+  "sha256": "62686ae9800ce2154c1c08e21f796914a77e09a3d8d218e7a44e1b0762c0a387",
   "releaseNotes": [
-    "Learn through quick interactive board lessons, complete rules and legal one-piece exploration.",
-    "Keep discoveries with an optional recovery account and synced progress.",
-    "Replay guided memories, retry a position and share a challenge with friends.",
-    "Explore the three-step Sleeping Han Court chapter and earn a permanent Camp lantern.",
-    "Preview Founding Explorers: four mascot outfits, Aurora Camp, a profile badge and postcard frame. Purchases open after merchant setup.",
-    "All seven games, saved seats, practice, original pieces and Quiet/Off mascot preferences are retained. Install over your existing app to keep its data."
-  ]
+    "Explore nine game stories across Indian, Chinese, Japanese and Vietnamese halls.",
+    "Meet Nova, Rocco, Piko and Ziggy using the final approved character references.",
+    "Play Chaturanga with paired icy long dice, a toggleable move guide and updated four-team miniatures.",
+    "Check signed online game records and public randomness. Blockchain receipts stay pending until a funded recorder is configured.",
+    "Passport-first NFT delivery, nine earned achievements and real aggregate launch counts are prepared; live minting awaits setup.",
+    "Play the matching browser edition or install its web app. Google Play submission is a separate process.",
+    "Install over the existing Android app with its original signing identity."
+  ],
+  "publishedAt": "2026-11-10T21:13:47.109051+00:00"
 }
