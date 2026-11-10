@@ -1,7 +1,7 @@
 {
   "protocol": "ak-fair-play-v1",
-  "rulesHash": "63845f4daef97f9721ccecd9cb3c7ef363842835a2566f8f48c7e515863cd952",
-  "engineHash": "dab5b2df6d25e3c9572e93a0216b7d6d355493688983a959397bc40e2dad239b",
+  "rulesHash": "9fa0be4a43f049957ef407ee73361a0b6a3bb24ed59f487a36190165be82c8cb",
+  "engineHash": "16d08120db2442814631143e6dafbeb88af40bda561f3b00a61c5c0f0cfa4c18",
   "source": [
     {
       "path": "frontend/src/games/agon-cold-throne/rules.js",
@@ -34,6 +34,18 @@
     {
       "path": "frontend/src/games/break-the-ice/rules.js",
       "sha256": "1c27095672f8b0e4b03dd18192b869482fe6425123435ad962da4aa3977698ee"
+    },
+    {
+      "path": "frontend/src/games/co-tu-lenh/onlineClient.js",
+      "sha256": "f36743cdf087531967de034656dc124830cce60e396c64fd2bf677f7b1353b8b"
+    },
+    {
+      "path": "frontend/src/games/co-tu-lenh/rules.js",
+      "sha256": "3bb64fef4500ec3c79eefcdab917271010e65290ab91209756b0fe7afaa04865"
+    },
+    {
+      "path": "frontend/src/games/co-tu-lenh/units.json",
+      "sha256": "f848fadbca255560859ac725fe0ff61419aff48a7253a61ef53220319ce50355"
     },
     {
       "path": "frontend/src/games/cowrie-kingdoms/bot.js",
@@ -105,7 +117,7 @@
     },
     {
       "path": "frontend/src/games/heritage-arcade/ported/game/millsRules.ts",
-      "sha256": "3bd8a1af8968e9ddbabc6cea372662ec5a2e4aa119d8645363d53a22fb72ed4c"
+      "sha256": "ff95d8a796631058e773d62fb795d08f7d4372a4c888a122afd4d7c58bdc3a5a"
     },
     {
       "path": "frontend/src/games/heritage-arcade/ported/game/ryukyuSanzanRules.ts",
@@ -209,7 +221,7 @@
     },
     {
       "path": "frontend/src/games/heritage-arcade/ported/game/sanguoYanYiRules.ts",
-      "sha256": "ee1854cb9f08e222c7c65a76dbfc6bdf0122bce9e867f2462110e798822fc749"
+      "sha256": "449a20e3959987a07663be3b77565ddcdba746fdcf4cf9959ef62e8a65b47d69"
     },
     {
       "path": "frontend/src/games/heritage-arcade/ported/game/xiangqiRules.ts",
@@ -276,14 +288,6 @@
       "sha256": "177fab67593bf5cb1c5c2a800d04005b017b63adc056933074c5448a50d88d4a"
     },
     {
-      "path": "frontend/src/games/san-you-qi/sanyouArtwork.js",
-      "sha256": "8799bc16c4c3357f3e5bc92520f80da405c99b31fc785cfa8669f1cdd338dbf0"
-    },
-    {
-      "path": "frontend/src/games/san-you-qi/sanyouFinalPositions.json",
-      "sha256": "8fbc87dbe32791a72d4f2da22e48c4913f9c6e98112839cf0f7a0fd2908b5b9b"
-    },
-    {
       "path": "frontend/src/games/san-you-qi/sanyouPieceSizing.js",
       "sha256": "4577706dc75752d35e841b280fb47a5053324b07fab41a8ec8ef403330407450"
     },
@@ -321,7 +325,7 @@
     },
     {
       "path": "frontend/src/games/sannin-shogi/rules.js",
-      "sha256": "a1977c7894544d51040dfd17499b255ded166b3048bee0edb983049bc33f126c"
+      "sha256": "2c028881ea71f0469fdc6e4ac81d80f8adfe1ebcb59800edeaf03097261e9e8a"
     },
     {
       "path": "frontend/src/games/seven-ice-rings/bot.js",
@@ -334,6 +338,22 @@
     {
       "path": "frontend/src/games/seven-ice-rings/rules.js",
       "sha256": "bf3969ab8246c06ba9f362160b7d6945af493a0a9d27423aa874b01833a2c601"
+    },
+    {
+      "path": "frontend/src/games/shanshui-xiangqi/bot.worker.js",
+      "sha256": "ac2442be51d16d6ef772ed7e725582505271f4be601c3f2aa10def3ad77d358a"
+    },
+    {
+      "path": "frontend/src/games/shanshui-xiangqi/mobileAdapter.js",
+      "sha256": "90967a522bab5d6fcc07d1570d77df9dc3da62b3c5ff8a2c90da09c35e2b1bbe"
+    },
+    {
+      "path": "frontend/src/games/shanshui-xiangqi/presentation.js",
+      "sha256": "e6296a27fbc2011eb59ff521f95518f09fdbd67e114fdcc619255adc954f55b5"
+    },
+    {
+      "path": "frontend/src/games/shanshui-xiangqi/rules.js",
+      "sha256": "1a3afd4555a73be83218853baca874aacc878f1d937cf759711efea531283847"
     },
     {
       "path": "frontend/src/games/shogi-frozen-shogunate/battleLayout.js",
@@ -408,20 +428,32 @@
       "sha256": "0f2f8a21676991f7a3ade4bdc95302e912a650bbcb14fb4639d60ea40b5c0154"
     },
     {
+      "path": "mobile/arctic-play/src/chaturangaLongDice.js",
+      "sha256": "d52cb599e4c7eaa5037383b94282bad83d26c14422efe7e5b3c4e2b5e9c18ae7"
+    },
+    {
+      "path": "mobile/arctic-play/src/coTuLenhFairAdapter.js",
+      "sha256": "1345bf2fe65175bde63fe7d85662d7e0f05cbd3c865fb56616b66e59228c303a"
+    },
+    {
       "path": "mobile/arctic-play/src/dominion.js",
-      "sha256": "37da31c447bf96a5533dc448640d12643445ce8598fc8c535c0e50b6eb3cb8bc"
+      "sha256": "c8b051fcfdc027762f40f10c9db0d3f184ee6be2d8a259f41b01562c38b12bc5"
     },
     {
       "path": "mobile/arctic-play/src/dominionTeams.js",
       "sha256": "5eeb389683a8bc1ff5345dbe38fc091974b96f939f3602be079cbd60cc7f6827"
     },
     {
+      "path": "mobile/arctic-play/src/fairEngine.js",
+      "sha256": "901b45b59e83a3ddf7826d3ed468f42f3fae7d80ea37afcaf409a139eb25735e"
+    },
+    {
       "path": "mobile/arctic-play/src/games.ts",
-      "sha256": "ce8674a71f278e3db30f2735bb06a08f21488519d78c5d8057d0cbd91657effc"
+      "sha256": "fbcda3cf78a30f6e20a1ec2a36380d8664b62e3327ceb3b81ee87ee7037d6ef3"
     },
     {
       "path": "server/gameRules.js",
-      "sha256": "77c800fc25e4c08518d3fbb329dcbb1167007c2610d783cc861f79dc7eab8fff"
+      "sha256": "cdd3b7b0a60fb505697fd6d92b65b31d97ec958839cd421f6445fd16ea1078b2"
     }
   ]
 }

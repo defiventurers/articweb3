@@ -26,7 +26,7 @@ export const GAME_LIST = [
   { id: 'sanyou', name: 'San You Qi', subtitle: 'A world of fire, flags and strategy', seats: ['red', 'green', 'blue'], players: 3, tag: 'Three-player chess', accent: '#199b82', icon: 'sanyou-gold-v2/green_general.webp' },
   { id: 'yanyi', name: 'Sanguo Yan Yi Qi', subtitle: 'Alliances, the Han Emperor and conquest', seats: ['green', 'blue', 'red'], players: 3, tag: 'Three Kingdoms', accent: '#7653a6', icon: 'yanyi/pieces/han-emperor.webp' },
   { id: 'xiangqi', name: 'Xiangqi', subtitle: 'The classic battle across the river', seats: ['red', 'black'], players: 2, tag: 'Chinese chess', accent: '#ad454b', icon: 'tokens/token-sanguo-red-general.webp' },
-  { id:'dominion',name:'Chaturanga',subtitle:'Four kingdoms. Roll, plan, conquer.',seats:['green','red','blue','yellow'],players:4,tag:'Chaturanga',accent:'#215888',icon:'dominion/green-frost-king.webp' },
+  { id:'dominion',name:'Chaturanga',subtitle:'Four kingdoms. Roll, plan, conquer.',seats:['green','red','blue','yellow'],players:4,tag:'Chaturanga',accent:'#215888',icon:'launch-v1/chaturanga-pieces/green-frost-king.webp' },
 ];
 export const game = (id) => GAME_LIST.find(item => item.id === id);
 export const seatName = (id, seat) => seat === 'black' ? 'Blue' : ({red:'Red',green:'Green',blue:'Blue',yellow:'Pink',han:'Han'})[seat] || seat;

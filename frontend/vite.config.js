@@ -55,7 +55,10 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      "react": path.resolve(CONFIG_DIR, "node_modules/react"),
+      "react-dom": path.resolve(CONFIG_DIR, "node_modules/react-dom"),
       "@": path.resolve(CONFIG_DIR, "src/games/heritage-arcade/ported")
-    }
+    },
+    dedupe: ["react", "react-dom"]
   }
 });

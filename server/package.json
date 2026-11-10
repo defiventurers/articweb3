@@ -28,8 +28,9 @@
     "test:xiangqi": "node --test tests/xiangqi-online.test.js tests/xiangqi-socket.test.js",
     "worker:passport": "node antarcticPassportWorker.js",
     "test:passport": "node --test tests/antarctic-passport.test.js",
-    "postinstall": "node scripts/build-game-wallet.cjs",
-    "test:co-tu-lenh": "node --test ../tests/co-tu-lenh-rules.test.mjs ../tests/co-tu-lenh-rules-v03.test.mjs ../tests/co-tu-lenh-carriers-v04.test.mjs ../tests/co-tu-lenh-client.test.mjs ../tests/co-tu-lenh-service.test.cjs ../tests/co-tu-lenh-service-v03.test.cjs ../tests/co-tu-lenh-service-v04.test.cjs ../tests/co-tu-lenh-youtuber.test.mjs ../tests/co-tu-lenh-youtuber-service.test.cjs ../tests/co-tu-lenh-socket.test.mjs"
+    "postinstall": "node scripts/build-game-wallet.cjs && node scripts/build-launch-web.cjs",
+    "test:co-tu-lenh": "node --test ../tests/co-tu-lenh-rules.test.mjs ../tests/co-tu-lenh-rules-v03.test.mjs ../tests/co-tu-lenh-carriers-v04.test.mjs ../tests/co-tu-lenh-client.test.mjs ../tests/co-tu-lenh-service.test.cjs ../tests/co-tu-lenh-service-v03.test.cjs ../tests/co-tu-lenh-service-v04.test.cjs ../tests/co-tu-lenh-youtuber.test.mjs ../tests/co-tu-lenh-youtuber-service.test.cjs ../tests/co-tu-lenh-socket.test.mjs",
+    "test:launch": "node --test tests/launch-fair-play.test.js tests/co-tu-lenh-fair-play.test.js tests/launch-metrics.test.js tests/antarctic-passport.test.js tests/para-game-wallet.test.js tests/chaturanga-long-dice.test.js"
   },
   "dependencies": {
     "dotenv": "latest",

@@ -1,5 +1,6 @@
 import React from 'react';
 import CoTuLenhApp from '../../../frontend/src/games/co-tu-lenh/CoTuLenhApp.jsx';
+import {cloudSnapshot} from './cloud.js';
 
 /**
  * Cờ Tư Lệnh — source-labelled modern Vietnamese game, Antarctic visual adaptation.
@@ -12,5 +13,6 @@ export function CoTuLenhMobile({onExit}) {
     assetBase="art/co-tu-lenh"
     wsEndpoint="wss://articweb3.onrender.com"
     inviteBaseUrl="https://arcticdominion.xyz/?game=co-tu-lenh"
+    onlineCredentials={()=>cloudSnapshot().session?.session}
   />;
 }

@@ -1,0 +1,8 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import solc from 'solc';
+const here=path.dirname(fileURLToPath(import.meta.url)),contracts=path.join(here,'contracts');
+export function compile(){const names=['AntarcticPassport.sol','AntarcticKeepsakes.sol','FairPlayRegistry.sol'];const input={language:'Solidity',sources:Object.fromEntries(names.map(n=>[n,{content:fs.readFileSync(path.join(contracts,n),'utf8')}])),settings:{optimizer:{enabled:true,runs:200},evmVersion:'paris',outputSelection:{'*':{'*':['abi','evm.bytecode.object','evm.deployedBytecode.object']}}}};const result=JSON.parse(solc.compile(JSON.stringify(input),{import:n=>{try{return{contents:fs.readFileSync(path.join(here,'node_modules',n),'utf8')};}catch{return{error:'Unknown import: '+n};}}}));const errors=(result.errors||[]).filter(e=>e.severity==='error');if(errors.length)throw Error(errors.map(e=>e.formattedMessage).join('\n'));const artifacts={};for(const n of names){const name=n.replace('.sol',''),c=result.contracts[n][name];artifacts[name]={contractName:name,compiler:solc.version(),sourceSha256:createHash('sha256').update(input.sources[n].content).digest('hex'),abi:c.abi,bytecode:'0x'+c.evm.bytecode.object,runtimeHash:createHash('sha256').update(Buffer.from(c.evm.deployedBytecode.object,'hex')).digest('hex')};}return artifacts;}
+if(process.argv[1]===fileURLToPath(import.meta.url)){const out=path.join(here,'artifacts');fs.mkdirSync(out,{recursive:true});for(const[n,a]of Object.entries(compile()))fs.writeFileSync(path.join(out,n+'.json'),JSON.stringify(a,null,2)+'\n');console.log('Compiled passport, keepsakes and funds-free proof registry.');}

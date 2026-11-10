@@ -4,7 +4,7 @@ const VISA_ABI=['function mintVisa(address recipient,bytes32 claimId) returns (u
 const ACHIEVEMENT_ABI=['function mintAchievement(address recipient,uint256 tokenId,bytes32 claimId)','function recipientForClaim(bytes32) view returns (address)','function tokenForClaim(bytes32) view returns (uint256)'];
 const ARRIVAL_ABI=['function mintArrival(address recipient,bytes32 claimId)','function recipientForClaim(bytes32) view returns (address)'];
 function workerConfig(env=process.env){
- const chainId=Number(env.AK_VISA_CHAIN_ID||11124);if(!require('./gameWalletChains.json')[chainId])throw Error('Unsupported visa chain.');
+ const chainId=Number(env.AK_VISA_CHAIN_ID||46630);if(!require('./gameWalletChains.json')[chainId])throw Error('Unsupported visa chain.');
  if(env.AK_VISA_DELIVERY_ENABLED!=='true')throw Error('NFT delivery is disabled.');
  if(!require('./gameWalletChains.json')[chainId].testnet&&env.AK_VISA_MAINNET_APPROVED!=='true')throw Error('Mainnet NFT delivery has not been approved.');
  for(const k of ['AK_VISA_RPC_URL','AK_VISA_MINTER_KEY','AK_VISA_CONTRACT','AK_ARRIVAL_CONTRACT'])if(!env[k])throw Error(k+' is required.');

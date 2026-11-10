@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "createdDate": "2026-11-11",
+  "purpose": "Mascot introduction portrait posts",
+  "visualDecision": "Only newest plush 3D identity references apply; supersedes earlier flat character references and all earlier social poster drafts.",
+  "entries": [
+    {
+      "name": "Nova",
+      "legacyId": "polly",
+      "reference": "upload/3.jpg",
+      "status": "DRAFT_FOR_REVIEW",
+      "file": "nova-introduction-v1.png",
+      "generator": "built-in imagegen",
+      "prompt": "Use case: ads-marketing. Create ONE finished 4:5 portrait Instagram introduction post for Antarctic Kingdoms, 1024x1280 requested. The provided reference image is the SOLE APPROVED VISUAL IDENTITY: NOVA, the pink plush 3D feathered penguin. Preserve the reference faithfully: soft pink plumage, white fluffy face and belly, broad round body, expressive large dark eyes with pale rims, soft lashes, warm friendly open smile, golden-yellow/orange beak and feet, beautiful swept pink feather hairstyle. Recreate THIS character with identical identity, head/body proportions and detailed feather texture, not an alternate penguin. No flat illustration, black contour style, costumes, extra mascot, logo or accessories on the body.\nArt direction: premium cinematic 3D family-animation-quality poster, airy icy-white/navy/gold editorial campaign, warm lantern in lower-left foreground, snow-covered Antarctic harbor and glowing welcoming hall in background, pale glacial arch, ice-blue soft light. Nova full body large at centre-right, friendly flipper welcoming the viewer, beside a small round wooden game table with brass trim at lower left and four simple white/gold round practice counters. The board is a decorative prop, not an exact rules diagram. Elegant navy serif text, fine gold frame, clean broad margins, restrained gold flourishes, sophisticated warm/cold lighting, no clutter.\nEXACT TEXT, legible, with no additional text:\nTop small tracked type: \"ANTARCTIC GAMING CO.\"\nLarge headline upper left: \"MEET NOVA\"\nRole below: \"YOUR FIRST-MOVE FRIEND\"\nBottom story label: \"TALES FROM LANTERN HARBOR\"\nBottom story: \"Nova keeps a warm place at every unfamiliar table. One small move. A little courage. A new beginning.\"\nFooter: \"Welcome • Practice • Begin again\"\nBottom corner small: \"ANTARCTIC KINGDOMS\"\nPreserve all the reference's character design and fluffy 3D rendering. No crypto/chain/NFT/readiness claims, websites, QR codes, watermark, social UI or mockup. Finished polished portrait poster."
+    },
+    {
+      "name": "Rocco",
+      "legacyId": "retsba",
+      "reference": "upload/4.jpg",
+      "status": "DRAFT_FOR_REVIEW",
+      "file": "rocco-introduction-v1.png",
+      "generator": "built-in imagegen",
+      "prompt": "Use case: ads-marketing. Create ONE finished 4:5 portrait Instagram poster (1024x1280 requested) for an Antarctic Kingdoms mascot introduction series. Reference image 1 is the SOLE APPROVED character identity; preserve it precisely, including detailed plush 3D feathers, head/body proportions, face, beak, eyes, feet, crest colours and hairstyle. Reference image 2 supplies the campaign layout and lighting ONLY; do not use its pink character.\nMatch the premium cinematic 3D white/navy/gold design of reference 2: elegant navy serif headline upper left, character full body large centre-right, fine gold frame/flourishes, snowy Antarctic harbor, warm glowing hall, ice-blue glacier arch, small brass-trimmed wooden game table lower left and warm gold lantern. Spacious clean margins, sophisticated soft lighting, legible words. No flat/vector rendering, costumes, unapproved characters, fake screenshots, chains, NFT badges, verification certification, external logos, URLs, QR, watermarks, social UI or release-readiness claims. Finished portrait poster, no mockup.\nCharacter: ROCCO, the approved plump bright-red feathered penguin, spiky swept red crest with long vivid yellow streaks, white fluffy face/belly, dark angled eyebrows, focused kind red-brown eyes, striking hooked orange beak with red upper edge/tip, orange feet and dark claws, feathered tail. These are identity requirements; no blue beak. Preserve red/yellow crest and broad round body. Rocco calmly considers a table with simple gold and white round counters and one subtle gold path arc, an artistic tactics prop rather than an exact game diagram.\nEXACT TEXT ONLY:\nTop: \"ANTARCTIC GAMING CO.\"\nHeadline: \"MEET ROCCO\"\nRole: \"YOUR TACTICS GUIDE\"\nStory label: \"TALES FROM LANTERN HARBOR\"\nBottom story: \"Rocco spots the reply hiding behind the obvious move. Look for opportunity. Then look again.\"\nFooter: \"Threats • Choices • Thoughtful play\"\nBottom corner: \"ANTARCTIC KINGDOMS\"\nNo weapons and no extra characters."
+    },
+    {
+      "name": "Piko",
+      "legacyId": "pengu",
+      "reference": "upload/2.jpg",
+      "status": "DRAFT_FOR_REVIEW",
+      "file": "piko-introduction-v1.png",
+      "generator": "built-in imagegen",
+      "prompt": "Use case: ads-marketing. Create ONE finished 4:5 portrait Instagram poster (1024x1280 requested) for an Antarctic Kingdoms mascot introduction series. Reference image 1 is the SOLE APPROVED character identity; preserve it precisely, including detailed plush 3D feathers, head/body proportions, face, beak, eyes, feet, crest colours and hairstyle. Reference image 2 supplies the campaign layout and lighting ONLY; do not use its pink character.\nMatch the premium cinematic 3D white/navy/gold design of reference 2: elegant navy serif headline upper left, character full body large centre-right, fine gold frame/flourishes, snowy Antarctic harbor, warm glowing hall, ice-blue glacier arch, small brass-trimmed wooden game table lower left and warm gold lantern. Spacious clean margins, sophisticated soft lighting, legible words. No flat/vector rendering, costumes, unapproved characters, fake screenshots, chains, NFT badges, verification certification, external logos, URLs, QR, watermarks, social UI or release-readiness claims. Finished portrait poster, no mockup.\nCharacter: PIKO, the approved navy/royal-blue feathered penguin, fluffy white face and belly, gentle blue-rimmed large eyes, small friendly closed smile, golden-yellow beak, swept blue head crest with bright white streak/tips, yellow-orange feet with dark claws. Preserve the full-body proportions, short soft feathers and calm poised identity. Piko stands by a game table with an elegant open field guide and a small route card, plain counters; no fake proof badges. These are illustrative story props, not exact rules diagrams.\nEXACT TEXT ONLY:\nTop: \"ANTARCTIC GAMING CO.\"\nHeadline: \"MEET PIKO\"\nRole: \"YOUR RULES & FAIR PLAY GUIDE\"\nStory label: \"TALES FROM LANTERN HARBOR\"\nBottom story: \"Piko carries the map when the board gets complicated. Follow the rules. Understand the record.\"\nFooter: \"Routes • Rules • Clear records\"\nBottom corner: \"ANTARCTIC KINGDOMS\"\nNo claim that any game or technology is already verified."
+    },
+    {
+      "name": "Ziggy",
+      "legacyId": "abster",
+      "reference": "upload/1.jpg",
+      "status": "DRAFT_FOR_REVIEW",
+      "file": "ziggy-introduction-v1.png",
+      "generator": "built-in imagegen",
+      "prompt": "Use case: ads-marketing. Create ONE finished 4:5 portrait Instagram poster (1024x1280 requested) for an Antarctic Kingdoms mascot introduction series. Reference image 1 is the SOLE APPROVED character identity; preserve it precisely, including detailed plush 3D feathers, head/body proportions, face, beak, eyes, feet, crest colours and hairstyle. Reference image 2 supplies the campaign layout and lighting ONLY; do not use its pink character.\nMatch the premium cinematic 3D white/navy/gold design of reference 2: elegant navy serif headline upper left, character full body large centre-right, fine gold frame/flourishes, snowy Antarctic harbor, warm glowing hall, ice-blue glacier arch, small brass-trimmed wooden game table lower left and warm gold lantern. Spacious clean margins, sophisticated soft lighting, legible words. No flat/vector rendering, costumes, unapproved characters, fake screenshots, chains, NFT badges, verification certification, external logos, URLs, QR, watermarks, social UI or release-readiness claims. Finished portrait poster, no mockup.\nCharacter: ZIGGY, the approved green plush feathered penguin, vivid green head/flippers/back, cream-white fluffy face/belly, large attentive green-rimmed eyes, delighted open smile with yellow-orange beak, yellow-orange feet with brown claws, spectacular swept/spiky plume of predominantly bright yellow feathers with orange and green streaks. Keep exactly this green/yellow/orange identity and round-body proportions. Ziggy stands delighted by a shallow sowing/puzzle tray with simple circular pits and gold and white pebbles on the table; native counters stay pebbles, never penguins. Decorative scene, no exact historical board claim.\nEXACT TEXT ONLY:\nTop: \"ANTARCTIC GAMING CO.\"\nHeadline: \"MEET ZIGGY\"\nRole: \"YOUR PUZZLE COMPANION\"\nStory label: \"TALES FROM LANTERN HARBOR\"\nBottom story: \"Ziggy finds possibilities in the smallest choices. Follow a circle. Try another path. Enjoy the discovery.\"\nFooter: \"Sow • Solve • Discover\"\nBottom corner: \"ANTARCTIC KINGDOMS\"\nNo brain-benefit claims or weapons."
+    }
+  ],
+  "notes": [
+    "Four obsolete flat posters were moved outside the project into scratch archive.",
+    "Latest user-corrected names and visual identities govern; legacy IDs retained only for code compatibility.",
+    "No external posting performed."
+  ]
+}

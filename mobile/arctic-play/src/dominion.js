@@ -7,7 +7,7 @@ import {DOMINION_TEAMS,teammates,teamGame} from './dominionTeams.js';
 
 export const PIECE_NAMES=rules.PIECE_NAME;
 export const DICE_ROLES=rules.DICE_ROLLS;
-export const pieceArt=(team,type)=>`dominion/${team==='yellow'?'pink':team}-${({king:'frost-king',horse:'aurora-unicorn',elephant:'war-mammoth',ship:'icebreaker',pawn:'snow-guard'})[type]}.webp`;
+export const pieceArt=(team,type)=>`launch-v1/chaturanga-pieces/${team==='yellow'?'pink':team}-${({king:'frost-king',horse:'aurora-unicorn',elephant:'war-mammoth',ship:'icebreaker',pawn:'snow-guard'})[type]}.webp`;
 const normalize=state=>{const {updatedAt,...position}=state;return {...position,turn:rules.currentTeam(state),selected:null,legalMoves:[]};};
 const finish=(before,next,extra={})=>normalize({...next,mobileTurnNumber:(before.mobileTurnNumber||0)+(rules.currentTeam(before)!==rules.currentTeam(next)?1:0),...extra});
 

@@ -8,7 +8,7 @@ const TEASERS={
   sanguo:{hook:'What happens to an army when its leader falls?',reveal:'In this edition, the surviving army changes command. Read the owner rings.',detail:'Three banners. One surprising change of command.'},
   sannin:{hook:'What is waiting in the centre of the garden?',reveal:'Three armies meet on a hexagonal board. A safe, unallied King has a special Garden route.',detail:'The third player changes every plan.'},
   yanyi:{hook:'Who will awaken the Yellow Lantern Court?',reveal:'A Horse can capture the Han Emperor, change command and reshape the alliances.',detail:'Three armies. A fourth force waiting for its moment.'},
-  dominion:{hook:'Which kingdom will the dice call next?',reveal:'Four clans share an ice arena. Choose one die, two dice or skip your turn.',detail:'Bring a partner for a two-against-two celebration.'}
+  dominion:{hook:'Which kingdom will the dice call next?',reveal:'Four clans share an ice arena. Roll both long dice or pass your turn.',detail:'Bring a partner for a two-against-two celebration.'}
 };
 function permanent(id,state){const a=model.access(id,state);return a.open&&a.reason!=='festival';}
 function nextMatch(id,state,seen=new Set()){

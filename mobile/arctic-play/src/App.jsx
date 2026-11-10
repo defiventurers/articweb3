@@ -1,5 +1,7 @@
 import {CompactGamePanel,CompactInfoPanel,CompactRoomPanel} from '../../../shared/compact-panels/CompactGamePanels.jsx';
 import {ShanshuiMobile} from './ShanshuiMobile.jsx';
+import {CulturalGames,GameIntroduction,InstallWebApp,useLaunchVisit} from './LaunchExperience.jsx';
+import {LaunchDashboard} from './LaunchDashboard.jsx';
 import {CoTuLenhMobile} from './CoTuLenhMobile.jsx';
 import {secureUuid} from './uuid.js';
 import {useGameAssetWarmup} from './gameAssets.js';
@@ -59,7 +61,7 @@ import {HALLS,HALL_ORDER,WORLD,GATHERING_KEY,STORY_SETTINGS_KEY,gatheringProgres
 
 const tabs=[['home','Home',Home],['friends','Friends',Users],['games','Games',Gamepad2],['chats','Chats',MessageCircle],['profile','Passport',PassportIcon]];
 const openingText=id=>`${seatName(id,game(id).seats[0])} ${id==='dominion'?'rolls':'moves'} first`;
-const Avatar=({color='blue',size=42,name='',online=false,gameId})=><span className="avatar" style={{width:size,height:size}}><img src={asset(gameId==='dominion'?`dominion/${color==='yellow'?'pink':color}-frost-king.webp`:`tokens/token-sanguo-${color==='black'?'blue':color}-general.webp`)} alt={name||'Player avatar'}/>{online&&<i/>}</span>;
+const Avatar=({color='blue',size=42,name='',online=false,gameId})=><span className="avatar" style={{width:size,height:size}}><img src={asset(gameId==='dominion'?`launch-v1/chaturanga-pieces/${color==='yellow'?'pink':color}-frost-king.webp`:`tokens/token-sanguo-${color==='black'?'blue':color}-general.webp`)} alt={name||'Player avatar'}/>{online&&<i/>}</span>;
 function DominionSetup({mode,onMode,seat,onSeat}){
   const alliance=teamFor(seat)||teamFor('red');
   const seats=mode==='2v2'?alliance.seats:game('dominion').seats;
@@ -86,6 +88,8 @@ function Sheet({title,onClose,children,wide=false,focusId}){
 }
 
 function App(){
+  useLaunchVisit();
+  const [introduction,setIntroduction]=useState(null);
   const assetStatus=useGameAssetWarmup();
   useEffect(startCloud,[]);
   useEffect(()=>{const update=()=>setJournal(read(JOURNAL_KEY,{}));window.addEventListener('arctic-cloud-progress',update);return()=>window.removeEventListener('arctic-cloud-progress',update);},[]);
@@ -238,6 +242,7 @@ function App(){
     return()=>{delete window.arcticBack;delete window.arcticJoin;};
   },[]);
   backRef.current=()=>{
+    if(introduction){setIntroduction(null);return;}
     if(update.required)return;
     const learningClose=[...document.querySelectorAll('[data-learning-dialog] button[aria-label="Close"]')].at(-1);
     if(learningClose){learningClose.click();return;}
@@ -392,6 +397,8 @@ function App(){
   const postcardInvitation=postcard?.withInvitation&&room&&room.tableId===postcard.gameId&&['waiting','playing'].includes(room.status)&&(!room.gameState||!result(room.gameState))?{code:room.roomCode,url:INVITE_ROOT+room.roomCode}:null;
   if(update.required)return <RequiredUpdate update={update} theme={theme} onTheme={toggleTheme}/>;
   if(!playAccess.owner&&(!visa.record||!playAccess.allowed||playAccess.consentNeeded))return <AntarcticVisaEntry assetStatus={assetStatus} access={playAccess} halls={hallAccess} visa={visa} onProfile={name=>{const next={...profile,name};setProfile(next);setNameDraft(name);write('profile',next);}}/>;
+  function launchPlay(gameId){setIntroduction(null);if(gameId==='co-tu-lenh')setScreen('co-tu-lenh');else if(gameId==='shanshui-xiangqi'){setShanshuiInvite('');setScreen('shanshui');}else pick(gameId);}
+  if(introduction)return <GameIntroduction key={introduction} id={introduction} quiet={companion.preferences.mode==='off'} onClose={()=>setIntroduction(null)} onProceed={()=>launchPlay(introduction)} onLearn={()=>{const target=introduction;setIntroduction(null);if(game(target))openLearning(target);else launchPlay(target);}}/>;
   if(screen==='shanshui')return <ShanshuiMobile initialCode={shanshuiInvite} access={playAccess} profile={profile} credentials={hallAccess.credentials} onExit={()=>{setScreen('lobby');setTab('games');}}/>;
   if(screen==='co-tu-lenh')return <CoTuLenhMobile onExit={()=>{setScreen('lobby');setTab('games');}}/>;
   const headerControls=<HeaderControls theme={theme} onTheme={toggleTheme} onUpdates={()=>setSheet('updates')} checking={update.checking}/>;
@@ -405,16 +412,13 @@ function App(){
           <div className="filter-row">{['All','2 players','3 players','4 players','Favorites'].map(item=><button className={filter===item?'active':''} key={item} onClick={()=>setFilter(item)}>{item==='Favorites'&&<Heart size={13}/>} {item}</button>)}</div>
 
           <JourneyBar onJourney={showJourney} access={hallAccess} onFormations={()=>formations()} onPass={()=>accessShop('all-halls-v1')}/>
-          <p className="games-chronology">7 halls · Oldest roots first</p>
-          <article className="ctl-catalogue-entry" aria-label="Cờ Tư Lệnh — Vietnamese Commander Chess"><img loading="lazy" src="art/co-tu-lenh/board/board-antarctic-11x12.webp" alt="Cờ Tư Lệnh Arctic board with 11 columns and 12 rows"/><div><small>VIETNAM · 2010 · MODERN STRATEGY GAME · RESEARCH DRAFT</small><h2>Cờ Tư Lệnh</h2><p>Command penguin explorers across icy land and sea. Play local, bots, guided practice, or server-validated private rooms. Choose versioned 2015/2024 rules and optional defence-range rings.</p><button className="primary" aria-label="Play Cờ Tư Lệnh" onClick={()=>setScreen('co-tu-lenh')}>Play Commander Chess</button></div></article>
-          <article className="shanshui-catalogue-entry"><img src="art/shanshui/starting-position-light.webp" alt="Four armies on the Mountain and River Chess board"/><div><small>NEW · CHINESE XIANGQI ADAPTATION</small><h2>Shanshui Xiangqi</h2><p>Four armies. One shared victory. Two-player teams, four-player 2v2, bots and guided practice.</p><button className="primary" aria-label="Play Shanshui Xiangqi" onClick={()=>{setShanshuiInvite('');setScreen('shanshui');}}>Play Shanshui Xiangqi</button></div></article>
-          <div className={'games-grid '+(storyOptions.enabled?'seven-halls-grid':'')}>{chronologicalGames(GAME_LIST).filter(g=>filter==='All'||filter==='Favorites'&&favorites.includes(g.id)||filter===`${g.players} players`).map(g=><HallCard key={g.id} definition={g} access={hallAccess.allowed(g.id)} favorite={favorites.includes(g.id)} onFavorite={toggleFavorite} onPlay={pick} onExplore={openHall} onLearn={gameId=>openLearning(gameId)} onQuickPlay={gameId=>run(()=>startPractice('bots',false,gameId,'red'))} story={storyOptions.enabled}/>)}</div>
-          {filter==='Favorites'&&!favorites.length&&<div className="empty"><Heart/><h3>Your favorites belong here</h3><p>Tap a heart on a game to keep it close.</p></div>}
+          <CulturalGames filter={filter} favorites={favorites} onFavorite={toggleFavorite} onIntroduce={setIntroduction} onPlay={launchPlay} onLearn={openLearning} access={hallAccess} progress={world.halls}/>
+          <InstallWebApp/>
         </>}
         {tab==='home'&&<HomeLanding onChaturanga={()=>pick('dominion')} onBrowse={()=>setTab('games')} onLearn={()=>setTab('games')} onJourney={()=>setTab('profile')} onStory={()=>setSheet('world-guide')} onJoin={()=>{setNameDraft(profile.name);setSheet('join-name');}} onContinue={homeContinue} continueLabel={continueLabel} roomCode={joinCode} onRoomCode={setJoinCode} story={storyOptions.enabled} discovery={<NextDiscovery access={hallAccess} target={discoveryTarget} onOpen={showJourney}/>}/>}
 
         {tab==='friends'&&<>
-          <div className="friend-intro archive-welcome celebration-friends"><img className="festival-friends-banner" src={CELEBRATION_ART.friends} alt="Friends are welcome at the festival table" width="1200" height="800" loading="lazy"/>{companion.preferences.mode!=='off'&&<img className="archive-guide-art" src="art/brand/hosts-director-v1/polly/wave.webp" alt="Nova welcomes your friends"/>}<p className="world-eyebrow">BRING SOMEONE TO THE TABLE</p><h2>The festival is better<br/>with a friend.</h2><p>Save a name on your phone, then invite your friend to a particular hall.</p></div>
+          <div className="friend-intro archive-welcome celebration-friends"><img className="festival-friends-banner" src={CELEBRATION_ART.friends} alt="Friends are welcome at the festival table" width="1200" height="800" loading="lazy"/>{companion.preferences.mode!=='off'&&<img className="archive-guide-art" src="art/launch-v1/hosts/polly.webp" alt="Nova welcomes your friends"/>}<p className="world-eyebrow">BRING SOMEONE TO THE TABLE</p><h2>The festival is better<br/>with a friend.</h2><p>Save a name on your phone, then invite your friend to a particular hall.</p></div>
           <button className="primary full" onClick={()=>setSheet('festival-invite')}><Users size={18}/> Create a hall invitation</button><form className="inline-form" onSubmit={e=>{e.preventDefault();if(!friendDraft.trim())return;const next=[...friends,{id:secureUuid(),name:friendDraft.trim().slice(0,24)}];setFriends(next);write('friends',next);setFriendDraft('');}}><input value={friendDraft} onChange={e=>setFriendDraft(e.target.value)} placeholder="Friend’s name" maxLength={24} aria-label="Friend’s name"/><button className="primary" type="submit"><Plus size={19}/>Add</button></form>
           {friends.map((f,index)=><div className="friend-row" key={f.id}><Avatar color={['blue','green','red'][index%3]}/><span><strong>{f.name}</strong><small>Saved on your phone</small></span><button className="pill blue-pill" onClick={()=>room?shareRoom():setSheet('festival-invite')}>Invite</button><button className="icon-btn" aria-label={`Remove ${f.name}`} onClick={()=>{const next=friends.filter(x=>x.id!==f.id);setFriends(next);write('friends',next);}}><X size={16}/></button></div>)}
           {!friends.length&&<p className="muted center">Add a name above to start your friends list.</p>}
@@ -563,4 +567,4 @@ class StartupBoundary extends React.Component {
   componentDidCatch(error){window.ArcticStartup?.fail(error);}
   render(){return this.state.failed?null:this.props.children;}
 }
-createRoot(document.getElementById('root')).render(<StartupBoundary><App/></StartupBoundary>);
+createRoot(document.getElementById('root')).render(<StartupBoundary>{new URLSearchParams(location.search).get('view')==='launch-dashboard'?<LaunchDashboard/>:<App/>}</StartupBoundary>);
