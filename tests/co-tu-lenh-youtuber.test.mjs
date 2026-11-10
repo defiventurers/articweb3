@@ -106,7 +106,7 @@ test('secret deployment uses terrain and home rows and waits for both confirmati
  s=confirmDeployment(s,'blue',500);assert.equal(s.phase,'playing');assert.equal(s.clock.deadline,900500);assert.equal(s.turn,'red');
 });
 test('bot selects legal actions and client/server agree through a real new-profile opening',()=>{
- let s=createInitialState();for(let i=0;i<12&&!isFinished(s);i++){const a=chooseBotMove(s,i%2?'easy':'medium');assert.ok(a);s=play(s,a);}assert.ok(s.ply>=12);
+ let s=createInitialState(),played=0;for(;played<12&&!isFinished(s);played++){const a=chooseBotMove(s,played%2?'easy':'medium');assert.ok(a);s=play(s,a);}assert.ok(played===12||isFinished(s),'Play twelve legal actions, or reach a valid terminal result earlier.');
 });
 
 test('automatic Commander mate is declared only after every legal escape is ruled out',()=>{

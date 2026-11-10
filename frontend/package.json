@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --mode testnet",
-    "dev:testnet": "vite --mode testnet",
-    "dev:mainnet": "vite --mode mainnet",
+    "dev": "npm run build:browser-app && vite --mode testnet",
+    "dev:testnet": "npm run build:browser-app && vite --mode testnet",
+    "dev:mainnet": "npm run build:browser-app && vite --mode mainnet",
     "check:testnet": "node scripts/check-env.mjs testnet",
     "check:mainnet": "node scripts/check-env.mjs mainnet",
     "build": "npm run build:testnet",
