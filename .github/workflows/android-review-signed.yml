@@ -38,11 +38,13 @@ jobs:
           else
             echo "ready=yes" >> "$GITHUB_OUTPUT"
           fi
-      - uses: android-actions/setup-android@v3
-        if: steps.signer.outputs.ready == 'yes'
       - name: Install Android API 36 SDK
         if: steps.signer.outputs.ready == 'yes'
-        run: sdkmanager --install 'platforms;android-36' 'build-tools;36.0.0'
+        shell: bash
+        run: |
+          command -v sdkmanager || { echo '::error::Android SDK command-line tools are missing'; exit 1; }
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager --install 'platforms;android-36' 'build-tools;36.0.0'
       - name: Install Android frontend dependencies
         if: steps.signer.outputs.ready == 'yes'
         run: npm ci --ignore-scripts --no-audit --no-fund
