@@ -4,6 +4,7 @@ import { applyAction, isFinished, canDeploy, applyDeployment, confirmDeployment,
 import { CoTuLenhClient, getSeat, newSeatToken, saveSeat, inviteUrl } from './onlineClient.js';
 import { PenguinHostPair, PenguinHost } from '../../components/PenguinHosts.jsx';
 import {FairPlayPanel} from '../../../../shared/fair-play/FairPlayPanel.jsx';
+import {RoyalResult} from '../shared/RoyalResult.jsx';
 import './coTuLenh.css';
 
 const menu=[{id:'local',label:'Pass & Play',description:'Two players on one device'},
@@ -24,6 +25,7 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
   const boardImage=`${assetBase}/board/board-antarctic-11x12.webp`;
   const [mode,setMode]=useState('bot');
   const [proofOpen,setProofOpen]=useState(false);
+  const [resultHidden,setResultHidden]=useState(false);
   const [difficulty,setDifficulty]=useState('medium');
   const [human,setHuman]=useState('red');
   const [victory,setVictory]=useState(DEFAULT_PROFILE);
@@ -50,6 +52,7 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
   const client=useRef(null);
   const activeRoomCode=useRef(null);
   const isOnline=mode==='online';
+  useEffect(()=>{if(!isFinished(state))setResultHidden(false);},[state.winner,state.draw,state.finished]);
   const arranging=started&&state.phase==='setup';
   const editorTeam=isOnline?online?.team:mode==='bot'?human:setupTeam;
   const blockedOnline=isOnline&&(!online||(arranging?online.room.status!=='setup'||state.setupReady[online.team]:online.room.status!=='playing'||state.turn!==online.team));
@@ -164,8 +167,12 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
   const activeHint=guide>=0?tutorialSteps[guide]:null;
   const stack=selectedPiece?atPoint(state,selectedPiece.x,selectedPiece.y).filter(p=>p.team===(arranging?editorTeam:state.turn)):[];
   const passengers=selectedPiece?cargoOf(state,selectedPiece.id):[];
+  const resultPieces=state.pieces.filter(p=>p.alive&&(state.draw||p.team===state.winner)).map(p=>({key:p.id,src:graphic(p),alt:`${p.team} ${TYPES[p.type].label}`}));
+  async function shareResult(){const title='Antarctic Kingdoms · Commander Chess',text=`Cờ Tư Lệnh · ${state.draw?'Draw':state.winner?state.winner.toUpperCase()+' victory':'Match complete'} · Antarctic Kingdoms`;if(window.Android?.shareText){window.Android.shareText(title,text);return;}if(navigator.share){await navigator.share({title,text});return;}if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);setNotice('Result copied to clipboard.');return;}throw Error('No sharing option is available.');}
   const choiceLabel=a=>({move:'Move to this intersection',capture:'Capture and occupy',fire:'Fire and stay here',embark:'Board '+(TYPES[state.pieces.find(p=>p.id===a.carrierId)?.type]?.label||'carrier'),load:'Pick up '+(TYPES[state.pieces.find(p=>p.id===a.passengerId)?.type]?.label||'passenger'),bomb:'Bomb and return',airdrop:'Drop '+(a.dropIds||[]).map(id=>TYPES[state.pieces.find(p=>p.id===id)?.type]?.label).join(', ')+' and return'})[a.kind]||a.kind;
   return <main className="ctl-app">
+    {started&&isFinished(state)&&!resultHidden&&<RoyalResult title="Cờ Tư Lệnh · Commander Chess" kind={state.draw?'draw':state.winner?'win':'ended'} winnerLabel={state.winner?state.winner.toUpperCase()+' COMMAND WINS':'Match complete'} reason={state.winReason?String(state.winReason).replaceAll('-',' '):state.draw?'The command teams finish level.':''} pieces={resultPieces} viewerWon={mode==='bot'?state.winner===human:null} onViewBoard={()=>setResultHidden(true)} onBack={()=>{setResultHidden(true);if(onExitToLibrary)onExitToLibrary();else setStarted(false);}} onPlayAgain={()=>{setResultHidden(true);if(isOnline)openOnline(true);else reset(mode);}} onRematch={isOnline?()=>{setResultHidden(true);openOnline(true);}:undefined} rematchLabel="New private table" onShare={shareResult}/>}
+
     <header className="ctl-heading">
       <button className="ctl-ghost" onClick={()=>onExitToLibrary?.()}>← All games</button>
       <div><span className="ctl-kicker">ANTARCTIC GAMING CO · VIETNAMESE STRATEGY</span><h1>Cờ Tư Lệnh <span>Operation Frozen Front</span></h1></div><PenguinHostPair gameId="co-tu-lenh" compact />
