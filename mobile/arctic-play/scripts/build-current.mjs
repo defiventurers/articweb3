@@ -27,7 +27,7 @@ await bundle(path.join(root,'shared/fair-play/VerifierPage.jsx'),path.join(desti
 const nodeModules=['games.ts','offlineLicense.js','presentation.js','updates.js','learning.js','adventures.js','minimalLearning.js','ownerAccess.js','sanyouCalibration.js','boardView.js','practiceBoard.js','soloPractice.js','curriculum.js','learningOrientation.js','courseActivities.js','companionJourney.js','firstJourney.js','chaturangaLongDice.js','walletPortfolio.js'];
 for(const source of nodeModules)await bundle(path.join(mobile,'src',source),path.join(mobile,'build',source.replace(/\.(ts|js)$/,'.cjs')),'node');
 await bundle(path.join(root,'frontend/src/games/shanshui-xiangqi/mobileAdapter.js'),path.join(mobile,'build/shanshui.cjs'),'node');
-const cssNames=['approved-shell','launch','v5102-ux'];
+const cssNames=['approved-shell','launch','v5102-ux','browser-preview'];
 const css=await Promise.all(cssNames.map(n=>fs.readFile(path.join(mobile,'src',n+'.css'),'utf8')));
 for(const n of ['shared/antarctic-visa/visa.css','shared/fair-play/fair-play.css','shared/compact-panels/compact-game-panels.css','frontend/src/games/shanshui-xiangqi/shanshui.css','frontend/src/games/co-tu-lenh/coTuLenh.css','frontend/src/games/shared/royal-result.css'])css.push(await fs.readFile(path.join(root,n),'utf8'));
 await fs.writeFile(path.join(destination,'app.css'),css.join('\n'));
