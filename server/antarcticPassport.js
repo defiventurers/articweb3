@@ -3,9 +3,24 @@ const {createPassportStore}=require('./antarcticPassportStore');
 const CHAINS=Object.fromEntries(Object.values(require('./gameWalletChains.json')).map(c=>[c.id,{name:c.name,explorer:c.blockExplorers.default.url,testnet:c.testnet}]));
 function createPassportRoutes({store=createPassportStore(),chainId=Number(process.env.AK_VISA_CHAIN_ID||11124),accountStore,deliveryEnabled=process.env.AK_VISA_DELIVERY_ENABLED==='true'}={}){
  if(!CHAINS[chainId])throw Error('Unsupported passport network.');
- function response(p){if(!p)return null;return {...p,network:CHAINS[p.chainId]?.name,deliveries:p.deliveries.map(d=>({...d,status:!deliveryEnabled&&d.status==='queued'?'awaiting_setup':d.status,...(/^0x[0-9a-f]{64}$/i.test(d.transactionHash||'')?{explorerUrl:CHAINS[p.chainId].explorer+'/tx/'+d.transactionHash}:{})}))};}
+ function response(p){if(!p)return null;return {...p,network:CHAINS[p.chainId]?.name,deliveries:p.deliveries.map(d=>{const id=d.chainId||p.chainId,chain=CHAINS[id];return {...d,chainId:id,status:!deliveryEnabled&&['queued','retry','sending'].includes(d.status)?'awaiting_setup':d.status,...(chain&&/^0x[0-9a-f]{64}$/i.test(d.transactionHash||'')?{explorerUrl:chain.explorer+'/tx/'+d.transactionHash}:{})};})};}
  async function syncAchievements(accountId){if(!accountStore||!store.configured||!store.enqueueAchievement)return;const account=await accountStore.get('account',accountId);for(const a of require('./antarcticAchievements').earnedAchievements(account))await store.enqueueAchievement(accountId,a);}
  async function route(ctx){const {path,method,authenticated,req,body,error,now}=ctx;
+  const metadata=/^\/passport\/metadata\/(\d+)\/([1-9]\d{0,30})\.json$/.exec(path);
+  if(metadata&&method==='GET'){
+   const id=Number(metadata[1]);if(!CHAINS[id]||!store.confirmedToken)throw error('Passport metadata is unavailable.',404);
+   const record=await store.confirmedToken(id,metadata[2]);if(!record)throw error('This passport has no confirmed delivery yet.',404);
+   const account=accountStore?await accountStore.get('account',record.account_id):null;
+   const earned=require('./antarcticAchievements').earnedAchievements(account);
+   return {name:'Antarctic Passport #'+metadata[2],description:'An account-bound Antarctic Kingdoms passport with mutable game-achievement metadata. '+(CHAINS[id].testnet?'Testnet collectible. No real-world value.':'Game collectible.'),image:'https://articweb3.onrender.com/arctic-play/app/art/passport-book-v2/company-passport-cover.webp',external_url:'https://articweb3.onrender.com/arctic-play/app/',attributes:[{trait_type:'Network',value:CHAINS[id].name},{trait_type:'Arrival',value:new Date(Number(record.created_at)).toISOString()},...earned.map(a=>({trait_type:a.title,value:'Earned'}))],properties:{chainId:id,metadata:'mutable',achievementAuthority:'server-validated game results',personalData:'excluded'}};
+  }
+  const keepsake=/^\/passport\/achievement-metadata\/(\d+)\/([0-9a-f]{1,64})\.json$/i.exec(path);
+  if(keepsake&&method==='GET'){
+   const id=Number(keepsake[1]);if(!CHAINS[id])throw error('Unknown network.',404);
+   const token=BigInt('0x'+keepsake[2]),achievement=require('./antarcticAchievements').ACHIEVEMENTS.find(a=>BigInt(a.tokenId)===token);
+   if(token!==1n&&!achievement)throw error('Unknown achievement.',404);
+   return {name:achievement?.title||'Antarctic Arrival',description:'An Antarctic Kingdoms game keepsake. '+(CHAINS[id].testnet?'Testnet collectible. No real-world value.':'Game collectible.'),image:'https://articweb3.onrender.com/arctic-play/app/art/passport-book-v2/company-passport-cover.webp',attributes:[{trait_type:'Network',value:CHAINS[id].name},{trait_type:'Award',value:achievement?.code||'arrival'}],properties:{chainId:id,personalData:'excluded'}};
+  }
   if(path==='/passport/config'&&method==='GET')return {version:1,registration:store.configured,deliveryEnabled,chainId,network:CHAINS[chainId].name,visa:'soulbound',arrival:'transferable'};
   if(path==='/passport/achievements/sync'&&method==='POST'){const id=await authenticated(req,a=>a.id);await syncAchievements(id);return {passport:response(await store.get(id))};}
   if(path==='/passport'&&method==='GET'){const identity=await authenticated(req,a=>({accountId:a.id,displayName:a.identity?.displayName||'',provider:a.identity?.provider||'recovery',wallet:a.gameWallet||a.privyWallet||null}));await syncAchievements(identity.accountId);return {identity,passport:response(await store.get(identity.accountId))};}
@@ -15,10 +30,18 @@ function createPassportRoutes({store=createPassportStore(),chainId=Number(proces
    if(!['antarctic-visa-v1','antarctic-visa-v2'].includes(b.consentVersion)||typeof b.souvenir!=='boolean')throw error('Review your passport and confirm the NFT delivery address.');
    const accountId=await authenticated(req,a=>a.id);
    const selectedChain=b.walletMode==='embedded'&&actor.wallet?.provider==='para'?actor.wallet.chainId:chainId;if(!CHAINS[selectedChain])throw error('This wallet network is not supported.');
+   const existing=await store.get(accountId);if(existing&&existing.chainId!==selectedChain)throw error('This account has a passport on another network. A reviewed migration is required.',409);
    const p=await store.register(accountId,{playerName:name,wallet,chainId:selectedChain,souvenir:b.souvenir,consentVersion:b.consentVersion,walletProvider:b.walletMode==='embedded'?actor.wallet?.provider:b.walletMode==='privy'?'privy':'external',achievementOptIn:b.consentVersion==='antarctic-visa-v2'&&b.achievementOptIn===true},now());await syncAchievements(accountId);return {passport:response(await store.get(accountId)||p)};
   }
  }
- async function walletInventory(accountId){const p=await store.get(accountId);if(!p)return [];const contract=(key)=>process.env[key+'_'+p.chainId]||(p.chainId===chainId?process.env[key]:null);const addresses={visa:contract('AK_VISA_CONTRACT'),arrival:contract('AK_ARRIVAL_CONTRACT'),achievement:contract('AK_ACHIEVEMENT_CONTRACT')};return p.deliveries.filter(d=>d.status==='confirmed'&&/^\d+$/.test(d.tokenId||'')&&/^0x[0-9a-fA-F]{40}$/.test(addresses[d.kind]||'')).map(d=>({title:d.title||(d.kind==='visa'?'Antarctic Visa':'Arrival collectible'),contract:getAddress(addresses[d.kind]),tokenId:d.tokenId,chainId:d.chainId||p.chainId,network:CHAINS[d.chainId||p.chainId]?.name,standard:d.kind==='visa'?'ERC721':'ERC1155',transferable:d.kind!=='visa',wallet:p.wallet}));}
+ async function walletInventory(accountId){
+  const p=await store.get(accountId);if(!p)return [];
+  const keys={visa:'AK_VISA_CONTRACT',arrival:'AK_ARRIVAL_CONTRACT',achievement:'AK_ACHIEVEMENT_CONTRACT'};
+  return p.deliveries.flatMap(d=>{const id=d.chainId||p.chainId,key=keys[d.kind],address=key&&(process.env[key+'_'+id]||(id===chainId?process.env[key]:null));
+   if(id!==p.chainId||!CHAINS[id]||d.status!=='confirmed'||!/^\d+$/.test(d.tokenId||'')||!/^0x[0-9a-fA-F]{40}$/.test(address||'')||/^0x0{40}$/i.test(address))return [];
+   return [{title:d.title||(d.kind==='visa'?'Antarctic Passport':'Arrival collectible'),contract:getAddress(address),tokenId:d.tokenId,chainId:id,network:CHAINS[id].name,standard:d.kind==='visa'?'ERC721':'ERC1155',transferable:d.kind!=='visa',wallet:p.wallet}];
+  });
+ }
  return {route,syncAchievements,walletInventory,close:()=>store.close()};
 }
 module.exports={createPassportRoutes,CHAINS};

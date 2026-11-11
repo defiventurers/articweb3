@@ -1,0 +1,10 @@
+{
+  "status": "hold",
+  "code": "RULES_ARTIFACT_MISMATCH",
+  "message": "Independent verification is paused: this release needs its matching published rules build. Keep your proof. Verified moves, dice and onchain recording are not established by this check.",
+  "reviewedSourceCommit": "7c0cdd74f2bb4e75bf2ff38021f287273f314503",
+  "rulesHash": "63845f4daef97f9721ccecd9cb3c7ef363842835a2566f8f48c7e515863cd952",
+  "expectedEngineHash": "dab5b2df6d25e3c9572e93a0216b7d6d355493688983a959397bc40e2dad239b",
+  "reviewedEngineHash": "eced69cddead21aab99e18e22b43c7b52fe37d3688d00f6b78f542cf220f6269",
+  "activationRequirement": "Restore the original rules artifacts or publish and test a separately versioned exact rules adapter. Updating this status alone does not establish readiness."
+}

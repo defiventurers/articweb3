@@ -119,8 +119,12 @@ export async function verifyBundle(bundle,{engine,rulesHash,trustedKeys=[],verif
   const signer=await keyId(header.serverPublicKey), trusted=await Promise.all(trustedKeys.map(keyId));
   if(!trusted.includes(signer)) fail('Unknown match-service signing key.');
   if(!Array.isArray(header.actors) || header.actors.some(a=>!engine.game(header.gameId)?.seats.includes(a.seat)||!['human','bot'].includes(a.kind)) || header.actors.length!==engine.game(header.gameId)?.players || new Set(header.actors.map(a=>a.id)).size!==header.actors.length || new Set(header.actors.map(a=>a.seat)).size!==header.actors.length) fail('The player list is inconsistent.');
-  if(await stateHash(header.initialState)!==header.initialStateHash || await stateHash(engine.create(header.gameId,header.options))!==header.initialStateHash) fail('The starting board does not match the published rules.');
-  let state=copy(header.initialState), previous=headerHash, rolls=0;
+  const initialState=engine.create(header.gameId,header.options);
+  if(await stateHash(header.initialState)!==header.initialStateHash || await stateHash(initialState)!==header.initialStateHash) fail('The starting board does not match the published rules.');
+  // Canonical JSON is the signing format, not the engine's execution format.
+  // Some historical engines serialize nested keys into repetition identities.
+  // Recreate their validated initial state instead of feeding them sorted JSON.
+  let state=initialState, previous=headerHash, rolls=0;
   const prefix={header:copy(header),headerHash,events:[]}, timeline=[];
   for(let n=0;n<bundle.events.length;n++) {
     const event=bundle.events[n], {hash,receipt,...body}=event, intent=event.signed?.intent;

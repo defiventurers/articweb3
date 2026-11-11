@@ -18,7 +18,7 @@ const publicPlayer = p => ({id:p.id,name:p.name,seat:p.seat,ready:p.ready,bot:!!
 function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},loadSavedRoom=async()=>null,companyOptions,accessOptions={},requireLogin=true}) {
   const subscriptions = new Map(), bots = new Map(), writes = new Map(), rates = new WeakMap(), processing = new Set();
   const workers=createArcticPlayWorkerPool();
-  const company=require('./companyService').createCompanyService(companyOptions);
+  const company=require('./companyService').createCompanyService({...companyOptions,launchOptions:{rooms,...companyOptions?.launchOptions}});
   const access=require('./companyAccess').createAccessService({store:company.store,withAccount:company.withAccountSession,onVerifiedProgress:company.syncPassportAchievements,...accessOptions});
   const settling=new Set();
   const proofParts=new WeakMap();

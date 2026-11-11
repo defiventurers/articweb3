@@ -1,0 +1,33 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {inspectRulesIntegrity} from './check-rules-integrity.mjs';
+
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+test('historical engine and source drift fail the read-only integrity gate',async t=>{
+  const root=await fs.mkdtemp(path.join(os.tmpdir(),'ak-proof-integrity-'));
+  t.after(()=>fs.rm(root,{recursive:true,force:true}));
+  await fs.mkdir(path.join(root,'server'));
+  await fs.writeFile(path.join(root,'server/engine.cjs'),'original engine');
+  await fs.writeFile(path.join(root,'rules.js'),'original source');
+  const source=[{path:'rules.js',sha256:hash('original source')}];
+  const manifest={protocol:'ak-fair-play-v1',rulesHash:hash(JSON.stringify(source)),engineHash:hash('original engine'),source};
+  const options={root,manifest,enginePath:'server/engine.cjs'};
+  assert.equal((await inspectRulesIntegrity(options)).ok,true);
+  await fs.writeFile(path.join(root,'server/engine.cjs'),'unreviewed engine');
+  let result=await inspectRulesIntegrity(options);
+  assert.equal(result.ok,false);assert.deepEqual(result.mismatches.map(x=>x.kind),['engine']);
+  await fs.writeFile(path.join(root,'rules.js'),'changed source');
+  result=await inspectRulesIntegrity(options);
+  assert.deepEqual(result.mismatches.map(x=>x.kind),['engine','source']);
+  assert.equal(await fs.readFile(path.join(root,'server/engine.cjs'),'utf8'),'unreviewed engine');
+  assert.equal(manifest.engineHash,hash('original engine'),'inspection must not repin trusted inputs');
+  const modified={...manifest,rulesHash:'0'.repeat(64)};
+  assert.equal((await inspectRulesIntegrity({...options,manifest:modified})).mismatches[0].kind,'manifest');
+  await fs.unlink(path.join(root,'rules.js'));
+  assert.equal((await inspectRulesIntegrity(options)).mismatches[1].kind,'source-missing');
+  await assert.rejects(inspectRulesIntegrity({...options,manifest:{...manifest,source:[{path:'../outside'}]}}),/leaves the checkout/);
+});
