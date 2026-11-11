@@ -2,6 +2,7 @@ import {CompactGamePanel,CompactInfoPanel,CompactRoomPanel} from '../../../share
 import {ShanshuiMobile} from './ShanshuiMobile.jsx';
 import {CulturalGames,GameIntroduction,InstallWebApp,useLaunchVisit} from './LaunchExperience.jsx';
 import {StoryAdventureGallery,AllGamesGallery} from './GamesViews.jsx';
+import {PublicKingdomPreview} from './PublicKingdomPreview.jsx';
 import {VictoryCelebration} from './VictoryCelebration.jsx';
 import {PhysicalCollection} from './PhysicalCollection.jsx';
 import {LaunchDashboard} from './LaunchDashboard.jsx';
@@ -93,6 +94,9 @@ function Sheet({title,onClose,children,wide=false,focusId}){
 function App(){
   useLaunchVisit();
   const [introduction,setIntroduction]=useState(null);
+  const [publicPreview,setPublicPreview]=useState(()=>!window.Android&&new URLSearchParams(location.search).get('preview')==='1');
+  const enterPublicPreview=()=>{if(window.Android)return;const url=new URL(location.href);url.searchParams.set('preview','1');history.replaceState(null,'',url.pathname+url.search+url.hash);setPublicPreview(true);};
+  const exitPublicPreview=()=>{const url=new URL(location.href);url.searchParams.delete('preview');history.replaceState(null,'',url.pathname+url.search+url.hash);setPublicPreview(false);};
   const assetStatus=useGameAssetWarmup();
   useEffect(startCloud,[]);
   useEffect(()=>{const update=()=>setJournal(read(JOURNAL_KEY,{}));window.addEventListener('arctic-cloud-progress',update);return()=>window.removeEventListener('arctic-cloud-progress',update);},[]);
@@ -400,8 +404,9 @@ function App(){
   const inviteStatus=connection==='online'?'Connected':connection==='connecting'?'Connecting…':'Reconnecting…';
 
   const postcardInvitation=postcard?.withInvitation&&room&&room.tableId===postcard.gameId&&['waiting','playing'].includes(room.status)&&(!room.gameState||!result(room.gameState))?{code:room.roomCode,url:INVITE_ROOT+room.roomCode}:null;
+  if(!window.Android&&publicPreview)return <PublicKingdomPreview onSignIn={exitPublicPreview}/>;
   if(update.required)return <RequiredUpdate update={update} theme={theme} onTheme={toggleTheme}/>;
-  if(!playAccess.owner&&(!visa.record||!playAccess.allowed||playAccess.consentNeeded))return <AntarcticVisaEntry assetStatus={assetStatus} access={playAccess} halls={hallAccess} visa={visa} onProfile={name=>{const next={...profile,name};setProfile(next);setNameDraft(name);write('profile',next);}}/>;
+  if(!playAccess.owner&&(!visa.record||!playAccess.allowed||playAccess.consentNeeded))return <AntarcticVisaEntry assetStatus={assetStatus} access={playAccess} halls={hallAccess} visa={visa} onPreview={enterPublicPreview} onProfile={name=>{const next={...profile,name};setProfile(next);setNameDraft(name);write('profile',next);}}/>;
   function launchPlay(gameId){setIntroduction(null);if(gameId==='co-tu-lenh')setScreen('co-tu-lenh');else if(gameId==='shanshui-xiangqi'){setShanshuiInvite('');setScreen('shanshui');}else pick(gameId);}
   if(introduction)return <GameIntroduction key={introduction} id={introduction} quiet={companion.preferences.mode==='off'} onClose={()=>setIntroduction(null)} onProceed={()=>launchPlay(introduction)} onLearn={()=>{const target=introduction;setIntroduction(null);if(game(target))openLearning(target);else launchPlay(target);}}/>;
   if(screen==='shanshui')return <ShanshuiMobile initialCode={shanshuiInvite} access={playAccess} profile={profile} credentials={hallAccess.credentials} onExit={()=>{setScreen('lobby');setTab('games');}}/>;
