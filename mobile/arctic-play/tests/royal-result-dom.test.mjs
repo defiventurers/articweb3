@@ -26,7 +26,7 @@ test('Royal result mounts all winning sprites, exposes accessible actions and ho
  dom.window.eval(js);
  const counts={back:0,replay:0,board:0,rematch:0,share:0};
  const images=Array.from({length:28},(_,i)=>({key:'p'+i,src:'art/shanshui/pieces/'+i+'.webp',alt:'Winning piece '+i}));
- const p={title:'Shanshui Xiangqi',kind:'win',winnerLabel:'Blue + Green triumphs',reason:'Both opposing armies defeated',pieces:images,viewerWon:true,
+ const p={title:'Shanshui Xiangqi',kind:'win',winnerLabel:'Blue + Green triumphs',reason:'Both opposing armies defeated',pieces:images,viewerWon:true,rematchLabel:'New private table',
   onBack:()=>counts.back++,onPlayAgain:()=>counts.replay++,onViewBoard:()=>counts.board++,onRematch:()=>counts.rematch++,onShare:()=>counts.share++};
  dom.window.renderRoyalOutcome(p);
  const doc=dom.window.document;
