@@ -20,7 +20,7 @@ const steps=[
 // Immutable board geometry taken from the user-approved 11-by-12 coordinate master.
 const W=1199,H=1312,X=148,Y=183,STEP_X=90.4,STEP_Y=900/11;
 const labelFor=p=>p?`${p.team.toUpperCase()} ${TYPES[p.type].label}${p.hero?' ★ Hero':''}`:'';
-export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-lenh', wsEndpoint=null, inviteBaseUrl=null,onlineCredentials}) {
+export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-lenh', wsEndpoint=null, inviteBaseUrl=null,onlineCredentials,allowOnline=true}) {
   const graphic=p=>`${assetBase}/pieces/${p.team}-${p.type}.webp`;
   const boardImage=`${assetBase}/board/board-antarctic-11x12.webp`;
   const [mode,setMode]=useState('bot');
@@ -181,7 +181,7 @@ export default function CoTuLenhApp({onExitToLibrary, assetBase='/assets/co-tu-l
     <p className="ctl-disclaimer"><strong>YouTuber Rules · video reviewed · Research Draft.</strong> Modern Vietnamese game (2010). The video’s corrected 38-piece setup and ford locations are included in the new profile. Some advanced transport and combat ordering need clarification. The four earlier profiles remain selectable. Antarctic artwork is a fantasy visual adaptation. Free play · no wallet required.</p>
     {!started&&<section className="ctl-setup" aria-label="Game setup"><CompactMenu kind="ctl" about={<p className="ctl-disclaimer"><strong>YouTuber Rules · video reviewed · Research Draft.</strong> Modern Vietnamese game (2010). The video’s corrected 38-piece setup and ford locations are included in the new profile. Some advanced transport and combat ordering need clarification. The four earlier profiles remain selectable. Antarctic artwork is a fantasy visual adaptation. Free play · no wallet required.</p>}>
       <h2>Choose your command</h2>
-      <div className="ctl-choices">{menu.map(m=><button key={m.id} className={mode===m.id?'active':''} onClick={()=>setMode(m.id)}><b>{m.label}</b><small>{m.description}</small></button>)}</div>
+      <div className="ctl-choices">{menu.filter(m=>allowOnline||m.id!=='online').map(m=><button key={m.id} className={mode===m.id?'active':''} onClick={()=>setMode(m.id)}><b>{m.label}</b><small>{m.description}</small></button>)}</div>
       <div className="ctl-prefs"><label>Rules profile<select value={victory} onChange={e=>setVictory(e.target.value)}>{Object.values(RULE_PROFILES).map(profile=><option key={profile.id} value={profile.id}>{profile.label}</option>)}</select></label>
         {['bot','online'].includes(mode)&&<><label>Your team<select value={human} onChange={e=>setHuman(e.target.value)}><option value="red">Red · First move</option><option value="blue">Blue · Second move</option></select></label>{mode==='bot'&&<label>Bot difficulty<select value={difficulty} onChange={e=>setDifficulty(e.target.value)}><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard (2-ply heuristic)</option></select></label>}</>}
         {RULE_PROFILES[victory]?.videoRules&&<><label>Army deployment<select value={deployment} onChange={e=>setDeployment(e.target.value)}><option value="standard">Video starting positions</option><option value="secret">Secret deployment · advanced</option></select></label><label>Match clock<select value={timeLimit} onChange={e=>setTimeLimit(Number(e.target.value))}><option value={0}>Untimed</option><option value={10}>10 minutes · whole match</option><option value={15}>15 minutes · whole match</option></select></label></>}

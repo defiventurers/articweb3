@@ -20,7 +20,7 @@ test('Native UUID support is retained and missing secure entropy never falls bac
  assert.throws(()=>secureUuid({}),/Secure random numbers/);
 });
 
-async function packagedApp(t,{saved=false,missingScript=false,noEntropy=false,nativeUuid=false,legacy=false,ownerSession=false}={}){
+async function packagedApp(t,{saved=false,missingScript=false,noEntropy=false,nativeUuid=false,legacy=false,ownerSession=false,preview=false}={}){
  const requested=[],network=[],errors=[];
  const localAssets=requestInterceptor(request=>{
    const url=request.url;
@@ -32,7 +32,7 @@ async function packagedApp(t,{saved=false,missingScript=false,noEntropy=false,na
  });
  const virtual=new VirtualConsole();virtual.on('jsdomError',e=>errors.push(e));
  const profile={id:'75fd76d1-c16d-460b-a3a7-ce94ae7d50fb',name:'Saved Player',avatar:'green'},practice={fixture:'saved practice must remain unchanged'};
- const dom=new JSDOM(html(),{url:'https://appassets.androidplatform.net/assets/index.html',resources:{interceptors:[localAssets]},runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:virtual,beforeParse(w){
+ const dom=new JSDOM(html(),{url:'https://appassets.androidplatform.net/assets/index.html'+(preview?'?preview=1':''),resources:{interceptors:[localAssets]},runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:virtual,beforeParse(w){
   Object.defineProperty(w.crypto,'randomUUID',{value:undefined,configurable:true});
   if(noEntropy)Object.defineProperty(w.crypto,'getRandomValues',{value:undefined,configurable:true});
   if(nativeUuid)w.Android={newUuid:()=>webcrypto.randomUUID(),setDarkTheme(){}};
@@ -87,4 +87,32 @@ test('An owner-only restored session with absent entitlement cache reaches login
  assert.deepEqual(JSON.parse(w.localStorage.getItem('arctic-play.v1.practice.sanyou')),practice);
  assert.equal(w.localStorage.getItem('arctic-play.v1.cloud-entitlements'),null);
  assert.deepEqual(errors,[]);
+});
+
+test('Browser preview opens past Lantern Harbor without waiting for account service, preserves no-login limits',async t=>{
+ const {w,doc,errors}=await packagedApp(t,{preview:true});
+ await waitFor(()=>doc.querySelector('[data-testid="public-kingdom-preview"]'));
+ await waitFor(()=>doc.querySelector('#startup-panel').hidden);
+ const views=doc.querySelector('[data-testid="guest-games-view-tabs"]');
+ assert.deepEqual([...views.querySelectorAll('button')].map(b=>b.textContent),['Story Adventure','All Games','Halls']);
+ assert.equal(views.querySelector('button[aria-pressed=true]').textContent,'Story Adventure');
+ assert.ok(doc.querySelector('[data-testid="story-adventure-gallery"]'));
+ [...views.querySelectorAll('button')].find(b=>b.textContent==='All Games').click();
+ await waitFor(()=>doc.querySelectorAll('.all-game-tile').length===9);
+ [...views.querySelectorAll('button')].find(b=>b.textContent==='Halls').click();
+ await waitFor(()=>doc.querySelector('.cultural-games'));
+ assert.match(doc.querySelector('.cultural-hall-heading').textContent,/Explore at your own pace/);
+ assert.equal(doc.querySelector('.home-landing'),null,'Guest mode must not enter the authenticated app shell');
+ assert.equal(w.localStorage.getItem('arctic-play.v1.cloud-session'),null,'Preview must not create a session');
+ assert.equal(doc.querySelector('#startup-panel').getAttribute('data-startup-state'),'ready');
+ assert.deepEqual(errors,[]);
+});
+test('Ordinary unsigned browser entry still presents secure sign-in, not a guest-account grant',async t=>{
+ const {doc}=await packagedApp(t);
+ await waitFor(()=>doc.querySelector('[data-testid=antarctic-visa]'));
+ assert.equal(doc.querySelector('[data-testid=public-kingdom-preview]'),null);
+ const guest=[...doc.querySelectorAll('button')].find(b=>b.textContent.includes('Explore Story Adventure without signing in'));
+ assert.ok(guest,'Guest preview option must remain accessible even during server warmup');
+ guest.click();
+ await waitFor(()=>doc.querySelector('[data-testid=public-kingdom-preview]'));
 });

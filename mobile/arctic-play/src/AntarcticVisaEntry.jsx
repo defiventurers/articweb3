@@ -14,7 +14,7 @@ export function useVisaPassport(access){
  return {record,checking,error,setRecord:p=>{write(key,p);setRecord(p);}};
 }
 
-export function AntarcticVisaEntry({access,halls,visa,onProfile,assetStatus}){
+export function AntarcticVisaEntry({access,halls,visa,onProfile,onPreview,assetStatus}){
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[retry,setRetry]=useState(0),[recover,setRecover]=useState(false);
  const issuing=useRef(false);
  useEffect(()=>{const failed=e=>setError(e.detail?.message||'Sign-in did not finish. Try again.');window.addEventListener('arctic-auth-error',failed);return()=>window.removeEventListener('arctic-auth-error',failed);},[]);
@@ -28,10 +28,10 @@ export function AntarcticVisaEntry({access,halls,visa,onProfile,assetStatus}){
   }catch(e){if(live)setError(e.message);}finally{issuing.current=false;if(live)setBusy(false);}})();return()=>{live=false;};
  },[access.accountId,visa.checking,visa.record?.id,retry]);
  async function signIn(){if(busy)return;setBusy(true);setError('');try{await startParaSignIn();}catch(e){setError(e.message);}finally{setBusy(false);}}
- if(recover&&!access.accountId)return <AccountEntry compact access={access} halls={halls} forceSignIn initialMode="recover" onClose={()=>setRecover(false)}/>;
- if(visa.record&&(!access.allowed||access.consentNeeded))return <AccountEntry compact access={access} halls={halls}/>;
+ if(recover&&!access.accountId)return <AccountEntry compact access={access} halls={halls} forceSignIn initialMode="recover" onClose={()=>setRecover(false)} onPreview={onPreview}/>;
+ if(visa.record&&(!access.allowed||access.consentNeeded))return <AccountEntry compact access={access} halls={halls} onPreview={onPreview}/>;
  const progress=assetStatus?.total?assetStatus.pending===0?(assetStatus.failed?'Artwork will retry automatically.':'Games ready'):`Loading games in the background · ${Math.floor(assetStatus.percent/10)*10}%`:'Preparing games in the background…';
- return <VisaLandingView accountId={access.accountId} busy={busy} error={error} progress={progress} onSignIn={signIn} onRecover={()=>setRecover(true)} onRetry={()=>setRetry(v=>v+1)} onSignOut={signOutCloud}/>;
+ return <VisaLandingView accountId={access.accountId} busy={busy} error={error} progress={progress} onPreview={onPreview} onSignIn={signIn} onRecover={()=>setRecover(true)} onRetry={()=>setRetry(v=>v+1)} onSignOut={signOutCloud}/>;
 }
 
 export function VisaPassportSummary({visa}){
