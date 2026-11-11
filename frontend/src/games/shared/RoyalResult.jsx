@@ -39,7 +39,7 @@ export function RoyalResult({title,kind='win',winnerLabel='',reason='',pieces=[]
    <h1>{headline}</h1>
    <h2>{isDraw?'An honourable encounter':winnerLabel}</h2>
    <p className="ak-royal-game">{title}</p>
-   <div className="ak-royal-army" aria-label={isDraw?'Celebratory game pieces':'Surviving pieces of the victorious army'}>
+   <div className={"ak-royal-army "+(pieces.length>18?"crowded":"")} aria-label={isDraw?'Celebratory game pieces':'Surviving pieces of the victorious army'}>
     <div className="ak-royal-aurora" aria-hidden="true"/>
     <p className="ak-royal-skyline" aria-hidden="true">✦ ❄ ✧ ❄ ✦</p>
     {pieces.length ? pieces.map((p,i)=><img className="ak-royal-unit" key={p.key||i} src={p.src} alt={p.alt||'Surviving game piece'} loading={i>16?'lazy':'eager'} style={{'--ak-delay':(i%12)*.09+'s'}}/>):<span className="ak-royal-no-pieces">A match to remember</span>}
