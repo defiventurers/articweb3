@@ -111,6 +111,9 @@ with zipfile.ZipFile(sys.argv[1]) as z:
   const baselineMetadata = JSON.parse(await fs.readFile(path.join(staging,'app-version.json')));
   metadata.version = version; metadata.versionCode = versionCode;
   metadata.capabilities = [...new Set([...(baselineMetadata.capabilities||[]),...(metadata.capabilities||[]),'incremental-web-pwa-v1'])];
+  if (app.includes('heritage-intro')) metadata.capabilities.push('heritage-intros-v1','cultural-halls-v1');
+  if (app.includes('art/chaturanga-final-four/pawns/')) metadata.capabilities.push('chaturanga-final-four-pawns-v1');
+  metadata.capabilities = [...new Set(metadata.capabilities)];
   await fs.writeFile(path.join(output,'app-version.json'),JSON.stringify(metadata));
   const assetManifestFile = path.join(output,'game-assets.json');
   const assets = JSON.parse(await fs.readFile(assetManifestFile)); assets.version = version;

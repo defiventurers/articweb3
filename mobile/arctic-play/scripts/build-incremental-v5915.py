@@ -17,8 +17,9 @@ from apk_layout import verify_apk_layout
 BASELINE = '27ab56bc1c8f2575f6d6ea0573432ac354102283e725d5bb33d1ed37b3cc2488'
 CERTIFICATE = '20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37'
 VERSION, CODE = '5.10.2', 106
-ALLOWED_OVERLAY = {'app.js', 'app.css', 'fair-worker.js', 'verifier.js'}
-ADDITIVE_ART = {'art/launch-incremental/halls/' + n + '.webp' for n in ['india', 'china', 'japan', 'vietnam']}
+ALLOWED_OVERLAY = {'app.js', 'app.css', 'fair-worker.js', 'verifier.js', 'learn.js'}
+ADDITIVE_ART = ({'art/launch-incremental/halls/' + n + '.webp' for n in ['india', 'china', 'japan', 'vietnam']}
+                | {'art/chaturanga-final-four/pawns/' + n + '.webp' for n in ['red', 'blue', 'green', 'pink']})
 
 
 def digest(data):
@@ -136,6 +137,8 @@ def main():
     metadata.update(version=VERSION, versionCode=CODE)
     if 'heritage-intro' in files['assets/app.js'].decode():
         metadata['capabilities'] = list(dict.fromkeys(old_capabilities + ['heritage-intros-v1', 'cultural-halls-v1']))
+    if 'art/chaturanga-final-four/pawns/' in files['assets/app.js'].decode():
+        metadata['capabilities'] = list(dict.fromkeys(metadata['capabilities'] + ['chaturanga-final-four-pawns-v1']))
     files['assets/app-version.json'] = json.dumps(metadata).encode()
     warm = json.loads(files['assets/game-assets.json'])
     warm['version'] = VERSION
@@ -195,6 +198,7 @@ def main():
               'sha256': digest(apk.read_bytes()), 'file': apk.name, 'bytes': apk.stat().st_size,
               'package': 'xyz.arcticdominion.play', 'targetSdk': 35,
               'originalSignerVerified': signed, 'installableRelease': signed,
+              'releaseReady': False, 'signingCertificateSha256': CERTIFICATE if signed else None,
               'baselineSignerVerified': True, 'protectedEntriesByteIdentical': len(protected),
               'originalCapabilitiesPreserved': all(c in metadata['capabilities'] for c in old_capabilities),
               'changedEntries': changed, 'layout': layout, 'deviceTested': False,
