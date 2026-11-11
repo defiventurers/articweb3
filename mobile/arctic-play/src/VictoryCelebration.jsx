@@ -14,7 +14,7 @@ export function victorySeats(outcome,id){
  return typeof outcome.winner==='string'?[outcome.winner]:[];
 }
 
-export function VictoryCelebration({id,title,outcome,visible=[],isOnline=false,onBack,onPlayAgain,onRematch,onFinalBoard,onShare}){
+export function VictoryCelebration({id,title,outcome,visible=[],isOnline=false,viewerWon=true,onBack,onPlayAgain,onRematch,onFinalBoard,onShare}){
  const winners=victorySeats(outcome,id);
  const winningPieces=useMemo(()=>visible.filter(piece=>winners.includes(piece.owner)).slice(0,36),[visible,winners.join('|')]);
  const resultLabel=outcome?.draw?'A remarkable draw':outcome?.winningTeam?winners.map(seat=>seat==='yellow'?'Pink':seatName(id,seat)).join(' + ')+' are victorious!':(winners.map(seat=>seatName(id,seat)).join(' + ')||'A player')+' is victorious!';
