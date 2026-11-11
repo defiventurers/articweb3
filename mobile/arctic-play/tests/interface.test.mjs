@@ -21,7 +21,7 @@ test('Phone interface: six nondice engines, legal board taps, English rules, inv
   }});
   t.after(()=>dom.window.close());const {window}=dom,doc=window.document;verifiedAccount(window);window.eval(js);await settle();
   await waitFor(()=>doc.querySelector('.home-landing'),'branded home');[...doc.querySelectorAll('.bottom-nav button')].find(b=>b.textContent==='Games').click();await settle();
-  assert.equal(doc.querySelectorAll('.expedition-game').length,1);assert.equal(doc.querySelectorAll('.bottom-nav button').length,5);
+  assert.ok(doc.querySelector('[data-testid="story-adventure-gallery"]'));[...doc.querySelectorAll('.ak-games-views button')].find(b=>b.textContent==='Halls').click();await settle();assert.equal(doc.querySelectorAll('.expedition-game').length,1);assert.equal(doc.querySelectorAll('.bottom-nav button').length,5);
   function button(text){const found=[...doc.querySelectorAll('button')].find(b=>b.textContent.trim()===text);assert.ok(found,`Button: ${text}`);return found;}
   for(const game of engine.GAME_LIST.filter(g=>g.id!=='dominion')){
     const stories=JSON.parse(fs.readFileSync(new URL('../src/heritageStories.json',import.meta.url)));
