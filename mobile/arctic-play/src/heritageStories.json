@@ -293,8 +293,8 @@
         },
         {
           "label": "Your edition · selected rules",
-          "title": "Find your place on the three-sided board.",
-          "text": "This inventive three-player shogi design emerged in Japan in the 1930s. Discover its hexagonal paths, shifting alliances and the tactics of three commanders.",
+          "title": "Three commanders. Three directions.",
+          "text": "Step into the three-sided world of Kokusai Sannin Shogi, a creative Japanese design of the 1930s. Explore the hexagonal routes and discover how a third rival changes every decision.",
           "scene": "Current 127-cell board with native piece labels and the existing central target.",
           "sourceIds": [],
           "historicalNote": "This is a historical shogi variant, not an ancient Japanese game. Let the movement lesson orient you before you explore alliances and the centre of the current digital board."
@@ -336,10 +336,11 @@
         },
         {
           "label": "Your edition · digital reconstruction",
-          "title": "Read this board’s own rulebook.",
-          "text": "This app uses its selected three-sector rules and completion rules. Learn its routes, army transfers and victory conditions before assuming a familiar Xiangqi move works the same way.",
+          "title": "Master the three kingdoms' routes.",
+          "text": "Follow the unique lines of this three-sector board, learn how armies pass into one another's territory, and discover new tactical combinations with the game's movement guide.",
           "scene": "Inspect the current topology and transfer guides without importing Yan Yi rules.",
-          "sourceIds": []
+          "sourceIds": [],
+          "historicalNote": "This app uses its selected three-sector rules and completion rules. Learn its routes, army transfers and victory conditions before assuming a familiar Xiangqi move works the same way."
         }
       ]
     },
@@ -385,10 +386,11 @@
         },
         {
           "label": "Your edition · reconstruction",
-          "title": "Follow the lines of this edition.",
-          "text": "The exact 156 intersections, central routes and terrain boundaries belong to this digital reconstruction. The board lesson teaches those paths directly.",
+          "title": "Find your path through the landmarks.",
+          "text": "Explore 156 intersections where mountains, sea routes and city walls shape your choices. Follow each highlighted movement path and uncover what Fire and Flag can do.",
           "scene": "Show the existing fixed graph and current guide, preserving all coordinates.",
-          "sourceIds": []
+          "sourceIds": [],
+          "historicalNote": "The exact 156 intersections, central routes and terrain boundaries belong to this digital reconstruction. The board lesson teaches those paths directly."
         }
       ]
     },
@@ -481,10 +483,11 @@
         },
         {
           "label": "Your edition · research status",
-          "title": "Begin at the practice table.",
-          "text": "This app’s selected reconstruction is under rules review. Use the unit guide and practice modes; check the stated rules profile rather than treating Antarctic artwork as original Vietnamese pieces.",
+          "title": "Take command of land, air and sea.",
+          "text": "Discover the special roles of infantry, aircraft, navy and commanders. Your penguin guide will introduce movement, transport and defence before you lead the first operation.",
           "scene": "Clearly retain the practice/review status and source-native unit labels.",
-          "sourceIds": []
+          "sourceIds": [],
+          "historicalNote": "This app’s selected reconstruction is under rules review. Use the unit guide and practice modes; check the stated rules profile rather than treating Antarctic artwork as original Vietnamese pieces."
         }
       ]
     },
