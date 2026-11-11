@@ -1,13 +1,14 @@
 import {CompactGamePanel,CompactInfoPanel,CompactRoomPanel} from '../../../shared/compact-panels/CompactGamePanels.jsx';
 import {ShanshuiMobile} from './ShanshuiMobile.jsx';
 import {CulturalGames,GameIntroduction,InstallWebApp,useLaunchVisit} from './LaunchExperience.jsx';
+import {PhysicalCollection} from './PhysicalCollection.jsx';
 import {LaunchDashboard} from './LaunchDashboard.jsx';
 import {CoTuLenhMobile} from './CoTuLenhMobile.jsx';
 import {secureUuid} from './uuid.js';
 import {useGameAssetWarmup} from './gameAssets.js';
 import React,{useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Home,Users,Gamepad2,MessageCircle,User,ArrowLeft,ChevronRight,Heart,Plus,Search,X,Send,MoreHorizontal,Share2,Copy,BookOpen,Wifi,WifiOff,RotateCcw,Undo2,Check,Download,LogOut,Settings,Clock,Shield,Play,Volume2,Moon,Sun} from 'lucide-react';
+import {Home,Users,ShoppingBag,Gamepad2,MessageCircle,User,ArrowLeft,ChevronRight,Heart,Plus,Search,X,Send,MoreHorizontal,Share2,Copy,BookOpen,Wifi,WifiOff,RotateCcw,Undo2,Check,Download,LogOut,Settings,Clock,Shield,Play,Volume2,Moon,Sun} from 'lucide-react';
 import {GAME_LIST,game,create,actions,apply,result,turn,hand,pieces,inCheck,COLORS,asset,seatName,RULES,VERSION,forfeit} from './games.ts';
 import {Board} from './Board.jsx';
 import {BoardCalibrator} from './BoardCalibrator.jsx';
@@ -51,7 +52,7 @@ import {RoomCodeInput} from './RoomCodeInput.jsx';
 import {ChatCamp} from './ChatCamp.jsx';
 import {PassportHub,PassportIcon} from './PassportBook.jsx';
 import {PassportWallet} from './PassportWallet.jsx';
-import {CELEBRATION_ART,festivalStickerText} from './celebration.js';
+import {CELEBRATION_ART,HALL_ART,festivalStickerText} from './celebration.js';
 import {FestivalStickerAlbum} from './FestivalStickers.jsx';
 import {HallCard,HallDetail,StoryAdventure,LanternPassport,OpeningStory,GatheringInterlude,EighthLantern,WorldGuide,GatheringSettings} from './Gathering.jsx';
 import {useHallAccess,UNLOCKS} from './useHallAccess.js';
@@ -59,7 +60,7 @@ import {JourneyBar,LockedHall,FormationRoute,AccessShop,HallOpened} from './Hall
 import {FoundationGame} from './FoundationGame.jsx';
 import {HALLS,HALL_ORDER,WORLD,GATHERING_KEY,STORY_SETTINGS_KEY,gatheringProgress,visitHall,earnLantern,revealGathering,storySettings,hallPostcard,guestPostcard,hallInvitation} from './gathering.js';
 
-const tabs=[['home','Home',Home],['friends','Friends',Users],['games','Games',Gamepad2],['chats','Chats',MessageCircle],['profile','Passport',PassportIcon]];
+const tabs=[['home','Home',Home],['games','Games',Gamepad2],['shop','Shop',ShoppingBag],['chats','Chats',MessageCircle],['profile','Passport',PassportIcon]];
 const openingText=id=>`${seatName(id,game(id).seats[0])} ${id==='dominion'?'rolls':'moves'} first`;
 const Avatar=({color='blue',size=42,name='',online=false,gameId})=><span className="avatar" style={{width:size,height:size}}><img src={asset(gameId==='dominion'?`launch-v1/chaturanga-pieces/${color==='yellow'?'pink':color}-frost-king.webp`:`tokens/token-sanguo-${color==='black'?'blue':color}-general.webp`)} alt={name||'Player avatar'}/>{online&&<i/>}</span>;
 function DominionSetup({mode,onMode,seat,onSeat}){
@@ -406,7 +407,7 @@ function App(){
     {screen==='learn'&&academy&&<HowToPlay key={academy.id} id={academy.id} initialTab={academy.initialTab} initialRole={academy.initialRole} initialMission={academy.initialMission} onGame={(gameId,section)=>openLearning(gameId,section||'start')} onLearningEvent={companion.learned} onClose={()=>setScreen(academy.returnScreen)} preferences={companion.preferences} onDiscovery={learningDiscovery} returnToGame={academy.returnScreen==='match'} onPractice={online?null:()=>run(()=>startPractice('bots',true))}/>}
     {screen==='story'&&storyLesson&&<StoryAdventure key={storyLesson.id+storyLesson.mission} id={storyLesson.id} mission={storyLesson.mission} story={storyOptions.enabled} preferences={companion.preferences} onClose={closeHallChallenge} onDiscovery={learningDiscovery} onLearningEvent={companion.learned} onFree={gameId=>openLearning(gameId,'sandbox')} onPlay={gameId=>{setScreen('lobby');pick(gameId);}}/>}
     {screen==='lobby'&&<>
-      <header className={`lobby-header ${tab==='home'?'world-header':''}`}><button className="avatar-btn" onClick={()=>{setNameDraft(profile.name);setSheet('name');}} aria-label="Edit profile"><Avatar color={profile.avatar} online={connection==='online'}/></button><h1 className={tab==='home'?'brand-wordmark':''}>{tab==='home'?<><span>ANTARCTIC</span><strong>KINGDOMS</strong></>:(storyOptions.enabled?({games:'Games',friends:'Festival Invitations',chats:'Chats',profile:'Passport'})[tab]:null)||tabs.find(t=>t[0]===tab)?.[1]}</h1>{headerControls}</header>
+      <header className="lobby-header discovery-header"><h1 className="discovery-sr-only">Antarctic Kingdoms</h1><button className="discovery-brand" aria-label="Antarctic Kingdoms home" onClick={()=>setTab('home')}><img src={tab==='home'?'art/home-v1/brand-logo.webp':BRAND.icon} alt="Antarctic Gaming Co." width="40" height="40"/><span><small>ANTARCTIC KINGDOMS</small><strong>{{home:'Antarctic Kingdoms',games:'Games',shop:'Shop',chats:'Chats',profile:'Passport',friends:'Friends'}[tab]}</strong></span></button><div className="header-controls">{headerControls}<button className="avatar-btn" onClick={()=>setTab('profile')} aria-label="Open passport"><Avatar color={profile.avatar} size={36}/></button></div></header>
       <main className="lobby-content" data-view={tab}>
         {tab==='games'&&<>
           <div className="filter-row">{['All','2 players','3 players','4 players','Favorites'].map(item=><button className={filter===item?'active':''} key={item} onClick={()=>setFilter(item)}>{item==='Favorites'&&<Heart size={13}/>} {item}</button>)}</div>
@@ -415,8 +416,9 @@ function App(){
           <CulturalGames filter={filter} favorites={favorites} onFavorite={toggleFavorite} onIntroduce={setIntroduction} onPlay={launchPlay} onLearn={openLearning} access={hallAccess} progress={world.halls}/>
           <InstallWebApp/>
         </>}
-        {tab==='home'&&<HomeLanding onChaturanga={()=>pick('dominion')} onBrowse={()=>setTab('games')} onLearn={()=>setTab('games')} onJourney={()=>setTab('profile')} onStory={()=>setSheet('world-guide')} onJoin={()=>{setNameDraft(profile.name);setSheet('join-name');}} onContinue={homeContinue} continueLabel={continueLabel} roomCode={joinCode} onRoomCode={setJoinCode} story={storyOptions.enabled} discovery={<NextDiscovery access={hallAccess} target={discoveryTarget} onOpen={showJourney}/>}/>}
+        {tab==='home'&&<HomeLanding onChaturanga={()=>pick('dominion')} onBrowse={()=>setTab('games')} onLearn={()=>setTab('games')} onJourney={()=>setTab('profile')} onStory={()=>setSheet('world-guide')} onJoin={()=>{setNameDraft(profile.name);setSheet('join-name');}} onShop={()=>setTab('shop')} onContinue={homeContinue} continueLabel={continueLabel} continueImage={resumable?HALL_ART[resumable.room.tableId]?.card:practiceId?HALL_ART[practiceId]?.card:null} roomCode={joinCode} onRoomCode={setJoinCode} story={storyOptions.enabled} discovery={<NextDiscovery access={hallAccess} target={discoveryTarget} onOpen={showJourney}/>}/>}
 
+        {tab==='shop'&&<PhysicalCollection onLearn={setIntroduction} onDigital={()=>setSheet('collection')}/>}
         {tab==='friends'&&<>
           <div className="friend-intro archive-welcome celebration-friends"><img className="festival-friends-banner" src={CELEBRATION_ART.friends} alt="Friends are welcome at the festival table" width="1200" height="800" loading="lazy"/>{companion.preferences.mode!=='off'&&<img className="archive-guide-art" src="art/launch-v1/hosts/polly.webp" alt="Nova welcomes your friends"/>}<p className="world-eyebrow">BRING SOMEONE TO THE TABLE</p><h2>The festival is better<br/>with a friend.</h2><p>Save a name on your phone, then invite your friend to a particular hall.</p></div>
           <button className="primary full" onClick={()=>setSheet('festival-invite')}><Users size={18}/> Create a hall invitation</button><form className="inline-form" onSubmit={e=>{e.preventDefault();if(!friendDraft.trim())return;const next=[...friends,{id:secureUuid(),name:friendDraft.trim().slice(0,24)}];setFriends(next);write('friends',next);setFriendDraft('');}}><input value={friendDraft} onChange={e=>setFriendDraft(e.target.value)} placeholder="Friend’s name" maxLength={24} aria-label="Friend’s name"/><button className="primary" type="submit"><Plus size={19}/>Add</button></form>
@@ -549,7 +551,8 @@ function App(){
 
     {sheet==='hall'&&<Sheet title={game(picked).name+' · Hall'} onClose={()=>setSheet(null)}><HallDetail key={picked} id={picked} progress={world} preferences={companion.preferences} onChallenge={openHallChallenge} onPlay={pick} onInvite={gameId=>run(()=>createRoom(gameId))} onQuickPlay={gameId=>run(()=>startPractice('bots',false,gameId,'red'))} onRules={gameId=>openLearning(gameId)} onFree={gameId=>openLearning(gameId,'sandbox')} onNext={openHall} onPostcard={openHallPostcard} soundEnabled={storyOptions.sound} onSound={sound=>saveStoryOptions({...storyOptions,sound})}/></Sheet>}
     {sheet==='gathering-intro'&&<Sheet title="Your invitation to the Gathering" onClose={()=>setSheet(null)}><OpeningStory onClose={()=>setSheet(null)} motion={companion.preferences.motion&&!(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)}/></Sheet>}
-    {sheet==='world-guide'&&<Sheet title="The Eternal Gathering" onClose={()=>setSheet(null)}><WorldGuide preferences={companion.preferences} onHall={openHall}/></Sheet>}
+    {sheet==='kingdom-cover'&&<Sheet title="Antarctic Kingdoms · Lantern Harbor" onClose={()=>setSheet('world-guide')}><img className="kingdom-portrait" src="art/launch-v1/kingdom-portrait-v1.webp" alt="Nova, Rocco, Piko and Ziggy welcome players to icy cultural halls, surrounded by board pieces and worlds from the nine-game collection"/><button className="primary full" onClick={()=>{setSheet(null);setTab('games');}}>Enter the Kingdom</button></Sheet>}
+    {sheet==='world-guide'&&<Sheet title="The Eternal Gathering" onClose={()=>setSheet(null)}><button className="secondary full" onClick={()=>setSheet('kingdom-cover')}>See the Kingdom · Portrait cover</button><WorldGuide preferences={companion.preferences} onHall={openHall}/></Sheet>}
     {sheet==='passport'&&<Sheet title="Your Lantern Passport" onClose={()=>setSheet(null)}><LanternPassport progress={world} onHall={openHall} onReveal={()=>setSheet('eighth-lantern')} onInterlude={()=>setSheet('gathering-interlude')} onPostcard={()=>openPostcard(guestPostcard())}/></Sheet>}
     {sheet==='eighth-lantern'&&<Sheet title="The Eighth Lantern" onClose={()=>setSheet(null)}><EighthLantern progress={world} preferences={companion.preferences} onRevealed={()=>saveGathering(revealGathering(world))} onPostcard={()=>openPostcard(guestPostcard())} onInvite={()=>setSheet('festival-invite')}/></Sheet>}
     {sheet==='gathering-interlude'&&<Sheet title="At the Gathering Table" onClose={()=>setSheet(null)}><GatheringInterlude preferences={companion.preferences}/></Sheet>}
@@ -567,4 +570,4 @@ class StartupBoundary extends React.Component {
   componentDidCatch(error){window.ArcticStartup?.fail(error);}
   render(){return this.state.failed?null:this.props.children;}
 }
-createRoot(document.getElementById('root')).render(<StartupBoundary>{new URLSearchParams(location.search).get('view')==='launch-dashboard'?<LaunchDashboard/>:<App/>}</StartupBoundary>);
+createRoot(document.getElementById('root')).render(<StartupBoundary>{['launch-dashboard','launch-operations'].includes(new URLSearchParams(location.search).get('view'))?<LaunchDashboard operations={new URLSearchParams(location.search).get('view')==='launch-operations'}/>:<App/>}</StartupBoundary>);

@@ -36,6 +36,11 @@ if not (APP/'assets/index.html').exists():raise SystemExit('Run npm run build be
 # Install the currently approved launcher after any legacy web-art generator.
 approved_launcher=ROOT/'art/launcher-current/res'
 if approved_launcher.is_dir():shutil.copytree(approved_launcher,APP/'res',dirs_exist_ok=True)
+# The launcher is a release invariant, pinned to the user's accepted APK.
+launcher=json.loads((ROOT/'approved-launcher.json').read_text())
+for relative,digest in launcher['files'].items():
+    if hashlib.sha256((APP/relative).read_bytes()).hexdigest()!=digest:
+        raise SystemExit('Approved launcher changed: '+relative)
 compiled=WORK/'resources.zip';generated=WORK/'generated';generated.mkdir()
 run(aapt,'compile','--dir',APP/'res','-o',compiled)
 # Package only declared runtime files. Temporary build files and retired art

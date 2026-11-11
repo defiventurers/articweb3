@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import {createRequire} from 'node:module';
 import {randomUUID} from 'node:crypto';
 const require=createRequire(import.meta.url),updates=require('../build/updates.cjs');
-const {JSDOM,VirtualConsole}=createRequire(new URL('../../../frontend/package.json',import.meta.url))('jsdom');
+const {JSDOM,VirtualConsole}=createRequire(new URL('../build-deps/package.json',import.meta.url))('jsdom');
 const {APP_VERSION,APP_VERSION_CODE,PACKAGE_NAME,DOWNLOAD_ROOT}=updates;
 const future={schemaVersion:1,packageName:PACKAGE_NAME,versionName:'9.0.0',versionCode:APP_VERSION_CODE+1,downloadUrl:DOWNLOAD_ROOT+'ArcticPlay-v9.0.0.apk',sizeBytes:9000000,sha256:'a'.repeat(64),publishedAt:'2026-10-22T16:00:00Z',releaseNotes:['New tables and games.']};
 const current={...future,versionName:APP_VERSION,versionCode:APP_VERSION_CODE,downloadUrl:DOWNLOAD_ROOT+`ArcticPlay-v${APP_VERSION}.apk`};

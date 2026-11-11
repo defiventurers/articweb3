@@ -22,7 +22,7 @@ function open({saved,help=true,theme='dark'}={}){
 }
 const buttons=d=>[...d.querySelectorAll('button')],text=(d,t)=>buttons(d).find(b=>b.textContent.trim()===t),position=w=>JSON.parse(w.localStorage.getItem('arctic-play.v1.practice.dominion')).state;
 const a=open();try{
- await wait(()=>a.d.querySelector('.home-chaturanga'),'heritage Home');assert.equal(a.d.querySelector('.home-chaturanga img').getAttribute('src'),'art/launch-v1/india-hall.webp');
+ await wait(()=>a.d.querySelector('.home-chaturanga'),'heritage Home');assert.equal(a.d.querySelector('.home-chaturanga img').getAttribute('src'),'art/chaturanga-heritage-v1/cover.webp');
  a.d.querySelector('.home-chaturanga').click();await wait(()=>a.d.querySelector('.cg-panel[data-game=dominion]'));
  buttons(a.d).find(b=>b.textContent.includes('On this phone')).click();await wait(()=>a.d.querySelector('[data-screen=match]'));
  await wait(()=>a.d.querySelector('[role=dialog][aria-label="Your turn"]'));

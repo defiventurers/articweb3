@@ -47,7 +47,7 @@ test('One download tap hands the exact trusted APK to Android or the browser',()
 });
 
 test('Phone update screen: automatically check, retry offline, download once and keep saved data',{timeout:15000},async()=>{
-  const {JSDOM,VirtualConsole}=createRequire(new URL('../../../frontend/package.json',import.meta.url))('jsdom');
+  const {JSDOM,VirtualConsole}=createRequire(new URL('../build-deps/package.json',import.meta.url))('jsdom');
   const errors=[],downloads=[];let response='current';
   const virtual=new VirtualConsole();virtual.on('jsdomError',error=>errors.push(error));
   const dom=new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>',{url:'https://appassets.androidplatform.net/assets/index.html',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:virtual,beforeParse(window){
