@@ -3,6 +3,7 @@ import {ArrowRight,BookOpen,Heart,Play,Sparkles,LockKeyhole,Compass} from 'lucid
 import {CULTURAL_HALLS} from './LaunchExperience.jsx';
 import {HALL_ART} from './celebration.js';
 import {game} from './games.ts';
+import {PenguinAudience} from './PenguinAudience.jsx';
 import stories from './heritageStories.json';
 
 export const LAUNCH_GAME_ORDER=['dominion','xiangqi','shogi','sanguo','sanyou','sannin','yanyi','co-tu-lenh','shanshui-xiangqi'];
@@ -15,7 +16,7 @@ function Chapter({id,index,access,onIntroduce,onPlay,featured=false}){
  const story=stories.games[id],open=allOpen(access,id),group=CULTURAL_HALLS.find(h=>h.ids.includes(id));
  return <article className={'journey-chapter '+(featured?'featured':'')} data-story-id={id}>
    <button type="button" className="journey-cover" onClick={()=>onIntroduce(id)} aria-label={'Discover '+story.title}>
-     <img src={image(id)} alt={story.title+' Antarctic game hall'} loading={index?'lazy':'eager'}/>
+     <img src={image(id)} alt={story.title+' Antarctic game hall'} loading={index?'lazy':'eager'}/><PenguinAudience className="hall-spectators"/>
      <span className="journey-cover-caption"><small>CHAPTER {String(index+1).padStart(2,'0')} · {group?.origin}</small><strong>{story.title}</strong></span>
    </button>
    <div className="journey-chapter-copy"><small className="journey-origin">{story.origin}</small><h3>{story.screens[0].title}</h3><p>{story.screens[0].text}</p>
@@ -36,6 +37,6 @@ export function AllGamesGallery({filter,favorites,onFavorite,onIntroduce,onPlay}
  const ids=LAUNCH_GAME_ORDER.filter(id=>filterGame(id,filter,favorites));
  return <section className="all-games-gallery" aria-label="All Games" data-testid="all-games-gallery">
   <div className="catalogue-heading"><Compass size={20}/><div><h2>The complete collection</h2><p>Nine games · Stories, rules and a table for each one</p></div></div>
-  {ids.length?<div className="all-games-grid">{ids.map(id=>{const info=stories.games[id],group=CULTURAL_HALLS.find(h=>h.ids.includes(id));return <article key={id} className="all-game-tile"><button className="all-game-image" onClick={()=>onIntroduce(id)} aria-label={'Read the story of '+info.title}><img src={image(id)} alt={info.title+' game illustration'} loading="lazy"/></button><div className="all-game-detail"><small>{group?.origin} · {playerCount(id)} players</small><h3>{info.title}</h3><p>{info.screens[0].title}</p><div className="all-game-actions"><button onClick={()=>onIntroduce(id)}><BookOpen size={16}/> Story</button><button onClick={()=>onPlay(id)}><Play size={16}/> Play</button><button aria-pressed={favorites.includes(id)} aria-label={(favorites.includes(id)?'Remove ':'Add ')+info.title+' favorite'} onClick={()=>onFavorite(id)}><Heart size={16} fill={favorites.includes(id)?'currentColor':'none'}/></button></div></div></article>;})}</div>:<p className="empty" role="status">No games match this filter.</p>}
+  {ids.length?<div className="all-games-grid">{ids.map(id=>{const info=stories.games[id],group=CULTURAL_HALLS.find(h=>h.ids.includes(id));return <article key={id} className="all-game-tile"><button className="all-game-image" onClick={()=>onIntroduce(id)} aria-label={'Read the story of '+info.title}><img src={image(id)} alt={info.title+' game illustration'} loading="lazy"/><PenguinAudience className="hall-spectators"/></button><div className="all-game-detail"><small>{group?.origin} · {playerCount(id)} players</small><h3>{info.title}</h3><p>{info.screens[0].title}</p><div className="all-game-actions"><button onClick={()=>onIntroduce(id)}><BookOpen size={16}/> Story</button><button onClick={()=>onPlay(id)}><Play size={16}/> Play</button><button aria-pressed={favorites.includes(id)} aria-label={(favorites.includes(id)?'Remove ':'Add ')+info.title+' favorite'} onClick={()=>onFavorite(id)}><Heart size={16} fill={favorites.includes(id)?'currentColor':'none'}/></button></div></div></article>;})}</div>:<p className="empty" role="status">No games match this filter.</p>}
  </section>;
 }
