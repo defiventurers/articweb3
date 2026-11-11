@@ -421,7 +421,7 @@ function App(){
            gamesView==='all'?<AllGamesGallery filter={filter} favorites={favorites} onFavorite={toggleFavorite} onIntroduce={setIntroduction} onPlay={launchPlay}/>:
            <CulturalGames filter={filter} favorites={favorites} onFavorite={toggleFavorite} onIntroduce={setIntroduction} onPlay={launchPlay} onLearn={openLearning} access={hallAccess} progress={world.halls}/>}
           <InstallWebApp/>
-        </>
+        </>}
         {tab==='home'&&<HomeLanding onChaturanga={()=>pick('dominion')} onBrowse={()=>setTab('games')} onLearn={()=>setTab('games')} onJourney={()=>setTab('profile')} onStory={()=>setSheet('world-guide')} onJoin={()=>{setNameDraft(profile.name);setSheet('join-name');}} onShop={()=>setTab('shop')} onContinue={homeContinue} continueLabel={continueLabel} continueImage={resumable?HALL_ART[resumable.room.tableId]?.card:practiceId?HALL_ART[practiceId]?.card:null} roomCode={joinCode} onRoomCode={setJoinCode} story={storyOptions.enabled} discovery={<NextDiscovery access={hallAccess} target={discoveryTarget} onOpen={showJourney}/>}/>}
 
         {tab==='shop'&&<PhysicalCollection onLearn={setIntroduction} onDigital={()=>setSheet('collection')}/>}
