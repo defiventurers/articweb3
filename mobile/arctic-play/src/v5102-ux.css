@@ -86,3 +86,13 @@
 .entry-restored-loading:before{content:'';position:absolute;inset:0;background:linear-gradient(transparent,#071d33a8)}
 .entry-restored-loading>div{position:relative;z-index:1}.entry-restored-loading h2{font:700 35px Georgia,serif;text-shadow:0 2px 12px #000}
 .entry-restored-loading p{font-size:13px;line-height:1.55}.entry-restored-loading .entry-loading-ornament{font-size:28px;color:#e9c680}
+
+/* Extra penguin guests are deliberate world-building illustrations, not player presence. */
+.expedition-hero .hall-spectators,.journey-cover .hall-spectators,.all-game-image .hall-spectators{position:absolute;z-index:2;bottom:5px;right:7px;width:38%;height:auto;max-height:65px;opacity:.96;filter:drop-shadow(0 4px 3px #001c31b5)}
+.expedition-hero .hall-spectators{right:6px;bottom:6px}
+.journey-cover .hall-spectators{width:32%;bottom:9px;right:6px}
+.all-game-image{position:relative;overflow:hidden}
+.all-game-image .hall-spectators{width:56%;bottom:3px;right:3px}
+.intro-spectators{position:absolute;z-index:2;bottom:4px;right:0;width:55%;height:auto;max-height:62px;opacity:.83;filter:drop-shadow(0 5px 3px #05182a9c);pointer-events:none}
+.intro-pieces{pointer-events:none}
+@media(prefers-reduced-motion:reduce){.penguin-audience{animation:none}}
