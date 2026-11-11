@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { PenguinHost } from '../../components/PenguinHosts.jsx';
 import { ARMIES, ARMY_META, ROLES, ROLE_LABELS, RULESET_VERSION, createInitialState, getLegalActions, pseudoActions, applyAction, pieceAt, pointKey, teamOf, requiresKingSafety, isInCheck, validateSetup, resolveTurn, positionKey, resign } from './rules.js';
 import { ShanshuiBoard } from './ShanshuiBoard.jsx';
+import {RoyalResult} from '../shared/RoyalResult.jsx';
 import { MODES, ROLE_HELP, CHAPTERS, QUICK_RULES, spriteFor, teamLabel, capital } from './presentation.js';
 import './shanshui.css';
 
@@ -16,6 +17,8 @@ export function ShanshuiApp({ onExit = () => {}, assets, workerUrl, onOnline }) 
   const [mode, setMode] = useState('menu'), [state, setState] = useState(createInitialState), [history, setHistory] = useState([]);
   const [selected, setSelected] = useState(null), [humanTeam, setHumanTeam] = useState('white'), [difficulty, setDifficulty] = useState('medium');
   const [theme, setTheme] = useState('dark'), [rotation, setRotation] = useState(90), [rules, setRules] = useState(null), [chapter, setChapter] = useState(0);
+  const [resultHidden,setResultHidden]=useState(false);
+  useEffect(()=>{if(!state.outcome)setResultHidden(false);},[state.outcome]);
   const [army, setArmy] = useState('red'), [role, setRole] = useState('king'), [locked, setLocked] = useState(false), [notice, setNotice] = useState(''), [thinking, setThinking] = useState(false), [saved, setSaved] = useState(savedGame), [confirm, setConfirm] = useState(null);
   const playing = ['bot', 'local', 'four'].includes(mode), sandbox = mode === 'explore' || mode === 'practice';
   const piece = state.pieces.find(p => p.id === selected), activeTeam = teamOf(state.turn), humanTurn = mode !== 'bot' || activeTeam === humanTeam;
@@ -64,8 +67,13 @@ export function ShanshuiApp({ onExit = () => {}, assets, workerUrl, onOnline }) 
   function practice(nextArmy = army, nextRole = role) { setArmy(nextArmy); setRole(nextRole); const p = { id: 'practice-piece', army: nextArmy, role: nextRole, ...practicePoint(nextArmy, nextRole) }; setState({ ...createInitialState(), pieces: [p] }); setSelected(p.id); setMode('practice'); setRules(null); }
   function startEditorMatch() { const errors = validateSetup(state.pieces); if (errors.length) return setNotice(errors.join(' ')); const next = { ...createInitialState(), pieces: state.pieces.map(p => ({ ...p })), repetitions: {} }; next.repetitions[positionKey(next)] = 1; start('local', resolveTurn(next)); }
   function undo() { const list = [...history]; let previous = list.pop(); if (!previous) return; while (mode === 'bot' && list.length && teamOf(previous.turn) !== humanTeam) previous = list.pop(); setState(previous); setHistory(list); setSelected(null); }
+  const finalTeam=state.outcome?.winner;
+  const resultPieces=state.outcome?state.pieces.filter(p=>state.outcome.type==='draw'||teamOf(p.army)===finalTeam).map(p=>({key:p.id,src:spriteFor(p,assets),alt:`${capital(p.army)} ${ROLE_LABELS[p.role]}`})):[];
+  async function shareResult(){const text=`Shanshui Xiangqi · ${state.outcome?.type==='draw'?'Draw':teamLabel(finalTeam)+' victory'} · Antarctic Kingdoms`,title='Antarctic Kingdoms';if(window.Android?.shareText){window.Android.shareText(title,text);return;}if(navigator.share){await navigator.share({title,text});return;}if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);setNotice('Result copied.');return;}throw Error('No sharing method is available.');}
   const overlay = (title, content) => <div className="shanshui-overlay" onClick={() => { setRules(null); setConfirm(null); }}><section role="dialog" aria-modal="true" aria-label={title} className="shanshui-dialog" onClick={e => e.stopPropagation()}><header><h2>{title}</h2><button aria-label="Close dialog" onClick={() => { setRules(null); setConfirm(null); }}>×</button></header>{content}</section></div>;
   return <main className={`shanshui-app shanshui-${theme}`}>
+    {playing&&state.outcome&&!resultHidden&&<RoyalResult title="Shanshui Xiangqi" kind={state.outcome.type==='draw'?'draw':'win'} winnerLabel={state.outcome.type==='draw'?'A shared honourable draw':teamLabel(finalTeam)+' triumphs'} reason={state.outcome.reason} pieces={resultPieces} viewerWon={mode==='bot'?finalTeam===humanTeam:null} onBack={()=>{setResultHidden(true);onExit();}} onPlayAgain={()=>{setResultHidden(true);start(mode);}} onViewBoard={()=>setResultHidden(true)} onShare={shareResult}/>}
+
     <header className="shanshui-header"><button onClick={() => mode === 'menu' ? onExit() : setMode('menu')} aria-label={mode === 'menu' ? 'Back to games' : 'Back to Shanshui menu'}>←</button><div><small>ANTARCTIC KINGDOMS</small><h1>Shanshui Xiangqi</h1></div><button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle light and dark board">{theme === 'dark' ? '☀' : '☾'}</button></header>
     {mode === 'menu' ? <div className="shanshui-menu"><CompactMenu kind="shanshui">
       <section className="shanshui-intro"><div><span className="shanshui-eyebrow">MOUNTAIN & RIVER CHESS</span><h2>Four armies.<br/>One shared victory.</h2><p>Cross the mountains. Command the river.<br/>Your ally holds the other corner.</p><div className="shanshui-allies"><span>Red + Purple</span><i>vs</i><span>Blue + Green</span></div></div><div className="shanshui-crest"><img src={spriteFor({ army: 'purple', role: 'king' }, assets)} alt="Purple General"/><img src={spriteFor({ army: 'red', role: 'king' }, assets)} alt="Red allied General"/></div></section>
