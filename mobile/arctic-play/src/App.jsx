@@ -1,6 +1,8 @@
 import {CompactGamePanel,CompactInfoPanel,CompactRoomPanel} from '../../../shared/compact-panels/CompactGamePanels.jsx';
 import {ShanshuiMobile} from './ShanshuiMobile.jsx';
 import {CulturalGames,GameIntroduction,InstallWebApp,useLaunchVisit} from './LaunchExperience.jsx';
+import {StoryAdventureGallery,AllGamesGallery} from './GamesViews.jsx';
+import {VictoryCelebration} from './VictoryCelebration.jsx';
 import {PhysicalCollection} from './PhysicalCollection.jsx';
 import {LaunchDashboard} from './LaunchDashboard.jsx';
 import {CoTuLenhMobile} from './CoTuLenhMobile.jsx';
@@ -120,7 +122,7 @@ function App(){
   const update=useRequiredUpdate();
   const toggleTheme=()=>setTheme(current=>current==='dark'?'light':'dark');
   const [shanshuiInvite,setShanshuiInvite]=useState('');
-  const [filter,setFilter]=useState('All'),[favorites,setFavorites]=useState(()=>read('favorites',[]));
+  const [filter,setFilter]=useState('All'),[gamesView,setGamesView]=useState('story'),[favorites,setFavorites]=useState(()=>read('favorites',[]));
   const [challengeId,setChallengeId]=useState(null);
   useEffect(()=>{window.arcticChallenge=value=>{if(/^[A-Za-z0-9_-]{24}$/.test(value)){setChallengeId(value);setSheet('friend-challenge');}};return()=>delete window.arcticChallenge;},[]);
   const [puzzle,setPuzzle]=useState(null),[postcard,setPostcard]=useState(null),reactionAt=useRef(0);
@@ -158,6 +160,8 @@ function App(){
   const state=online?room.gameState:local?.state;
   const definition=id?game(id):null;
   const outcome=state?result(state):null;
+  const [victoryDismissed,setVictoryDismissed]=useState(false);
+  useEffect(()=>{setVictoryDismissed(false);},[id,outcome?.winner,outcome?.draw,local?.matchId,room?.matchId]);
   const me=room?.players.find(p=>p.id===profile.id);
   const humans=online?room.players.filter(p=>!p.bot).map(p=>p.seat):local?.humans||[];
   const perspective=id?matchPerspective({id,online,seat:me?.seat,mode:local?.mode,humans,turn:state?.turn}):'red';
@@ -410,12 +414,14 @@ function App(){
       <header className="lobby-header discovery-header"><h1 className="discovery-sr-only">Antarctic Kingdoms</h1><button className="discovery-brand" aria-label="Antarctic Kingdoms home" onClick={()=>setTab('home')}><img src={tab==='home'?'art/home-v1/brand-logo.webp':BRAND.icon} alt="Antarctic Gaming Co." width="40" height="40"/><span><small>ANTARCTIC KINGDOMS</small><strong>{{home:'Antarctic Kingdoms',games:'Games',shop:'Shop',chats:'Chats',profile:'Passport',friends:'Friends'}[tab]}</strong></span></button><div className="header-controls">{headerControls}<button className="avatar-btn" onClick={()=>setTab('profile')} aria-label="Open passport"><Avatar color={profile.avatar} size={36}/></button></div></header>
       <main className="lobby-content" data-view={tab}>
         {tab==='games'&&<>
-          <div className="filter-row">{['All','2 players','3 players','4 players','Favorites'].map(item=><button className={filter===item?'active':''} key={item} onClick={()=>setFilter(item)}>{item==='Favorites'&&<Heart size={13}/>} {item}</button>)}</div>
-
+          <nav className="ak-games-views" aria-label="Explore Games" data-testid="games-view-tabs">{[['story','Story Adventure'],['all','All Games'],['halls','Halls']].map(([value,label])=><button key={value} type="button" aria-pressed={gamesView===value} onClick={()=>setGamesView(value)}>{label}</button>)}</nav>
+          {gamesView!=='story'&&<div className="filter-row">{['All','2 players','3 players','4 players','Favorites'].map(item=><button className={filter===item?'active':''} key={item} onClick={()=>setFilter(item)}>{item==='Favorites'&&<Heart size={13}/>} {item}</button>)}</div>}
           <JourneyBar onJourney={showJourney} access={hallAccess} onFormations={()=>formations()} onPass={()=>accessShop('all-halls-v1')}/>
-          <CulturalGames filter={filter} favorites={favorites} onFavorite={toggleFavorite} onIntroduce={setIntroduction} onPlay={launchPlay} onLearn={openLearning} access={hallAccess} progress={world.halls}/>
+          {gamesView==='story'?<StoryAdventureGallery access={hallAccess} onIntroduce={setIntroduction} onPlay={launchPlay}/>:
+           gamesView==='all'?<AllGamesGallery filter={filter} favorites={favorites} onFavorite={toggleFavorite} onIntroduce={setIntroduction} onPlay={launchPlay}/>:
+           <CulturalGames filter={filter} favorites={favorites} onFavorite={toggleFavorite} onIntroduce={setIntroduction} onPlay={launchPlay} onLearn={openLearning} access={hallAccess} progress={world.halls}/>}
           <InstallWebApp/>
-        </>}
+        </>
         {tab==='home'&&<HomeLanding onChaturanga={()=>pick('dominion')} onBrowse={()=>setTab('games')} onLearn={()=>setTab('games')} onJourney={()=>setTab('profile')} onStory={()=>setSheet('world-guide')} onJoin={()=>{setNameDraft(profile.name);setSheet('join-name');}} onShop={()=>setTab('shop')} onContinue={homeContinue} continueLabel={continueLabel} continueImage={resumable?HALL_ART[resumable.room.tableId]?.card:practiceId?HALL_ART[practiceId]?.card:null} roomCode={joinCode} onRoomCode={setJoinCode} story={storyOptions.enabled} discovery={<NextDiscovery access={hallAccess} target={discoveryTarget} onOpen={showJourney}/>}/>}
 
         {tab==='shop'&&<PhysicalCollection onLearn={setIntroduction} onDigital={()=>setSheet('collection')}/>}
@@ -466,12 +472,13 @@ function App(){
     </>}
 
     {screen==='match'&&state&&<>
+      {outcome&&!victoryDismissed&&<VictoryCelebration id={id} title={definition?.name||id} outcome={outcome} visible={visible} isOnline={online} onBack={()=>{setVictoryDismissed(true);setScreen('lobby');setTab('games');}} onPlayAgain={()=>{setVictoryDismissed(true);if(online)setScreen('room');else setSheet('restart');}} onRematch={()=>{setVictoryDismissed(true);setScreen('room');}} onFinalBoard={()=>setVictoryDismissed(true)} onShare={()=>share((outcome.draw?'A remarkable draw in ':((outcome.winningTeam?teamName(outcome.winner):seatName(id,outcome.winner))+' won '))+(definition?.name||id)+' · Antarctic Kingdoms','Antarctic Kingdoms match result')}/>}
       <header className="match-header"><button className="icon-btn" aria-label="Back to games" onClick={()=>{setScreen('lobby');setTab('home');}}><ArrowLeft size={24}/></button><div><h1><GameTitle id={id}/></h1><small>{online?`Room ${room.roomCode} · ${inviteStatus}`:local.mode==='hotseat'?'On this phone':'Practice with casual bots'}</small></div><div className="header-controls">{headerControls}<button className="fair-mini" aria-label="Open Fair Play" onClick={()=>setSheet('fair-play')}><Shield size={15}/></button><button className="icon-btn" aria-label="Match options" onClick={()=>setSheet('options')}><MoreHorizontal/></button></div></header>
       {online&&room.fair?.pending&&<div className="fair-pending-roll" role="status"><span>Your signed roll is fixed. Waiting for public randomness…</span>{me?.id===room.fair.pending.signed.intent.actor&&<button disabled={busy||connection!=='online'} onClick={()=>run(()=>command('ap_game_action',{revision:room.revision,actionId:room.fair.pending.signed.intent.actionId}))}>Retrieve roll</button>}</div>}{id==='dominion'&&teamGame(state)&&<p className="match-team-banner">2v2 · Green + Pink vs Red + Blue{online?` · You: ${teamName(me?.seat)}`:''}</p>}
       <div className={`players-strip ${definition.players===4?'four-players':''}`}>{definition.seats.map(color=>{const player=online?room.players.find(p=>p.seat===color):{name:local.mode==='hotseat'?`${seatName(id,color)} player`:local.humans.includes(color)?profile.name:`${seatName(id,color)} bot`,bot:local.mode!=='hotseat'&&!local.humans.includes(color)};const eliminated=state.eliminatedTeams?.includes(color),current=turn(state)===color&&!outcome;return <div className={`player-pill ${current?'current':''} ${eliminated?'eliminated':''}`} key={color}><Avatar color={color} gameId={id} size={36} online={online&&!!player?.connected}/><span><strong>{player?.name||seatName(id,color)}</strong>{id==='dominion'&&teamGame(state)&&<small>{teamName(color)}</small>}<small>{eliminated?'Eliminated':current?(canAct?'Your turn':thinking?'Thinking…':`${seatName(id,color)}’s turn`):player?.bot?'Bot':seatName(id,color)}</small></span></div>;})}</div>
       {online&&connection!=='online'&&<button className="offline-banner" onClick={()=>run(()=>roomClient.connect())}><WifiOff size={15}/> Connection interrupted. Tap to reconnect.</button>}
       {id!=='dominion'&&<p className="board-perspective" role="status"><i style={{background:COLORS[perspective]}}/>{seatName(id,perspective)} at the bottom{!online&&local.mode==='hotseat'?` · Pass the phone to ${seatName(id,perspective)}`:''}</p>}
-      <main className={`match-content ${id==='dominion'?'dominion-match':''}`}>{!outcome&&<MatchDiscovery id={id} access={hallAccess} eligible={online||local.progressEligible!==false} onJourney={showJourney}/>}<ChaturangaBoardSpace id={id}><div className={`match-board-wrap personal-table trim-${collection.table}`}><Board id={id} state={state} legal={legal} selected={selected} suggested={suggested} trail={trail} onSelect={setSelected} onTarget={target} canAct={canAct} perspective={perspective} compactControls={id==='dominion'} controlsTarget={id==='dominion'?boardToolsTarget:null}/></div></ChaturangaBoardSpace>{id==='dominion'&&!outcome&&<DiceTray state={state} legal={legal} canAct={canAct} onAction={commit} onChoices={openTurnChoices} onRoll={()=>chooseDice(rollActionId(state))} onSelect={setSelected}/>}
+      <main className={`match-content ${id==='dominion'?'dominion-match':''}`}>{!outcome&&<MatchDiscovery id={id} access={hallAccess} eligible={online||local.progressEligible!==false} onJourney={showJourney}/>}<ChaturangaBoardSpace id={id}><div className={`match-board-wrap personal-table trim-${collection.table}`}><Board id={id} state={state} legal={legal} selected={selected} suggested={suggested} trail={trail} onSelect={setSelected} onTarget={target} canAct={canAct} perspective={perspective} compactControls={id==='dominion'} controlsTarget={id==='dominion'?boardToolsTarget:null}/></div></ChaturangaBoardSpace>{id==='dominion'&&!outcome&&<DiceTray state={state} legal={legal} canAct={canAct} onAction={commit} onChoices={openTurnChoices} onRoll={()=>chooseDice(rollActionId(state))} onSelect={setSelected} onHelp={()=>setSheet('dominion-roll-help')}/>}
         <section className="command-area">
           {id==='dominion'&&<div className={'board-controls-slot '+(outcome?'finished':'')} ref={setBoardToolsTarget}/>}
           {id!=='dominion'&&local?.guide&&!online&&<div className="first-move-guide" role="status">{companion.preferences.mode!=='off'&&<img className="guide-face" src={GUIDES[GAME_HERITAGE[id].host].image} alt={GUIDES[GAME_HERITAGE[id].host].name}/>}<span><strong>{id==='dominion'&&!state.dice.rolled?'1. Roll both dice':selected?`${id==='dominion'?'3':'2'}. Choose a highlighted destination`:`${id==='dominion'?'2':'1'}. Select the piece with the gold ring`}</strong><small>{id==='dominion'&&!state.dice.rolled?'The dice activate pieces for this turn. Each die permits one move.':selected?'Blue dots are empty legal destinations. Orange rings mark captures.':'This is an offline learning table. Every highlighted move follows the real rules.'}</small></span></div>}
