@@ -15,7 +15,7 @@ function useHelpPreference(){const [enabled,setEnabled]=useState(rollHelpEnabled
 export function usePostRollHelp({id,state,legal,canAct,screen,sheet,matchId,onOpen}){
  const enabled=useHelpPreference(),seen=useRef(null),open=useRef(onOpen);open.current=onOpen;
  const signature=state?`${matchId}:${state.turn}:${state.mobileTurnNumber||0}:${state.dice?.values?.join(',')}`:'';
- useEffect(()=>{if(enabled&&screen==='match'&&id==='dominion'&&canAct&&state?.dice?.rolled&&!state.revivalPassRequired&&!sheet&&seen.current!==signature){seen.current=signature;open.current();}},[enabled,screen,id,legal,canAct,state?.dice?.rolled,state?.revivalPassRequired,sheet,signature]);
+ useEffect(()=>{if(enabled&&screen==='match'&&id==='dominion'&&canAct&&legal?.some(a=>['move','pass','end'].includes(a.kind))&&state?.dice?.rolled&&!state.revivalPassRequired&&!sheet&&seen.current!==signature){seen.current=signature;open.current();}},[enabled,screen,id,legal,canAct,state?.dice?.rolled,state?.revivalPassRequired,sheet,signature]);
 }
 function HelpSwitch(){const enabled=useHelpPreference();return <label className="ch-roll-help-toggle"><input type="checkbox" checked={enabled} onChange={e=>setRollHelp(e.target.checked)}/><span>Show move guide after rolling</span></label>;}
 const activeRoles=state=>isLongDiceState(state)?LONG_DICE_ROLES:DICE_ROLES;
