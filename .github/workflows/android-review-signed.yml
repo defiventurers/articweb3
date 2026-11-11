@@ -27,7 +27,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
       - name: Verify secure signer configuration
         id: signer
         shell: bash
@@ -39,6 +38,8 @@ jobs:
           else
             echo "ready=yes" >> "$GITHUB_OUTPUT"
           fi
+      - uses: android-actions/setup-android@v3
+        if: steps.signer.outputs.ready == 'yes'
       - name: Install Android API 36 SDK
         if: steps.signer.outputs.ready == 'yes'
         run: sdkmanager --install 'platforms;android-36' 'build-tools;36.0.0'
