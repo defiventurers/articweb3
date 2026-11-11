@@ -18,7 +18,7 @@ test('Restored five-tab shell retains home, nine stories, source links, Shop and
  const {dom,doc,errors}=open();t.after(()=>dom.window.close());await waitFor(()=>doc.querySelector('.home-heritage'));
  assert.deepEqual([...doc.querySelectorAll('.bottom-nav small')].map(n=>n.textContent),['Home','Games','Shop','Chats','Passport']);
  assert.equal(doc.querySelector('.home-v2-hosts').getAttribute('src'),'art/home-v1/home-hosts-welcome.webp');
- assert.ok(doc.querySelector('.home-v2-shop'));button(doc,'Games').click();await waitFor(()=>doc.querySelector('.cultural-games'));
+ assert.ok(doc.querySelector('.home-v2-shop'));button(doc,'Games').click();await waitFor(()=>doc.querySelector('[data-testid="story-adventure-gallery"]'));assert.equal(doc.querySelector('.ak-games-views button[aria-pressed="true"]').textContent,'Story Adventure');button(doc,'All Games').click();await waitFor(()=>doc.querySelectorAll('.all-game-tile').length===9);button(doc,'Halls').click();await waitFor(()=>doc.querySelector('.cultural-games'));
  const seen=new Set();
  for(let i=0;i<9;i++){
   const name=doc.querySelector('.expedition-hero strong').textContent;assert.ok(!seen.has(name));seen.add(name);
