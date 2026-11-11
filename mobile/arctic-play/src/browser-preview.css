@@ -1,0 +1,44 @@
+/* Public, browser-only exploration. No account or chain privileges are granted. */
+.kingdom-preview,.kingdom-preview-standalone{min-height:100dvh;max-width:680px;margin:0 auto;background:radial-gradient(ellipse at top,#193d56,#071f38 80%);color:#ecf5f7;padding:0 15px max(90px,env(safe-area-inset-bottom))}
+.kingdom-preview-header{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:17px 0 14px;border-bottom:1px solid #d0b26c6b}
+.kingdom-preview-brand{display:flex;gap:10px;align-items:center;min-width:0}
+.kingdom-preview-brand small{display:block;color:#ead4a3;font:700 9px/1.2 system-ui;letter-spacing:1.5px}
+.kingdom-preview-brand h1{font:700 clamp(17px,5vw,27px)/1.13 Georgia,serif;color:#fff6e3;margin:3px 0;overflow-wrap:anywhere}
+.kingdom-preview-crown{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;font-size:27px;color:#e5c475;border-radius:12px;background:#d7b56f20;border:1px solid #d6b265}
+.kingdom-preview-signin{display:flex;gap:4px;align-items:center;justify-content:center;border:1px solid #c6ad79;background:#efd9a9;color:#1b3a51;border-radius:13px;min-height:45px;padding:8px 11px;font-size:11px;font-weight:800;white-space:nowrap}
+.kingdom-preview-guest-note{padding:13px 13px 10px;margin:15px 0 12px;border:1px solid #c8ab766b;background:#27476085;border-radius:14px}
+.kingdom-preview-guest-note strong{display:flex;align-items:center;gap:7px;color:#f9daa2;font:700 13px Georgia,serif}
+.kingdom-preview-guest-note p{font:12px/1.5 system-ui;margin:7px 0;color:#dae8f3}
+.kingdom-preview .ak-games-views button{font-size:clamp(10px,3vw,13px)}
+.kingdom-preview .all-games-gallery{color:#18394d}
+.kingdom-preview .catalogue-heading{color:#e5eef4}
+.kingdom-preview .catalogue-heading p{color:#b0c8d5}
+.kingdom-preview .journey-pagination button{background:#dfecf0;color:#173a4e;border-radius:9px;border:1px solid #9db6c4}
+.kingdom-preview .journey-pagination span{color:#c8dbe4}
+.kingdom-preview .filter-row button{background:#183850;color:#d2e8f0;border:1px solid #9fb8c255}
+.kingdom-preview .filter-row button.active{background:#d8b56b;color:#1d3649}
+.kingdom-preview .culture-tabs button{color:#f0f7fa}
+.kingdom-preview .culture-tabs button[aria-pressed=true]{color:#16394b}
+.kingdom-preview .expedition-copy{color:#e8eff2}
+.kingdom-preview .expedition-small-art button{color:#143a50}
+.kingdom-preview .expedition-actions button.primary{background:#e7c67f;color:#1b3a4e}
+.kingdom-preview-footer{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;margin:24px 0 8px;padding-top:15px;border-top:1px solid #d3b46c78;color:#c9dce5;font:11px system-ui}
+.kingdom-preview-footer span,.kingdom-preview-footer button{display:flex;gap:6px;align-items:center}
+.kingdom-preview-footer button{min-height:44px;background:transparent;border:1px solid #d5bd90;color:#f9dfac;border-radius:11px;padding:8px 10px}
+.kingdom-preview-prompt{position:fixed;z-index:99;inset:0;display:flex;align-items:center;justify-content:center;padding:19px;background:#08192cd9}
+.kingdom-preview-prompt>section{width:min(100%,420px);padding:23px 18px;border:2px solid #c9aa6a;border-radius:18px;background:#173c54;color:#f8ead2;box-shadow:0 15px 40px #0009}
+.kingdom-preview-prompt h2{font:700 24px Georgia,serif;margin:0 0 10px}
+.kingdom-preview-prompt p{font-size:13px;line-height:1.6}
+.kingdom-preview-prompt button{width:100%;min-height:48px;margin:5px 0;display:flex;align-items:center;justify-content:center;gap:9px}
+.kingdom-preview-standalone{padding:0 0 25px;max-width:none}
+.kingdom-preview-ribbon{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:8px 14px;background:#102d48;color:#f9e7b3;font:700 11px system-ui}
+.kingdom-preview-ribbon span{display:flex;align-items:center;gap:7px}
+.kingdom-preview-ribbon button{min-height:44px;padding:8px;border:1px solid #e8d39e;background:#e1b965;color:#14374d;border-radius:9px;font-size:12px;font-weight:700}
+.kingdom-preview-alert{margin:12px;padding:13px;background:#e2edf2;color:#174052;border-radius:12px}
+.kingdom-preview-alert button{margin-left:8px;color:#135d91;text-decoration:underline;background:transparent}
+.kingdom-preview-intro{min-height:100dvh;background:#0a2238}
+.harbor-guest-preview{display:flex;align-items:center;justify-content:center;gap:7px;min-height:48px;margin:8px auto 3px;padding:9px 15px;width:min(92%,430px);border:1px solid #d0b56c;border-radius:15px;background:linear-gradient(#efdcad,#c99f56);color:#1b3b4e;font:800 13px system-ui}
+.harbor-guest-preview-note{margin:5px auto 8px;text-align:center;font-size:11px;color:#b5cedb;max-width:320px}
+.entry-browser-preview{min-height:44px;width:100%;margin:10px 0 0;border-radius:12px;border:1px solid #c6a66b;background:#e2cc98;color:#173a50;font-size:13px;font-weight:800}
+@media(prefers-reduced-motion:reduce){.kingdom-preview *{scroll-behavior:auto;animation:none!important}}
+@media(max-width:390px){.kingdom-preview{padding-left:10px;padding-right:10px}.kingdom-preview-header{gap:5px}.kingdom-preview-signin{padding:7px}.kingdom-preview-brand{gap:5px}.kingdom-preview-crown{flex-basis:32px;width:32px;height:32px}}
