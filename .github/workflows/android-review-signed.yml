@@ -1,0 +1,105 @@
+name: Build signed Android v5.10.2 review APK (no publication)
+on:
+  push:
+    branches: [codex/v5102-complete-victory-and-apk-gate]
+    paths:
+      - '.github/workflows/android-review-signed.yml'
+      - 'mobile/arctic-play/**'
+      - 'frontend/src/games/co-tu-lenh/**'
+      - 'frontend/src/games/shanshui-xiangqi/**'
+      - 'frontend/src/games/shared/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      ORIGINAL_JKS_B64: ${{ secrets.AK_ANDROID_RELEASE_JKS_B64 }}
+      ORIGINAL_JKS_PASSWORD: ${{ secrets.AK_ANDROID_RELEASE_KEYSTORE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Verify secure signer configuration
+        id: signer
+        shell: bash
+        run: |
+          if [ -z "$ORIGINAL_JKS_B64" ] || [ -z "$ORIGINAL_JKS_PASSWORD" ]; then
+            echo "ready=no" >> "$GITHUB_OUTPUT"
+            echo "### NO SIGNED APK: original signing keystore/password not configured in GitHub Actions secrets." >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::Configure AK_ANDROID_RELEASE_JKS_B64 and AK_ANDROID_RELEASE_KEYSTORE_PASSWORD. Do not commit or paste keys."
+          else
+            echo "ready=yes" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install Android API 36 SDK
+        if: steps.signer.outputs.ready == 'yes'
+        run: sdkmanager --install 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Install Android frontend dependencies
+        if: steps.signer.outputs.ready == 'yes'
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: mobile/arctic-play/build-deps
+      - name: Compile current 9-game source
+        if: steps.signer.outputs.ready == 'yes'
+        run: node mobile/arctic-play/scripts/build-current.mjs --native
+      - name: Run source and gameplay regression tests
+        if: steps.signer.outputs.ready == 'yes'
+        run: npm run test:current
+        working-directory: mobile/arctic-play
+      - name: Sign APK with original trusted identity only
+        if: steps.signer.outputs.ready == 'yes'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sign_dir="$(mktemp -d "$RUNNER_TEMP/ak-secret.XXXXXXXX")"
+          echo "SIGNING_DIR=$sign_dir" >> "$GITHUB_ENV"
+          chmod 700 "$sign_dir"
+          printf '%s' "$ORIGINAL_JKS_B64" | base64 --decode > "$sign_dir/release.jks"
+          printf '%s' "$ORIGINAL_JKS_PASSWORD" > "$sign_dir/password"
+          chmod 600 "$sign_dir/release.jks" "$sign_dir/password"
+          python3 mobile/arctic-play/scripts/build-apk.py \
+            --sdk "$ANDROID_HOME" --jdk "$JAVA_HOME" \
+            --keystore "$sign_dir/release.jks" --password-file "$sign_dir/password" \
+            --output "$RUNNER_TEMP/review-apk"
+      - name: Confirm signer fingerprint, APK alignment, hash and embedded version
+        if: steps.signer.outputs.ready == 'yes'
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="$RUNNER_TEMP/review-apk/AntarcticKingdoms-v5.10.2.apk"
+          test -s "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$apk" > "$RUNNER_TEMP/certificate-check.txt"
+          grep -qi '20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37' "$RUNNER_TEMP/certificate-check.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -p 4 "$apk"
+          python3 - <<'PY'
+          import json,os,pathlib,zipfile
+          p=pathlib.Path(os.environ['RUNNER_TEMP'])/'review-apk/AntarcticKingdoms-v5.10.2.apk'
+          with zipfile.ZipFile(p) as z:
+              d=json.loads(z.read('assets/app-version.json'))
+              assert d['version']=='5.10.2' and d['versionCode']==106,d
+              assert z.testzip() is None
+          print('Archive, embedded version and signer verified')
+          PY
+          echo "### Signed review APK ready for **real-device testing**, not public release." >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: steps.signer.outputs.ready == 'yes' && success()
+        with:
+          name: AntarcticKingdoms-v5.10.2-signed-review
+          path: |
+            ${{ runner.temp }}/review-apk/AntarcticKingdoms-v5.10.2.apk
+            ${{ runner.temp }}/review-apk/AntarcticKingdoms-v5.10.2.apk.sha256
+            ${{ runner.temp }}/review-apk/build-info.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Clean original private signing files
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "$SIGNING_DIR" ] && [ -d "$SIGNING_DIR" ]; then rm -rf -- "$SIGNING_DIR"; fi
