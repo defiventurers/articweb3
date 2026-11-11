@@ -1,0 +1,70 @@
+{
+  "status": "planned",
+  "for_sale": false,
+  "images_are": "existing_digital_art",
+  "games": [
+    {
+      "id": "san-you-qi",
+      "name": "San You Qi",
+      "origin": "Chinese Qing-era Three Friends Chess · current board is a documented reconstruction",
+      "image": "/assets/heritage-arcade/board/sanyou-arctic-board.png",
+      "detail": "Three-arm board · 156 playable intersections"
+    },
+    {
+      "id": "arctic-dominion",
+      "name": "Chaturanga · Arctic Dominion",
+      "origin": "Modern character-led adaptation inspired by Indian Chaturanga",
+      "image": "/assets/home-v1/physical-board-preview.webp",
+      "detail": "Four kingdoms · 8 × 8 board · long dice"
+    },
+    {
+      "id": "xiangqi",
+      "name": "Xiangqi",
+      "origin": "Traditional Chinese chess",
+      "image": "/assets/heritage-arcade/board/xiangqi-arctic-board.png",
+      "detail": "Two armies · river and palaces"
+    },
+    {
+      "id": "shogi-frozen-shogunate",
+      "name": "Shogi",
+      "origin": "Japanese chess, a continuing living tradition",
+      "image": "/assets/games/shogi-frozen-shogunate/board.png",
+      "detail": "9 × 9 · promoted pieces and drops"
+    },
+    {
+      "id": "sanguo-yan-yi-qi",
+      "name": "Sanguo Yan Yi Qi",
+      "origin": "Three-kingdom Chinese chess adaptation with a Han court",
+      "image": "/assets/heritage-arcade/sanguo-yan-yi/yan-yi-arctic-board.webp",
+      "detail": "Three armies · imperial roles"
+    },
+    {
+      "id": "sanguo-qi",
+      "name": "Sanguo Qi",
+      "origin": "Three-kingdom Chinese chess variant",
+      "image": "/assets/heritage-arcade/board/sanguo-arctic-board.png",
+      "detail": "Three-arm board · traditional roles"
+    },
+    {
+      "id": "sannin-shogi",
+      "name": "Sannin Shogi",
+      "origin": "Modern historical Japanese variant, developed in the 1930s",
+      "image": "/assets/games/sannin-shogi/board.webp",
+      "detail": "127-cell hex · three armies"
+    },
+    {
+      "id": "co-tu-lenh",
+      "name": "Cờ Tư Lệnh",
+      "origin": "Modern Vietnamese Commander Chess · Antarctic rules are under review",
+      "image": "/assets/co-tu-lenh/board/board-antarctic-11x12.webp",
+      "detail": "11 × 12 board · land, air and naval units"
+    },
+    {
+      "id": "shanshui-xiangqi",
+      "name": "Shan Shui Xiangqi",
+      "origin": "Modern Antarctic four-army adaptation of Chinese chess",
+      "image": "/assets/games/shanshui-xiangqi/board-dark.webp",
+      "detail": "13 × 13 intersections · mountains and rivers"
+    }
+  ]
+}
