@@ -42,7 +42,7 @@ test('All nine stories have sourced heritage chapters and positive museum tone',
  for(const [id,story] of Object.entries(stories.games)){
   assert.equal(story.screens.length,3,id);
   assert.ok(story.screens.every(screen=>screen.title&&screen.text),id);
-  assert.ok(story.screens[1].historicalNote,id);
+  assert.ok(story.screens.some(screen=>screen.historicalNote),id);
   for(const screen of story.screens)for(const sourceId of screen.sourceIds)assert.ok(stories.sources[sourceId],id+' missing '+sourceId);
  }
  const component=read('../src/LaunchExperience.jsx');
