@@ -23,9 +23,9 @@ export function RoyalResult({title,kind='win',winnerLabel='',reason='',pieces=[]
   document.addEventListener('keydown',onKey);
   return ()=>{document.removeEventListener('keydown',onKey);previouslyFocused?.focus?.({preventScroll:true});};
  },[onViewBoard]);
- const isDraw=kind==='draw';
- const headline=isDraw?'A WORTHY DRAW':viewerWon===false?'MATCH COMPLETE':'ROYAL VICTORY';
- const caption=isDraw?'Two worthy sides have shared the field.':viewerWon===false?'The winning army has claimed the crown.':'The royal halls salute their champions.';
+ const isDraw=kind==='draw',isUnresolved=kind==='ended';
+ const headline=isUnresolved?'MATCH COMPLETE':isDraw?'A WORTHY DRAW':viewerWon===false?'MATCH COMPLETE':'ROYAL VICTORY';
+ const caption=isUnresolved?'Review the recorded result on the final board.':isDraw?'Two worthy sides have shared the field.':viewerWon===false?'The winning army has claimed the crown.':'The royal halls salute their champions.';
  async function share(){
   if(!onShare)return;
   try{setShareError('');await onShare();}catch{setShareError('Sharing is unavailable on this device.');}
