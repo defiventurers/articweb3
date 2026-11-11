@@ -23,7 +23,7 @@ export function VictoryCelebration({id,title,outcome,visible=[],isOnline=false,v
   <div className="victory-scroll">
    <div className="victory-top"><span>ANTARCTIC KINGDOMS · THE ROYAL RESULT</span><button onClick={onFinalBoard} className="victory-close" aria-label="View final board"><Eye size={20}/></button></div>
    <p className="victory-crest" aria-hidden="true">♛</p>
-   <h1 id="victory-heading">{outcome?.draw?'A Worthy Draw':'VICTORY!'}</h1>
+   <h1 id="victory-heading">{outcome?.draw?'A Worthy Draw':viewerWon?'VICTORY!':'MATCH COMPLETE'}</h1>
    <h2>{resultLabel}</h2>
    <p className="victory-game">{title}</p>
    <div className="victory-army" aria-label={outcome?.draw?'Final position':'Winning army celebration'}>
