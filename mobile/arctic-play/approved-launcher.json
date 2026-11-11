@@ -1,0 +1,13 @@
+{
+  "baselineVersion": "5.9.15",
+  "baselineSha256": "27ab56bc1c8f2575f6d6ea0573432ac354102283e725d5bb33d1ed37b3cc2488",
+  "files": {
+    "res/drawable-nodpi/ic_launcher_foreground.png": "b147dffb3485341bc082c0e097778d274a0b5c6a2052c0a0fcd816ed38628a4e",
+    "res/drawable-nodpi/ic_launcher_monochrome.png": "55f2eac10b923d6545025c307a84b77c09b5fed1f1e3648d321ed3aa97bc232e",
+    "res/mipmap-mdpi/ic_launcher.png": "b2118b5a487141e33ce0166e47354b8a3cd39864a5e0cd489b1109f0d765c5e3",
+    "res/mipmap-hdpi/ic_launcher.png": "1199b98ff99746939fb6c9e71a8ff91dc5bbdaac1b418f3fcd45cb781a35901f",
+    "res/mipmap-xhdpi/ic_launcher.png": "80bbbfa65447ed1418a2c63a7235dba155e225786f941ae4bf428cbe5f0432b2",
+    "res/mipmap-xxhdpi/ic_launcher.png": "e6a5f54035c9d6bb82a4f168cc0f26411faf4ae3f215e54562ec363401859e67",
+    "res/mipmap-xxxhdpi/ic_launcher.png": "488ceb4e5de2f5e3ee2bae8f0bd9a099b0c0f18365c2098f83a20f34dba460bc"
+  }
+}

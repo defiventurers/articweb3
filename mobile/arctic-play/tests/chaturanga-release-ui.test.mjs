@@ -22,7 +22,7 @@ function open({saved,help=true,theme='dark'}={}){
 }
 const buttons=d=>[...d.querySelectorAll('button')],text=(d,t)=>buttons(d).find(b=>b.textContent.trim()===t),position=w=>JSON.parse(w.localStorage.getItem('arctic-play.v1.practice.dominion')).state;
 const a=open();try{
- await wait(()=>a.d.querySelector('.home-chaturanga'),'heritage Home');assert.equal(a.d.querySelector('.home-chaturanga img').getAttribute('src'),'art/launch-v1/india-hall.webp');
+ await wait(()=>a.d.querySelector('.home-chaturanga'),'heritage Home');assert.equal(a.d.querySelector('.home-chaturanga img').getAttribute('src'),'art/chaturanga-heritage-v1/cover.webp');
  a.d.querySelector('.home-chaturanga').click();await wait(()=>a.d.querySelector('.cg-panel[data-game=dominion]'));
  buttons(a.d).find(b=>b.textContent.includes('On this phone')).click();await wait(()=>a.d.querySelector('[data-screen=match]'));
  await wait(()=>a.d.querySelector('[role=dialog][aria-label="Your turn"]'));
@@ -38,7 +38,7 @@ const a=open();try{
  await wait(()=>text(a.d,'Pass die 2')?.disabled===false);text(a.d,'Pass die 2').click();await wait(()=>a.d.querySelector('[role=dialog][aria-label="Your turn"]'));
  await wait(()=>text(a.d,'Roll both dice')?.disabled===false);text(a.d,'Roll both dice').click();await wait(()=>position(a.w).turn==='red'&&position(a.w).dice.rolled&&a.d.querySelector('.ch-heritage-dice .dice-end-turn')&&!a.d.querySelector('.ch-heritage-dice .dice-end-turn').disabled);
  assert.equal(a.d.querySelector('.ch-roll-guide'),null);a.d.querySelector('.ch-heritage-dice .ch-roll-help-toggle input').click();await wait(()=>a.d.querySelector('.ch-roll-guide'));
- text(a.d,'Back to the board').click();await wait(()=>!a.d.querySelector('.ch-roll-guide'));checks.push('Assistance can be disabled persistently and restored from the dice tray');
+ text(a.d,'Continue to the board').click();await wait(()=>!a.d.querySelector('.ch-roll-guide'));checks.push('Assistance can be disabled persistently and restored from the dice tray');
  await wait(()=>text(a.d,'Pass remaining')?.disabled===false);text(a.d,'Pass remaining').click();await wait(()=>position(a.w).turn==='blue'&&!position(a.w).dice.rolled);
  await wait(()=>text(a.d,'Pass turn')?.disabled===false);text(a.d,'Pass turn').click();await wait(()=>text(a.d,'Yes, pass turn')?.disabled===false);text(a.d,'Yes, pass turn').click();await wait(()=>position(a.w).turn==='yellow');checks.push('Passing one die, remaining dice and an unrolled turn all use the intended controls and confirmation');
 }catch(e){fs.writeFileSync(path.resolve('chaturanga-ui-failure.html'),a.d.body.innerHTML);throw e}finally{a.dom.window.close()}

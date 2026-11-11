@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {createRequire} from 'node:module';
 import {webcrypto} from 'node:crypto';
 import {secureUuid} from '../src/uuid.js';
-const require=createRequire(import.meta.url),{JSDOM,VirtualConsole,requestInterceptor}=require('../../../frontend/node_modules/jsdom');
+const require=createRequire(new URL('../build-deps/package.json',import.meta.url)),{JSDOM,VirtualConsole,requestInterceptor}=require('jsdom');
 const assets=new URL('../android/app/src/main/assets/',import.meta.url);
 const html=()=>fs.readFileSync(new URL('index.html',assets),'utf8');
 async function waitFor(fn){const until=Date.now()+10000;while(!fn()){if(Date.now()>until)throw Error('The packaged app did not reach its expected startup screen.');await new Promise(r=>setTimeout(r,20));}}

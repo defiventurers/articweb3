@@ -15,12 +15,12 @@ function useHelpPreference(){const [enabled,setEnabled]=useState(rollHelpEnabled
 export function usePostRollHelp({id,state,legal,canAct,screen,sheet,matchId,onOpen}){
  const enabled=useHelpPreference(),seen=useRef(null),open=useRef(onOpen);open.current=onOpen;
  const signature=state?`${matchId}:${state.turn}:${state.mobileTurnNumber||0}:${state.dice?.values?.join(',')}`:'';
- useEffect(()=>{if(enabled&&screen==='match'&&id==='dominion'&&canAct&&legal?.some(a=>a.kind==='end')&&state?.dice?.rolled&&!state.revivalPassRequired&&!sheet&&seen.current!==signature){seen.current=signature;open.current();}},[enabled,screen,id,legal,canAct,state?.dice?.rolled,state?.revivalPassRequired,sheet,signature]);
+ useEffect(()=>{if(enabled&&screen==='match'&&id==='dominion'&&canAct&&legal?.some(a=>['move','pass','end'].includes(a.kind))&&state?.dice?.rolled&&!state.revivalPassRequired&&!sheet&&seen.current!==signature){seen.current=signature;open.current();}},[enabled,screen,id,legal,canAct,state?.dice?.rolled,state?.revivalPassRequired,sheet,signature]);
 }
 function HelpSwitch(){const enabled=useHelpPreference();return <label className="ch-roll-help-toggle"><input type="checkbox" checked={enabled} onChange={e=>setRollHelp(e.target.checked)}/><span>Show move guide after rolling</span></label>;}
 const activeRoles=state=>isLongDiceState(state)?LONG_DICE_ROLES:DICE_ROLES;
 const roleName=(state,type)=>isLongDiceState(state)?HERITAGE_NAMES[type]:PIECE_NAMES[type];
-export function DiceTray({state,legal,canAct,onAction,onChoices,onRoll,onSelect}){
+export function DiceTray({state,legal,canAct,onAction,onChoices,onRoll,onSelect,onHelp}){
  const end=legal.find(a=>a.kind==='end'),long=isLongDiceState(state),returning=needsKingReturn(state);
  const roll=()=>{if(canAct&&!state.dice.rolled)(onRoll||onChoices)?.();};
  if(returning)return <section className="dice-tray long-dice-tray ch-king-return" aria-label="Return your King"><strong>Your partner has released your King</strong><p>Place it on any empty square. Then pass your second move.</p><button type="button" className="primary" disabled={!canAct} onClick={()=>onSelect?.('control:revive')}>Place returning King</button></section>;
@@ -34,6 +34,7 @@ export function DiceTray({state,legal,canAct,onAction,onChoices,onRoll,onSelect}
     {pass&&<button type="button" className="ch-pass-die" disabled={!canAct} onClick={()=>onAction(pass)}>Pass die {index+1}</button>}
    </div>;
   })}</div>}
+  {state.dice.rolled&&!state.revivalPassRequired&&onHelp&&<button type="button" className="ch-dice-quick-help" onClick={onHelp}>✦ Show my moves &amp; dice guide</button>}
   <HelpSwitch/>
   {state.frozenTeams?.length>0&&<p className="ch-frozen-note" role="status">Frozen: {state.frozenTeams.map(t=>seatName('dominion',t)).join(', ')}. Their pieces stay on the board.</p>}
  </section>;
@@ -43,11 +44,11 @@ export function DominionTurnPrompt({state,confirm,busy,onBoth,onSkip,onAskSkip})
  return <div className="dominion-turn-prompt ch-heritage-prompt"><div className="dominion-turn-color"><i style={{background:COLORS[state.turn]}}/><strong>{confirm?`${color} kingdom`:`Your turn · ${color}`}</strong></div>{confirm?<><p>Pass {color}’s turn without rolling?</p><div className="skip-confirm-actions"><button type="button" className="primary full" id="dominion-no-skip" disabled={busy} onClick={onBoth}>No, roll both dice</button><button type="button" className="secondary full danger" disabled={busy} onClick={onSkip}>Yes, pass turn</button></div></>:<><p className="ch-dice-origin">{isLongDiceState(state)?'Four-sided pasa · An Indian dice tradition, reimagined in ice':'Long ice dice · Legacy rules for this saved match'}</p><div className="turn-dice-preview"><button type="button" className="ch-die-face" disabled={busy} aria-label="Roll both long dice" onClick={onBoth}><LongIceDie label="Left long die · Tap to roll both"/></button><LongIceDie label="Right long die · Rolls with the left die"/></div><button type="button" className="primary full" id="dominion-roll-both" disabled={busy} onClick={onBoth}>{busy?'Rolling…':'Roll both dice'}</button><button type="button" className="text-button full skip-turn-choice" disabled={busy} onClick={onAskSkip}>Pass turn</button><HelpSwitch/></>}</div>;
 }
 export function DominionRollGuide({state,legal,onClose,onSelect}){
- return <section className="ch-roll-guide" aria-label="What you can move"><p>Use either die first. Each die gives one move. Doubles can move the same piece twice.</p><div className="ch-guide-dice">{[0,1].filter(i=>state.dice.values[i]!=null).map(index=>{
+ return <section className="ch-roll-guide" aria-label="What you can move"><h3>Two dice. Two choices.</h3><p>Your long dice each grant one move. You may use either die first. A matching pair can move the same piece twice when both moves are legal.</p><div className="ch-guide-dice">{[0,1].filter(i=>state.dice.values[i]!=null).map(index=>{
   const value=state.dice.values[index],used=state.dice.used[index],types=activeRoles(state)[value]||[];
   return <section className="ch-guide-die" key={index}><div><LongIceDie value={value} spent={used}/><strong>Die {index+1} · {value}{used?' · Used':''}</strong></div>{types.map(type=>{
    const moves=legal.filter(a=>a.kind==='move'&&a.raw.dieIndex===index&&state.board[a.raw.fromRow]?.[a.raw.fromCol]?.type===type),sources=[...new Set(moves.map(a=>a.source))];
    return <button type="button" className="ch-guide-piece" key={type} disabled={used||!moves.length} onClick={()=>{onSelect?.(sources[0]);onClose();}}><img src={asset(pieceArt(state.turn,type))} alt=""/><span><strong>{roleName(state,type)}</strong><small>{used?'Die already spent':sources.length?`${sources.length} ${sources.length===1?'piece':'pieces'} · ${moves.length} legal moves`:'No legal move · Pass this die'}</small></span>{!!moves.length&&<span aria-hidden="true">→</span>}</button>;
   })}</section>;
- })}</div><p className="ch-guide-tip">Tap an available piece above to highlight it on the board. You may also pass one die or the remaining turn.</p><HelpSwitch/><button type="button" className="primary full" onClick={onClose}>Back to the board</button></section>;
+ })}</div><p className="ch-guide-tip">Tap an available piece above to highlight it on the board. You may also pass one die or the remaining turn.</p><HelpSwitch/><button type="button" className="primary full" onClick={onClose}>Continue to the board</button></section>;
 }

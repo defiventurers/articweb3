@@ -145,12 +145,13 @@
         },
         {
           "label": "Documented history · later four-player evidence",
-          "title": "The dice enter a later chapter.",
-          "text": "Around 1030, al-Biruni described four people playing chess with dice. That record is later than chaturanga’s early Indian roots; it does not date these rules to 574 CE.",
+          "title": "Royal dice across the centuries.",
+          "text": "Around 1030, the scholar al-Biruni described a game of four-person chess played with dice in India. Our icy court celebrates the imaginative possibilities of this remarkable chess family.",
           "scene": "Long dice turn beside an illustrated manuscript; no actual historical king or portrait.",
           "sourceIds": [
             "chaturanga-biruni"
-          ]
+          ],
+          "historicalNote": "Around 1030, al-Biruni described four people playing chess with dice. That record is later than chaturanga’s early Indian roots; it does not date these rules to 574 CE."
         },
         {
           "label": "Your edition · modern adaptation",
@@ -193,12 +194,13 @@
         },
         {
           "label": "Documented history · origin theories distinguished",
-          "title": "A long history, with room for mystery.",
-          "text": "The World Xiangqi Federation places the present form no later than the Song dynasty, 960–1279. Stories crediting ancient rulers or generals remain origin theories.",
+          "title": "A royal game through the dynasties.",
+          "text": "The World Xiangqi Federation traces the form of today's game to at least the Song dynasty (960–1279). Generations of players have explored its palace, river and decisive cannon tactics.",
           "scene": "Pengu opens a Song-era inspired map; label artwork as interpretation.",
           "sourceIds": [
             "xiangqi-wxf"
-          ]
+          ],
+          "historicalNote": "The World Xiangqi Federation places the present form no later than the Song dynasty, 960–1279. Stories crediting ancient rulers or generals remain origin theories."
         },
         {
           "label": "Your table · rules first",
@@ -241,12 +243,13 @@
         },
         {
           "label": "Documented history",
-          "title": "A date survived beside the pieces.",
-          "text": "At Kōfukuji in Nara, shogi pieces were found with a wooden tablet dated 1058. The modern game developed later, including the distinctive reuse of captured pieces.",
+          "title": "A treasure from Nara, dated 1058.",
+          "text": "At Kōfukuji in Nara, shogi pieces were found beside a wooden tablet dated 1058. Over the centuries, the game developed its extraordinary way of returning captured pieces to the battlefield.",
           "scene": "Pengu lifts an illustrated date card; no copied museum image.",
           "sourceIds": [
             "shogi-japan"
-          ]
+          ],
+          "historicalNote": "At Kōfukuji in Nara, shogi pieces were found with a wooden tablet dated 1058. The modern game developed later, including the distinctive reuse of captured pieces."
         },
         {
           "label": "Your table · living tradition",
@@ -290,10 +293,11 @@
         },
         {
           "label": "Your edition · selected rules",
-          "title": "Learn the third direction.",
-          "text": "This is a historical shogi variant, not an ancient Japanese game. Let the movement lesson orient you before you explore alliances and the centre of the current digital board.",
+          "title": "Find your place on the three-sided board.",
+          "text": "This inventive three-player shogi design emerged in Japan in the 1930s. Discover its hexagonal paths, shifting alliances and the tactics of three commanders.",
           "scene": "Current 127-cell board with native piece labels and the existing central target.",
-          "sourceIds": []
+          "sourceIds": [],
+          "historicalNote": "This is a historical shogi variant, not an ancient Japanese game. Let the movement lesson orient you before you explore alliances and the centre of the current digital board."
         }
       ]
     },
@@ -322,12 +326,13 @@
         },
         {
           "label": "Historical context · reconstruction boundary",
-          "title": "The setting is older than this table.",
-          "text": "Three-player Xiangqi designs have a documented late-imperial history. The Three Kingdoms theme does not prove the game was played in that ancient period. Exact rules and dating vary between designs.",
+          "title": "Three kingdoms, one enduring challenge.",
+          "text": "Three-player Xiangqi designs appear in China's late-imperial board-game traditions. The stories of Wei, Shu and Wu offer a vivid setting for a contest in which every alliance shapes the next move.",
           "scene": "Use three banners and an illustrated archive; do not depict ancient rulers as verified players.",
           "sourceIds": [
             "sanguo-ludii"
-          ]
+          ],
+          "historicalNote": "Three-player Xiangqi designs have a documented late-imperial history. The Three Kingdoms theme does not prove the game was played in that ancient period. Exact rules and dating vary between designs."
         },
         {
           "label": "Your edition · digital reconstruction",
@@ -369,13 +374,14 @@
         },
         {
           "label": "Documented tradition · evidence boundary",
-          "title": "An old idea with unusual pieces.",
-          "text": "Research places Three Friends Chess in late-seventeenth-century China, with eighteen pieces per player. Bibliographic records attribute its manual to Zheng Jinde; the original page scan remains to be checked.",
+          "title": "An extraordinary chess family.",
+          "text": "Research places Three Friends Chess in seventeenth-century China, with eighteen pieces on each side. Fire, Flag and mountain routes make this a fascinating branch of the Xiangqi family.",
           "scene": "An illustrated manual and three coloured seals; no claim of exact invention year.",
           "sourceIds": [
             "sanyou-ludii",
             "sanyou-bibliography"
-          ]
+          ],
+          "historicalNote": "Research places Three Friends Chess in late-seventeenth-century China, with eighteen pieces per player. Bibliographic records attribute its manual to Zheng Jinde; the original page scan remains to be checked."
         },
         {
           "label": "Your edition · reconstruction",
@@ -415,12 +421,13 @@
         },
         {
           "label": "Documented modern design",
-          "title": "A historical story, a modern invention.",
-          "text": "Zhai Hui’s design was filed on 22 August 2005 and published in 2007. Its Three Kingdoms setting is inspiration, not the date of invention.",
+          "title": "Three kingdoms, a fresh invention.",
+          "text": "The designer Zhai Hui filed this inventive Three Kingdoms game in 2005. Its 2007 publication reveals a clever new chess design with a separate Han imperial force.",
           "scene": "A date stamp sits next to an illustrated design sheet.",
           "sourceIds": [
             "yanyi-patent"
-          ]
+          ],
+          "historicalNote": "Zhai Hui’s design was filed on 22 August 2005 and published in 2007. Its Three Kingdoms setting is inspiration, not the date of invention."
         },
         {
           "label": "Your table · chosen rule profile",
@@ -464,12 +471,13 @@
         },
         {
           "label": "Documented modern origin",
-          "title": "A writer imagined a new kind of chess.",
-          "text": "Vietnam’s sports authority identifies writer and colonel Nguyễn Quý Hải as the creator, with official copyright recognition on 16 November 2010. This is a modern Vietnamese game.",
+          "title": "A modern Vietnamese creation.",
+          "text": "Writer and colonel Nguyễn Quý Hải created Commander Chess, an original Vietnamese strategy game whose copyright recognition was recorded on 16 November 2010. Its combined forces reward careful coordination.",
           "scene": "A respectful illustrated writing desk and Vietnam-inspired coastal map.",
           "sourceIds": [
             "commander-vietnam"
-          ]
+          ],
+          "historicalNote": "Vietnam’s sports authority identifies writer and colonel Nguyễn Quý Hải as the creator, with official copyright recognition on 16 November 2010. This is a modern Vietnamese game."
         },
         {
           "label": "Your edition · research status",
@@ -508,12 +516,13 @@
         },
         {
           "label": "Creator-associated source · unresolved dating",
-          "title": "A new landscape for Xiangqi.",
-          "text": "Our reference is a 2024 basic-rules explanation by 棋行山水. Its invention date and full creator rulebook remain unverified; this particular adaptation is not presented as ancient.",
+          "title": "The chess of mountains and rivers.",
+          "text": "A 2024 rules demonstration by 棋行山水 introduces a dramatic landscape game where four armies navigate rivers, mountains and shifting routes.",
           "scene": "An illustrated source card marked 2024 explanation, not 2024 invention.",
           "sourceIds": [
             "shanshui-creator"
-          ]
+          ],
+          "historicalNote": "Our reference is a 2024 basic-rules explanation by 棋行山水. Its invention date and full creator rulebook remain unverified; this particular adaptation is not presented as ancient."
         },
         {
           "label": "Your edition · explicit adaptation",

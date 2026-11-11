@@ -3,10 +3,5 @@
 /* Keep story actions visible while long copy and expanded sources scroll. */
 .heritage-intro{height:100dvh;min-height:0;overflow:hidden}.heritage-intro>header,.heritage-intro>footer,.intro-learn{flex-shrink:0}.intro-cinema{flex-shrink:0}.intro-story-copy{min-height:0;overflow-y:auto;overscroll-behavior:contain}.heritage-intro>footer{background:var(--bg,#0b2135);position:relative;z-index:2}
 
-/* The approved four-host scene fills the card; keep its clear left text area. */
-html[data-theme] .app[data-screen="lobby"] .home-final .home-v2-hosts{width:100%;max-width:none;height:100%;right:0;bottom:0;object-fit:cover;object-position:right center;filter:none;z-index:0}
-.home-final .home-v2-hero:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#eef8ffbd,transparent 45%);z-index:1;pointer-events:none}
-html[data-theme] .app[data-screen="lobby"] .home-final .home-v2-copy{width:40%}
-html[data-theme] .app[data-screen="lobby"] .home-final .home-v2-title{color:#16394c;font-size:clamp(26px,7.3vw,34px)}
-html[data-theme] .app[data-screen="lobby"] .home-final .home-v2-copy>p,.home-final .home-v2-title em,.home-final .home-heritage-signature{color:#77531c}
-html[data-theme] .app[data-screen="lobby"] .home-final .home-v2-copy>span{color:#254b5e}
+
+.kingdom-portrait{display:block;width:100%;max-width:430px;height:auto;margin:0 auto 16px;border-radius:18px}.physical-shop>h2{font:700 29px/1.2 Georgia}.physical-shop>p{font-size:13px;line-height:1.6;color:var(--muted)}.physical-preview-art{display:block;width:100%;border:0;padding:0;background:var(--panel);color:var(--text);text-align:left}.physical-preview-art img{width:100%;height:180px;object-fit:cover}.physical-preview-art>span{display:block;padding:8px;font-size:10px}.physical-preview-copy{padding:12px}.physical-preview-copy h3{margin:7px 0;font:700 23px Georgia}.physical-preview-copy p{font-size:12px;line-height:1.6}.physical-preview-copy .secondary{min-height:44px}.physical-preview-detail{margin-top:12px}.physical-preview-detail .text-button{display:flex;gap:8px}.physical-shop .shop-products{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}.physical-preview{overflow:hidden;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
