@@ -29,7 +29,7 @@ for(const source of nodeModules)await bundle(path.join(mobile,'src',source),path
 await bundle(path.join(root,'frontend/src/games/shanshui-xiangqi/mobileAdapter.js'),path.join(mobile,'build/shanshui.cjs'),'node');
 const cssNames=['approved-shell','launch','v5102-ux'];
 const css=await Promise.all(cssNames.map(n=>fs.readFile(path.join(mobile,'src',n+'.css'),'utf8')));
-for(const n of ['shared/antarctic-visa/visa.css','shared/fair-play/fair-play.css','shared/compact-panels/compact-game-panels.css','frontend/src/games/shanshui-xiangqi/shanshui.css','frontend/src/games/co-tu-lenh/coTuLenh.css'])css.push(await fs.readFile(path.join(root,n),'utf8'));
+for(const n of ['shared/antarctic-visa/visa.css','shared/fair-play/fair-play.css','shared/compact-panels/compact-game-panels.css','frontend/src/games/shanshui-xiangqi/shanshui.css','frontend/src/games/co-tu-lenh/coTuLenh.css','frontend/src/games/shared/royal-result.css'])css.push(await fs.readFile(path.join(root,n),'utf8'));
 await fs.writeFile(path.join(destination,'app.css'),css.join('\n'));
 await fs.copyFile(path.join(root,'shared/fair-play/fair-play.css'),path.join(destination,'fair-play.css'));
 for(const n of ['startup.js','theme-init.js'])await fs.copyFile(path.join(mobile,'src',n),path.join(destination,n));
