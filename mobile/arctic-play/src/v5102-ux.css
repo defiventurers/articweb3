@@ -1,0 +1,88 @@
+/* v5.10.2 review patch: UI only. Do not change legal rules, app IDs or approved artwork. */
+.ak-games-views{display:grid;grid-template-columns:1.3fr 1fr .75fr;gap:7px;padding:3px 0 14px}
+.ak-games-views button{min-height:50px;padding:7px 4px;border:1px solid #9ebdcc;border-radius:13px;background:linear-gradient(#f8fcff,#d9edf7);color:#244459;font:700 clamp(10px,3.1vw,14px)/1.2 system-ui;box-shadow:0 3px 0 #a8ccd77a}
+.ak-games-views button[aria-pressed=true]{color:#172e3d;border-color:#ac7a28;background:linear-gradient(#fff0be,#d4b269);box-shadow:0 3px 0 #b38b3d}
+.story-adventure-gallery,.all-games-gallery{--ak-royal:#b78b42;color:var(--harbor-ink,#173951)}
+.journey-banner{position:relative;overflow:hidden;background:radial-gradient(circle at 90% 10%,#406382,#102944 80%);color:#f6eee0;border:1px solid #d6b46e;border-radius:20px;padding:20px 18px 102px;box-shadow:inset 0 0 0 3px #e9ce8520}
+.journey-banner>span{display:flex;gap:5px;align-items:center;color:#f8d68c;font-size:11px;letter-spacing:2px;font-weight:800}
+.journey-banner h2{font:700 clamp(26px,6vw,38px)/1.08 Georgia,serif;margin:14px 0 7px;color:#fff6df}
+.journey-banner p{font-size:13px;line-height:1.55;max-width:33rem;margin:0 0 5px;color:#d5e8f4}
+.journey-banners-characters{display:flex;position:absolute;bottom:-15px;left:8%;right:8%;justify-content:space-around;height:120px;pointer-events:none}
+.journey-banners-characters img{height:118px;width:23%;max-width:94px;object-fit:contain;filter:drop-shadow(0 4px 4px #00172dcc)}
+.journey-chapters{display:flex;gap:6px;overflow:auto;padding:13px 3px;scrollbar-width:thin}
+.journey-chapters button{width:39px;height:39px;flex:0 0 39px;border:1px solid #9ab7c2;border-radius:50%;background:#eaf5fa;color:#21465b;font-weight:800}
+.journey-chapters button[aria-current]{border-color:#a47b37;background:#ecc775;color:#24384a}
+.journey-chapter{overflow:hidden;border:1px solid #c6a360;border-radius:20px;background:#f0f9fb;box-shadow:0 8px 20px #17395118}
+.journey-cover{position:relative;width:100%;aspect-ratio:1.6;display:block;overflow:hidden;background:#132f4e;text-align:left;padding:0}
+.journey-cover:after{content:'';position:absolute;inset:35% 0 0;background:linear-gradient(transparent,#08243fe8)}
+.journey-cover img{width:100%;height:100%;object-fit:cover}
+.journey-cover-caption{position:absolute;z-index:1;bottom:13px;left:15px;right:15px;color:#fff7e9;text-shadow:0 2px 4px #001}
+.journey-cover-caption small,.journey-cover-caption strong{display:block}.journey-cover-caption small{font:700 10px system-ui;letter-spacing:1.1px}.journey-cover-caption strong{font:700 clamp(24px,6vw,38px) Georgia,serif;margin-top:5px}
+.journey-chapter-copy{padding:17px 17px 21px}.journey-origin{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#806437}
+.journey-chapter-copy h3{font:700 clamp(23px,5vw,29px) Georgia,serif;margin:8px 0;color:#1f3c50}.journey-chapter-copy p{font-size:13px;line-height:1.6}
+.journey-chapter-actions{display:flex;gap:9px;flex-wrap:wrap}.journey-chapter-actions button{display:flex;gap:7px;align-items:center;justify-content:center;min-height:48px;flex:1 1 120px;font-size:12px}
+.journey-pagination{display:flex;align-items:center;justify-content:space-between;gap:9px;margin:14px 0 26px}.journey-pagination button{min-height:44px;padding:8px;font-size:11px}.journey-pagination span{font-size:12px;color:var(--muted,#5b7786)}
+.catalogue-heading{display:flex;gap:10px;align-items:center;padding:13px 0 18px}.catalogue-heading h2{font:700 22px Georgia,serif;margin:0}.catalogue-heading p{font-size:12px;margin:5px 0 0;color:var(--muted,#607889)}
+.all-games-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding-bottom:18px}
+.all-game-tile{overflow:hidden;border:1px solid #b7cbd5;background:#f0f8fc;border-radius:16px;min-width:0}.all-game-image{display:block;width:100%;aspect-ratio:1.15;padding:0;border:0;background:#16364b}.all-game-image img{width:100%;height:100%;object-fit:cover}
+.all-game-detail{padding:11px}.all-game-detail small{font-size:9px;color:#6a7f88}.all-game-detail h3{font:700 17px/1.2 Georgia,serif;margin:4px 0}.all-game-detail p{font-size:11px;line-height:1.4;min-height:32px}
+.all-game-actions{display:flex;gap:4px;justify-content:space-between}.all-game-actions button{display:flex;gap:3px;align-items:center;justify-content:center;min-height:44px;flex:1 1 auto;padding:5px 2px;background:#d6ebf1;color:#1d4861;border:1px solid #abcbd7;border-radius:9px;font-size:10px;font-weight:700}
+.all-game-actions button:last-child{flex:0 0 37px}
+@media(max-width:355px){.all-games-grid{gap:8px}.all-game-detail h3{font-size:15px}.all-game-actions button{font-size:9px}}
+/* A royal illustrated introduction that leaves room for sources without negative headline copy. */
+.heritage-intro{background:radial-gradient(ellipse at top,#244662,#0a223c 62%,#0a1b2b);color:#f4e9d3}
+.heritage-intro>header{border-bottom:1px solid #c6a15c55;background:#102e43;padding:12px 13px}.heritage-intro>header small{font:700 12px Georgia,serif;color:#f7dfb0}
+.intro-cinema{height:clamp(215px,36dvh,370px);max-height:none;border-bottom:3px solid #c19c53}
+.intro-cinema:after{content:'';position:absolute;inset:auto 0 0;height:36%;background:linear-gradient(transparent,#071b2ba0);pointer-events:none}
+.intro-cinema>span{font-size:9px;color:#efe7d6;background:#162e48cc;letter-spacing:1.3px;border:1px solid #d0b37577;z-index:2}
+.intro-pieces{z-index:1;inset:16% 8% 3%}.intro-pieces img{filter:drop-shadow(0 9px 7px #06192aaa)}
+.intro-pause{z-index:3;background:#edf8f3e9}
+.intro-story-copy{flex:1;padding:19px 22px 24px;background:linear-gradient(180deg,#dcecf4,#f1f1e9 85%);color:#1d3950;border-left:4px solid #c6a058;border-right:4px solid #c6a058}
+.intro-story-copy .world-eyebrow{font:700 11px Georgia,serif;letter-spacing:1.2px;color:#956c34;text-transform:uppercase}
+.intro-story-copy h2{font:700 clamp(29px,7vw,46px)/1.05 Georgia,serif;color:#263d54;letter-spacing:-.3px;margin:12px 0 15px;text-wrap:balance}
+.intro-story-copy>p{font:400 clamp(16px,4vw,19px)/1.5 Georgia,serif;margin:8px 0}
+.intro-story-copy:before{content:'❖  ✦  ❖';display:block;text-align:center;letter-spacing:20px;color:#b89a57;font-size:14px}
+.intro-host{border-top:1px solid #b4aa8669;padding-top:11px}.intro-host img{height:56px;width:56px;border-radius:13px;object-fit:contain}.intro-host p strong{font:700 15px Georgia,serif}
+.intro-story-copy details{border-top:1px solid #b4aa8669;padding-top:11px;color:#37576a}.intro-story-copy details a{color:#245d79}
+.heritage-intro>footer{position:sticky;bottom:0;gap:6px;border-top:2px solid #b99855;background:#102d45;color:#f8f1e1;padding:11px 13px max(13px,env(safe-area-inset-bottom))}
+.heritage-intro>footer>div button{height:34px;width:34px}.heritage-intro>footer>div button[aria-current]{background:#e5bd70;color:#173b4f}
+.heritage-intro>footer>.primary{background:linear-gradient(#eecf88,#cca151);color:#1c3951;border-radius:12px;min-height:47px;font-weight:800}
+.heritage-intro>footer>.secondary{min-height:47px}
+@media(max-height:760px){.intro-cinema{height:29dvh;min-height:185px}.intro-story-copy{padding:10px 16px}.intro-story-copy h2{font-size:27px}.intro-story-copy>p{font-size:15px}}
+/* Keep both historical dice, but make turn choices easy to scan at a glance. */
+.app[data-game=dominion] .ch-heritage-dice{padding:12px 12px 8px!important;border:2px solid #caa75f!important;border-radius:18px!important;box-shadow:0 5px 18px #001a2d30,inset 0 0 0 2px #d4ad5d33!important}
+.ch-heritage-dice .dice-heading{gap:5px;align-items:center}.ch-heritage-dice .dice-heading strong{font:700 17px Georgia,serif}.ch-heritage-dice .dice-heading small{font-size:10px}
+.ch-heritage-dice .dice-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.ch-heritage-dice .die{min-width:0;display:grid;grid-template-columns:1fr;border:1px solid #d4af6577;border-radius:12px;padding:5px;background:#f2f9fb14}
+.ch-heritage-dice .die.used{opacity:.55}
+.ch-heritage-dice .ch-die-face .long-ice-die{max-height:70px;filter:drop-shadow(0 5px 3px #08293e4c)}
+.ch-heritage-dice .long-die-legend{display:flex;flex-direction:column;align-items:center;gap:4px}.ch-heritage-dice .long-die-legend>strong{font-size:13px;text-align:center}
+.ch-heritage-dice .dice-activation-images img{width:38px!important;height:38px!important;filter:drop-shadow(0 3px 4px #04284044)}
+.ch-heritage-dice .ch-pass-die{border-radius:10px;min-height:40px;margin-top:4px;font-size:11px}
+.ch-heritage-dice .ch-roll-help-toggle{min-height:32px;font-size:10px}.ch-dice-quick-help{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;width:100%;margin-top:7px;border:1px solid #c4a96d;color:inherit;background:#ddb86f20;border-radius:9px;font-size:12px;font-weight:700}
+.ch-roll-guide>p{font-size:13px}.ch-guide-die>div>svg{height:85px}.ch-guide-piece img{width:48px;height:50px}.ch-roll-guide .ch-guide-dice{gap:6px}
+.ch-heritage-prompt .turn-dice-preview>svg{max-height:94px}
+@media(max-height:730px){.ch-heritage-dice .ch-die-face .long-ice-die{max-height:52px}.ch-heritage-dice .dice-activation-images img{width:27px!important;height:27px!important}}
+/* A final, server-state-derived result scene. The exact installed piece sprites are reused, never replaced. */
+.victory-overlay{position:fixed;z-index:170;inset:0;display:flex;align-items:center;justify-content:center;background:#06192feb;color:#fff6e3;overflow:hidden}
+.victory-scroll{position:relative;z-index:2;box-sizing:border-box;width:min(100%,680px);height:100%;padding:15px 18px max(24px,env(safe-area-inset-bottom));overflow-y:auto;display:flex;flex-direction:column;align-items:center;text-align:center;background:radial-gradient(ellipse at 50% 27%,#285070aa,transparent 65%)}
+.victory-top{width:100%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #cda96080;padding-bottom:8px;font:700 10px Georgia,serif;letter-spacing:1.3px}.victory-close{min-height:44px;min-width:44px;background:#cfa95333;border:1px solid #cfa953;border-radius:50%;color:inherit}
+.victory-crest{font-size:34px;color:#e4bf6a;margin:13px 0 0}
+.victory-scroll h1{font:700 clamp(39px,10vw,68px) Georgia,serif;letter-spacing:2px;color:#ffdf8f;margin:0;text-shadow:0 3px 9px #000}.victory-scroll h2{font:700 clamp(18px,5.5vw,27px) Georgia,serif;margin:8px 0 3px}
+.victory-game{font:700 12px Georgia,serif;letter-spacing:1.5px;color:#d9c8a4;text-transform:uppercase}
+.victory-army{position:relative;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;align-items:flex-end;gap:1px;width:100%;min-height:210px;max-height:31dvh;overflow:hidden;margin:12px 0 7px;padding:30px 12px 9px;border:2px solid #bb9856;border-radius:18px;background:radial-gradient(circle at 55% 10%,#76dbe866,#154865,#09263f)}
+.victory-army:after{content:'';position:absolute;bottom:0;left:0;right:0;height:22px;background:linear-gradient(transparent,#b1ddea55)}
+.victory-sky{position:absolute;top:6px;left:0;right:0;color:#f6dc99;font-size:24px;letter-spacing:17px}
+.victory-sprite{width:clamp(37px,10vw,69px);height:clamp(54px,13vw,95px);object-fit:contain;animation:victory-wave 1.5s ease-in-out var(--victory-delay,0s) infinite alternate;filter:drop-shadow(0 5px 5px #0008)}
+.victory-drawn{display:flex;justify-content:center;gap:6px}.victory-drawn img{width:23%;max-width:110px;max-height:160px;object-fit:contain}
+.victory-reason{font:700 14px Georgia,serif;margin:5px 0 4px}.victory-heritage-note{font:13px Georgia,serif;color:#cbdce5;margin:3px 0 15px}
+.victory-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.victory-actions button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:50px;border:1px solid #acbed2;background:#d5ecf9;color:#1b3e55;border-radius:12px;font-size:12px;font-weight:800}.victory-actions .victory-primary{grid-column:1/-1;background:linear-gradient(#f5d78e,#caa04a);border-color:#f8e0a3}
+.victory-bottom{margin:13px 0 0;min-height:44px;border:0;background:transparent;color:#cee4f1;font-size:12px}
+.victory-canvas{position:absolute;inset:0;pointer-events:none}.victory-snowflake{position:absolute;font-size:50px;color:#f3c976aa;animation:victory-float 5s infinite alternate}.snow-1{top:11%;left:5%}.snow-2{top:32%;right:5%}.snow-3{bottom:9%;left:15%}
+@keyframes victory-wave{from{transform:translateY(2px) rotate(-2deg)}to{transform:translateY(-9px) rotate(3deg)}}@keyframes victory-float{from{transform:translateY(-8px);opacity:.2}to{transform:translateY(15px);opacity:.8}}
+@media(prefers-reduced-motion:reduce){.victory-overlay *{animation:none!important;transition:none!important}}
+/* Access checking is deliberately separate from the visually approved loading transition. */
+.entry-restored-loading{position:relative;min-height:calc(100dvh - 155px);background:#091e36;color:#f7edd5;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;overflow:hidden}
+.entry-restored-loading>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.58}
+.entry-restored-loading:before{content:'';position:absolute;inset:0;background:linear-gradient(transparent,#071d33a8)}
+.entry-restored-loading>div{position:relative;z-index:1}.entry-restored-loading h2{font:700 35px Georgia,serif;text-shadow:0 2px 12px #000}
+.entry-restored-loading p{font-size:13px;line-height:1.55}.entry-restored-loading .entry-loading-ornament{font-size:28px;color:#e9c680}
