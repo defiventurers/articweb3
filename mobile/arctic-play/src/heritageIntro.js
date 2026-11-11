@@ -6,7 +6,7 @@ export function createHeritageUI({h,useState,useEffect,useRef},data){
     const hall=data.halls.find(item=>item.id===value)||data.halls[0];
     return h('section',{className:'heritage-halls','aria-label':'Cultural halls'},
       h('div',{className:'heritage-hall-tabs',role:'group','aria-label':'Explore a cultural hall'},data.halls.map(item=>h('button',{key:item.id,type:'button','aria-pressed':item.id===hall.id,onClick:()=>onChange(item.id)},item.title))),
-      h('div',{className:'heritage-hall-note','data-hall':hall.id},h('strong',null,hall.subtitle),h('p',null,hall.detail)));
+      h('div',{className:'heritage-hall-note'+(hall.image?' heritage-hall-illustrated':''),'data-hall':hall.id},hall.image&&h('img',{className:'heritage-hall-background',src:hall.image,alt:'',loading:'lazy',decoding:'async'}),h('div',{className:'heritage-hall-text'},h('strong',null,hall.subtitle),h('p',null,hall.detail))));
   }
   function Introduction({id,game,onClose,onProceed,onLearn}){
     const story=storyFor(id),[page,setPage]=useState(0),[paused,setPaused]=useState(false),heading=useRef(null);

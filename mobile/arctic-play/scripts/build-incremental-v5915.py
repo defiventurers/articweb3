@@ -18,6 +18,7 @@ BASELINE = '27ab56bc1c8f2575f6d6ea0573432ac354102283e725d5bb33d1ed37b3cc2488'
 CERTIFICATE = '20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37'
 VERSION, CODE = '5.10.2', 106
 ALLOWED_OVERLAY = {'app.js', 'app.css', 'fair-worker.js', 'verifier.js'}
+ADDITIVE_ART = {'art/launch-incremental/halls/' + n + '.webp' for n in ['india', 'china', 'japan', 'vietnam']}
 
 
 def digest(data):
@@ -112,14 +113,17 @@ def main():
             raise ValueError('Corrupt baseline ZIP')
         original = {n: z.read(n) for n in z.namelist()
                     if not n.endswith('/') and not n.startswith('META-INF/')}
+        entry_info = {n: z.getinfo(n) for n in original}
     files = dict(original)
     overlays = [f for f in a.runtime_dir.rglob('*') if f.is_file()]
     if not overlays:
         p.error('Refuse an empty upgrade')
     for f in overlays:
         relative = f.relative_to(a.runtime_dir).as_posix()
-        if relative not in ALLOWED_OVERLAY or f.is_symlink():
+        if relative not in ALLOWED_OVERLAY | ADDITIVE_ART or f.is_symlink():
             raise ValueError('Undeclared overlay file: ' + relative)
+        if relative in ADDITIVE_ART and 'assets/' + relative in original:
+            raise ValueError('New hall art may not overwrite baseline artwork')
         files['assets/' + relative] = f.read_bytes()
     text = files['assets/app.js'].decode()
     old = 'versionName:`5.9.15`,versionCode:103'
@@ -135,6 +139,9 @@ def main():
     files['assets/app-version.json'] = json.dumps(metadata).encode()
     warm = json.loads(files['assets/game-assets.json'])
     warm['version'] = VERSION
+    for name in sorted(ADDITIVE_ART):
+        if 'assets/' + name in files:
+            warm['assets'].append({'url': name, 'bytes': len(files['assets/' + name])})
     for item in warm['assets']:
         item['bytes'] = len(files['assets/' + item['url']])
     files['assets/game-assets.json'] = json.dumps(warm).encode()
@@ -143,8 +150,8 @@ def main():
         raise ValueError('Expected exact baseline asset-cache marker')
     files['assets/game-assets-sw.js'] = files['assets/game-assets-sw.js'].replace(marker, ('ak-public-game-art-bundled-' + VERSION).encode())
     allowed = {'AndroidManifest.xml', 'assets/app-version.json', 'assets/game-assets.json',
-               'assets/game-assets-sw.js'} | {'assets/' + f for f in ALLOWED_OVERLAY}
-    changed = [n for n in files if files[n] != original[n]]
+               'assets/game-assets-sw.js'} | {'assets/' + f for f in ALLOWED_OVERLAY | ADDITIVE_ART}
+    changed = [n for n in files if files[n] != original.get(n)]
     if set(changed) - allowed:
         raise ValueError('Changed protected entries')
     protected = [n for n in original if n.startswith(('assets/art/', 'res/'))
@@ -156,7 +163,12 @@ def main():
     raw = a.output / 'incremental-unaligned.apk'
     with zipfile.ZipFile(raw, 'w', zipfile.ZIP_DEFLATED) as z:
         for n, data in files.items():
-            z.writestr(n, data, compress_type=zipfile.ZIP_STORED if n == 'resources.arsc' else zipfile.ZIP_DEFLATED)
+            prior = entry_info.get(n, entry_info['assets/app.js'])
+            info = zipfile.ZipInfo(n, prior.date_time)
+            info.external_attr = prior.external_attr
+            info.create_system = prior.create_system
+            info.compress_type = zipfile.ZIP_STORED if n == 'resources.arsc' else zipfile.ZIP_DEFLATED
+            z.writestr(info, data)
     apk = a.output / f'AntarcticKingdoms-v{VERSION}-UNSIGNED-REVIEW.apk'
     run(tool('zipalign'), '-f', '-p', '4', raw, apk)
     raw.unlink()

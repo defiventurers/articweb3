@@ -579,25 +579,29 @@
       "id": "subcontinent",
       "title": "Indian court",
       "subtitle": "Carved stone · lotus · brass and ice",
-      "detail": "Chaturanga’s Indian roots meet a fictional Antarctic court. The four-player dice edition is labelled as an adaptation."
+      "detail": "Chaturanga’s Indian roots meet a fictional Antarctic court. The four-player dice edition is labelled as an adaptation.",
+      "image": "art/launch-incremental/halls/india.webp"
     },
     {
       "id": "china",
       "title": "Mountain and river hall",
       "subtitle": "Chinese traditions and modern designs",
-      "detail": "Explore Xiangqi’s river and palace, three-arm reconstructions and contemporary landscapes. Shared inspiration does not mean identical origins or rules."
+      "detail": "Explore Xiangqi’s river and palace, three-arm reconstructions and contemporary landscapes. Shared inspiration does not mean identical origins or rules.",
+      "image": "art/launch-incremental/halls/china.webp"
     },
     {
       "id": "japan",
       "title": "Snow garden hall",
       "subtitle": "Japanese shogi · two and three armies",
-      "detail": "Discover the living two-player tradition beside a documented twentieth-century three-player variant."
+      "detail": "Discover the living two-player tradition beside a documented twentieth-century three-player variant.",
+      "image": "art/launch-incremental/halls/japan.webp"
     },
     {
       "id": "vietnam",
       "title": "Coastal command hall",
       "subtitle": "Modern Vietnamese combined-arms chess",
-      "detail": "Cờ Tư Lệnh is a modern Vietnamese design. This app’s research reconstruction retains its stated rules profile and practice status."
+      "detail": "Cờ Tư Lệnh is a modern Vietnamese design. This app’s research reconstruction retains its stated rules profile and practice status.",
+      "image": "art/launch-incremental/halls/vietnam.webp"
     }
   ]
 }

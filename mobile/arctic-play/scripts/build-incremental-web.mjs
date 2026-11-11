@@ -16,10 +16,10 @@ const expected = '27ab56bc1c8f2575f6d6ea0573432ac354102283e725d5bb33d1ed37b3cc24
 const args = {};
 for (let i = 2; i < process.argv.length; i += 2) {
   const key = process.argv[i];
-  if (!['--baseline-apk','--runtime-dir','--output','--version','--version-code','--apk-url'].includes(key) || !process.argv[i+1]) throw Error('Unknown or incomplete option: '+key);
+  if (!['--baseline-apk','--runtime-dir','--output','--version','--version-code','--apk-url','--metrics-endpoint'].includes(key) || !process.argv[i+1]) throw Error('Unknown or incomplete option: '+key);
   if (args[key]) throw Error('Duplicate option: '+key); args[key] = process.argv[i+1];
 }
-if (!args['--baseline-apk'] || !args['--output']) throw Error('Supply --baseline-apk and --output. Optional: --runtime-dir, --version, --version-code, --apk-url.');
+if (!args['--baseline-apk'] || !args['--output']) throw Error('Supply --baseline-apk and --output. Optional: --runtime-dir, --version, --version-code, --apk-url, --metrics-endpoint.');
 const baseline = path.resolve(args['--baseline-apk']);
 if (hash(await fs.readFile(baseline)) !== expected) throw Error('Expected the verified v5.9.15 APK.');
 const release = JSON.parse(await fs.readFile(path.join(mobile, 'release-config.json')));
@@ -82,7 +82,7 @@ with zipfile.ZipFile(sys.argv[1]) as z:
   if ([...app.matchAll(config)].length !== 1) throw Error('Expected one shipped release-configuration anchor.');
   app = app.replace(config, `packageName:\`xyz.arcticdominion.play\`,versionName:\`${version}\`,versionCode:${versionCode},distribution:\`web-pwa\``);
   await fs.writeFile(appFile, app);
-  for (const file of ['pwa-tools.js','pwa-tools.css']) await fs.copyFile(path.join(mobile,'src',file),path.join(output,file));
+  for (const file of ['pwa-tools.js','pwa-tools.css','launch-visit.js']) await fs.copyFile(path.join(mobile,'src',file),path.join(output,file));
   const sharp = require('sharp');
   for (const size of [192,512]) await sharp(path.join(staging,'art/brand/icon.webp')).resize(size,size,{fit:'contain',background:'#061a32'}).flatten({background:'#061a32'}).png().toFile(path.join(output,`pwa-icon-${size}.png`));
   const manifest = {id:'./',name:'Antarctic Kingdoms',short_name:'Kingdoms',description:'Traditional strategy games and friends at Lantern Harbor.',start_url:'./',scope:'./',display:'standalone',background_color:'#061a32',theme_color:'#061a32',icons:[192,512].map(size=>({src:`pwa-icon-${size}.png`,sizes:`${size}x${size}`,type:'image/png',purpose:'any'}))};
@@ -95,8 +95,14 @@ with zipfile.ZipFile(sys.argv[1]) as z:
     apkAttribute = ` data-apk-url="${escape(url.href)}"`;
   }
   let html = await fs.readFile(path.join(staging,'index.html'),'utf8');
+  let metricsAttribute = '';
+  if (args['--metrics-endpoint']) {
+    const url = new URL(args['--metrics-endpoint']);
+    if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) throw Error('Metrics endpoint must be an explicit credential-free HTTPS URL without query or fragment.');
+    metricsAttribute = ` data-metrics-endpoint="${url.href.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}"`;
+  }
   if (html.split('</head>').length !== 2 || html.split('</body>').length !== 2) throw Error('Unexpected baseline HTML.');
-  html = html.replace('</head>','<link rel="stylesheet" href="pwa-tools.css"></head>').replace('</body>',`<script src="pwa-tools.js" data-version="${version}"${apkAttribute}></script></body>`);
+  html = html.replace('</head>','<link rel="stylesheet" href="pwa-tools.css"></head>').replace('</body>',`<script src="pwa-tools.js" data-version="${version}"${apkAttribute}></script><script src="launch-visit.js"${metricsAttribute}></script></body>`);
   await fs.writeFile(path.join(output,'index.html'),html);
   const metadata = JSON.parse(await fs.readFile(path.join(output,'app-version.json')));
   const baselineMetadata = JSON.parse(await fs.readFile(path.join(staging,'app-version.json')));
@@ -115,7 +121,7 @@ with zipfile.ZipFile(sys.argv[1]) as z:
     const relative = path.relative(output,file).split(path.sep).join('/');
     if (!['game-assets-sw.js'].includes(relative)) files.push({url:relative,sha256:hash(await fs.readFile(file))});
   });
-  const shell = ['index.html','app.js','app.css','startup.js','theme-init.js','manifest.webmanifest','app-version.json','game-assets.json','pwa-tools.js','pwa-tools.css','fair-play.css','verify.html','verifier.js','bot.js','learn.js','fair-worker.js','shanshui-bot.js','co-tu-lenh-bot.js','pwa-icon-192.png','pwa-icon-512.png'].filter(file=>files.some(entry=>entry.url===file));
+  const shell = ['index.html','app.js','app.css','startup.js','theme-init.js','manifest.webmanifest','app-version.json','game-assets.json','pwa-tools.js','pwa-tools.css','launch-visit.js','fair-play.css','verify.html','verifier.js','bot.js','learn.js','fair-worker.js','shanshui-bot.js','co-tu-lenh-bot.js','pwa-icon-192.png','pwa-icon-512.png'].filter(file=>files.some(entry=>entry.url===file));
   const id = `${version}-${hash(JSON.stringify(files)).slice(0,16)}`;
   const worker = (await fs.readFile(path.join(mobile,'src/pwa-game-assets-sw.js'),'utf8')).replace('__AK_WEB_BUILD__',JSON.stringify({id,files,shell}));
   await fs.writeFile(path.join(output,'game-assets-sw.js'),worker);

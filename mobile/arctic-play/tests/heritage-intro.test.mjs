@@ -63,8 +63,16 @@ test('shipped expedition integration, access callbacks and keyboard image entry'
     const catalogue=Object.entries(data.games).map(([id,story])=>({id:id==='shanshui-xiangqi'?'shanshui':id,name:story.title,image:'art/covers/'+id+'.webp',legacy:false,playerCounts:[2]}));
     await React.act(async()=>root.render(React.createElement(GamesAdventure,{...props,key:'halls',catalogue,isOpen:()=>true})));
     await click(button('Snow garden hall'));assert.match(node.querySelector('.exp-hero').textContent,/Shogi/);assert.match(node.querySelector('.exp-chapter').getAttribute('aria-label'),/of 2/);
+    assert.equal(node.querySelector('.heritage-hall-background').getAttribute('src'),'art/launch-incremental/halls/japan.webp');
+    assert.equal(node.querySelector('.heritage-hall-background').getAttribute('alt'),'');
     await click(node.querySelector('[aria-label="Next game"]'));assert.match(node.querySelector('.exp-hero').textContent,/Sannin Shogi/);
+    for(const hall of data.halls.filter(item=>item.image)){
+      await click(button(hall.title));
+      assert.equal(node.querySelector('.heritage-hall-background').getAttribute('src'),hall.image);
+      assert.equal(node.querySelector('.heritage-hall-note').dataset.hall,hall.id);
+    }
     await click(button('All halls'));assert.match(node.querySelector('.exp-chapter').getAttribute('aria-label'),/of 9/);
+    assert.equal(node.querySelector('.heritage-hall-background'),null);
     // The optional grid keeps its separate favorite/play controls while its large
     // image opens the same introduction rather than bypassing the callback.
     Object.assign(context,{PC:catalogue,LC:()=>catalogue,FC:['All']});

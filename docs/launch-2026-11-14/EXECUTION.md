@@ -6,7 +6,7 @@
 - Baseline SHA-256: `27ab56bc1c8f2575f6d6ea0573432ac354102283e725d5bb33d1ed37b3cc2488`, code 103; source milestone `7c0cdd74f2bb4e75bf2ff38021f287273f314503`. The milestone describes incremental transformations of v5.9.14; it does not prove a full source rebuild matches the shipped APK.
 - Preserve loading screen, launcher, native code, original assets, all nine games, modes, and routes. Runtime additions use exact guarded transformations of the approved bundle.
 - v5.10.1/code105 is an existing unapproved candidate. A new native candidate uses a higher code106, preserving package `xyz.arcticdominion.play` and requiring original certificate `20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37` for signing.
-- Preserve baseline mascot names and imagery until the supplied Polly/Retsba/Pengu/Abster references versus later Nova/Rocco/Piko/Ziggy authority conflict is resolved. Do not rename or replace character identities during functional additions.
+- Owner decision during execution: final supplied references `1.jpg`–`4.jpg` govern new artwork: Ziggy (green), Piko (blue), Nova (pink), Rocco (red). Legacy IDs remain compatible. Preserve existing approved loading artwork and icon; reference approval does not approve every draft costume or generated scene.
 - No Render deletion, testnet mint, public update-feed change, real-money activation, social publication, or vendor purchase is part of this checkpoint.
 
 ## Scope and acceptance

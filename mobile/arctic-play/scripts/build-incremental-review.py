@@ -3,6 +3,7 @@
 from pathlib import Path
 import argparse
 import json
+import shutil
 import subprocess
 import sys
 import zipfile
@@ -45,6 +46,11 @@ run('node', mobile / 'scripts/patch-fairness-v5915.mjs', '--input', before, '--o
 for name in ['app.js', 'fair-worker.js', 'verifier.js']:
     (overlay / name).write_bytes((fairness / name).read_bytes())
 (overlay / 'app.css').write_bytes((before / 'app.css').read_bytes() + b'\n' + (mobile / 'src/heritage-intro.css').read_bytes())
+hall_source = root / 'frontend/public/assets/launch-incremental/halls'
+hall_target = overlay / 'art/launch-incremental/halls'
+hall_target.mkdir(parents=True, exist_ok=True)
+for name in ['india', 'china', 'japan', 'vietnam']:
+    shutil.copyfile(hall_source / (name + '.webp'), hall_target / (name + '.webp'))
 command = [sys.executable, mobile / 'scripts/build-incremental-v5915.py', '--baseline', baseline,
            '--runtime-dir', overlay, '--sdk', a.sdk.resolve(), '--output', out / 'android']
 if a.keystore or a.password_file:
