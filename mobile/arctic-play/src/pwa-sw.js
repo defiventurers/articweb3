@@ -1,6 +1,6 @@
 // Cache only this application's public shell. Never cache identity, wallet,
 // dashboard, account, match APIs, requests containing credentials or mutations.
-const CACHE='ak-shell-5.10.1';
+const CACHE='ak-shell-5.10.2-browser-bootfix-1';
 const SHELL=['./','index.html','app.js','app.css','theme-init.js','startup.js','fair-play.css','manifest.webmanifest','art/brand/icon.webp'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('ak-shell-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
