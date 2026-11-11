@@ -1,6 +1,6 @@
 # v5.9.15 preservation checkpoint — 11 November 2026 (Asia/Kolkata)
 
-DO NOT PUBLISH OR DEPLOY FROM THIS BRANCH. It is an evidence and QA checkpoint based on pre-v5.10.0 source. The rejected v5.10.0 UI/icon/navigation are NOT approved.
+DO NOT PUBLISH OR DEPLOY FROM THIS BRANCH. It is an evidence and QA checkpoint. Its audit reference is the pre-v5.10.0 source, but the PR branch was rebased onto current main on November 11 to avoid building a stale frontend in the Vercel preview. This does not approve the rejected v5.10.0 UI/icon/navigation or change the release baseline.
 
 ## Verified provenance
 - Approved binary: AntarcticKingdoms-v5.9.15(2).apk; SHA-256 27ab56bc1c8f2575f6d6ea0573432ac354102283e725d5bb33d1ed37b3cc2488.
@@ -40,4 +40,4 @@ Do not deploy a lower versionCode as a downgrade; withdraw a faulty update feed,
 ## Progress ledger
 - COMPLETE: baseline checksum, signing fingerprint, resource inventory, nine entry evidence, rejected-branch separation, Render inventory and release safety script.
 - PENDING: source-matched clean Android build, real-device install, 9-game tests, signed updated APK/AAB, Play account state, testnet passport mint, Reset dry-run, approved physical meshes and print samples.
-- This branch is a baseline checkpoint; a PR into main only adds documentation/guard. It does not revert v5.10.0 or deliver a new APK.
+- This branch contains only documentation/guard additions on current main after a safety rebase; it does not revert v5.10.0, certify its UI or deliver a new APK.
