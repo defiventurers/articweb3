@@ -28,3 +28,6 @@
 @keyframes ak-royal-float{from{transform:translateY(-12px);opacity:.4}to{transform:translateY(9px);opacity:.8}}
 @media(prefers-reduced-motion:reduce){.ak-royal-result *, .ak-royal-result *::before,.ak-royal-result *::after{animation:none!important;transition:none!important}}
 @media(max-height:700px){.ak-royal-scroll{gap:5px}.ak-royal-crown{width:62px}.ak-royal-army{min-height:145px;max-height:26dvh}.ak-royal-scroll h1{font-size:30px}.ak-royal-army .ak-royal-unit{width:35px;height:50px}}
+
+.ak-royal-army.crowded .ak-royal-unit{width:clamp(27px,8vw,48px);height:clamp(35px,10vw,56px)}
+.ak-royal-army.crowded{overflow-y:auto;align-content:center;scrollbar-width:thin}
