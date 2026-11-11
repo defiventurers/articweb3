@@ -47,3 +47,24 @@ The request omits credentials and referrer, rejects redirects, has an eight-seco
 The default endpoint is the existing Render app URL. `--metrics-endpoint` accepts a credential-free HTTPS URL without query/fragment when deliberately configuring another backend. Its origin must also be permitted by CSP and backend CORS. The source endpoint alone or browser wiring alone does not prove working live analytics: until the matching backend and allowed origin are deployed, requests may return 404/CORS errors and counts remain unverified. API requests are outside the service-worker static whitelist.
 
 Verification: four focused session tests plus seven existing PWA/cache/install tests pass. They cover one request after readiness, payload minimization, reload identity, unsupported contexts, invalid endpoints and nonblocking failure handling.
+
+
+## Exact signed APK download on bounded static hosting
+
+The private review host limits the size of each static file. The optional download page preserves the complete signed APK as sequential **8MiB binary parts**, with per-part and whole-file SHA-256 values in a manifest. No whole APK is staged as a static file and these download files stay outside the game's service-worker cache. The browser assembles the exact bytes on a deliberate download click, checks every part and the whole digest, then saves the original `.apk` filename. The page provides progress, cancellation, retry and a manual Save APK fallback. It clearly labels the file a review build and says physical installation/in-place update testing is pending. Browser hash verification is integrity checking, not independent Android signature verification.
+
+Build the web output with `--apk-download-page downloads/` to add a separate same-origin review-download link in the install dialog. This is intentionally distinct from `--apk-url`; the two flags cannot be combined. After building the web directory, run:
+
+```sh
+node mobile/arctic-play/scripts/package-web-download.mjs \
+  --apk /absolute/path/AntarcticKingdoms-v5.10.2.apk \
+  --web-output /absolute/path/web-output \
+  --version 5.10.2 --version-code 106 \
+  --expected-sha256 4aa2d846e3a5a9f2394c87f0dd01bd6d63f915655eb3ac63d109a17d4d1087a9
+```
+
+The packaging command verifies the exact supplied digest before changing the generated downloads directory; it does not find or use a signing key. Only an incremental-builder output is accepted, and an existing unmarked downloads directory is never replaced. No APK or generated part belongs in source Git.
+
+Manifest validation bounds total size to100MiB, parts to8MiB, requires exact sequential safe filenames and same-origin locations, and rejects inconsistent part sizes or invalid APK/version names. HTTPS is required except loopback HTTP for local QA. Fetches reject redirects. Streaming parts reject oversized bodies before buffering beyond their declared size. The manifest is trusted only as content from this web origin; Android still checks the installed signature, and users should compare the final SHA-256 with the separately supplied release record.
+
+Six focused tests use tiny byte fixtures: exact reassembly and private-host static credentials; per-part/whole corruption and oversized-body rejection; manifest URL/path/size restrictions; cancellation/missing/redirected-part failure; exact-digest packager behavior without fullAPK static output; and explicit relative install-dialog page linkage. Alongside the existing eleven PWA/session cases,17 tests pass. Real mobile browser save/installer behavior remains a device/browser acceptance gate.

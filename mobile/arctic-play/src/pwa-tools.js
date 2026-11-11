@@ -4,6 +4,7 @@
   const script = document.currentScript;
   const version = script?.dataset.version || '';
   const apkUrl = script?.dataset.apkUrl || '';
+  const apkDownloadPage = script?.dataset.apkDownloadPage || '';
   const standalone = () => window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true;
   let deferredPrompt = null, registration = null, button = null, previousFocus = null;
   const dialog = document.createElement('dialog');
@@ -21,6 +22,14 @@
       const link = document.createElement('a');
       link.className = 'ak-pwa-apk'; link.href = url.href; link.rel = 'noopener';
       link.textContent = 'Download the Android APK'; dialog.append(link);
+    }
+  }
+  if (apkDownloadPage === 'downloads/' && !apkUrl) {
+    const url = new URL(apkDownloadPage, document.baseURI);
+    if (url.origin === location.origin && !url.search && !url.hash) {
+      const link = document.createElement('a');
+      link.className = 'ak-pwa-apk'; link.href = url.href; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      link.textContent = 'Download Android review APK'; dialog.append(link);
     }
   }
   document.body.append(dialog);

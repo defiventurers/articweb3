@@ -16,10 +16,12 @@ const expected = '27ab56bc1c8f2575f6d6ea0573432ac354102283e725d5bb33d1ed37b3cc24
 const args = {};
 for (let i = 2; i < process.argv.length; i += 2) {
   const key = process.argv[i];
-  if (!['--baseline-apk','--runtime-dir','--output','--version','--version-code','--apk-url','--metrics-endpoint'].includes(key) || !process.argv[i+1]) throw Error('Unknown or incomplete option: '+key);
+  if (!['--baseline-apk','--runtime-dir','--output','--version','--version-code','--apk-url','--apk-download-page','--metrics-endpoint'].includes(key) || !process.argv[i+1]) throw Error('Unknown or incomplete option: '+key);
   if (args[key]) throw Error('Duplicate option: '+key); args[key] = process.argv[i+1];
 }
-if (!args['--baseline-apk'] || !args['--output']) throw Error('Supply --baseline-apk and --output. Optional: --runtime-dir, --version, --version-code, --apk-url, --metrics-endpoint.');
+if (!args['--baseline-apk'] || !args['--output']) throw Error('Supply --baseline-apk and --output. Optional: --runtime-dir, --version, --version-code, --apk-url, --apk-download-page downloads/, --metrics-endpoint.');
+if (args['--apk-url'] && args['--apk-download-page']) throw Error('Choose either a direct APK URL or the same-origin verified-download page.');
+if (args['--apk-download-page'] && args['--apk-download-page'] !== 'downloads/') throw Error('The supported APK download page is downloads/.');
 const baseline = path.resolve(args['--baseline-apk']);
 if (hash(await fs.readFile(baseline)) !== expected) throw Error('Expected the verified v5.9.15 APK.');
 const release = JSON.parse(await fs.readFile(path.join(mobile, 'release-config.json')));
@@ -88,6 +90,7 @@ with zipfile.ZipFile(sys.argv[1]) as z:
   const manifest = {id:'./',name:'Antarctic Kingdoms',short_name:'Kingdoms',description:'Traditional strategy games and friends at Lantern Harbor.',start_url:'./',scope:'./',display:'standalone',background_color:'#061a32',theme_color:'#061a32',icons:[192,512].map(size=>({src:`pwa-icon-${size}.png`,sizes:`${size}x${size}`,type:'image/png',purpose:'any'}))};
   await fs.writeFile(path.join(output,'manifest.webmanifest'),JSON.stringify(manifest));
   let apkAttribute = '';
+  if (args['--apk-download-page']) apkAttribute = ' data-apk-download-page="downloads/"';
   if (args['--apk-url']) {
     const url = new URL(args['--apk-url']);
     if (url.protocol !== 'https:' || url.username || url.password || !/\.apk$/.test(url.pathname)) throw Error('APK link must be an explicit credential-free HTTPS APK URL.');
@@ -129,7 +132,7 @@ with zipfile.ZipFile(sys.argv[1]) as z:
   await fs.writeFile(path.join(output,'_headers'),'/*\n  Cache-Control: no-cache\n  X-Content-Type-Options: nosniff\n/game-assets-sw.js\n  Cache-Control: no-store\n');
   const changedOriginals = [];
   for (const [file,digest] of original) if (hash(await fs.readFile(path.join(output,file))) !== digest) changedOriginals.push(file);
-  const report = {version,versionCode,baselineVersion:'5.9.15',baselineSha256:expected,buildId:id,originalFiles:original.size,changedOriginals,protectedStartupAndThemeExact:true,originalArtUnchanged:[...original].filter(([file])=>file.startsWith('art/')).every(([file,digest])=>!changedOriginals.includes(file)),preservedBaselineCapabilities:baselineMetadata.capabilities,apkLink:args['--apk-url']||null,offlinePolicy:'Only explicitly hashed public shell/assets; accounts and APIs never cached. Existing matches keep their release until all tabs close.',liveLoginVerified:false,liveMultiplayerVerified:false,published:false};
+  const report = {version,versionCode,baselineVersion:'5.9.15',baselineSha256:expected,buildId:id,originalFiles:original.size,changedOriginals,protectedStartupAndThemeExact:true,originalArtUnchanged:[...original].filter(([file])=>file.startsWith('art/')).every(([file,digest])=>!changedOriginals.includes(file)),preservedBaselineCapabilities:baselineMetadata.capabilities,apkLink:args['--apk-url']||null,apkDownloadPage:args['--apk-download-page']||null,offlinePolicy:'Only explicitly hashed public shell/assets; accounts and APIs never cached. Existing matches keep their release until all tabs close.',liveLoginVerified:false,liveMultiplayerVerified:false,published:false};
   await fs.writeFile(path.join(output,'web-build-info.json'),JSON.stringify(report,null,2)+'\n');
   console.log(JSON.stringify({output,...report}));
 } finally { await fs.rm(staging,{recursive:true,force:true}); }
