@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {createHash} from 'node:crypto';
 
 const read=path=>fs.readFileSync(new URL(path,import.meta.url),'utf8');
 const app=read('../src/App.jsx');
@@ -82,4 +83,12 @@ test('Bundle includes new CSS and adds supporting non-player penguins',()=>{
  assert.match(read('../scripts/build-current.mjs'),/'v5102-ux'/);
  assert.match(read('../src/PenguinAudience.jsx'),/not playable pieces/);
  assert.match(read('../src/GamesViews.jsx'),/PenguinAudience/);
+});
+
+test('Original v5.9.14 visual CSS bytes remain intact ahead of approved overlays',()=>{
+ const baselineBytes=433523;
+ const originalSha256='72cbe99f516cb84012a56155bd23f26097d9740650131ed7451d6b16d8e2d428';
+ const current=fs.readFileSync(new URL('../src/approved-shell.css',import.meta.url));
+ assert.ok(current.byteLength>=baselineBytes,'Legacy stylesheet was truncated');
+ assert.equal(createHash('sha256').update(current.subarray(0,baselineBytes)).digest('hex'),originalSha256,'v5.9.14 visual baseline changed');
 });
