@@ -35,14 +35,30 @@ jobs:
           assert (root.get('package'),root.get(ns+'versionName'),root.get(ns+'versionCode'))==('xyz.arcticdominion.play','5.10.5','109')
           print('Source identity gate passed')
           PY
-      - uses: android-actions/setup-android@v3
-      - name: Install Android SDK tools
+      - name: Locate installed Android SDK, provision 36 only if needed
         shell: bash
         run: |
           set -euo pipefail
-          command -v sdkmanager
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager --install 'platforms;android-36' 'build-tools;36.0.0'
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          for c in "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/cmdline-tools/16.0/bin" "$ANDROID_HOME/cmdline-tools/13.0/bin" "$ANDROID_HOME/tools/bin"; do
+            if test -x "$c/sdkmanager"; then
+              export PATH="$c:$PATH"
+              echo "$c" >> "$GITHUB_PATH"
+              break
+            fi
+          done
+          if test -f "$ANDROID_HOME/platforms/android-36/android.jar" && test -f "$ANDROID_HOME/build-tools/36.0.0/aapt2"; then
+            echo 'Android 36 SDK already installed'
+          else
+            command -v sdkmanager || { echo '::error::No Android SDK manager available on runner'; exit 1; }
+            yes | sdkmanager --licenses > /dev/null || true
+            sdkmanager --install 'platforms;android-36' 'build-tools;36.0.0'
+          fi
+          test -f "$ANDROID_HOME/platforms/android-36/android.jar"
+          test -x "$ANDROID_HOME/build-tools/36.0.0/aapt2"
       - name: Install pinned build dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: mobile/arctic-play/build-deps
