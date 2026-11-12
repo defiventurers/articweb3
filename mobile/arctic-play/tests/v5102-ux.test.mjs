@@ -19,9 +19,15 @@ test('v5.10.2 uses an upgrade-compatible Android version with the original packa
  assert.match(manifest,/android:icon="@mipmap\/ic_launcher"/);
 });
 
-test('Games has exactly three navigation modes and Story Adventure is default',()=>{
- assert.match(app,/setGamesView]=useState\('story'\)/);
- assert.match(app,/Story Adventure'\],\['all','All Games'\],\['halls','Halls'/);
+test('v5.9.14 catalogue is restored under Games; modern nine-story views remain available from Home',()=>{
+ assert.match(app,/<p className="games-chronology">7 halls/);
+ assert.match(app,/className="ctl-catalogue-entry"/);
+ assert.match(app,/className="shanshui-catalogue-entry"/);
+ assert.match(app,/className=\{'games-grid '/);
+ assert.match(app,/onQuickPlay=\{gameId=>run\(\(\)=>startPractice/);
+ const gamesSection=app.slice(app.indexOf("{tab==='games'&&<>"),app.indexOf("{tab==='home'&&",app.indexOf("{tab==='games'&&<>")));
+ assert.doesNotMatch(gamesSection,/StoryAdventureGallery|games-view-tabs|AllGamesGallery/);
+ assert.match(app,/sheet==='story-adventure'/);
  assert.match(app,/data-testid="games-view-tabs"/);
  assert.match(app,/<StoryAdventureGallery/);
  assert.match(app,/<AllGamesGallery/);
