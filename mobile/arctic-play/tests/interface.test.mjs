@@ -21,12 +21,21 @@ test('Phone interface: six nondice engines, legal board taps, English rules, inv
   }});
   t.after(()=>dom.window.close());const {window}=dom,doc=window.document;verifiedAccount(window);window.eval(js);await settle();
   await waitFor(()=>doc.querySelector('.home-landing'),'branded home');[...doc.querySelectorAll('.bottom-nav button')].find(b=>b.textContent==='Games').click();await settle();
-  assert.ok(doc.querySelector('[data-testid="story-adventure-gallery"]'));[...doc.querySelectorAll('.ak-games-views button')].find(b=>b.textContent==='Halls').click();await settle();assert.equal(doc.querySelectorAll('.expedition-game').length,1);assert.equal(doc.querySelectorAll('.bottom-nav button').length,5);
+  // The approved v5.9.14 Games tab is the catalogue, not the later Story Adventure carousel.
+  assert.ok(doc.querySelector('.games-chronology'));
+  assert.ok(doc.querySelector('.ctl-catalogue-entry'));
+  assert.ok(doc.querySelector('.shanshui-catalogue-entry'));
+  assert.equal(doc.querySelectorAll('.games-grid .hall-card').length,7);
+  assert.equal(doc.querySelectorAll('.ak-games-views').length,0);
+  assert.equal(doc.querySelectorAll('.bottom-nav button').length,5);
   function button(text){const found=[...doc.querySelectorAll('button')].find(b=>b.textContent.trim()===text);assert.ok(found,`Button: ${text}`);return found;}
   for(const game of engine.GAME_LIST.filter(g=>g.id!=='dominion')){
-    const stories=JSON.parse(fs.readFileSync(new URL('../src/heritageStories.json',import.meta.url)));
-    for(let n=0;n<9 && doc.querySelector('.expedition-hero strong')?.textContent!==stories.games[game.id].title;n++){doc.querySelector('[aria-label="Next game"]').click();await settle();}
-    doc.querySelector('.expedition-actions .secondary').click();await settle();button('Mode & seat →').click();await settle();assert.ok(doc.querySelector('.seat-choice'));button('Done · Back to play').click();await settle();
+    // Every shared engine retains a direct catalogue card and old compact setup options.
+    const gameCard=doc.querySelector('.games-grid .hall-card[data-hall="'+game.id+'"]');
+    assert.ok(gameCard,game.id+' legacy card');
+    gameCard.querySelector('.game-open').click();await settle();
+    assert.ok(doc.querySelector('.cg-panel'),game.id+' compact game sheet');
+    assert.ok(doc.querySelector('.game-more .seat-choice'),game.id+' seat settings');
     button('On this phonePass the phone between players').click();await settle();
     if(game.id==='dominion'){await waitFor(()=>button('Roll two dice').disabled===false,'dice ready');button('Roll two dice').click();await settle();}
     await waitFor(()=>doc.querySelector('.selection-hint')?.textContent==='Tap a piece to see its legal moves.',`${game.id} legal worker ready`);
