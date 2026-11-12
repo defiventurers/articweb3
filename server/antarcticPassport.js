@@ -33,7 +33,9 @@ function createPassportRoutes({store=createPassportStore(),chainId=Number(proces
   if(path==='/passport/delivery/config'&&method==='GET')return {version:1,...deliveryRuntime.status()};
   if(path==='/passport/acceptance'&&method==='GET'){
    const actor=await authenticated(req,a=>({id:a.id,wallet:a.gameWallet})),p=await store.get(actor.id);
-   const linked=!!(p&&actor.wallet?.provider==='para'&&p.walletProvider==='para'&&p.wallet.toLowerCase()===actor.wallet.address.toLowerCase()&&p.chainId===actor.wallet.chainId);
+   // Earlier APKs labelled a matching attested Para address as external. Bind
+   // evidence to the current server-verified wallet, never that old UI label.
+   const linked=!!(p&&actor.wallet?.provider==='para'&&p.wallet.toLowerCase()===actor.wallet.address.toLowerCase()&&p.chainId===actor.wallet.chainId);
    if(!linked)return {confirmed:false,paraWalletVerified:false,status:p?'para_wallet_mismatch':'not_registered'};
    const evidence=await deliveryRuntime.verify(actor.id);
    const confirmed=evidence.confirmed===true&&evidence.chainId===p.chainId&&evidence.wallet?.toLowerCase()===p.wallet.toLowerCase();
