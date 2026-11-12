@@ -73,6 +73,18 @@ async function createAdapter(config,{provider:provided}={}){
   };return adapter;
  }catch(e){if(!provided)provider.destroy();throw e;}
 }
-async function main(){const config=workerConfig(),store=createPassportStore();let adapter;try{adapter=await createAdapter(config);await store.init();await store.acquireWorkerLock(config.chainId+':'+adapter.address.toLowerCase());let stopping=false;process.on('SIGTERM',()=>{stopping=true;});process.on('SIGINT',()=>{stopping=true;});while(!stopping){if((await adapter.preflight()).ready)await deliverOne({store,adapter});await new Promise(r=>setTimeout(r,3000));}}finally{await store.close();adapter?.close();}}
+async function main(){
+ const config=workerConfig(),store=createPassportStore();let adapter;
+ try{
+  adapter=await createAdapter(config);await store.init();let stopping=false;
+  process.on('SIGTERM',()=>{stopping=true;});process.on('SIGINT',()=>{stopping=true;});
+  while(!stopping){
+   await store.withWorkerLock(config.chainId+':'+adapter.address.toLowerCase(),async assertLock=>{
+    if((await adapter.preflight()).ready)await deliverOne({store,adapter:{...adapter,send:async job=>{await assertLock();return adapter.send(job);}}});
+   });
+   await new Promise(r=>setTimeout(r,3000));
+  }
+ }finally{await store.close();adapter?.close();}
+}
 if(require.main===module)main().catch(()=>{console.error('Passport worker stopped. Check configuration, database and signer access.');process.exitCode=1;});
 module.exports={deliverOne,workerConfig,createAdapter};

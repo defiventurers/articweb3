@@ -5,8 +5,8 @@ const {Pool}=require('pg');
 // No plaintext Google identity or player name is ever used in a mint argument.
 function createPassportStore({databaseUrl=process.env.DATABASE_URL,pool}={}){
  const db=pool|| (databaseUrl?new Pool({connectionString:databaseUrl,ssl:process.env.DATABASE_SSL==='true'||/sslmode=require/.test(databaseUrl)?{rejectUnauthorized:false}:undefined}):null);
- let ready,workerLock,lockLost=false;
- db?.on?.('error',()=>{lockLost=true;});
+ let ready;
+ db?.on?.('error',()=>{});
  function init(){if(!db)throw Object.assign(Error('Passport registration is awaiting database setup.'),{status:503});return ready||(ready=(async()=>{const c=await db.connect();try{await c.query('BEGIN');await c.query("SELECT pg_advisory_xact_lock(hashtextextended('ak-passport-schema-v1',0))");await c.query(`
  CREATE TABLE IF NOT EXISTS ak_passports (
   account_id UUID PRIMARY KEY, id UUID NOT NULL UNIQUE, claim_id TEXT NOT NULL UNIQUE,
@@ -43,10 +43,21 @@ function createPassportStore({databaseUrl=process.env.DATABASE_URL,pool}={}){
  async function claimJob(now=Date.now(),chainId,kinds){
   await init();const c=await db.connect();try{await c.query('BEGIN');const r=await c.query("SELECT d.* FROM ak_passport_deliveries d WHERE d.status IN ('queued','retry','sending','submitted') AND d.run_after<=$1 AND d.lease_until<=$1 AND ($2::integer IS NULL OR d.chain_id=$2) AND ($3::text[] IS NULL OR d.kind=ANY($3)) AND (d.kind='visa' OR EXISTS(SELECT 1 FROM ak_passport_deliveries first WHERE first.account_id=d.account_id AND first.chain_id=d.chain_id AND first.kind='visa' AND first.status='confirmed')) ORDER BY CASE WHEN d.kind='visa' THEN 0 ELSE 1 END,d.run_after,d.id FOR UPDATE OF d SKIP LOCKED LIMIT 1",[now,chainId??null,kinds??null]);const job=r.rows[0];if(job)await c.query("UPDATE ak_passport_deliveries SET lease_until=$2,status=CASE WHEN tx_hash IS NULL THEN 'sending' ELSE 'submitted' END,attempts=attempts+1 WHERE id=$1",[job.id,now+180000]);await c.query('COMMIT');return job||null;}catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}}
  async function updateJob(id,patch){await init();const allowed={status:'status',txHash:'tx_hash',tokenId:'token_id',runAfter:'run_after',leaseUntil:'lease_until',errorCode:'error_code'};const entries=Object.entries(patch).filter(([k])=>allowed[k]);if(!entries.length)return;await db.query('UPDATE ak_passport_deliveries SET '+entries.map(([k],i)=>allowed[k]+'=$'+(i+2)).join(',')+' WHERE id=$1',[id,...entries.map(([,v])=>v)]);}
- async function acquireWorkerLock(key){await init();workerLock=await db.connect();workerLock.on?.('error',()=>{lockLost=true;});const r=await workerLock.query('SELECT pg_try_advisory_lock(hashtextextended($1,0)) AS locked',['visa-worker:'+key]);if(!r.rows[0].locked){workerLock.release();workerLock=null;throw Error('Another passport worker is already using this signer.');}}
+ // Transaction affinity also works through transaction-mode poolers. Never
+ // leave a session-level advisory lock on a pooled PostgreSQL backend.
+ async function withWorkerLock(key,fn){
+  await init();const c=await db.connect();let failed=false;
+  const onError=()=>{failed=true;};c.on('error',onError);
+  const assertLock=async()=>{if(failed)throw Error('Sender lock connection lost.');await c.query('SELECT 1');};
+  try{
+   await c.query('BEGIN');const r=await c.query('SELECT pg_try_advisory_xact_lock(hashtextextended($1,0)) AS locked',['visa-worker-tick-v2:'+key]);
+   if(!r.rows[0].locked){await c.query('ROLLBACK');return false;}
+   await fn(assertLock);await assertLock();await c.query('COMMIT');return true;
+  }catch(e){await c.query('ROLLBACK').catch(()=>{});throw e;}finally{c.removeListener('error',onError);c.release();}
+ }
  async function confirmedToken(chainId,tokenId){await init();const r=await db.query("SELECT p.account_id,p.chain_id,p.created_at FROM ak_passports p JOIN ak_passport_deliveries d ON d.account_id=p.account_id AND d.chain_id=p.chain_id WHERE d.kind='visa' AND d.status='confirmed' AND d.chain_id=$1 AND d.token_id=$2 LIMIT 1",[chainId,String(tokenId)]);return r.rows[0]||null;}
  async function deliveryEvidence(accountId){await init();return (await db.query("SELECT d.* FROM ak_passport_deliveries d JOIN ak_passports p ON p.account_id=d.account_id AND p.chain_id=d.chain_id WHERE d.account_id=$1 AND d.kind='visa'",[accountId])).rows[0]||null;}
- function assertWorkerLock(){if(!workerLock||lockLost)throw Error('Passport signer lock was lost.');}
- return {init,get,register,deliveryEvidence,assertWorkerLock,enqueueAchievement,claimJob,updateJob,acquireWorkerLock,confirmedToken,configured:!!db,close:async()=>{if(workerLock){await workerLock.query('SELECT pg_advisory_unlock_all()');workerLock.release();workerLock=null;}await db?.end();}};
+
+ return {init,get,register,deliveryEvidence,withWorkerLock,enqueueAchievement,claimJob,updateJob,confirmedToken,configured:!!db,close:async()=>{await db?.end();}};
 }
 module.exports={createPassportStore};

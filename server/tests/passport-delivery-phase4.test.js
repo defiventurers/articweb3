@@ -27,9 +27,9 @@ test('the shipped external-address form still binds a matching attested Para wal
 test('runtime does not claim jobs before permission/gas checks or after signer lock loss',async()=>{
  let ready=false,lost=false,sends=0;
  const config={AK_PASSPORT_RUNTIME_ENABLED:'true',AK_VISA_DELIVERY_ENABLED:'true',AK_VISA_RPC_URL:'https://rpc.testnet.chain.robinhood.com',AK_VISA_MINTER_KEY:Wallet.createRandom().privateKey,AK_VISA_CONTRACT:'0x'+'1'.repeat(40)};
- const runtime=createPassportRuntime({env:config,storeFactory:()=>({init:async()=>{},acquireWorkerLock:async()=>{},assertWorkerLock(){if(lost)throw Error();},claimJob:async()=>{sends++;return null;},close:async()=>{}}),adapterFactory:async()=>({address:'0x'+'2'.repeat(40),chainId:46630,preflight:async()=>({ready,status:ready?'ready':'awaiting_minter_role'}),close:()=>{}})});
+ const runtime=createPassportRuntime({env:config,storeFactory:()=>({init:async()=>{},withWorkerLock:async(_key,fn)=>{if(lost)throw Error();await fn(async()=>{});return true;},claimJob:async()=>{sends++;return null;},close:async()=>{}}),adapterFactory:async()=>({address:'0x'+'2'.repeat(40),chainId:46630,preflight:async()=>({ready,status:ready?'ready':'awaiting_minter_role'}),close:()=>{}})});
  await runtime.tick();assert.equal(sends,0);assert.equal(runtime.status().status,'awaiting_minter_role');
- ready=true;await runtime.tick();assert.equal(sends,1);lost=true;await runtime.tick();assert.equal(sends,1);assert.equal(runtime.status().ready,false);await runtime.stop();
+ ready=true;await runtime.tick();assert.equal(sends,1);lost=true;await runtime.tick();assert.equal(sends,1);assert.equal(runtime.status().ready,false);assert.equal(runtime.status().checkStage,'sender_lock');lost=false;await runtime.tick();assert.equal(runtime.status().ready,true);assert.equal(sends,2);await runtime.stop();
 });
 
 test('real PostgreSQL + local EVM: attested Para login, consent, passport-first queue, canonical receipt and private metadata',{skip:!process.env.AK_PASSPORT_TEST_DATABASE_URL,timeout:60000},async t=>{
@@ -63,7 +63,13 @@ test('real PostgreSQL + local EVM: attested Para login, consent, passport-first 
  await assert.rejects(authorizePassportDelivery({provider:{getNetwork:async()=>({chainId:4663n})},signer:owner,record,config:publicConfig,artifacts}),/testnet/);
  runtime=createPassportRuntime({env:{AK_VISA_DELIVERY_ENABLED:'true',AK_VISA_RPC_URL_46630:cfg.rpc,AK_VISA_MINTER_KEY_46630:minter.privateKey,AK_VISA_CONTRACT_46630:cfg.visa},storeFactory:()=>second,adapterFactory:async()=>adapter});
  await runtime.tick();
- const third=makeStore();await assert.rejects(third.acquireWorkerLock('46630:'+minter.address.toLowerCase()),/Another passport worker/);await third.close();
+ const third=makeStore(),lockKey='46630:'+minter.address.toLowerCase();let release,entered;
+ const enteredPromise=new Promise(r=>{entered=r;}),releasePromise=new Promise(r=>{release=r;});
+ const held=second.withWorkerLock(lockKey,async assertLock=>{await assertLock();entered();await releasePromise;});
+ await enteredPromise;assert.equal(await third.withWorkerLock(lockKey,()=>assert.fail('Concurrent sender acquired the lock.')),false);
+ release();assert.equal(await held,true);assert.equal(await third.withWorkerLock(lockKey,async assertLock=>{await assertLock();}),true);
+ await assert.rejects(third.withWorkerLock(lockKey,async()=>{throw Error('Injected crash');}),/Injected crash/);
+ assert.equal(await second.withWorkerLock(lockKey,async()=>{}),true);await third.close();
  dir=await fs.mkdtemp(path.join(os.tmpdir(),'passport-delivery-'));accountStore=createCompanyStore({file:path.join(dir,'state.json'),development:true});
  const pair=generateKeyPairSync('rsa',{modulusLength:2048}),jwk={...pair.publicKey.export({format:'jwk'}),kid:'qa-phase4',alg:'RS256'};
  const service=createCompanyService({store:accountStore,passportOptions:{store,deliveryRuntime:runtime,deliveryEnabled:true},authOptions:{walletOptions:{enabled:false},paraOptions:{enabled:true,apiKey:'beta_qa',audience:'phase4-qa',fetcher:async()=>({ok:true,json:async()=>({keys:[jwk]})})}}});

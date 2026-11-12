@@ -7,7 +7,7 @@ Updated 12 November 2026. Cross out a phase only after its acceptance evidence i
 | 1 | Full cinematic introductions, historical costumes and stories | Skipped by request; pending |
 | 2 | Live fairness verification: signed moves, dice, results, replay and accurate blockchain status | Built in v5.10.3; final authenticated-match acceptance deferred by user |
 | 3 | Robinhood testnet deployment, funded transactions and indexing | Owner deployment/rehearsal record received; independent verification and activation pending |
-| 4 | Para sign-in → wallet → confirmed Antarctic Passport mint; mainnet plan | Delivery runtime, operator setup and acceptance export built; owner authorization and live Para mint pending |
+| 4 | Para sign-in → wallet → confirmed Antarctic Passport mint; mainnet plan | Backend and tools deployed; owner authorization and live Para mint acceptance pending |
 | 5 | Live launch dashboard and reconciled metrics | Pending |
 | 6 | Public website/PWA, authentication, multiplayer, installation and APK download QA | Pending |
 | 7 | Play account verification, testing, production access and submission | Pending |
@@ -70,7 +70,7 @@ Validation: 47 passing automated tests plus one initially skipped integration, w
 
 The final phase 2 player-match acceptance remains deferred. Phase 3's explicitly labelled operator rehearsal is not a player victory or an NFT issuance claim. This pass does not rebuild the APK or alter its loading screen, icon or gameplay.
 
-## Uploaded deployment review — 12 November 2026
+## Earlier uploaded deployment review — superseded by the updated export
 
 The owner supplied registry `0xB247E10c115D8FfE508452F94521ADaB377EA8fd` and passport `0xF059141A4e21eF5786e66e96F1c4357858a0De11`, plus five transaction hashes. Owner/nonce-derived addresses and the single-event Merkle root match locally. The supplied compiler/source/runtime hash declarations match the compiled artifacts; this is not a retrieval of deployed bytecode.
 
@@ -78,7 +78,7 @@ Direct receipt verification timed out and the explorer API returned HTTP 403 fro
 
 A clock discrepancy was detected: the rehearsal round was scheduled for **17:31:33 India time**, while this record was created at **17:35:41** and its rehearsal checked at **17:36:34**. The tool selected from chain time alone. It now selects after both chain and client time, records request time, and labels older timing evidence accurately. Prior receipts are preserved. A fresh rehearsal can reuse the same contracts; do not deploy them again.
 
-Next: reload the operator console, use **Start a fresh rehearsal → Run testnet registry rehearsal**, run source verification and event indexing, then export the updated JSON. Phase 2 player-match acceptance remains deferred; phase 3 remains open.
+The updated export now contains two corrected future-round rehearsals; no repeat or redeployment is needed for phase 4. Source verification, durable event reconciliation and registry activation remain phase 3 gates. Phase 2 player-match acceptance is deferred.
 
 
 ## Phase 4 — Passport delivery
@@ -88,8 +88,18 @@ Next: reload the operator console, use **Start a fresh rehearsal → Run testnet
 - ~~Build the guarded sequential sender on the existing service.~~ PostgreSQL schema serialization, signer locks, permission/gas checks and retries are tested with a real disposable local database and EVM.
 - ~~Build separate owner setup and player acceptance tools.~~ The private console grants only minting permission and test gas; the same-origin player check exports only independently confirmed Para-to-passport evidence.
 - ~~Document the mainnet migration plan, identity/chain mapping, canary, reconciliation and rollback gates.~~ Execution remains disabled; Abstract is retained separately.
-- [ ] Record the actual live backend deployment and signer readiness.
+- ~~Deploy the actual backend and read its guarded status.~~ The service reached `awaiting_minter_role` on chain 46630 after its reviewed runtime, database and signer-lock checks; the dedicated signer has no minting grant or gas yet.
 - [ ] Owner wallet authorizes the dedicated testnet sender and funds its gas.
 - [ ] Real Para sign-in → verified wallet → consent → canonical confirmed passport mint; inspect the exported acceptance JSON.
 
 The updated owner deployment export includes corrected future-round rehearsals. Keep them; no repeat rehearsal or contract deployment is required for phase 4. Phase 2 final match acceptance remains deferred. The installed APK is not rebuilt or redesigned by this server task.
+
+### Phase 4 deployment evidence
+
+- Source PRs #88 and #89 are merged. Initial server source `f413cb4bf3c2d696a0fb01dbc0285a7080a96e1f` became live as `dep-dbqrdbbsuf0c738ckv50`. The legacy-registration follow-up source is `ce3db0d446aeb981897af1f70fde47e39b54758b`; it is live as `dep-dbqrhq9srm7s738umrpg` (13:06:16 UTC / 18:36:16 India time).
+- Private console phase 4 controls are live, deployment `appgdep_6af5b6500ee48191b7e0b41d80374828`; owner-only access is retained.
+- The existing passport is `0xF059141A4e21eF5786e66e96F1c4357858a0De11`; dedicated testnet signer `0x009bFDc9d4C2738c1594c485040aa1994723330b`. It has only the role the owner chooses to grant, and no role was silently assigned by this build.
+- Public delivery readiness returns HTTP 200 with public CORS; effective minting remains false pending owner setup. The correct player check page/script and passport artwork return HTTP 200; unauthenticated acceptance returns HTTP 401. The web artwork inventory remains 437. Signed-proof rules hash remains `9fa0be4a43f049957ef407ee73361a0b6a3bb24ed59f487a36190165be82c8cb`; registry activation remains false and Abstract indexing remains separate.
+- Validation: 43 server launch tests pass with the real disposable PostgreSQL/EVM integration enabled, eight contract/indexing tests and two compiled-console tests pass, and the existing wallet cache test passes. Six initial CI workflows and three follow-up workflows passed, including full source build, restoration, tutorial/navigation, signed-proof and gameplay checks. No physical-device or real Para mint acceptance is claimed.
+
+Next: in the existing private console use **Authorize passport delivery**, approve the minter grant and top-up to 0.005 free test ETH, then open https://articweb3.onrender.com/arctic-play/passport-check/ . Sign in with Para, confirm your wallet, issue the free passport, and download the confirmed acceptance JSON. Attach that public file here to finish phase 4. The installed APK and loading screen are unchanged.
