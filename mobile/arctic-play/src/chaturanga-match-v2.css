@@ -1,0 +1,203 @@
+/*
+ * Approved Chaturanga v2 presentation (user asset 151578.png, 865 x 1536).
+ * This sheet intentionally changes no game rule, result, room or wallet state.
+ * Missing assets are a release blocker. Use the supplied upload pack; do not
+ * ship this branch until all six files are installed and viewport QA passes.
+ */
+.app[data-screen="lobby"][data-tab="games"] .v5914-games-header{
+  display:flex;justify-content:space-between;align-items:center;
+}
+.app[data-screen="lobby"][data-tab="games"] .v5914-games-heading{
+  font-family:Georgia,serif;font-weight:700;font-size:clamp(19px,5vw,26px);
+  margin:0;flex:1;text-align:left;padding-inline:12px;
+}
+.app[data-screen="lobby"][data-tab="games"] .v5914-games-header .discovery-brand{display:none}
+.app[data-screen="lobby"][data-tab="games"] .games-chronology{font:600 11px Georgia,serif;color:#8c7142}
+.app[data-screen="lobby"][data-tab="games"] .games-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+}
+@media (min-width:600px){
+  .app[data-screen="lobby"][data-tab="games"] .games-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"]{
+  --ch-v2-width:min(100vw,680px);
+  position:relative;isolation:isolate;
+  background-color:#06223d!important;color:#f8f0df;
+  min-height:100dvh;overflow-x:clip;
+}
+/* This entire plate is non-interactive: genuine buttons and board cells live above it. */
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"]::before{
+  content:"";position:absolute;inset:0 0 auto;pointer-events:none;z-index:0;
+  aspect-ratio:865/1536;
+  background:url('art/launch-v1/chaturanga-match/approved-v2.webp') center top/100% 100% no-repeat;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] > *{z-index:1;position:relative}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-header{
+  position:relative;display:block;flex:0 0 auto;
+  box-sizing:border-box;margin:0!important;padding:0!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+  height:calc(var(--ch-v2-width) * 0.273);
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-header .icon-btn[aria-label="Back to games"]{
+  position:absolute;left:4.3%;top:18.3%;width:8%;height:34%;min-width:32px;
+  background:transparent!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-header .header-controls{
+  position:absolute;right:3.1%;top:19%;display:flex;gap:0;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-header .header-controls button{
+  width:clamp(29px,9vw,53px);height:clamp(29px,9vw,53px);
+  background:transparent!important;border:0!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-header :is(.icon-btn,.header-controls button) :is(svg,span){
+  opacity:0; /* artwork already has these icons; keep the real hit targets */
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-header > div:not(.header-controls){
+  position:absolute;left:25%;right:25%;top:77%;text-align:center;
+  margin:0;padding:0;max-width:none;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-header h1{
+  position:absolute!important;width:1px!important;height:1px!important;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-header small{
+  display:block;font:700 clamp(9px,1.6vw,13px)/1.1 Georgia,serif!important;
+  color:#efddae!important;text-shadow:0 1px 3px #05182e;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-team-banner{
+  position:absolute!important;top:calc(var(--ch-v2-width) * .248);
+  width:75%;left:12.5%;margin:0!important;padding:0!important;
+  background:none!important;border:0!important;text-align:center;
+  color:#e8cf96!important;font:600 clamp(8px,1.4vw,12px)/1.15 Georgia,serif;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .players-strip{
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:0!important;
+  box-sizing:border-box;max-width:none!important;width:100%!important;
+  height:calc(var(--ch-v2-width) * .112);margin:0!important;padding:0 4%!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .player-pill{
+  min-width:0;box-shadow:none!important;border:0!important;border-radius:0!important;
+  background:transparent!important;margin:0!important;padding:0 3% 0 37%!important;
+  display:flex;align-items:center;justify-content:flex-start;overflow:hidden;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .player-pill .avatar{display:none}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .player-pill > span:last-child{
+  min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1px;
+  text-align:left;color:#fff7db!important;text-shadow:0 1px 3px #061326;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .player-pill strong{
+  font:700 clamp(7px,1.45vw,13px)/1.1 system-ui,sans-serif;
+  text-overflow:ellipsis;overflow:hidden;max-width:100%;white-space:nowrap;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .player-pill small{
+  font:500 clamp(6px,1.2vw,10px)/1.1 system-ui,sans-serif;
+  color:#e6d4b0!important;text-overflow:ellipsis;overflow:hidden;max-width:100%;white-space:nowrap;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .player-pill.current{
+  outline:1px solid #e4c980;outline-offset:-3px; /* no permanent blue highlight */
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-content{
+  display:flex;flex-direction:column;padding:0!important;margin:0!important;gap:0!important;
+  background:transparent!important;max-width:none!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-content > .ch-board-space{order:0}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-content > .ch-heritage-dice{order:1}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-content > .command-area{order:2}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-content > :not(.ch-board-space):not(.ch-heritage-dice):not(.command-area){order:3}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-board-space{
+  display:block;position:relative;box-sizing:border-box;aspect-ratio:865/881;
+  width:100%;max-width:none!important;height:auto;margin:0!important;padding:0!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-board-space .match-board-wrap{
+  position:absolute!important;top:10.9%;left:8.45%;width:83.0%;height:auto;
+  max-width:none!important;margin:0!important;padding:0!important;
+  border:0!important;box-shadow:none!important;background:transparent!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-board-space :is(.board-section,.board-viewport){
+  width:100%!important;max-width:100%!important;margin:0!important;
+  border:0!important;padding:0!important;background:transparent!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-board-space .game-board{
+  width:100%;height:auto;touch-action:manipulation;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice{
+  order:1;display:block;position:relative;isolation:isolate;box-sizing:border-box;
+  width:100%;max-width:none!important;aspect-ratio:865/320;
+  height:auto!important;min-height:0!important;overflow:visible;
+  padding:0!important;margin:0!important;background:transparent!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .dice-heading{
+  position:static;display:block;padding:0!important;margin:0!important;
+  background:none!important;border:0!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .dice-heading > span{display:none}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .dice-heading > button.primary{
+  position:absolute;z-index:3;left:31%;top:59%;width:38%;height:20%;
+  background:transparent!important;color:#18354c!important;box-shadow:none!important;
+  border:0!important;font:800 clamp(12px,2.8vw,21px)/1 Georgia,serif;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .dice-pair{
+  position:absolute;z-index:2;left:12%;top:16%;width:76%;height:31%;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:12%;
+  margin:0!important;padding:0!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .die{
+  position:relative;min-width:0;overflow:visible;border:0!important;
+  padding:0!important;margin:0!important;background:transparent!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .ch-die-face{
+  position:relative;width:100%;height:100%;min-height:0;padding:0;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .long-ice-die{
+  opacity:0;position:absolute;inset:0; /* preserve focus and a11y, remove duplicate illustration */
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-v2-result-pips{
+  position:absolute;left:12%;top:18%;height:62%;width:29%;
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  align-items:center;justify-items:center;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-v2-pip.on{
+  width:clamp(4px,1.5vw,11px);aspect-ratio:1;display:block;border-radius:50%;
+  background:#ecd393;border:1px solid #262523;box-shadow:0 1px 1px #061a31;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-v2-await-roll{
+  grid-column:1/4;grid-row:1/4;align-self:center;justify-self:center;
+  color:#dbb966;font:900 clamp(16px,4vw,33px) Georgia,serif;text-shadow:0 1px 1px #142b3e;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-v2-die-pieces{
+  position:absolute;left:43%;right:5%;top:6%;bottom:6%;
+  display:flex;align-items:center;justify-content:center;gap:2px;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-v2-die-pieces img{
+  display:block;width:100%;height:100%;min-width:0;max-width:100%;object-fit:contain;
+  filter:drop-shadow(0 2px 2px #051a2b);
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .die.used .ch-die-face{opacity:.45}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .long-die-legend{display:none}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .ch-pass-die{
+  position:absolute;top:calc(100% + 4px);left:4%;width:92%;
+  font-size:clamp(9px,1.5vw,12px);min-height:33px;border-radius:8px;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .dice-end-turn{
+  position:absolute;top:calc(100% + 40px);left:25%;width:50%;min-height:36px;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .ch-dice-quick-help{
+  position:absolute;left:5%;top:calc(100% + 80px);width:90%;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .ch-heritage-dice .ch-roll-help-toggle{
+  position:absolute;left:5%;top:calc(100% + 116px);width:90%;min-height:40px;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .command-area{
+  margin:166px 12px 0!important;padding:0!important;background:transparent!important;
+}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .command-area .turn-line{
+  position:absolute;clip-path:inset(50%);height:1px;width:1px;overflow:hidden;
+}
+@media (max-width:360px){
+  .app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .player-pill{padding-left:36%!important;padding-right:0!important}
+  .app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .command-area{margin-top:160px!important}
+}
