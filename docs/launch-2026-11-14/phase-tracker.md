@@ -7,7 +7,7 @@ Updated 12 November 2026. Cross out a phase only after its acceptance evidence i
 | 1 | Full cinematic introductions, historical costumes and stories | Skipped by request; pending |
 | 2 | Live fairness verification: signed moves, dice, results, replay and accurate blockchain status | Built in v5.10.3; final authenticated-match acceptance deferred by user |
 | 3 | Robinhood testnet deployment, funded transactions and indexing | Owner deployment/rehearsal record received; independent verification and activation pending |
-| 4 | Para sign-in → wallet → confirmed Antarctic Passport mint; mainnet plan | Pending |
+| 4 | Para sign-in → wallet → confirmed Antarctic Passport mint; mainnet plan | Delivery runtime, operator setup and acceptance export built; owner authorization and live Para mint pending |
 | 5 | Live launch dashboard and reconciled metrics | Pending |
 | 6 | Public website/PWA, authentication, multiplayer, installation and APK download QA | Pending |
 | 7 | Play account verification, testing, production access and submission | Pending |
@@ -79,3 +79,17 @@ Direct receipt verification timed out and the explorer API returned HTTP 403 fro
 A clock discrepancy was detected: the rehearsal round was scheduled for **17:31:33 India time**, while this record was created at **17:35:41** and its rehearsal checked at **17:36:34**. The tool selected from chain time alone. It now selects after both chain and client time, records request time, and labels older timing evidence accurately. Prior receipts are preserved. A fresh rehearsal can reuse the same contracts; do not deploy them again.
 
 Next: reload the operator console, use **Start a fresh rehearsal → Run testnet registry rehearsal**, run source verification and event indexing, then export the updated JSON. Phase 2 player-match acceptance remains deferred; phase 3 remains open.
+
+
+## Phase 4 — Passport delivery
+
+- ~~Repair passport-only delivery and require independently confirmed claim ownership.~~ Optional keepsakes cannot prevent the passport mint, and a receipt without sufficient claim confirmations stays pending.
+- ~~Bind registration to the authenticated Para wallet, preserve explicit address consent and the shipped APK form.~~ Cross-chain registration conflicts and inventory contamination are rejected.
+- ~~Build the guarded sequential sender on the existing service.~~ PostgreSQL schema serialization, signer locks, permission/gas checks and retries are tested with a real disposable local database and EVM.
+- ~~Build separate owner setup and player acceptance tools.~~ The private console grants only minting permission and test gas; the same-origin player check exports only independently confirmed Para-to-passport evidence.
+- ~~Document the mainnet migration plan, identity/chain mapping, canary, reconciliation and rollback gates.~~ Execution remains disabled; Abstract is retained separately.
+- [ ] Record the actual live backend deployment and signer readiness.
+- [ ] Owner wallet authorizes the dedicated testnet sender and funds its gas.
+- [ ] Real Para sign-in → verified wallet → consent → canonical confirmed passport mint; inspect the exported acceptance JSON.
+
+The updated owner deployment export includes corrected future-round rehearsals. Keep them; no repeat rehearsal or contract deployment is required for phase 4. Phase 2 final match acceptance remains deferred. The installed APK is not rebuilt or redesigned by this server task.

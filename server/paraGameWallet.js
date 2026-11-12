@@ -40,7 +40,7 @@ function createParaGameWallet({enabled=process.env.AK_PARA_ENABLED!=='false',api
    const purpose=['manage','link'].includes(b.purpose)?b.purpose:'login';
    const actor=purpose!=='login'?await authenticated(req,(a,c)=>({accountId:a.id,sessionHash:hash(c.key)})):{};
    const allowedWebOrigin=['https://arcticdominion.xyz','https://www.arcticdominion.xyz'].includes(req.headers.origin)?req.headers.origin:null;
-   const browserReturn=allowedWebOrigin&&b.returnPath==='/play/'?allowedWebOrigin+'/play/':null;
+   const browserReturn=allowedWebOrigin&&b.returnPath==='/play/'?allowedWebOrigin+'/play/':req.headers.origin==='https://articweb3.onrender.com'&&b.returnPath==='/arctic-play/passport-check/'?'https://articweb3.onrender.com/arctic-play/passport-check/':null;
    const attempt=secret(),expires=now()+600000;await store.transact('para-wallet-attempt',hash(attempt),()=>({challenge:b.challenge,platform:['android','website'].includes(b.platform)?b.platform:'web',browserReturn,purpose,...actor,expires}));
    return {url:'https://articweb3.onrender.com/arctic-play/wallet/?attempt='+attempt+'&provider=para'};
   }

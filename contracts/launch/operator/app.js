@@ -3,6 +3,7 @@ import artifacts from 'virtual:launch-artifacts';
 import {TESTNET,newDeployment,checkRecord,deployTestnet,verifyDeployment,runRegistryRehearsal,freshRehearsal} from '../testnet.mjs';
 import {indexDeployment,snapshotStore} from '../event-index.mjs';
 import {verifyExplorerSources} from '../explorer-verification.mjs';
+import {authorizePassportDelivery} from '../passport-delivery.mjs';
 const $=id=>document.getElementById(id),recordKey='ak.operator.robinhood46630.record.v1',eventsKey='ak.operator.robinhood46630.events.v1';
 let provider,signer,owner,record,indexReport,busy=false,verified=false;
 try{const stored=localStorage.getItem(recordKey);if(stored)record=checkRecord(JSON.parse(stored));}catch{message('A saved record could not be loaded. Import its original JSON to recover.');}
@@ -14,6 +15,8 @@ function render(){
  $('verify').disabled=busy||!record?.contracts?.AntarcticPassport?.transactionHash;$('export').disabled=busy||!record;
  $('source').disabled=busy||!record?.contracts?.AntarcticPassport?.transactionHash;
  $('fresh').disabled=busy||!record?.smoke?.confirmed;
+ $('passport-authorize').disabled=busy||!signer||!record?.contracts?.AntarcticPassport?.address;
+ $('passport-refresh').disabled=busy;
  $('connect').disabled=busy;$('import').disabled=busy;$('operator').disabled=busy||!!record?.contracts?.FairPlayRegistry;
  $('contracts-state').textContent=verified?'Code, roles and receipts verified':record?'Saved plan · verify before relying on it':'Awaiting deployment';
  $('rehearsal-state').textContent=record?.smoke?.confirmed?'Saved rehearsal · run verification/indexing':'Pending test transactions';
@@ -77,3 +80,19 @@ $('file').onchange=()=>run(async()=>{
  const next=checkRecord(JSON.parse(await file.text()));record=next;verified=false;indexReport=null;persist(next);message('Imported. Reconnect its owner wallet to resume, or verify the existing receipts.');$('file').value='';
 });
 render();
+async function passportStatus(){
+ const r=await fetch('https://articweb3.onrender.com/arctic-play/v3/passport/delivery/config',{credentials:'omit',cache:'no-store'});
+ if(!r.ok)throw Error('The passport backend update is not live yet. Keep your existing deployments.');
+ const config=await r.json();
+ $('passport-state').textContent=config.status==='ready'?'Ready for your Para sign-in test':config.status.replaceAll('_',' ');
+ $('passport-signer').textContent=config.signer||'Awaiting secure backend configuration';
+ $('passport-contract').textContent=config.contract||'Awaiting configuration';
+ return config;
+}
+$('passport-refresh').onclick=()=>run(async()=>{await passportStatus();message('Passport backend status refreshed.');});
+$('passport-authorize').onclick=()=>run(async()=>{
+ const config=await passportStatus();
+ await authorizePassportDelivery({provider,signer,record,config,artifacts,save:persist,progress:message});
+ await passportStatus();message('Owner setup transactions confirmed. The backend rechecks permissions and gas within 15 seconds. Continue with the Para passport check.');
+});
+passportStatus().catch(()=>{$('passport-state').textContent='Backend update pending';});
