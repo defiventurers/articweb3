@@ -40,7 +40,8 @@ test('Phone interface: six nondice engines, legal board taps, English rules, inv
     button('Done · Back to play').click();await settle();
     button('On this phonePass the phone between players').click();await settle();
     if(game.id==='dominion'){await waitFor(()=>button('Roll two dice').disabled===false,'dice ready');button('Roll two dice').click();await settle();}
-    await waitFor(()=>doc.querySelector('.selection-hint')?.textContent==='Tap a piece to see its legal moves.',`${game.id} legal worker ready`);
+    await waitFor(()=>doc.querySelector('[data-screen="match"]'),`${game.id} match screen opened`);
+    await waitFor(()=>doc.querySelector('.selection-hint')?.textContent==='Tap a piece to see its legal moves.',`${game.id} legal worker ready: screen=${doc.querySelector('.app')?.dataset.screen} hint=${doc.querySelector('.selection-hint')?.textContent||'none'} sheet=${doc.querySelector('.sheet h2')?.textContent||'none'} notice=${doc.querySelector('.toast')?.textContent||'none'} errors=${errors.map(e=>e.message).join(' / ')}`);
     assert.equal(doc.querySelectorAll('[data-cell]').length,engine.board(game.id).cells.length);assert.equal(doc.querySelector('.match-header h1').textContent,game.name+' ('+GAME_HISTORY[game.id].english+')');
     const state=engine.create(game.id);if(game.id==='dominion')state.dice={rolled:true,values:[1,1],used:[false,false]};const action=engine.actions(game.id,state)[0],moving=engine.pieces(game.id,state).find(p=>p.source===action.source);
     doc.querySelector(`[data-cell="${moving.cell}"]`).dispatchEvent(new window.MouseEvent('click',{bubbles:true}));await settle();
