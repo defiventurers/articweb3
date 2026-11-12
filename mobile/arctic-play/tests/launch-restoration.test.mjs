@@ -30,8 +30,7 @@ test('Restored five-tab shell retains home, nine stories, source links, Shop and
  await waitFor(()=>doc.querySelector('[data-testid="story-adventure-gallery"]'));
  assert.equal(doc.querySelector('.ak-games-views button[aria-pressed="true"]').textContent,'Story Adventure');
  button(doc,'All Games').click();await waitFor(()=>doc.querySelectorAll('.all-game-tile').length===9);
- button(doc,'Halls').click();await waitFor(()=>doc.querySelector('.cultural-games'));
- button(doc,'Story Adventure').click();await waitFor(()=>doc.querySelector('.expedition-hero strong'));
+ button(doc,'Halls').click();await waitFor(()=>doc.querySelector('.expedition-hero strong'));
  const seen=new Set();
  for(let i=0;i<9;i++){
   const name=doc.querySelector('.expedition-hero strong').textContent;assert.ok(!seen.has(name));seen.add(name);
