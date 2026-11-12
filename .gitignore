@@ -27,3 +27,8 @@ frontend/public/play/
 mobile/arctic-play/runtime-assets/art/
 
 *-failure.html
+
+**/node_modules
+/contracts/launch/artifacts/
+/contracts/launch/deployments/
+/contracts/launch/operator-dist/
