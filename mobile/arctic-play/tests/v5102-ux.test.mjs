@@ -10,13 +10,13 @@ const release=JSON.parse(read('../release-config.json'));
 const stories=JSON.parse(read('../src/heritageStories.json'));
 const styles=read('../src/v5102-ux.css');
 
-test('v5.10.2 uses an upgrade-compatible Android version with the original package',()=>{
- assert.equal(release.versionName,'5.10.2');
- assert.equal(release.versionCode,106);
+test('v5.10.5 uses an upgrade-compatible Android version with the original package',()=>{
+ assert.equal(release.versionName,'5.10.5');
+ assert.equal(release.versionCode,109);
  assert.equal(release.packageName,'xyz.arcticdominion.play');
  const manifest=read('../android/app/src/main/AndroidManifest.xml');
- assert.match(manifest,/android:versionCode="106"/);
- assert.match(manifest,/android:versionName="5\.10\.2"/);
+ assert.match(manifest,/android:versionCode="109"/);
+ assert.match(manifest,/android:versionName="5\.10\.5"/);
  assert.match(manifest,/android:icon="@mipmap\/ic_launcher"/);
 });
 
