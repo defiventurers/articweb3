@@ -10,7 +10,7 @@ const {JSDOM,VirtualConsole}=require('jsdom');
 const engine=createRequire(import.meta.url)('../build/games.cjs');
 const js=fs.readFileSync(new URL('../android/app/src/main/assets/app.js',import.meta.url),'utf8');
 const settle=()=>new Promise(resolve=>setTimeout(resolve,60));
-const waitFor=async(predicate,label)=>{const deadline=Date.now()+10000;while(!predicate()){if(Date.now()>deadline)throw new Error(`Timed out: ${label}`);await new Promise(resolve=>setTimeout(resolve,20));}};
+const waitFor=async(predicate,label)=>{const deadline=Date.now()+10000;while(!predicate()){if(Date.now()>deadline)throw new Error(`Timed out: ${typeof label==='function'?label():label}`);await new Promise(resolve=>setTimeout(resolve,20));}};
 test('Phone interface: six nondice engines, legal board taps, English rules, invitations and native APK sharing; long dice have a separate flow suite',{timeout:120000},async t=>{
   t.mock.method(globalThis.crypto,'getRandomValues',array=>{array.fill(0);return array;});
   const errors=[],calls=[];const virtual=new VirtualConsole();virtual.on('jsdomError',e=>errors.push(e));
@@ -40,7 +40,7 @@ test('Phone interface: six nondice engines, legal board taps, English rules, inv
     button('Done · Back to play').click();await settle();
     button('On this phonePass the phone between players').click();await settle();
     if(game.id==='dominion'){await waitFor(()=>button('Roll two dice').disabled===false,'dice ready');button('Roll two dice').click();await settle();}
-    await waitFor(()=>doc.querySelector('[data-screen="match"]'),`${game.id} match screen opened`);
+    await waitFor(()=>doc.querySelector('[data-screen="match"]'),()=>`${game.id} match screen opened, screen=${doc.querySelector('.app')?.dataset.screen}, sheet=${doc.querySelector('.sheet h2')?.textContent||'none'}, error=${doc.querySelector('.toast')?.textContent||'none'}, jsdomErrors=${errors.map(e=>e.message).join(' / ')}`);
     await waitFor(()=>doc.querySelector('.selection-hint')?.textContent==='Tap a piece to see its legal moves.',`${game.id} legal worker ready: screen=${doc.querySelector('.app')?.dataset.screen} hint=${doc.querySelector('.selection-hint')?.textContent||'none'} sheet=${doc.querySelector('.sheet h2')?.textContent||'none'} notice=${doc.querySelector('.toast')?.textContent||'none'} errors=${errors.map(e=>e.message).join(' / ')}`);
     assert.equal(doc.querySelectorAll('[data-cell]').length,engine.board(game.id).cells.length);assert.equal(doc.querySelector('.match-header h1').textContent,game.name+' ('+GAME_HISTORY[game.id].english+')');
     const state=engine.create(game.id);if(game.id==='dominion')state.dice={rolled:true,values:[1,1],used:[false,false]};const action=engine.actions(game.id,state)[0],moving=engine.pieces(game.id,state).find(p=>p.source===action.source);
