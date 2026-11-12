@@ -1,7 +1,7 @@
 const {JsonRpcProvider,Wallet,Contract,FetchRequest,id,formatEther,ZeroAddress}=require('ethers');
 const {createHash}=require('node:crypto');
 const {createPassportStore}=require('./antarcticPassportStore');
-const VISA_ABI=['function mintVisa(address recipient,bytes32 claimId) returns (uint256)','function tokenForClaim(bytes32) view returns (uint256)','function ownerOf(uint256) view returns (address)','function tokenURI(uint256) view returns (string)','function hasRole(bytes32,address) view returns (bool)','event Transfer(address indexed from,address indexed to,uint256 indexed tokenId)'];
+const VISA_ABI=['function mintVisa(address recipient,bytes32 claimId) returns (uint256)','function tokenForClaim(bytes32) view returns (uint256)','function ownerOf(uint256) view returns (address)','function tokenURI(uint256) view returns (string)','function hasRole(bytes32,address) view returns (bool)','function totalIssued() view returns (uint256)','event Transfer(address indexed from,address indexed to,uint256 indexed tokenId)'];
 const ACHIEVEMENT_ABI=['function mintAchievement(address recipient,uint256 tokenId,bytes32 claimId)','function recipientForClaim(bytes32) view returns (address)','function tokenForClaim(bytes32) view returns (uint256)'];
 const ARRIVAL_ABI=['function mintArrival(address recipient,bytes32 claimId)','function recipientForClaim(bytes32) view returns (address)'];
 function workerConfig(env=process.env){
@@ -40,9 +40,10 @@ async function createAdapter(config,{provider:provided}={}){
   const network=await provider.getNetwork();if(Number(network.chainId)!==config.chainId)throw Error('RPC chain does not match configuration.');
   for(const address of [config.visa,config.arrival,config.achievements].filter(Boolean))if(await provider.getCode(address)==='0x')throw Error('Passport collection is not deployed.');
   if(config.chainId===46630){const code=await provider.getCode(config.visa),expected=require('../shared/chain/launch-contracts.json').contracts.AntarcticPassport.runtimeHash;if(createHash('sha256').update(Buffer.from(code.slice(2),'hex')).digest('hex')!==expected)throw Error('Passport runtime code does not match the reviewed contract.');}
-  const signer=new Wallet(config.key,provider),visa=new Contract(config.visa,VISA_ABI,signer),arrival=config.arrival?new Contract(config.arrival,ARRIVAL_ABI,signer):null,achievements=config.achievements?new Contract(config.achievements,ACHIEVEMENT_ABI,signer):null;
-  const adapter={chainId:config.chainId,address:signer.address,contract:config.visa,supportedKinds:['visa',...(arrival?['arrival']:[]),...(achievements?['achievement']:[])],
+  const signer=config.readOnly?provider:new Wallet(config.key,provider),visa=new Contract(config.visa,VISA_ABI,signer),arrival=config.arrival?new Contract(config.arrival,ARRIVAL_ABI,signer):null,achievements=config.achievements?new Contract(config.achievements,ACHIEVEMENT_ABI,signer):null;
+  const adapter={chainId:config.chainId,address:config.readOnly?null:signer.address,contract:config.visa,supportedKinds:['visa',...(arrival?['arrival']:[]),...(achievements?['achievement']:[])],
    async preflight(){
+    if(config.readOnly)throw Error('Read-only passport reader.');
     if(Number((await provider.getNetwork()).chainId)!==config.chainId)throw Error('RPC network changed.');
     const [minter,balance,fee]=await Promise.all([visa.hasRole(id('MINTER_ROLE'),signer.address),provider.getBalance(signer.address),provider.getFeeData()]);
     const gasPrice=fee.maxFeePerGas||fee.gasPrice;if(!gasPrice)throw Error('Gas pricing is unavailable.');
@@ -62,14 +63,15 @@ async function createAdapter(config,{provider:provided}={}){
     const r=await collection.recipientForClaim(j.claim_id),safe=await collection.recipientForClaim(j.claim_id,{blockTag:safeBlock});
     return r===ZeroAddress?null:{tokenId:j.kind==='achievement'?String(await collection.tokenForClaim(j.claim_id)):'1',recipient:r,confirmed:safe.toLowerCase()===r.toLowerCase()};
    },
-   send:async j=>(await (j.kind==='visa'?visa.mintVisa(j.wallet,j.claim_id):j.kind==='achievement'?achievements.mintAchievement(j.wallet,j.achievement_token_id,j.claim_id):arrival.mintArrival(j.wallet,j.claim_id))).hash,
-   async receipt(hash){const r=await provider.getTransactionReceipt(hash);if(!r||await r.confirmations()<2)return null;const block=await provider.getBlock(r.blockNumber);return block?.hash===r.blockHash?{status:r.status,blockNumber:r.blockNumber,blockHash:r.blockHash,receipt:r}:null;},
+   send:async j=>{if(config.readOnly)throw Error('Read-only passport reader.');return (await (j.kind==='visa'?visa.mintVisa(j.wallet,j.claim_id):j.kind==='achievement'?achievements.mintAchievement(j.wallet,j.achievement_token_id,j.claim_id):arrival.mintArrival(j.wallet,j.claim_id))).hash;},
+   async receipt(hash){const r=await provider.getTransactionReceipt(hash);if(!r||await r.confirmations()<2)return null;const block=await provider.getBlock(r.blockNumber);return block?.hash===r.blockHash?{status:r.status,blockNumber:r.blockNumber,blockHash:r.blockHash,mintedAt:Number(block.timestamp)*1000,receipt:r}:null;},
    async verifyPassport(j){
     const claim=await adapter.lookup(j),r=j.tx_hash?await adapter.receipt(j.tx_hash):null;
     const mint=r?.receipt?.logs.some(log=>{if(log.address.toLowerCase()!==config.visa.toLowerCase())return false;try{const e=visa.interface.parseLog(log);return e?.name==='Transfer'&&e.args.from===ZeroAddress&&e.args.to.toLowerCase()===j.wallet.toLowerCase()&&String(e.args.tokenId)===String(claim?.tokenId);}catch{return false;}});
     const confirmed=claim?.confirmed===true&&claim.recipient.toLowerCase()===j.wallet.toLowerCase()&&r?.status===1&&r.receipt.to?.toLowerCase()===config.visa.toLowerCase()&&mint===true;
-    return {confirmed,chainId:config.chainId,contract:config.visa,wallet:j.wallet,tokenId:claim?.tokenId||null,transactionHash:j.tx_hash||null,...(confirmed?{blockNumber:r.blockNumber,blockHash:r.blockHash,tokenURI:await visa.tokenURI(claim.tokenId)}:{}),confirmationPolicy:'2 canonical L2 blocks; Ethereum finality not established'};
-   },close:()=>{if(!provided)provider.destroy();}
+    return {confirmed,chainId:config.chainId,contract:config.visa,wallet:j.wallet,tokenId:claim?.tokenId||null,transactionHash:j.tx_hash||null,...(confirmed?{blockNumber:r.blockNumber,blockHash:r.blockHash,mintedAt:r.mintedAt,tokenURI:await visa.tokenURI(claim.tokenId)}:{}),confirmationPolicy:'2 canonical L2 blocks; Ethereum finality not established'};
+   },
+   async collectionSnapshot(){const blockNumber=Math.max(0,(await provider.getBlockNumber())-1),block=await provider.getBlock(blockNumber);return {chainId:config.chainId,contract:config.visa,totalIssued:String(await visa.totalIssued({blockTag:blockNumber})),blockNumber,blockHash:block.hash,checkedAt:new Date().toISOString()};},close:()=>{if(!provided)provider.destroy();}
   };return adapter;
  }catch(e){if(!provided)provider.destroy();throw e;}
 }
@@ -87,4 +89,4 @@ async function main(){
  }finally{await store.close();adapter?.close();}
 }
 if(require.main===module)main().catch(()=>{console.error('Passport worker stopped. Check configuration, database and signer access.');process.exitCode=1;});
-module.exports={deliverOne,workerConfig,createAdapter};
+module.exports={deliverOne,workerConfig,createAdapter,createPassportReader:(config,options)=>createAdapter({...config,key:undefined,readOnly:true},options)};

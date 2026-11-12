@@ -1,3 +1,4 @@
+import {recordLaunchVisit} from '../../shared/launch/visit.mjs';
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import {
   FrostLoadingScreen,
@@ -90,6 +91,7 @@ const PLAYABLE_GAME_IDS = new Set([
 ]);
 
 export default function App() {
+  useEffect(()=>{recordLaunchVisit();},[]);
   const params = new URLSearchParams(window.location.search);
   const calibrationTarget = import.meta.env.DEV ? params.get("calibrate") : null;
   const isDevPath = import.meta.env.DEV && /^\/dev\/?$/.test(window.location.pathname);
