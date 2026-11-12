@@ -32,7 +32,8 @@ export function pieceRotation(unit,angle=0){
 }
 
 export function boardGeometry(id,perspective){
-  // Presentation-only override: unchanged 8x8 IDs, positions, rotation and legal actions.\n  const base=board(id),g=id==='dominion'?{...base,image:asset('launch-v1/chaturanga-match/grid-v2.webp')}:base,seat=viewSeat(id,perspective),angle=SEAT_ANGLES[id][seat];
+  // Presentation-only override: unchanged 8x8 IDs, positions, rotation and legal actions.
+  const base=board(id),g=id==='dominion'?{...base,image:asset('launch-v1/chaturanga-match/grid-v2.webp')}:base,seat=viewSeat(id,perspective),angle=SEAT_ANGLES[id][seat];
   if(!angle)return {...g,angle:0,perspective:seat};
   const [x,y,w,h]=g.viewBox.split(' ').map(Number),cx=x+w/2,cy=y+h/2;
   const radians=angle*Math.PI/180,cos=Math.cos(radians),sin=Math.sin(radians);
