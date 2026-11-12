@@ -35,6 +35,7 @@ jobs:
           assert (root.get('package'),root.get(ns+'versionName'),root.get(ns+'versionCode'))==('xyz.arcticdominion.play','5.10.5','109')
           print('Source identity gate passed')
           PY
+      - uses: android-actions/setup-android@v3
       - name: Install Android SDK tools
         shell: bash
         run: |
