@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-11-12T10:31:51.895Z",
+  "service": "https://articweb3.onrender.com",
+  "readOnly": true,
+  "liveMatchVerified": false,
+  "onchainRecordingVerified": false,
+  "serviceConfig": {
+    "enabled": true,
+    "rulesHash": "9fa0be4a43f049957ef407ee73361a0b6a3bb24ed59f487a36190165be82c8cb",
+    "supportedRuleset": "launch-2026-11",
+    "signingKeyPinned": true,
+    "chain": {
+      "configured": false,
+      "chainId": 46630,
+      "registry": null,
+      "explorer": "https://explorer.testnet.chain.robinhood.com",
+      "assurance": "record inclusion; rules and beacon signatures checked independently"
+    },
+    "randomness": "drand-quicknet-v1",
+    "payouts": false
+  },
+  "publicBeacon": {
+    "status": "signature-verified",
+    "round": 42,
+    "randomness": "8ada64bae5c6c0f5540a6a13af56e663240edfbd2c76ac6a8f27671eb7259ce3"
+  },
+  "robinhoodRpc": {
+    "status": "reachable",
+    "chainId": 46630,
+    "registryConfigured": false
+  },
+  "deployedWorker": {
+    "sha256": "b79170cfd2dc234b9f303e442d5f658ae0cf1a3776bc35619c6b9d40fb26c955",
+    "note": "Read-only fingerprint. Updated APK worker is packaged separately; no backend or public website deployed by this probe."
+  },
+  "remaining": [
+    "Verify an exported real authenticated match from the live service, including its final result.",
+    "Deploy/fund a registry and verify a real checkpoint and pre-beacon commitment in phase 3.",
+    "Complete Android device update and retention acceptance in phase 15."
+  ]
+}

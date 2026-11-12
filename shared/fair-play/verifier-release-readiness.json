@@ -1,0 +1,16 @@
+{
+  "status": "supported-proof-import-tested",
+  "apkVersion": "5.10.3",
+  "versionCode": 107,
+  "supportedRulesHashes": [
+    "63845f4daef97f9721ccecd9cb3c7ef363842835a2566f8f48c7e515863cd952",
+    "9fa0be4a43f049957ef407ee73361a0b6a3bb24ed59f487a36190165be82c8cb"
+  ],
+  "authorityPolicy": "Build-time engine and manifest digest checks; fail closed on unknown editions or profiles. Mutable gameplay engines are never an implicit fallback.",
+  "historicalGameplayIntegrityGate": "Still HOLD; not repinned. The old containment patch remains testable for historical releases.",
+  "liveConfigAndPublicBeaconChecked": true,
+  "liveAuthenticatedMatchVerified": false,
+  "liveOnchainRecordingVerified": false,
+  "deviceInstallVerified": false,
+  "launchReady": false
+}

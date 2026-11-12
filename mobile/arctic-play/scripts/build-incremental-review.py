@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reproduce the guarded heritage, verifier-HOLD, Android and browser candidates."""
+"""Reproduce guarded heritage, versioned proof verification, Android and browser candidates."""
 from pathlib import Path
 import argparse
 import json
@@ -42,13 +42,13 @@ def run(*args):
     subprocess.run([str(x) for x in args], cwd=root, check=True)
 
 run('node', mobile / 'scripts/patch-heritage-v5915.mjs', before / 'app.js', heritage / 'app.js')
-run('node', mobile / 'scripts/patch-fairness-v5915.mjs', '--input', before, '--output', fairness, '--app', heritage / 'app.js')
 pawns = out / 'pawns'
-run('node', mobile / 'scripts/patch-chaturanga-pawns-v5915.mjs', '--input-app', fairness / 'app.js',
+run('node', mobile / 'scripts/patch-chaturanga-pawns-v5915.mjs', '--input-app', heritage / 'app.js',
     '--input-learn', before / 'learn.js', '--output', pawns)
-for name in ['fair-worker.js', 'verifier.js']:
+run('node', mobile / 'scripts/build-proof-verifier.mjs', '--input', before, '--output', fairness, '--app', pawns / 'app.js')
+for name in ['app.js', 'fair-worker.js', 'verifier.js']:
     (overlay / name).write_bytes((fairness / name).read_bytes())
-for name in ['app.js', 'learn.js']:
+for name in ['learn.js']:
     (overlay / name).write_bytes((pawns / name).read_bytes())
 (overlay / 'app.css').write_bytes((before / 'app.css').read_bytes() + b'\n' + (mobile / 'src/heritage-intro.css').read_bytes())
 hall_source = root / 'frontend/public/assets/launch-incremental/halls'
@@ -69,7 +69,7 @@ if a.keystore or a.password_file:
     command += ['--keystore', a.keystore.resolve(), '--password-file', a.password_file.resolve()]
 run(*command)
 web_command = ['node', mobile / 'scripts/build-incremental-web.mjs', '--baseline-apk', baseline,
-               '--runtime-dir', overlay, '--output', out / 'web', '--version', '5.10.2', '--version-code', '106']
+               '--runtime-dir', overlay, '--output', out / 'web', '--version', '5.10.3', '--version-code', '107']
 if a.keystore:
     web_command += ['--apk-download-page', 'downloads/']
 run(*web_command)

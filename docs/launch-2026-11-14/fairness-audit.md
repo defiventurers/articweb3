@@ -1,5 +1,7 @@
 # Fair Play baseline audit and replay correction
 
+**Historical audit.** The v5.10.3 phase 2 work restores independent verification through separately pinned original and live rule snapshots. See `phase-tracker.md`, `phase2-live-evidence.json` and `phase2-preservation.json`. The old mutable gameplay artifact still fails its original manifest gate; that gate was not repinned or disabled. The v5.10.3 worker selects explicit immutable authorities instead. No live match or blockchain transaction has been verified yet.
+
 Reviewed source: `7c0cdd74f2bb4e75bf2ff38021f287273f314503`, branch `codex/incremental-v5915-launch`, November 11, 2026. This is a local source audit; it does not establish a deployed proof service, NFT delivery, or chain anchoring.
 
 ## Corrected: canonical transport changed Sannin replay

@@ -1,0 +1,18 @@
+{
+  "fromVersion": "5.10.2",
+  "toVersion": "5.10.3",
+  "changedEntries": [
+    "AndroidManifest.xml",
+    "assets/app-version.json",
+    "assets/app.js",
+    "assets/fair-worker.js",
+    "assets/game-assets-sw.js",
+    "assets/game-assets.json",
+    "assets/verifier.js"
+  ],
+  "unchangedEntries": 437,
+  "sameFileInventory": true,
+  "appChangesLimitedToFiveProofStringsAndReleaseVersion": true,
+  "allPriorCapabilitiesPreserved": true,
+  "loadingIconArtNativeGameplayBotsLearningAndPriorAdditionsPreserved": true
+}

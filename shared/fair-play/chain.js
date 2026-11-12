@@ -1,6 +1,7 @@
 import {keccak_256} from '@noble/hashes/sha3';
 import {hex,utf8,sha256,unhex,merkleRoot} from './core.js';
 import artifact from './registry-manifest.json' with {type:'json'};
+import {roundTime} from './beacon.js';
 export const NETWORKS={46630:{name:'Robinhood Testnet',rpc:'https://rpc.testnet.chain.robinhood.com',explorer:'https://explorer.testnet.chain.robinhood.com'},4663:{name:'Robinhood Chain',rpc:'https://rpc.mainnet.chain.robinhood.com',explorer:'https://robinhoodchain.blockscout.com'},11124:{name:'Abstract Sepolia',rpc:'https://api.testnet.abs.xyz',explorer:'https://sepolia.abscan.org'},2741:{name:'Abstract',rpc:'https://api.mainnet.abs.xyz',explorer:'https://abscan.org'}};
 const topic=s=>'0x'+hex(keccak_256(utf8(s)));
 export const CHECKPOINT_TOPIC=topic('Checkpoint(bytes32,uint64,bytes32,bool)');
@@ -49,7 +50,8 @@ export async function verifyCheckpoint(checkpoint,bundle,{rpc:providedRpc}={}) {
    const roll=await receiptFor(anchor,ROLL_TOPIC,matchId,rpc);
    if(!roll){rollTimingVerified=false;continue;}
    const bytes=strip(roll.log.data);
-   if(roll.log.topics[2]!==word(event.seq)||bytes.length!==192||bytes.slice(0,64)!==event.rng.intentHash||Number(BigInt('0x'+bytes.slice(64,128)))!==event.rng.round||Number(BigInt(roll.block.timestamp))>=Number(BigInt('0x'+bytes.slice(128))))throw Error('A dice request was not recorded before its beacon publication.');
+   const publication=roundTime(event.rng.round)/1000;
+   if(roll.log.topics[2]!==word(event.seq)||bytes.length!==192||bytes.slice(0,64)!==event.rng.intentHash||Number(BigInt('0x'+bytes.slice(64,128)))!==event.rng.round||BigInt('0x'+bytes.slice(128))!==BigInt(publication)||BigInt(roll.block.timestamp)>=BigInt(publication))throw Error('A dice request was not recorded before its beacon publication.');
   }
   return {status:confirmations>=2?'confirmed':'pending',covered:checkpoint.count,root,confirmations,rollTimingVerified,network:network.name,explorerUrl:network.explorer+'/tx/'+checkpoint.transactionHash,finality:'L2 confirmations; Ethereum finality not established'};
  }catch(e){if(e.code==='RPC_UNAVAILABLE')return {status:'pending',covered:0,message:e.message};throw e;}

@@ -4,7 +4,9 @@ import {createRequire} from 'node:module';
 import fs from 'node:fs/promises';
 import * as core from './core.js';
 import {verifyBeacon,verifySignedBeacon,verifyRandomness,diceValues,QUICKNET,roundTime} from './beacon.js';
-const require=createRequire(import.meta.url),engine=require('../../server/arcticPlayEngine.cjs');
+// Historical protocol tests use the exact published authority, never a mutable
+// gameplay engine. The separate integrity test still detects gameplay drift.
+const require=createRequire(import.meta.url),engine=require('./legacy/arcticPlayEngine.cjs');
 const rules=JSON.parse(await fs.readFile(new URL('./rules-manifest.json',import.meta.url)));
 const server=await core.generateKey();
 async function fixture(id='xiangqi') {

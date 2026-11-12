@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/defiventurers/articweb3",
+  "sourceCommit": "0a7d45cefe8568bd1c66a9281fcd04ec28e1fa12",
+  "engineSourcePath": "server/fairPlayEngine.cjs",
+  "manifestSourcePath": "shared/fair-play/rules-manifest.json",
+  "engineSha256": "16d08120db2442814631143e6dafbeb88af40bda561f3b00a61c5c0f0cfa4c18",
+  "rulesHash": "9fa0be4a43f049957ef407ee73361a0b6a3bb24ed59f487a36190165be82c8cb",
+  "policy": "Exact published bytes retained. This snapshot is for independent proof replay only. Gameplay engines and historical manifests are not replaced."
+}

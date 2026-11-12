@@ -1,0 +1,13 @@
+{
+  "status": "exact-historical-artifact-recovered",
+  "archive": "AntarcticKingdoms-v5.4.0-source.zip",
+  "libraryFileId": "libfile_de4f3ffcd2b48191893558d20cbb25b8",
+  "archiveSha256": "3c1db050cbaa82c4292e638f09503b0e076f4aeccf0a85f10c3463683019f589",
+  "engineSha256": "dab5b2df6d25e3c9572e93a0216b7d6d355493688983a959397bc40e2dad239b",
+  "rulesHash": "63845f4daef97f9721ccecd9cb3c7ef363842835a2566f8f48c7e515863cd952",
+  "all105SourceDigestsMatch": true,
+  "checkedSourceFiles": 105,
+  "sourceInspectionScope": "Only public rules-manifest paths, matching engine and matching public manifest; private material not inspected or extracted.",
+  "activeRuntimeChanged": false,
+  "globalHoldChanged": false
+}
