@@ -41,7 +41,7 @@ test('Restored five-tab shell retains home, nine stories, source links, Shop and
    for(const image of doc.querySelectorAll('.heritage-intro img'))assert.ok(fs.existsSync(new URL(image.getAttribute('src'),assets)),image.getAttribute('src'));
    assert.ok(button(doc,'Skip to game'));if(page<2)button(doc,'Continue').click();await waitFor(()=>doc.querySelector('.intro-story-copy h2').textContent===story.screens[Math.min(page+1,2)].title);
   }
-  doc.querySelector('[aria-label="Close introduction"]').click();await waitFor(()=>doc.querySelector('[data-testid="story-adventure-gallery"]'));
+  doc.querySelector('[aria-label="Close introduction"]').click();await waitFor(()=>doc.querySelector('.cultural-games'));
   // Catalogue remount returns to its first card; move to the next unseen entry.
   for(let n=0;n<=i&&i<8;n++){doc.querySelector('[aria-label="Next game"]').click();await new Promise(r=>setTimeout(r,15));}
  }
