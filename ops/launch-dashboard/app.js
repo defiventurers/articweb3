@@ -7,14 +7,14 @@
  function render(d){
   data=d;const t=d.totals,h=d.deliveryHealth,r=d.reconciliation;
   text('signups',number(t.signups));text('passports',number(t.confirmedPassports));text('visits',number(t.visits));text('wallets',number(t.walletsReady));text('registrations',number(t.registrations));text('backlog',number(h?.backlog));
-  text('period-description',(d.range.notStarted?'Launch cohort opens 14 November · ':d.range.phase==='prelaunch'?'Prelaunch · ':'Launch · ')+(d.range.period==='all'?'All recorded history':date(d.range.since)+' → '+date(d.range.until))+' · IST');
+  text('period-description',d.range.notStarted?'Launch cohort opens 14 November 2026 · IST':(d.range.phase==='prelaunch'?'Prelaunch · ':'Launch · ')+(d.range.period==='all'?'All recorded history':date(d.range.since)+' → '+date(d.range.until))+' · IST');
   text('updated','Updated '+date(d.generatedAt)+' IST.');
   pill('connection','Live records','good');$('export').disabled=false;
   const states=$('delivery-states');states.replaceChildren();
   if(h){const total=Object.values(h.states).reduce((a,b)=>a+b,0)||1;for(const [key,label,color]of [['confirmed','Confirmed','#88ab9b'],['queued','Queued','#c7b17f'],['sending','Sending','#b4c8d3'],['submitted','Submitted','#7d9fb4'],['retry','Retrying','#d2ae72'],['blocked','Blocked','#c3867d']]){const n=h.states[key]||0,row=document.createElement('div');row.className='state-row';const name=document.createElement('span');name.textContent=label;const track=document.createElement('div');track.className='state-track';const fill=document.createElement('div');fill.className='state-fill';fill.style.width=(100*n/total)+'%';fill.style.background=color;track.append(fill);const count=document.createElement('strong');count.textContent=number(n);row.append(name,track,count);states.append(row);}pill('health-badge',h.blocked?'Needs attention':h.retrying?'Retrying':h.backlog?'In progress':'Clear',h.blocked?'bad':h.retrying||h.backlog?'warn':'good');}
   else{states.textContent='Delivery storage unavailable.';pill('health-badge','Unavailable','warn');}
   const failures=$('failure-list');failures.replaceChildren();for(const e of h?.errors||[]){const p=document.createElement('p');p.textContent=e.count+' × '+e.code.replaceAll('_',' ').toLowerCase();failures.append(p);}
-  text('oldest',h?.oldestPendingRegistrationAt?'Oldest pending registration: '+date(h.oldestPendingRegistrationAt)+' IST':'No pending passport registrations.');
+  text('oldest',!h?'Delivery storage unavailable.':h.oldestPendingRegistrationAt?'Oldest pending registration: '+date(h.oldestPendingRegistrationAt)+' IST':'No pending passport registrations.');
   text('runtime',d.runtime?.ready?'Ready':(d.runtime?.status||'Unavailable').replaceAll('_',' '));
   text('chain-total',number(r.collectionTotal));text('checked-total',number(r.verified));text('unchecked-total',number(r.unchecked));text('mismatch-total',number(r.mismatches));
   pill('reconcile-badge',r.errorCode?'Check unavailable':r.mismatches?'Review receipts':r.complete&&!r.stale?'Reconciled':r.stale?'Recheck pending':'Checking remaining receipts',r.mismatches?'bad':r.complete&&!r.stale?'good':'warn');

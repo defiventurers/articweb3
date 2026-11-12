@@ -1,14 +1,14 @@
 # Launch phase tracker
 
-Updated 12 November 2026. Cross out a phase only after its acceptance evidence is recorded. Skipping a phase does not complete it.
+Updated 13 November 2026 (IST). Cross out a phase only after its acceptance evidence is recorded. Skipping a phase does not complete it.
 
 | Phase | Work | Status |
 | --- | --- | --- |
 | 1 | Full cinematic introductions, historical costumes and stories | Skipped by request; pending |
 | 2 | Live fairness verification: signed moves, dice, results, replay and accurate blockchain status | Built in v5.10.3; final authenticated-match acceptance deferred by user |
 | 3 | Robinhood testnet deployment, funded transactions and indexing | Owner deployment/rehearsal record received; independent verification and activation pending |
-| 4 | Para sign-in → wallet → confirmed Antarctic Passport mint; mainnet plan | Backend and tools deployed; owner authorization and live Para mint acceptance pending |
-| 5 | Live launch dashboard and reconciled metrics | Pending |
+| 4 | ~~Para sign-in → wallet → confirmed Antarctic Passport mint; mainnet plan~~ | Complete on testnet; passport #3 accepted. Mainnet execution remains a later gate. |
+| 5 | ~~Live launch dashboard and reconciled metrics~~ | Complete; owner-private dashboard deployed, live receipts reconciled, visitor coverage labelled. |
 | 6 | Public website/PWA, authentication, multiplayer, installation and APK download QA | Pending |
 | 7 | Play account verification, testing, production access and submission | Pending |
 | 8 | Finished reels and approved launch posts | Pending; drafts exist |
@@ -89,8 +89,8 @@ The updated export now contains two corrected future-round rehearsals; no repeat
 - ~~Build separate owner setup and player acceptance tools.~~ The private console grants only minting permission and test gas; the same-origin player check exports only independently confirmed Para-to-passport evidence.
 - ~~Document the mainnet migration plan, identity/chain mapping, canary, reconciliation and rollback gates.~~ Execution remains disabled; Abstract is retained separately.
 - ~~Deploy the actual backend and read its guarded status.~~ The service reached `awaiting_minter_role` on chain 46630 after its reviewed runtime, database and signer-lock checks; the dedicated signer has no minting grant or gas yet.
-- [ ] Owner wallet authorizes the dedicated testnet sender and funds its gas.
-- [ ] Real Para sign-in → verified wallet → consent → canonical confirmed passport mint; inspect the exported acceptance JSON.
+- ~~Owner wallet authorizes the dedicated testnet sender and funds its gas.~~ Live status is ready, minter=true and funded=true.
+- ~~Real Para sign-in → verified wallet → consent → canonical confirmed passport mint; inspect the exported acceptance JSON.~~ Passport #3 passed the authenticated live acceptance check before the credit pause.
 
 The updated owner deployment export includes corrected future-round rehearsals. Keep them; no repeat rehearsal or contract deployment is required for phase 4. Phase 2 final match acceptance remains deferred. The installed APK is not rebuilt or redesigned by this server task.
 
@@ -102,6 +102,19 @@ The updated owner deployment export includes corrected future-round rehearsals. 
 - Public delivery readiness returns HTTP 200 with public CORS; effective minting remains false pending owner setup. The correct player check page/script and passport artwork return HTTP 200; unauthenticated acceptance returns HTTP 401. The web artwork inventory remains 437. Signed-proof rules hash remains `9fa0be4a43f049957ef407ee73361a0b6a3bb24ed59f487a36190165be82c8cb`; registry activation remains false and Abstract indexing remains separate.
 - Validation: 43 server launch tests pass with the real disposable PostgreSQL/EVM integration enabled, eight contract/indexing tests and two compiled-console tests pass, and the existing wallet cache test passes. Six initial CI workflows and both sets of three follow-up workflows passed, including full source build, restoration, tutorial/navigation, signed-proof and gameplay checks. No physical-device or real Para mint acceptance is claimed.
 
-Next: in the existing private console use **Authorize passport delivery**, approve the minter grant and top-up to 0.005 free test ETH, then open https://articweb3.onrender.com/arctic-play/passport-check/ . Sign in with Para, confirm your wallet, issue the free passport, and download the confirmed acceptance JSON. Attach that public file here to finish phase 4. The installed APK and loading screen are unchanged.
+## Phase 4 and 5 — accepted live checkpoint
 
-The restart-safe sender was checked at 2026-11-12T13:22:45.321Z and reached its missing-permission/gas gate after the replacement deployment. Owner authorization and actual Para mint acceptance remain unchecked.
+The preceding missing-permission and no-gas readbacks are historical. The owner completed authorization and Para sign-in. The acceptance JSON for passport #3 was checked against the saved Para-bound delivery and live receipt before the credit pause. That authenticated readback reported 5 verified sign-ups, 4 attested wallets, 4 confirmed passports, zero backlog and zero receipt mismatches. Mainnet execution remains disabled; phase 3 registry/indexer gates and phase 2 final-match acceptance remain open.
+
+- ~~Deploy the private dashboard and protected aggregate/receipt-check API.~~ Main implementation PR #92, merge `22a965e94e1fb58fcb7ec98c41acc747d5c814d2`, Render `dep-dbqt4pff3r2c73bqlu7g` is live.
+- ~~Reconcile confirmed passports against canonical mint receipts, claims, ownership and collection issuance.~~ Authenticated acceptance was completed before the pause; the resumed agent browser independently confirms the owner sign-in gate, not a fresh authenticated dashboard session.
+- ~~Add sign-up/mint-date charts, date cohorts, wallet readiness, backlog/failures and aggregate CSV export.~~
+- ~~Label prelaunch browser observations as including QA.~~ The latest owner-private Site is deployed as `appgdep_6af60e28526c819186a332c8a89c8964`. Known automated and loopback browser exclusions are included in the follow-up source change; their deployment is recorded below when live.
+- ~~Refresh service/access evidence.~~ On 13 November at 00:35–00:36 IST the public service returned 5 sign-ups, 4 registrations, 4 delivered passports and zero pending deliveries; sender ready, minter/funding true. Both private API routes returned HTTP 401 without credentials. See `evidence/dashboard-live-resume.json`. Public totals are delivery-worker totals; the private dashboard applies the stronger receipt reconciliation.
+- ~~Validate the final bounded changes.~~ 48 launch tests pass with zero failures; two optional local PostgreSQL/EVM integrations were not rerun in the recovered environment. The original phase 5 run passed all 50 with real disposable PostgreSQL/local EVM, and all seven PR #92 workflows passed. Final Worker build and ESM validation pass; regressions cover future windows, unavailable storage and CSV rows.
+
+Dashboard: https://antarctic-launch-dashboard.avidandsouza.chatgpt.site
+
+The visit count is anonymous browser sessions, not people; prelaunch QA sessions are retained and labelled rather than deleted. Known automation filtering is best effort, not bot-proof analytics. The installed v5.10.3 APK, loading screen, approved icon, gameplay and account data are unchanged. No player reset or mainnet release occurred.
+
+Next pending phase: 6, public website/PWA launch and live installation, authentication, multiplayer and APK download checks.
