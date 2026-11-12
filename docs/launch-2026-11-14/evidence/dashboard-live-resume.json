@@ -1,0 +1,63 @@
+{
+  "checkedAt": "2026-11-12T19:05:56.062350+00:00",
+  "sourceCommit": "22a965e94e1fb58fcb7ec98c41acc747d5c814d2",
+  "checks": [
+    {
+      "path": "/launch/public",
+      "httpStatus": 200,
+      "data": {
+        "generatedAt": 1794510367227,
+        "since": 1793491200000,
+        "phase": "prelaunch",
+        "visits": 24,
+        "signups": 5,
+        "registrations": 4,
+        "confirmedPassports": 4,
+        "pendingPassports": 0,
+        "deliveryEnabled": true,
+        "chain": {
+          "id": 46630,
+          "name": "Robinhood Chain Testnet",
+          "explorer": "https://explorer.testnet.chain.robinhood.com",
+          "contract": "0xF059141A4e21eF5786e66e96F1c4357858a0De11"
+        },
+        "definitions": {
+          "visits": "Anonymous browser sessions per UTC day; no visitor identity or IP persisted.",
+          "signups": "Accounts created since cohort start; temporary accounts excluded.",
+          "confirmedPassports": "Delivery worker checked successful mint and owner; not an independent chain indexer."
+        }
+      }
+    },
+    {
+      "path": "/passport/delivery/config",
+      "httpStatus": 200,
+      "data": {
+        "version": 1,
+        "enabled": true,
+        "ready": true,
+        "status": "ready",
+        "chainId": 46630,
+        "confirmationPolicy": "2 canonical L2 blocks; Ethereum finality not established",
+        "contract": "0xF059141A4e21eF5786e66e96F1c4357858a0De11",
+        "signer": "0x009bFDc9d4C2738c1594c485040aa1994723330b",
+        "kinds": [
+          "visa"
+        ],
+        "minter": true,
+        "funded": true,
+        "balance": "0.00499485244",
+        "minimumBalance": "0.000007",
+        "checkedAt": "2026-11-12T19:05:44.265Z",
+        "checkStage": null
+      }
+    },
+    {
+      "path": "/launch/owner/v2",
+      "httpStatus": 401
+    },
+    {
+      "path": "/launch/owner/verify-passport",
+      "httpStatus": 401
+    }
+  ]
+}

@@ -9,7 +9,7 @@ test('new operations and receipt routes require a server-side owner credential',
 test('first-party visits respect privacy controls, exclude Android, deduplicate and roll UTC days',async()=>{
  const {recordLaunchVisit}=await import('../../shared/launch/visit.mjs');let sends=0;const values=new Map(),scope={navigator:{},crypto:{randomUUID},sessionStorage:{getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v)}};
  const request=async()=>{sends++;};const at=Date.parse('2026-11-12T15:00:00Z');
- for(const block of [{Android:{}},{navigator:{doNotTrack:'1'}},{navigator:{globalPrivacyControl:true}}])assert.equal(await recordLaunchVisit({scope:{...scope,...block},at,request}),false);
+ for(const block of [{Android:{}},{navigator:{doNotTrack:'1'}},{navigator:{globalPrivacyControl:true}},{navigator:{webdriver:true}},{navigator:{userAgent:'HeadlessChrome/142'}},{location:{hostname:'localhost'}},{location:{hostname:'127.0.0.1'}},{location:{hostname:'[::1]'}},{location:{hostname:'game.localhost'}},{location:{protocol:'file:'}}])assert.equal(await recordLaunchVisit({scope:{...scope,...block},at,request}),false);
  assert.equal(sends,0);assert.equal(values.size,0);
  assert.equal(await recordLaunchVisit({scope,at,request}),true);assert.equal(await recordLaunchVisit({scope,at,request}),false);assert.equal(sends,1);
  assert.equal(await recordLaunchVisit({scope,at:at+86400000,request}),true);assert.equal(sends,2);
