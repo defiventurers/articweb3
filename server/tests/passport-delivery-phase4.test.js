@@ -91,6 +91,13 @@ test('real PostgreSQL + local EVM: attested Para login, consent, passport-first 
  await pools[0].query('UPDATE ak_passport_deliveries SET run_after=0,lease_until=0');await runtime.tick();
  p=await store.get(login.accountId);assert.equal(p.deliveries.find(d=>d.kind==='visa').status,'confirmed');assert.equal((await contract.totalIssued()).toString(),'1');
  const evidence=await call('/passport/acceptance',undefined,login.session);assert.equal(evidence.confirmed,true);assert.equal(evidence.paraWalletVerified,true);assert.equal(evidence.wallet,player.address.toLowerCase());assert.equal(evidence.tokenId,'1');assert.ok(evidence.blockHash);assert.ok(evidence.transactionHash);
+ // Resume a pre-upgrade row labelled external. The server-attested account
+ // wallet plus canonical mint still bind it; substituting the wallet does not.
+ await pools[0].query("UPDATE ak_passports SET wallet_provider='external'");
+ assert.equal((await call('/passport/acceptance',undefined,login.session)).confirmed,true);
+ await accountStore.transact('account',login.accountId,a=>({...a,gameWallet:{...a.gameWallet,address:other.address}}));
+ assert.equal((await call('/passport/acceptance',undefined,login.session)).confirmed,false);
+ await accountStore.transact('account',login.accountId,a=>({...a,gameWallet:{...a.gameWallet,address:player.address}}));
  const metadata=await call('/passport/metadata/46630/1.json');assert.equal(metadata.status,200);const publicText=JSON.stringify(metadata);for(const secret of ['Private Explorer','private@example.test',player.address.toLowerCase()])assert.equal(publicText.toLowerCase().includes(secret.toLowerCase()),false);
  await local.request({method:'evm_mine',params:[]});await runtime.tick();assert.equal((await contract.totalIssued()).toString(),'1');
  assert.equal((await store.get(login.accountId)).deliveries.find(d=>d.kind==='arrival').status,'queued');
