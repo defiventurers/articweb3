@@ -49,7 +49,7 @@ test('Chaturanga v2 keeps canonical coordinates through all four player perspect
     assert.equal(g.cells.length,64);
     assert.match(g.image,/chaturanga-match\/grid-v2\.webp$/);
     const [x,y,w,h]=g.viewBox.split(' ').map(Number);
-    assert.equal(w,h,'8×8 board must stay square');
+    assert.ok(Math.abs(w-h)<1e-7,'8×8 board must stay square (allow floating-point rotation rounding)');
     assert.ok(g.cells.every(c=>Number.isFinite(c.x)&&Number.isFinite(c.y)));
     assert.equal(g.perspective,seat);
   }
