@@ -1,4 +1,6 @@
 // Shared by the Android/browser UI and the room service. No prices or secrets here.
+// Source-native game rules stay separate from these small modern learning puzzles.
+const regional=require('./regionalChallenges.cjs');
 const VERSION=1,KEY_THRESHOLD=3;
 const CATALOG=Object.freeze({
   dominion:{starter:true,name:'Chaturanga'},
@@ -24,18 +26,30 @@ const CHALLENGES=Object.freeze(millOrder.map((index,i)=>{
   return {id:'formation-'+String(i+1).padStart(2,'0'),title:['North gate','Eastern watch','South lanterns','Western bridge','Inner courtyard','Frost arch','Moon terrace','Harbor wall','Lantern avenue','River crossing','Southern passage','Western passage'][i],own,other};
 }));
 function solved(id,point){const p=CHALLENGES.find(p=>p.id===id);return !!(p&&Number.isInteger(point)&&point>=0&&point<24&&!p.own.includes(point)&&!p.other.includes(point)&&MILLS.some(m=>m.includes(point)&&m.every(n=>n===point||p.own.includes(n))));}
-function empty(){return {version:VERSION,wins:{},solutions:{},foundationWins:{},keyHalls:{}};}
+function empty(){return {version:VERSION,wins:{},solutions:{},foundationWins:{},keyHalls:{},keyMethods:{}};}
 function clean(value={}){
   const next=empty();
   for(const id of GAME_IDS){const win=value?.wins?.[id];if(win&&typeof win.matchId==='string'&&win.matchId.length<=120&&Number.isFinite(win.at))next.wins[id]={matchId:win.matchId,at:win.at};}
   for(const c of CHALLENGES)if(solved(c.id,value?.solutions?.[c.id]))next.solutions[c.id]=value.solutions[c.id];
+  for(const c of regional.CHALLENGES)if(regional.solved(c.id,value?.solutions?.[c.id]))next.solutions[c.id]=value.solutions[c.id];
   for(const [signature,entry]of Object.entries(value?.foundationWins||{}).slice(0,4))if(/^[a-f0-9]{64}$/.test(signature)&&typeof entry?.matchId==='string'&&entry.matchId.length<=120&&Number.isFinite(entry.at))next.foundationWins[signature]={matchId:entry.matchId,at:entry.at};
-  const available=Math.floor(Object.keys(next.solutions).length/KEY_THRESHOLD)+Object.keys(next.foundationWins).length;
-  for(const [id,at]of Object.entries(value?.keyHalls||{}))if(CATALOG[id]&&!CATALOG[id].starter&&Number.isFinite(at)&&Object.keys(next.keyHalls).length<available)next.keyHalls[id]=at;
+  let universal=Math.floor(CHALLENGES.filter(c=>next.solutions[c.id]!==undefined).length/KEY_THRESHOLD)+Object.keys(next.foundationWins).length;
+  const regionRemaining=Object.fromEntries(Object.keys(regional.ORIGINS).map(region=>[region,Math.floor(regional.challengesFor(region).filter(c=>next.solutions[c.id]!==undefined).length/KEY_THRESHOLD)]));
+  for(const [id,at]of Object.entries(value?.keyHalls||{})){
+    if(!CATALOG[id]||CATALOG[id].starter||!Number.isFinite(at))continue;
+    const method=value?.keyMethods?.[id];
+    if(method===undefined||method==='universal'){
+      if(universal>0){next.keyHalls[id]=at;universal--;}
+    }else if(regional.ORIGINS[method]&&regional.getRegionForHall(id)===method&&regionRemaining[method]>0){
+      next.keyHalls[id]=at;next.keyMethods[id]=method;regionRemaining[method]--;
+    }
+  }
   return next;
 }
-function merge(a,b){a=clean(a);b=clean(b);return clean({wins:{...b.wins,...a.wins},solutions:{...b.solutions,...a.solutions},foundationWins:{...a.foundationWins,...b.foundationWins},keyHalls:{...a.keyHalls,...b.keyHalls}});}
-function balance(value){const p=clean(value);return Math.floor(Object.keys(p.solutions).length/KEY_THRESHOLD)+Object.keys(p.foundationWins).length-Object.keys(p.keyHalls).length;}
+function merge(a,b){a=clean(a);b=clean(b);return clean({wins:{...b.wins,...a.wins},solutions:{...b.solutions,...a.solutions},foundationWins:{...a.foundationWins,...b.foundationWins},keyHalls:{...a.keyHalls,...b.keyHalls},keyMethods:{...a.keyMethods,...b.keyMethods}});}
+function balance(value){const p=clean(value);return Math.floor(CHALLENGES.filter(c=>p.solutions[c.id]!==undefined).length/KEY_THRESHOLD)+Object.keys(p.foundationWins).length-Object.keys(p.keyHalls).filter(id=>!p.keyMethods[id]).length;}
+function regionBalance(value,region){const p=clean(value);if(!regional.ORIGINS[region])return 0;return Math.floor(regional.challengesFor(region).filter(c=>p.solutions[c.id]!==undefined).length/KEY_THRESHOLD)-Object.values(p.keyMethods).filter(r=>r===region).length;}
+function regionalBalances(value){return Object.fromEntries(Object.keys(regional.ORIGINS).map(region=>[region,regionBalance(value,region)]));}
 function earned(id,value){const p=clean(value),c=CATALOG[id];return !!(c&&(c.starter||p.keyHalls[id]||c.wins?.some(prerequisite=>p.wins[prerequisite])));}
 function access(id,{progress,entitlements={},festivals=[],now=0}={}){
   if(!CATALOG[id])return {open:false,reason:'unknown'};
@@ -50,11 +64,13 @@ function access(id,{progress,entitlements={},festivals=[],now=0}={}){
 }
 function validFestival(f){return !!(f&&typeof f.id==='string'&&typeof f.name==='string'&&Array.isArray(f.games)&&f.games.length&&f.games.every(id=>CATALOG[id])&&Number.isSafeInteger(f.startsAt)&&Number.isSafeInteger(f.endsAt)&&f.endsAt>f.startsAt);}
 function festivalsFrom(value){if(!Array.isArray(value))return [];return value.filter(validFestival).map(f=>({id:f.id,name:f.name,games:[...new Set(f.games)],startsAt:f.startsAt,endsAt:f.endsAt}));}
-function complete(progress,id,point){if(!solved(id,point))throw Error('Place your lantern on an empty point that completes a line of three.');const p=clean(progress);return clean({...p,solutions:{...p.solutions,[id]:point}});}
+function complete(progress,id,point){if(!solved(id,point)&&!regional.solved(id,point))throw Error('Choose a legal formation point or the correct move for this rule puzzle.');const p=clean(progress);return clean({...p,solutions:{...p.solutions,[id]:point}});}
 function spend(progress,id,now=Date.now()){
   const p=clean(progress);if(!CATALOG[id]||CATALOG[id].starter)throw Error('Choose a locked hall.');
   if(earned(id,p))return p;
-  if(balance(p)<1)throw Error('Complete three different formations to earn a Lantern Key.');
+  const region=regional.getRegionForHall(id);
+  if(region&&regionBalance(p,region)>0)return clean({...p,keyHalls:{...p.keyHalls,[id]:now},keyMethods:{...p.keyMethods,[id]:region}});
+  if(balance(p)<1)throw Error('Complete three matching regional puzzles or three universal formations to earn a Lantern Key.');
   return clean({...p,keyHalls:{...p.keyHalls,[id]:now}});
 }
 function win(progress,id,matchId,now=Date.now()){if(!CATALOG[id]||typeof matchId!=='string'||!matchId||matchId.length>120)throw Error('Invalid completed match.');const p=clean(progress);return p.wins[id]?p:clean({...p,wins:{...p.wins,[id]:{matchId,at:now}}});}
@@ -68,7 +84,7 @@ function verifyReplay(engine,proof){
   if(!winningSeats(result).includes(proof.seat))throw Error('Finish a winning game to open the next hall.');
   return {id:proof.id,matchId:proof.matchId,seat:proof.seat};
 }
-function requirement(id){const p=CATALOG[id];return !p?'Unknown hall':p.starter?'Open from your first visit':'Win '+p.wins.map(id=>CATALOG[id].name).join(' or ')+', or use 1 Lantern Key.';}
+function requirement(id){const p=CATALOG[id];return !p?'Unknown hall':p.starter?'Open from your first visit':'Win '+p.wins.map(id=>CATALOG[id].name).join(' or ')+', or use a '+(regional.ORIGINS[regional.getRegionForHall(id)]?.label||'regional key')+' or universal Lantern Key.';}
 function destinations(id){return GAME_IDS.filter(key=>CATALOG[key].wins?.includes(id));}
 function validateCatalogue(catalog=CATALOG){
   const visiting=new Set(),visited=new Set();
@@ -76,4 +92,4 @@ function validateCatalogue(catalog=CATALOG){
   for(const id of Object.keys(catalog))visit(id);return true;
 }
 validateCatalogue();
-module.exports={VERSION,KEY_THRESHOLD,CATALOG,GAME_IDS,PRODUCTS,POINTS,MILLS,CHALLENGES,empty,clean,merge,balance,earned,access,solved,complete,spend,win,foundationWin,winningSeats,verifyReplay,requirement,destinations,validFestival,festivalsFrom,validateCatalogue};
+module.exports={VERSION,KEY_THRESHOLD,CATALOG,GAME_IDS,PRODUCTS,POINTS,MILLS,CHALLENGES,REGIONAL_CHALLENGES:regional.CHALLENGES,REGIONAL_ORIGINS:regional.ORIGINS,regionForHall:regional.getRegionForHall,empty,clean,merge,balance,regionBalance,regionalBalances,earned,access,solved,complete,spend,win,foundationWin,winningSeats,verifyReplay,requirement,destinations,validFestival,festivalsFrom,validateCatalogue};
