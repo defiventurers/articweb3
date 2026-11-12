@@ -12,7 +12,7 @@
 - APK bytes: **58,811,535**.
 - APK SHA-256: `7f0eb1b7bb2cb1d5d974249251bdb0356b15ccc298939f459bc42d296ffd414d`.
 - Embedded Android v2 signer certificate SHA-256: `20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37` (approved original).
-- Independent v2 cryptographic signature and whole-content digest verification succeeded for the recovered APK, including its RSA-SHA256 signature and 59 signed chunks. ZIP CRC passed for **477** entries; `resources.arsc` is **stored/uncompressed**; stored resource offsets passed 4-byte alignment.
+- Independent v2 **and v3** cryptographic signatures and whole-content digest verification succeeded for the recovered APK, including RSA-SHA256 signatures, 59 signed chunks, and the approved signer certificate. ZIP CRC passed for **477** entries; `resources.arsc` is **stored/uncompressed**; stored resource offsets passed 4-byte alignment.
 - Android binary manifest was decoded independently and shows package, code 108 and name 5.10.4. Five `assets/art/launch-v1/chaturanga-match/` WebP layers exist in the signed archive, alongside approved piece sprites.
 - Existing Library record reports 415 preserved assets and browser rotated-seat test results. These are **prior-session records**, not freshly rerun tests.
 - Saved 320×640 comparison image shows the Chaturanga match upgrade. Saved 393×852 image shows only the icy background and **does not prove match-page rendering**. Treat this viewport as **unverified**.
