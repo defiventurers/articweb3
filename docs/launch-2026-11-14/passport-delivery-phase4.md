@@ -76,7 +76,7 @@ Live owner approvals, a real Para sign-in and a confirmed passport receipt remai
 
 ## Deployment readback — 12 November 2026
 
-PRs #88 and #89 are merged. The final server source `ce3db0d446aeb981897af1f70fde47e39b54758b` is live as Render deployment `dep-dbqrhq9srm7s738umrpg`. The owner-private console update succeeded as `appgdep_6af5b6500ee48191b7e0b41d80374828`.
+PRs #88, #89 and #90 are merged. The registration update `ce3db0d446aeb981897af1f70fde47e39b54758b` became live as `dep-dbqrhq9srm7s738umrpg`. The restart-safe sender source is `a4895f0119a07a5a81cd483a52b4cfa2339e983b`, deployment `dep-dbqrp1gae00c738pmgrg`; it is live and its replacement startup is verified in `passport-live-readback.json`. The owner-private console update succeeded as `appgdep_6af5b6500ee48191b7e0b41d80374828`.
 
 Dedicated testnet signer: `0x009bFDc9d4C2738c1594c485040aa1994723330b`. Its secret was stored only in the existing service's chain-specific environment; other variables were preserved, and the temporary local key copy was removed after the service reported the matching address. The existing service was reused without a paid resource. No owner grant, funding transaction or live Para mint was performed by the agent.
 
@@ -84,4 +84,6 @@ The deployed service reached the `awaiting_minter_role` gate with `minter=false`
 
 The actual player page and script return HTTP 200; the passport image is available; anonymous acceptance returns HTTP 401. Operator config has public CORS, while effective player delivery stays disabled until the runtime is ready. The browser artwork inventory is 437 and the signed-proof rules hash remains unchanged. Registry anchoring is still unconfigured; Abstract indexing is preserved separately.
 
-43 server launch tests pass with the disposable PostgreSQL/EVM integration enabled, plus eight contract/index tests, two compiled-console DOM/EVM checks and one wallet-cache test. The legacy external-labelled Para row and wallet-substitution regression pass in the real database/EVM integration. All six initial and three follow-up CI workflows passed, including the full source/restoration/gameplay checks. Actual player identity, wallet approvals, receipt acceptance and physical Android installation remain unverified.
+43 server launch tests pass with the disposable PostgreSQL/EVM integration enabled, plus eight contract/index tests, two compiled-console DOM/EVM checks and one wallet-cache test. The legacy external-labelled Para row and wallet-substitution regression pass in the real database/EVM integration. All six initial and both sets of three follow-up CI workflows passed, including the full source/restoration/gameplay checks. Actual player identity, wallet approvals, receipt acceptance and physical Android installation remain unverified.
+
+Final sender readback: `awaiting_minter_role`, `checkStage=null`, `minter=false`, `funded=false`, checked 2026-11-12T13:22:45.321Z. Owner setup and real Para-to-mint acceptance remain pending.
