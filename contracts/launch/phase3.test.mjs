@@ -4,13 +4,22 @@ import fs from 'node:fs';
 import ganache from 'ganache';
 import {BrowserProvider,Contract,sha256} from 'ethers';
 import {compileBundle} from './compile.mjs';
-import {newDeployment,deployTestnet,verifyDeployment,runRegistryRehearsal,hashText,REGISTRY_RUNTIME} from './testnet.mjs';
+import {newDeployment,deployTestnet,verifyDeployment,runRegistryRehearsal,rehearsalRound,freshRehearsal,hashText,REGISTRY_RUNTIME} from './testnet.mjs';
 import {indexDeployment,snapshotStore} from './event-index.mjs';
 import indexer from '../../shared/chain/confirmed-events.cjs';
 import {verifyExplorerSources} from './explorer-verification.mjs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const {artifacts,input}=compileBundle();
+test('lagging chain or client clocks cannot select an already published rehearsal round; fresh runs preserve receipts',()=>{
+ const now=Date.parse('2026-11-12T12:05:41.840Z');
+ for(const block of [now/1000-600,now/1000+600]){
+  const round=rehearsalRound(block,now),publication=(1692803367+(round-1)*3)*1000;
+  assert.ok(publication>now+175000);assert.ok(publication>block*1000+175000);
+ }
+ const r=newDeployment({owner:'0x'+'11'.repeat(20)});r.smoke={confirmed:true,transactions:{commitRoll:'old-receipt'}};r.indexReport={ready:true};
+ freshRehearsal(r);assert.equal(r.smoke,null);assert.equal(r.previousRehearsals[0].transactions.commitRoll,'old-receipt');assert.equal(r.indexReport,undefined);
+});
 test('compilation retains the exact published registry and complete explorer verification input',async()=>{
  const manifest=JSON.parse(fs.readFileSync(new URL('../../shared/fair-play/registry-manifest.json',import.meta.url)));
  assert.equal(artifacts.FairPlayRegistry.runtimeHash,manifest.runtimeHash);assert.equal(artifacts.FairPlayRegistry.runtimeHash,REGISTRY_RUNTIME);

@@ -1,6 +1,6 @@
 import {BrowserProvider,JsonRpcProvider,formatEther} from 'ethers';
 import artifacts from 'virtual:launch-artifacts';
-import {TESTNET,newDeployment,checkRecord,deployTestnet,verifyDeployment,runRegistryRehearsal} from '../testnet.mjs';
+import {TESTNET,newDeployment,checkRecord,deployTestnet,verifyDeployment,runRegistryRehearsal,freshRehearsal} from '../testnet.mjs';
 import {indexDeployment,snapshotStore} from '../event-index.mjs';
 import {verifyExplorerSources} from '../explorer-verification.mjs';
 const $=id=>document.getElementById(id),recordKey='ak.operator.robinhood46630.record.v1',eventsKey='ak.operator.robinhood46630.events.v1';
@@ -13,10 +13,11 @@ function render(){
  $('deploy').disabled=busy||!signer;$('rehearse').disabled=busy||!signer||!record?.contracts?.AntarcticPassport?.transactionHash;$('index').disabled=busy||!record?.contracts?.AntarcticPassport?.transactionHash;
  $('verify').disabled=busy||!record?.contracts?.AntarcticPassport?.transactionHash;$('export').disabled=busy||!record;
  $('source').disabled=busy||!record?.contracts?.AntarcticPassport?.transactionHash;
+ $('fresh').disabled=busy||!record?.smoke?.confirmed;
  $('connect').disabled=busy;$('import').disabled=busy;$('operator').disabled=busy||!!record?.contracts?.FairPlayRegistry;
  $('contracts-state').textContent=verified?'Code, roles and receipts verified':record?'Saved plan · verify before relying on it':'Awaiting deployment';
  $('rehearsal-state').textContent=record?.smoke?.confirmed?'Saved rehearsal · run verification/indexing':'Pending test transactions';
- $('index-state').textContent=indexReport?.ready&&indexReport?.reconciliation?.rehearsalIndexed?'Confirmed events reconciled':'Awaiting confirmed event check';
+ $('index-state').textContent=indexReport?.ready&&indexReport?.reconciliation?.rehearsalIndexed&&indexReport?.reconciliation?.futureRoundClientTimeRecorded?'Confirmed events reconciled':'Awaiting complete event/timing check';
  const list=$('contracts');list.replaceChildren();
  for(const [name,c]of Object.entries(record?.contracts||{})){
   const item=document.createElement('li'),label=document.createElement('strong'),value=document.createElement('code');label.textContent=name;value.textContent=c.address;item.append(label,value);
@@ -52,6 +53,7 @@ $('rehearse').onclick=()=>run(async()=>{
  await runRegistryRehearsal({provider,signer,artifacts,record,save:persist,progress:message});verified=true;
  message('Operator rehearsal transactions are confirmed. Run the event check to reconcile them.');
 });
+$('fresh').onclick=()=>run(async()=>{freshRehearsal(record);indexReport=null;persist(record);message('Earlier rehearsal preserved. Press Run testnet registry rehearsal for three new test transactions using a future wall-clock round.');});
 $('source').onclick=()=>run(async()=>{
  provider||=new JsonRpcProvider(TESTNET.rpc,undefined,{cacheTimeout:0});
  message('Submitting/checking the public Solidity source on the official testnet explorer…');
@@ -64,7 +66,7 @@ $('index').onclick=()=>run(async()=>{
  message('Checking confirmed chain events and comparing passport issuance with the contract…');
  const saved=localStorage.getItem(eventsKey),store=snapshotStore(saved?JSON.parse(saved):null,s=>localStorage.setItem(eventsKey,JSON.stringify(s)));
  indexReport=await indexDeployment({provider,record,artifacts,store});record.indexReport=indexReport;persist(record);verified=true;
- message(indexReport.ready&&indexReport.reconciliation.rehearsalIndexed?'Deployment, rehearsal and confirmed event reconciliation passed. Export the record and attach it in the work chat.':'Index scan is incomplete or the rehearsal is missing. Continue the pending step, then run this check again.');
+  message(indexReport.ready&&indexReport.reconciliation.rehearsalIndexed&&indexReport.reconciliation.futureRoundClientTimeRecorded?'Deployment, rehearsal and confirmed event reconciliation passed. Export the record and attach it in the work chat.':indexReport.ready&&indexReport.reconciliation.rehearsalIndexed?'Receipt events are indexed, but this older rehearsal lacks a future client-time check. Preserve it and start a fresh rehearsal; keep the existing deployments.':'Index scan is incomplete or the rehearsal is missing. Continue the pending step, then run this check again.');
 });
 $('export').onclick=()=>{
  const blob=new Blob([JSON.stringify(record,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='Antarctic-Robinhood-Testnet-Deployment.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);

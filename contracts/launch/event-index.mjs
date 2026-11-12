@@ -39,7 +39,8 @@ export async function indexDeployment({provider,record,artifacts,store,maxBatche
   const issued=await new Contract(passportReport.contract,artifacts.AntarcticPassport.abi,provider).totalIssued({blockTag:passportReport.cursor});
   if(BigInt(new Set(mints.map(e=>e.args.tokenId)).size)!==issued)throw Error('Indexed passport mint count differs from the onchain total at the checked block.');
   const registry=reports.find(r=>r.kind==='registry'),rehearsal=rows.filter(e=>e.chainId===46630&&e.contract===registry.contract&&e.args.matchId===record.smoke?.matchId);
-  report.reconciliation={confirmedPassports:String(issued),passportCountMatchesContract:true,rehearsalEvents:rehearsal.map(e=>({name:e.name,transactionHash:e.transactionHash,blockNumber:e.blockNumber})),rehearsalIndexed:!!record.smoke?.confirmed&&['MatchRegistered','RollCommitted','Checkpoint'].every(name=>rehearsal.some(e=>e.name===name))};
+  const publication=record.smoke?.round?1692803367+(record.smoke.round-1)*3:null;
+  report.reconciliation={confirmedPassports:String(issued),passportCountMatchesContract:true,rehearsalEvents:rehearsal.map(e=>({name:e.name,transactionHash:e.transactionHash,blockNumber:e.blockNumber})),rehearsalIndexed:!!record.smoke?.confirmed&&['MatchRegistered','RollCommitted','Checkpoint'].every(name=>rehearsal.some(e=>e.name===name)),futureRoundClientTimeRecorded:!!record.smoke?.requestedAt&&Date.parse(record.smoke.requestedAt)<publication*1000,timingAssurance:'L2 timestamps and recorded operator client time are distinct from independently established Ethereum publication timing.'};
  }
  return report;
 }

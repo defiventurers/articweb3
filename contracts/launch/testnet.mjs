@@ -3,6 +3,17 @@ import {Contract,ContractFactory,getAddress,getCreateAddress,sha256,toUtf8Bytes,
 export const TESTNET=Object.freeze({chainId:46630,name:'Robinhood Chain Testnet',rpc:'https://rpc.testnet.chain.robinhood.com',explorer:'https://explorer.testnet.chain.robinhood.com',confirmations:2});
 export const REGISTRY_RUNTIME='dac8ec3e3451e234121c7bfd67f470348dae33f1b8d0d2b84bf8ef76bcfd0e17';
 export const hashText=s=>sha256(toUtf8Bytes(s));
+export function rehearsalRound(blockTimestamp,now=Date.now()){
+ if(!Number.isFinite(Number(blockTimestamp))||!Number.isFinite(now))throw Error('Cannot determine a future rehearsal round.');
+ // A valid L2 header can lag wall time. Selecting from that header alone can
+ // request a drand result which is already public when the wallet signs.
+ return Math.floor((Math.max(Number(blockTimestamp),Math.floor(now/1000))+180-1692803367)/3)+1;
+}
+export function freshRehearsal(record){
+ checkRecord(record);if(!record.smoke?.confirmed)throw Error('Finish or inspect the pending rehearsal before starting another.');
+ record.previousRehearsals=[...(record.previousRehearsals||[]),record.smoke];record.smoke=null;delete record.indexReport;
+ return record;
+}
 export async function assertTestnet(provider){if(Number((await provider.getNetwork()).chainId)!==TESTNET.chainId)throw Error('Select Robinhood testnet 46630. This tool cannot deploy on mainnet or Abstract.');}
 const address=value=>{const a=getAddress(value);if(/^0x0{40}$/i.test(a))throw Error('Use a nonzero wallet address.');return a;};
 export function newDeployment({owner,operator=owner,metadataBase='https://articweb3.onrender.com/arctic-play/v3/passport/metadata/46630/'}={}){
@@ -95,7 +106,7 @@ export async function runRegistryRehearsal({provider,signer,artifacts,record,sav
  }
  await send('registerMatch',()=>c.registerMatch(s.matchId,s.headerHash));
  if(!s.transactions.commitRoll){
-  const latest=await provider.getBlock('latest');s.round=Math.floor((Number(latest.timestamp)+180-1692803367)/3)+1;
+  const latest=await provider.getBlock('latest');s.requestedAt=new Date().toISOString();s.round=rehearsalRound(latest.timestamp,Date.parse(s.requestedAt));
   s.intentHash=hashText(JSON.stringify({purpose:s.purpose,matchId:s.matchId,sequence:1,round:s.round}));await save(record);
  }
  const roll=await send('commitRoll',()=>c.commitRoll(s.matchId,1,s.intentHash,s.round));
@@ -106,5 +117,8 @@ export async function runRegistryRehearsal({provider,signer,artifacts,record,sav
  await send('appendCheckpoint',()=>c.appendCheckpoint(s.matchId,[s.eventHash],true));
  const info=await c.matchInfo(s.matchId),root=sha256(concat(['0x00',s.eventHash]));
  if(info.headerHash!==s.headerHash||Number(info.count)!==1||!info.closed||await c.checkpointRoots(s.matchId,1)!==root)throw Error('Rehearsal checkpoint differs from its expected history root.');
- s.root=root;s.confirmed=true;s.beaconRequestTimingVerified=true;s.checkedAt=new Date().toISOString();await save(record);return s;
+ s.root=root;s.confirmed=true;s.blockTimestampTimingVerified=true;
+ s.beaconRequestTimingVerified=!!s.requestedAt&&Date.parse(s.requestedAt)<publication*1000;
+ s.timingAssurance=s.beaconRequestTimingVerified?'L2 block timestamp and recorded operator client request time; not Ethereum finality or a player randomness proof.':'L2 block timestamp only; operator request wall time was not recorded.';
+ s.checkedAt=new Date().toISOString();await save(record);return s;
 }

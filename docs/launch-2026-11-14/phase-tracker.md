@@ -6,7 +6,7 @@ Updated 12 November 2026. Cross out a phase only after its acceptance evidence i
 | --- | --- | --- |
 | 1 | Full cinematic introductions, historical costumes and stories | Skipped by request; pending |
 | 2 | Live fairness verification: signed moves, dice, results, replay and accurate blockchain status | Built in v5.10.3; final authenticated-match acceptance deferred by user |
-| 3 | Robinhood testnet deployment, funded transactions and indexing | Tooling and indexer built; funded wallet, live receipts and activation pending |
+| 3 | Robinhood testnet deployment, funded transactions and indexing | Owner deployment/rehearsal record received; independent verification and activation pending |
 | 4 | Para sign-in → wallet → confirmed Antarctic Passport mint; mainnet plan | Pending |
 | 5 | Live launch dashboard and reconciled metrics | Pending |
 | 6 | Public website/PWA, authentication, multiplayer, installation and APK download QA | Pending |
@@ -63,9 +63,19 @@ Validation: 47 passing automated tests plus one initially skipped integration, w
 - ~~Build confirmed-event indexing with network/contract isolation, transactional cursors, duplicate prevention and reorg recovery.~~
 - ~~Build a private wallet-operated console and standard-JSON explorer verification submission/status tools.~~
 - ~~Run a local EVM end-to-end rehearsal and the compiled console workflow.~~
-- [ ] Connect a funded dedicated Robinhood testnet wallet and approve real deployment/rehearsal transactions.
+- ~~Receive the owner’s exported two-contract deployment and three-transaction rehearsal record.~~ The uploaded record declares confirmation; independent chain verification remains pending.
 - [ ] Confirm both deployed contracts' source verification and live receipts.
 - [ ] Configure the funded backend operator securely; deploy the backend changes and enable durable indexing after its gates pass.
 - [ ] Reconcile real registry events and passport totals on the deployed database/indexer. Local PostgreSQL execution and live indexing are not claimed yet.
 
 The final phase 2 player-match acceptance remains deferred. Phase 3's explicitly labelled operator rehearsal is not a player victory or an NFT issuance claim. This pass does not rebuild the APK or alter its loading screen, icon or gameplay.
+
+## Uploaded deployment review — 12 November 2026
+
+The owner supplied registry `0xB247E10c115D8FfE508452F94521ADaB377EA8fd` and passport `0xF059141A4e21eF5786e66e96F1c4357858a0De11`, plus five transaction hashes. Owner/nonce-derived addresses and the single-event Merkle root match locally. The supplied compiler/source/runtime hash declarations match the compiled artifacts; this is not a retrieval of deployed bytecode.
+
+Direct receipt verification timed out and the explorer API returned HTTP 403 from this workspace. Source-verification and event-index outputs are absent from the export. The reachable live service still reports `chain.configured=false` and `registry=null`; no activation was performed.
+
+A clock discrepancy was detected: the rehearsal round was scheduled for **17:31:33 India time**, while this record was created at **17:35:41** and its rehearsal checked at **17:36:34**. The tool selected from chain time alone. It now selects after both chain and client time, records request time, and labels older timing evidence accurately. Prior receipts are preserved. A fresh rehearsal can reuse the same contracts; do not deploy them again.
+
+Next: reload the operator console, use **Start a fresh rehearsal → Run testnet registry rehearsal**, run source verification and event indexing, then export the updated JSON. Phase 2 player-match acceptance remains deferred; phase 3 remains open.
