@@ -35,7 +35,9 @@ test('Phone interface: six nondice engines, legal board taps, English rules, inv
     assert.ok(gameCard,game.id+' legacy card');
     gameCard.querySelector('.game-open').click();await settle();
     assert.ok(doc.querySelector('.cg-panel'),game.id+' compact game sheet');
-    assert.ok(doc.querySelector('.game-more .seat-choice'),game.id+' seat settings');
+    button('Mode & seat →').click();await settle();
+    assert.ok(doc.querySelector('.cg-settings-body .seat-choice'),game.id+' seat settings');
+    button('Done · Back to play').click();await settle();
     button('On this phonePass the phone between players').click();await settle();
     if(game.id==='dominion'){await waitFor(()=>button('Roll two dice').disabled===false,'dice ready');button('Roll two dice').click();await settle();}
     await waitFor(()=>doc.querySelector('.selection-hint')?.textContent==='Tap a piece to see its legal moves.',`${game.id} legal worker ready`);
