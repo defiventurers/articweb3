@@ -1,23 +1,22 @@
-name: Build signed Android v5.10.2 review APK (no publication)
+name: Build versioned signed Android review APK (manual; no publication)
 on:
-  push:
-    branches: [codex/v5102-complete-victory-and-apk-gate]
-    paths:
-      - '.github/workflows/android-review-signed.yml'
-      - 'mobile/arctic-play/**'
-      - 'frontend/src/games/co-tu-lenh/**'
-      - 'frontend/src/games/shanshui-xiangqi/**'
-      - 'frontend/src/games/shared/**'
   workflow_dispatch:
+    inputs:
+      expected_version:
+        description: 'Expected version name from approved source (for example 5.10.4)'
+        type: string
+        required: true
+      expected_code:
+        description: 'Expected incremented Android versionCode (at least 108)'
+        type: string
+        required: true
 permissions:
   contents: read
 jobs:
   review:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 35
-    env:
-      ORIGINAL_JKS_B64: ${{ secrets.AK_ANDROID_RELEASE_JKS_B64 }}
-      ORIGINAL_JKS_PASSWORD: ${{ secrets.AK_ANDROID_RELEASE_KEYSTORE_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,14 +26,44 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Require reviewed release version and block downgrade
+        shell: bash
+        env:
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+          EXPECTED_CODE: ${{ inputs.expected_code }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,re,xml.etree.ElementTree as ET
+          p='mobile/arctic-play/android/app/src/main/AndroidManifest.xml'
+          root=ET.parse(p).getroot()
+          ns='{http://schemas.android.com/apk/res/android}'
+          version=root.attrib[ns+'versionName']
+          code=int(root.attrib[ns+'versionCode'])
+          expected_version=os.environ['EXPECTED_VERSION']
+          expected_code=os.environ['EXPECTED_CODE']
+          if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+',expected_version):
+              raise SystemExit('Invalid expected_version')
+          if not re.fullmatch(r'[0-9]+',expected_code):
+              raise SystemExit('Invalid expected_code')
+          if (version,code)!=(expected_version,int(expected_code)) or code<108:
+              raise SystemExit(f'Refusing stale/mismatched version: source={version}/{code}; expected={expected_version}/{expected_code}; floor=108')
+          if root.attrib.get('package')!='xyz.arcticdominion.play':
+              raise SystemExit('App identity changed')
+          with open(os.environ['GITHUB_ENV'],'a') as out:
+              out.write(f'AK_VERSION={version}\nAK_CODE={code}\n')
+          print('Approved source version and package gate passed:',version,code)
+          PY
       - name: Verify secure signer configuration
         id: signer
         shell: bash
+        env:
+          ORIGINAL_JKS_B64: ${{ secrets.AK_ANDROID_RELEASE_JKS_B64 }}
+          ORIGINAL_JKS_PASSWORD: ${{ secrets.AK_ANDROID_RELEASE_KEYSTORE_PASSWORD }}
         run: |
           if [ -z "$ORIGINAL_JKS_B64" ] || [ -z "$ORIGINAL_JKS_PASSWORD" ]; then
-            echo "ready=no" >> "$GITHUB_OUTPUT"
-            echo "### NO SIGNED APK: original signing keystore/password not configured in GitHub Actions secrets." >> "$GITHUB_STEP_SUMMARY"
-            echo "::warning::Configure AK_ANDROID_RELEASE_JKS_B64 and AK_ANDROID_RELEASE_KEYSTORE_PASSWORD. Do not commit or paste keys."
+            echo "::error::Missing original-keystore secrets; no APK can be signed."
+            exit 1
           else
             echo "ready=yes" >> "$GITHUB_OUTPUT"
           fi
@@ -59,6 +88,9 @@ jobs:
       - name: Sign APK with original trusted identity only
         if: steps.signer.outputs.ready == 'yes'
         shell: bash
+        env:
+          ORIGINAL_JKS_B64: ${{ secrets.AK_ANDROID_RELEASE_JKS_B64 }}
+          ORIGINAL_JKS_PASSWORD: ${{ secrets.AK_ANDROID_RELEASE_KEYSTORE_PASSWORD }}
         run: |
           set -euo pipefail
           sign_dir="$(mktemp -d "$RUNNER_TEMP/ak-secret.XXXXXXXX")"
@@ -76,17 +108,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          apk="$RUNNER_TEMP/review-apk/AntarcticKingdoms-v5.10.2.apk"
+          apk="$RUNNER_TEMP/review-apk/AntarcticKingdoms-v${AK_VERSION}.apk"
           test -s "$apk"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$apk" > "$RUNNER_TEMP/certificate-check.txt"
           grep -qi '20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37' "$RUNNER_TEMP/certificate-check.txt"
           "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -p 4 "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt2" dump badging "$apk" | grep -F "package: name='xyz.arcticdominion.play' versionCode='${AK_CODE}' versionName='${AK_VERSION}'"
           python3 - <<'PY'
           import json,os,pathlib,zipfile
-          p=pathlib.Path(os.environ['RUNNER_TEMP'])/'review-apk/AntarcticKingdoms-v5.10.2.apk'
+          p=pathlib.Path(os.environ['RUNNER_TEMP'])/'review-apk'/('AntarcticKingdoms-v'+os.environ['AK_VERSION']+'.apk')
           with zipfile.ZipFile(p) as z:
               d=json.loads(z.read('assets/app-version.json'))
-              assert d['version']=='5.10.2' and d['versionCode']==106,d
+              assert d['version']==os.environ['AK_VERSION'] and d['versionCode']==int(os.environ['AK_CODE']),d
+              assert z.getinfo('resources.arsc').compress_type==zipfile.ZIP_STORED, 'resources.arsc must be uncompressed'
               assert z.testzip() is None
           print('Archive, embedded version and signer verified')
           PY
@@ -94,10 +128,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: steps.signer.outputs.ready == 'yes' && success()
         with:
-          name: AntarcticKingdoms-v5.10.2-signed-review
+          name: AntarcticKingdoms-v${{ env.AK_VERSION }}-signed-review
           path: |
-            ${{ runner.temp }}/review-apk/AntarcticKingdoms-v5.10.2.apk
-            ${{ runner.temp }}/review-apk/AntarcticKingdoms-v5.10.2.apk.sha256
+            ${{ runner.temp }}/review-apk/AntarcticKingdoms-v${{ env.AK_VERSION }}.apk
+            ${{ runner.temp }}/review-apk/AntarcticKingdoms-v${{ env.AK_VERSION }}.apk.sha256
             ${{ runner.temp }}/review-apk/build-info.json
           if-no-files-found: error
           retention-days: 14
