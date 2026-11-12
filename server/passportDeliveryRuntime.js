@@ -3,25 +3,27 @@ const {workerConfig,createAdapter,deliverOne}=require('./antarcticPassportWorker
 const {createPassportStore}=require('./antarcticPassportStore');
 
 // Optional cohosted sender for the existing web service. No paid worker required.
-// One sequential sender, protected by a dedicated PostgreSQL advisory lock.
+// One sequential sender, protected by a transaction-scoped PostgreSQL lock.
 function createPassportRuntime({env=process.env,storeFactory=createPassportStore,adapterFactory=createAdapter,now=Date.now}={}){
- let stopped=false,timer,inFlight,store,adapter,config,locked=false,lastCheck=0;
+ let stopped=false,timer,inFlight,store,adapter,config,lastCheck=0;
  let state={enabled:false,ready:false,status:'disabled',chainId:Number(env.AK_VISA_CHAIN_ID||46630),confirmationPolicy:'2 canonical L2 blocks; Ethereum finality not established'};
  function status(){return {...state};}
  async function tick(){
   if(stopped)return;
-  try{
+  let stage='configuration';try{
    if(!config){config=workerConfig(env);state={...state,enabled:true,status:'checking',contract:config.visa,signer:new Wallet(config.key).address,kinds:['visa',...(config.arrival?['arrival']:[]),...(config.achievements?['achievement']:[])]};}
-   adapter||=await adapterFactory(config);
-   if(!store){store=storeFactory();await store.init();}
-   if(!locked){await store.acquireWorkerLock(config.chainId+':'+adapter.address.toLowerCase());locked=true;}
-   store.assertWorkerLock();
-   if(!state.ready||now()-lastCheck>=30000){const check=await adapter.preflight();lastCheck=now();state={...state,...check,checkedAt:new Date(now()).toISOString()};}
-   if(state.ready)await deliverOne({store,adapter,now});
+   stage='network_and_code';adapter||=await adapterFactory(config);
+   stage='database';if(!store){store=storeFactory();await store.init();}
+   stage='sender_lock';
+   const acquired=await store.withWorkerLock(config.chainId+':'+adapter.address.toLowerCase(),async assertLock=>{
+    stage='permissions_and_gas';
+    if(!state.ready||now()-lastCheck>=30000){const check=await adapter.preflight();lastCheck=now();state={...state,...check,checkedAt:new Date(now()).toISOString(),checkStage:null};}
+    if(state.ready){stage='delivery';await deliverOne({store,adapter:{...adapter,send:async job=>{await assertLock();return adapter.send(job);}},now});}
+   });
+   if(!acquired)state={...state,ready:false,status:'awaiting_sender_lock',checkStage:'sender_lock'};
   }catch{
-   state={...state,ready:false,status:'setup_check_pending',checkedAt:new Date(now()).toISOString()};
-   // Recover failed initialization, but never start a second sender after lock loss.
-   if(!locked){await store?.close().catch(()=>{});store=null;adapter?.close();adapter=null;}
+   state={...state,ready:false,status:'setup_check_pending',checkStage:stage,checkedAt:new Date(now()).toISOString()};
+   await store?.close().catch(()=>{});store=null;adapter?.close();adapter=null;
   }
  }
  function schedule(){if(stopped)return;inFlight=tick().finally(()=>{if(!stopped){timer=setTimeout(schedule,state.ready?3000:15000);timer.unref?.();}});}

@@ -33,7 +33,7 @@ The existing Render web service can host one sequential sender. No additional pa
 
 Existing Abstract/paid-vault keys, default chain settings and balances are separate. Optional arrival/achievement collection addresses are not required to deliver the passport. Their jobs wait until those collections are configured and the passport is confirmed. No other project NFT is sent first by this queue.
 
-Schema setup is serialized transactionally across route/worker pools. Registration and jobs commit together; duplicate registration reuses the passport. A session-level PostgreSQL lock excludes a second sender using the same chain/signer. Loss of that lock stops sending until restart. Submitted transaction hashes survive restart. Every retry looks up its original onchain claim before considering another send; the contract also enforces claim and recipient uniqueness. A successful receipt alone cannot mark a claim confirmed. Failed receipts block that job; transient RPC errors back off. No account data is deleted.
+Schema setup is serialized transactionally across route/worker pools. Registration and jobs commit together; duplicate registration reuses the passport. A transaction-scoped PostgreSQL lock excludes another sender during each check/send cycle. It releases on commit, rollback or connection loss, including through a transaction-mode pooler; no advisory session is left attached to an idle pooled backend. The connection is checked again before broadcasting. A failed setup resets its pool/adapter and retries, with a safe stage label in operator status. Submitted transaction hashes survive restart. Every retry looks up its original onchain claim before considering another send; the contract also enforces claim and recipient uniqueness. A successful receipt alone cannot mark a claim confirmed. Failed receipts block that job; transient RPC errors back off. No account data is deleted.
 
 On a sleeping free service, processing resumes when the web service wakes. There is no promise of an always-running background sender or an instant mint. While the user has the page open, polling requests keep checking the actual status. Monitor gas and failures before broader distribution.
 
@@ -72,3 +72,16 @@ Official primary references checked 12 November 2026:
 - https://docs.robinhood.com/chain/deploy-smart-contracts/ — standard EVM tooling and separate network deployments.
 
 Live owner approvals, a real Para sign-in and a confirmed passport receipt remain acceptance gates until their actual evidence is recorded. Building or deploying this code alone does not complete phase 4.
+
+
+## Deployment readback — 12 November 2026
+
+PRs #88 and #89 are merged. The final server source `ce3db0d446aeb981897af1f70fde47e39b54758b` is live as Render deployment `dep-dbqrhq9srm7s738umrpg`. The owner-private console update succeeded as `appgdep_6af5b6500ee48191b7e0b41d80374828`.
+
+Dedicated testnet signer: `0x009bFDc9d4C2738c1594c485040aa1994723330b`. Its secret was stored only in the existing service's chain-specific environment; other variables were preserved, and the temporary local key copy was removed after the service reported the matching address. The existing service was reused without a paid resource. No owner grant, funding transaction or live Para mint was performed by the agent.
+
+The deployed service reached the `awaiting_minter_role` gate with `minter=false`, `funded=false` and `balance=0.0`. This gate follows its network, reviewed code, database schema and exclusive signer-lock checks. The first session-lock implementation reached the role gate but a replacement deployment remained at setup. Transaction-scoped sender checks replace that mechanism before owner authorization, with `checkStage` diagnostics and tested commit/rollback recovery. This is a testnet rollout while the dedicated sender has no minting role or gas; production lock-protocol transitions require a paused, reviewed rollout. Inspect `passport-live-readback.json` for the final status/timestamp.
+
+The actual player page and script return HTTP 200; the passport image is available; anonymous acceptance returns HTTP 401. Operator config has public CORS, while effective player delivery stays disabled until the runtime is ready. The browser artwork inventory is 437 and the signed-proof rules hash remains unchanged. Registry anchoring is still unconfigured; Abstract indexing is preserved separately.
+
+43 server launch tests pass with the disposable PostgreSQL/EVM integration enabled, plus eight contract/index tests, two compiled-console DOM/EVM checks and one wallet-cache test. The legacy external-labelled Para row and wallet-substitution regression pass in the real database/EVM integration. All six initial and three follow-up CI workflows passed, including the full source/restoration/gameplay checks. Actual player identity, wallet approvals, receipt acceptance and physical Android installation remain unverified.
