@@ -31,7 +31,7 @@
   aspect-ratio:865/1536;
   background:url('art/launch-v1/chaturanga-match/approved-v2.webp') center top/100% 100% no-repeat;
 }
-.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] > *{z-index:1;position:relative}
+.app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] > :is(.match-header,.players-strip,.match-content,.match-team-banner){z-index:1;position:relative}
 .app[data-screen="match"][data-game="dominion"][data-match-art="approved-v2"] .match-header{
   position:relative;display:block;flex:0 0 auto;
   box-sizing:border-box;margin:0!important;padding:0!important;
