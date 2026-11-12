@@ -7,6 +7,7 @@ import {createPublicClient,http,getAddress,encodeFunctionData,parseAbi,formatEth
 
 import '@getpara/react-sdk-lite/styles.css';
 import './wallet.css';
+import {isAllowedWalletReturn} from './auth-return.mjs';
 const API='/arctic-play/v3';
 const selected=new URLSearchParams(location.search).get('attempt');
 if(selected&&/^[\w-]{43}$/.test(selected))sessionStorage.setItem('ak-para-wallet-attempt',selected);
@@ -30,7 +31,7 @@ function ConnectedPortal({config}){
    const signature=await viemClient.signMessage({message:config.message});
    const {token}=await issueJwtAsync();
    const result=await call('/auth/para/complete',{attempt,idToken:token,address,signature});
-   if(result.returnTo){const u=new URL(result.returnTo,location.origin);if(!((u.protocol==='arcticplay:'&&u.hostname==='auth')||(u.origin===location.origin&&u.pathname==='/arctic-play/app/')||(u.origin==='https://arcticdominion.xyz'&&u.pathname==='/')))throw Error('Return to the app to finish sign-in.');}
+   if(result.returnTo&&!isAllowedWalletReturn(result.returnTo,location.origin))throw Error('Return to the app to finish sign-in.');
    const value={config,chain,address:getAddress(address),walletClient:viemClient,result};setState(value);
    if(result.managed){try{const amount=await createPublicClient({chain,transport:http()}).getBalance({address:value.address});setBalance(formatEther(amount));}catch{}}
    else location.assign(result.returnTo);
