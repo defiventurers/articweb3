@@ -2127,3 +2127,233 @@ html[data-theme=light] .app[data-game=dominion][data-screen=match]{background:li
 .heritage-halls{margin:5px 0 15px}.heritage-hall-tabs{display:flex;gap:7px;overflow-x:auto;padding:4px 1px 7px;scrollbar-width:thin}.heritage-hall-tabs button{flex:0 0 auto;min-height:44px;padding:8px 13px;border:1px solid #b5cfd366;border-radius:14px;background:var(--surface,#102b42);color:inherit;font:inherit;font-size:12px}.heritage-hall-tabs button[aria-pressed=true]{border-color:#dcbd7e;background:#e8d3a6;color:#173546}.heritage-hall-note{padding:10px 13px;border:1px solid #b3cbd344;border-radius:14px;background:var(--surface,#102b42)}.heritage-hall-note strong{font:600 15px Georgia,serif}.heritage-hall-note p{margin:5px 0 0;font-size:12px;line-height:1.55}.heritage-hall-note[data-hall=subcontinent]{border-color:#caa05e88}.heritage-hall-note[data-hall=china]{border-color:#a2c6b688}.heritage-hall-note[data-hall=japan]{border-color:#bcabcf88}.heritage-hall-note[data-hall=vietnam]{border-color:#86bdbd88}.exp-hero[role=button]{cursor:pointer}.exp-hero[role=button]:focus-visible{outline:3px solid #dfbd75;outline-offset:3px}.exp-hero[role=button]::after{content:'Discover the story →';position:absolute;z-index:2;right:14px;top:14px;padding:8px 11px;background:#071c32dd;color:#f5ead2;border:1px solid #f3d99b77;border-radius:20px;font-size:11px}.heritage-introduction{color:var(--text,#e8f4fa);background:var(--bg,#0b2135);max-width:820px;margin:0 auto 20px;border:1px solid #b4cdd355;border-radius:20px;overflow:hidden}.heritage-introduction>header{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px}.heritage-introduction>header>span{font-size:11px}.heritage-introduction button{font:inherit;cursor:pointer}.heritage-quiet{min-height:44px;border:0;background:transparent;color:inherit;font-size:12px!important;padding:8px}.heritage-cinema{height:clamp(160px,28vh,260px);position:relative;isolation:isolate;overflow:hidden;background:#c6e1e6}.heritage-backdrop{height:100%;width:100%;object-fit:cover;filter:brightness(.75)}.heritage-art-label{position:absolute;top:10px;left:12px;padding:4px 7px;border-radius:5px;background:#071c32cc;color:#f9f0d8;font-size:8px;letter-spacing:1px}.heritage-pieces{position:absolute;inset:27% 10% 5%;display:flex;justify-content:center;align-items:flex-end;gap:2%;pointer-events:none}.heritage-pieces img{width:22%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 5px #15364788);animation:heritage-arrive .8s ease-out var(--heritage-delay) both,heritage-greet 4s ease-in-out 1s infinite alternate}.heritage-motion{position:absolute;bottom:8px;right:8px;padding:5px 10px;min-height:36px;border-radius:18px;background:#f4faf0e8;color:#173546;border:1px solid #a9c8d3;font-size:11px!important}.heritage-paused .heritage-pieces img{animation-play-state:paused}.heritage-copy{padding:16px 20px}.heritage-eyebrow{font-size:10px!important;color:var(--muted,#a5c7d3);letter-spacing:.6px}.heritage-copy h2{font:700 clamp(24px,5vw,34px)/1.15 Georgia,serif;margin:8px 0 12px}.heritage-copy>p{font-size:14px;line-height:1.65}.heritage-copy .heritage-edition{font-size:11px;line-height:1.5;color:var(--muted,#a5c7d3)}.heritage-copy details{font-size:12px;line-height:1.6}.heritage-copy summary{cursor:pointer;min-height:36px;padding:7px 0}.heritage-copy a{color:inherit;overflow-wrap:anywhere}.heritage-copy small{display:block;font-size:10px;margin-top:5px}.heritage-introduction>footer{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 12px}.heritage-introduction>footer>button{min-height:44px;border-radius:12px;padding:9px 12px;font-size:12px;border:1px solid #b1cbd366}.heritage-primary{background:#e3c384;color:#163147}.heritage-secondary{background:transparent;color:inherit}.heritage-secondary:disabled{opacity:.4}.heritage-introduction nav{display:flex;gap:2px}.heritage-introduction nav button{min-width:30px;min-height:36px;border:0;border-radius:50%;background:transparent;color:inherit;font-size:11px}.heritage-introduction nav button[aria-current]{background:#cda459;color:#173546}.heritage-learn{display:block;min-height:44px;margin:0 auto 10px;padding:8px 12px;border:0;background:transparent;color:inherit;text-decoration:underline;font-size:12px!important}@keyframes heritage-arrive{from{opacity:0;transform:translateY(35px)}to{opacity:1;transform:translateY(0)}}@keyframes heritage-greet{to{transform:translateY(-6px) rotate(1deg)}}@media(prefers-reduced-motion:reduce){.heritage-pieces img{animation:none!important}.heritage-motion{display:none}}@media(max-width:360px){.heritage-copy{padding:12px 14px}.heritage-introduction>header{gap:0}.heritage-quiet{font-size:11px!important}.heritage-introduction>footer{padding:8px}.heritage-introduction>footer>button{padding:8px;font-size:11px}.heritage-introduction nav button{min-width:26px}}
 
 .heritage-hall-illustrated{position:relative;isolation:isolate;overflow:hidden;min-height:110px;display:flex;align-items:center;color:#fff6df}.heritage-hall-background{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}.heritage-hall-illustrated::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#071b2ef0,#071b2ed9 58%,#071b2e55)}.heritage-hall-text{position:relative;max-width:75%}@media(max-width:440px){.heritage-hall-text{max-width:92%}.heritage-hall-illustrated{min-height:120px}}
+
+/*
+ * Approved Chaturanga presentation (user asset 151658.jpg, 865 x 1536).
+ * This sheet intentionally changes no game rule, result, room or wallet state.
+ * Missing assets are a release blocker. Use the supplied upload pack; do not
+ * ship this branch until all six files are installed and viewport QA passes.
+ */
+.app[data-screen="lobby"][data-tab="games"] .v5914-games-header{
+  display:flex;justify-content:space-between;align-items:center;
+}
+.app[data-screen="lobby"][data-tab="games"] .v5914-games-heading{
+  font-family:Georgia,serif;font-weight:700;font-size:clamp(19px,5vw,26px);
+  margin:0;flex:1;text-align:left;padding-inline:12px;
+}
+.app[data-screen="lobby"][data-tab="games"] .v5914-games-header .discovery-brand{display:none}
+.app[data-screen="lobby"][data-tab="games"] .games-chronology{font:600 11px Georgia,serif;color:#8c7142}
+.app[data-screen="lobby"][data-tab="games"] .games-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+}
+@media (min-width:600px){
+  .app[data-screen="lobby"][data-tab="games"] .games-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+.app[data-screen="match"][data-game="dominion"]{
+  --ch-v2-width:min(100vw,680px);
+  position:relative;isolation:isolate;
+  background-color:#06223d!important;color:#f8f0df;
+  min-height:100dvh;overflow-x:clip;
+}
+/* This entire plate is non-interactive: genuine buttons and board cells live above it. */
+.app[data-screen="match"][data-game="dominion"]::before{
+  content:"";position:absolute;inset:0 0 auto;pointer-events:none;z-index:0;
+  aspect-ratio:865/1536;
+  background:url('art/launch-v1/chaturanga-match/approved-151658.jpg') center top/100% 100% no-repeat;
+}
+.app[data-screen="match"][data-game="dominion"] > :is(.match-header,.players-strip,.match-content,.match-team-banner){z-index:1;position:relative}
+.app[data-screen="match"][data-game="dominion"] .match-header{
+  position:relative;display:block;flex:0 0 auto;
+  box-sizing:border-box;margin:0!important;padding:0!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+  height:calc(var(--ch-v2-width) * 0.273);
+}
+.app[data-screen="match"][data-game="dominion"] .match-header .icon-btn[aria-label="Back to games"]{
+  position:absolute;left:3%;top:16%;width:44px;height:44px;min-width:44px;min-height:44px;
+  background:transparent!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"] .match-header .header-controls{
+  position:absolute;right:2%;top:14%;display:flex;gap:0;
+}
+.app[data-screen="match"][data-game="dominion"] .match-header .header-controls button{
+  width:clamp(44px,9vw,53px);height:clamp(44px,9vw,53px);
+  background:transparent!important;border:0!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"] .match-header :is(.icon-btn,.header-controls button) :is(svg,span){
+  opacity:0; /* artwork already has these icons; keep the real hit targets */
+}
+.app[data-screen="match"][data-game="dominion"] .match-header > div:not(.header-controls){
+  position:absolute;left:25%;right:25%;top:77%;text-align:center;
+  margin:0;padding:0;max-width:none;
+}
+.app[data-screen="match"][data-game="dominion"] .match-header h1{
+  position:absolute!important;width:1px!important;height:1px!important;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap;
+}
+.app[data-screen="match"][data-game="dominion"] .match-header small{
+  display:block;font:700 clamp(9px,1.6vw,13px)/1.1 Georgia,serif!important;
+  color:#efddae!important;text-shadow:0 1px 3px #05182e;
+}
+.app[data-screen="match"][data-game="dominion"] .match-team-banner{
+  position:absolute!important;top:calc(var(--ch-v2-width) * .248);
+  width:75%;left:12.5%;margin:0!important;padding:0!important;
+  background:none!important;border:0!important;text-align:center;
+  color:#e8cf96!important;font:600 clamp(8px,1.4vw,12px)/1.15 Georgia,serif;
+}
+.app[data-screen="match"][data-game="dominion"] .players-strip{
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:0!important;
+  box-sizing:border-box;max-width:none!important;width:100%!important;
+  height:calc(var(--ch-v2-width) * .112);margin:0!important;padding:0 4%!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"] .player-pill{
+  min-width:0;box-shadow:none!important;border:0!important;border-radius:0!important;
+  background:transparent!important;margin:0!important;padding:0 3% 0 37%!important;
+  display:flex;align-items:center;justify-content:flex-start;overflow:hidden;
+}
+.app[data-screen="match"][data-game="dominion"] .player-pill .avatar{display:none}
+.app[data-screen="match"][data-game="dominion"] .player-pill > span:last-child{
+  min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1px;
+  text-align:left;color:#fff7db!important;text-shadow:0 1px 3px #061326;
+}
+.app[data-screen="match"][data-game="dominion"] .player-pill strong{
+  font:700 clamp(7px,1.45vw,13px)/1.1 system-ui,sans-serif;
+  text-overflow:ellipsis;overflow:hidden;max-width:100%;white-space:nowrap;
+}
+.app[data-screen="match"][data-game="dominion"] .player-pill small{
+  font:500 clamp(6px,1.2vw,10px)/1.1 system-ui,sans-serif;
+  color:#e6d4b0!important;text-overflow:ellipsis;overflow:hidden;max-width:100%;white-space:nowrap;
+}
+.app[data-screen="match"][data-game="dominion"] .player-pill.current{
+  outline:none!important; /* No highlighted player rectangle; turn remains in accessibility state */
+}
+.app[data-screen="match"][data-game="dominion"] .match-content{
+  display:flex;flex-direction:column;padding:0!important;margin:0!important;gap:0!important;
+  background:transparent!important;max-width:none!important;
+}
+.app[data-screen="match"][data-game="dominion"] .match-content > .ch-board-space{order:0}
+.app[data-screen="match"][data-game="dominion"] .match-content > .ch-heritage-dice{order:1}
+.app[data-screen="match"][data-game="dominion"] .match-content > .command-area{order:2}
+.app[data-screen="match"][data-game="dominion"] .match-content > :not(.ch-board-space):not(.ch-heritage-dice):not(.command-area){order:3}
+.app[data-screen="match"][data-game="dominion"] .ch-board-space{
+  display:block;position:relative;box-sizing:border-box;aspect-ratio:865/881;
+  width:100%;max-width:none!important;height:auto;margin:0!important;padding:0!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-board-space .match-board-wrap{
+  position:absolute!important;top:10.9%;left:8.45%;width:83.0%;height:auto;
+  max-width:none!important;margin:0!important;padding:0!important;
+  border:0!important;box-shadow:none!important;background:transparent!important;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-board-space :is(.board-section,.board-viewport){
+  width:100%!important;max-width:100%!important;margin:0!important;
+  border:0!important;padding:0!important;background:transparent!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-board-space .game-board{
+  width:100%;height:auto;touch-action:manipulation;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice{
+  order:1;display:block;position:relative;isolation:isolate;box-sizing:border-box;
+  width:100%;max-width:none!important;aspect-ratio:865/320;
+  height:auto!important;min-height:0!important;overflow:visible;
+  padding:0!important;margin:0!important;background:transparent!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .dice-heading{
+  position:static;display:block;padding:0!important;margin:0!important;
+  background:none!important;border:0!important;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .dice-heading > span{display:none}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .dice-heading > button.primary{
+  position:absolute;z-index:3;left:31%;top:59%;width:38%;height:20%;
+  background:transparent!important;color:#18354c!important;box-shadow:none!important;
+  border:0!important;font:800 clamp(12px,2.8vw,21px)/1 Georgia,serif;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .dice-pair{
+  position:absolute;z-index:2;left:12%;top:16%;width:76%;height:31%;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:12%;
+  margin:0!important;padding:0!important;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .die{
+  position:relative;min-width:0;overflow:visible;border:0!important;
+  padding:0!important;margin:0!important;background:transparent!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .ch-die-face{
+  position:relative;width:100%;height:100%;min-height:0;padding:0;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .long-ice-die{
+  opacity:0;position:absolute;inset:0; /* preserve focus and a11y, remove duplicate illustration */
+}
+.app[data-screen="match"][data-game="dominion"] .ch-v2-result-pips{
+  position:absolute;left:12%;top:18%;height:62%;width:29%;
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  align-items:center;justify-items:center;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-v2-pip.on{
+  width:clamp(4px,1.5vw,11px);aspect-ratio:1;display:block;border-radius:50%;
+  background:#ecd393;border:1px solid #262523;box-shadow:0 1px 1px #061a31;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-v2-await-roll{
+  grid-column:1/4;grid-row:1/4;align-self:center;justify-self:center;
+  color:#dbb966;font:900 clamp(16px,4vw,33px) Georgia,serif;text-shadow:0 1px 1px #142b3e;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-v2-die-pieces{
+  position:absolute;left:43%;right:5%;top:6%;bottom:6%;
+  display:flex;align-items:center;justify-content:center;gap:2px;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-v2-die-pieces img{
+  display:block;width:100%;height:100%;min-width:0;max-width:100%;object-fit:contain;
+  filter:drop-shadow(0 2px 2px #051a2b);
+}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .die.used .ch-die-face{opacity:.45}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .long-die-legend{display:none}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .ch-pass-die{
+  position:absolute;top:calc(100% + 4px);left:4%;width:92%;
+  font-size:clamp(9px,1.5vw,12px);min-height:33px;border-radius:8px;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .dice-end-turn{
+  position:absolute;top:calc(100% + 40px);left:25%;width:50%;min-height:36px;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .ch-dice-quick-help{
+  position:absolute;left:5%;top:calc(100% + 80px);width:90%;
+}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .ch-roll-help-toggle{
+  position:absolute;left:5%;top:calc(100% + 116px);width:90%;min-height:40px;
+}
+.app[data-screen="match"][data-game="dominion"] .command-area{
+  margin:166px 12px 0!important;padding:0!important;background:transparent!important;
+}
+.app[data-screen="match"][data-game="dominion"] .command-area .turn-line{
+  position:absolute;clip-path:inset(50%);height:1px;width:1px;overflow:hidden;
+}
+@media (max-width:360px){
+  .app[data-screen="match"][data-game="dominion"] .player-pill{padding-left:36%!important;padding-right:0!important}
+  .app[data-screen="match"][data-game="dominion"] .command-area{margin-top:160px!important}
+}
+
+/* Approved 151658.jpg, 865x1536. Grid edges (73,429)-(790,1137).
+   Every position scales from the plate width; canonical cell IDs stay 8x8. */
+.app[data-screen="match"][data-game="dominion"]{display:block!important;width:100%;max-width:680px;--ch-v2-width:min(100vw,680px);padding:0!important}
+.app[data-screen="match"][data-game="dominion"] .match-header{height:calc(var(--ch-v2-width)*244/865)}
+.app[data-screen="match"][data-game="dominion"] .match-header .icon-btn[aria-label="Back to games"]{left:5.2%;top:calc(var(--ch-v2-width)*48/865);width:7.3%;height:calc(var(--ch-v2-width)*60/865);min-width:24px;min-height:24px}
+.app[data-screen="match"][data-game="dominion"] .match-header .header-controls{left:78.1%;right:4.5%;top:calc(var(--ch-v2-width)*48/865);gap:0}
+.app[data-screen="match"][data-game="dominion"] .match-header .header-controls button{width:33.333%;height:calc(var(--ch-v2-width)*54/865);min-width:24px;min-height:24px;padding:0}
+.app[data-screen="match"][data-game="dominion"] .match-header > div:not(.header-controls){top:85%;left:26%;right:26%}
+.app[data-screen="match"][data-game="dominion"] .match-team-banner{top:calc(var(--ch-v2-width)*235/865);font-size:clamp(7px,1.7vw,12px)}
+.app[data-screen="match"][data-game="dominion"] .players-strip{height:calc(var(--ch-v2-width)*78/865);padding:0 4.5%!important}
+.app[data-screen="match"][data-game="dominion"] .player-pill{padding-left:37%!important}
+.app[data-screen="match"][data-game="dominion"] .board-perspective{display:none}
+.app[data-screen="match"][data-game="dominion"] .match-content>.discovery-match{display:none}
+.app[data-screen="match"][data-game="dominion"] .ch-board-space{aspect-ratio:865/910}
+.app[data-screen="match"][data-game="dominion"] .ch-board-space .match-board-wrap{top:11.758242%;left:8.439306%;width:82.890173%;height:77.802198%}
+.app[data-screen="match"][data-game="dominion"] .ch-board-space .board-viewport{aspect-ratio:717/708!important;height:100%}
+.app[data-screen="match"][data-game="dominion"] .ch-board-space .game-board{display:block;width:100%;height:100%}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice{aspect-ratio:865/304}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .dice-pair{left:12.72%;top:12.83%;width:75.14%;height:29.28%;column-gap:5.7%}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .dice-heading > button.primary{left:30.75%;top:56%;width:38.5%;height:24%;padding:0;min-height:24px}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .ch-die-face{height:100%}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .long-ice-die{opacity:1;width:100%;height:100%}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .long-ice-die > path{display:none}
+.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .ch-v2-result-pips ~ .long-ice-die,.app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .ch-die-face:has(.ch-v2-result-pips) .long-ice-die{opacity:0}
+.app[data-screen="match"][data-game="dominion"] .board-art-loading{z-index:5}
