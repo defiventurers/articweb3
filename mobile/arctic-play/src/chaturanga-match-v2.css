@@ -110,3 +110,8 @@
 .victory-overlay[data-game="dominion"] .victory-army{background:linear-gradient(#123e56aa,#08243b88),url('art/launch-v1/chaturanga-match/approved-151658.jpg') center bottom/cover no-repeat;border-color:#d6b675}
 .victory-overlay[data-game="dominion"] .victory-actions .victory-primary{background:linear-gradient(120deg,#c6f8f3,#51b4f0);color:#11374e;border:1px solid #d4f8ff}
 .victory-overlay[data-game="dominion"] .victory-actions button{background:#143e58;color:#fff0cf;border-color:#a99158}
+
+.victory-overlay[data-game="dominion"]{width:min(100%,680px);left:50%;right:auto;transform:translateX(-50%);container-type:inline-size}
+.victory-overlay[data-game="dominion"] .victory-scroll h1{font-size:clamp(32px,10cqw,68px)}
+.victory-overlay[data-game="dominion"] .victory-scroll h2{font-size:clamp(18px,5.5cqw,27px)}
+.victory-overlay[data-game="dominion"] .victory-sprite{width:clamp(37px,10cqw,69px);height:clamp(54px,13cqw,95px)}
