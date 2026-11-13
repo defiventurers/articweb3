@@ -1,7 +1,7 @@
 name: Build unsigned v5.10.6 APK for original-key offline signing
 on:
   push:
-    branches: [codex/v5106-signed-upgrade-candidate]
+    branches: [codex/v5106-v5102-screens-fixed-chaturanga]
     paths:
       - '.github/workflows/android-v5106-unsigned-transfer.yml'
       - 'mobile/arctic-play/**'
@@ -12,7 +12,7 @@ permissions:
   contents: read
 jobs:
   unsigned-review:
-    if: github.ref == 'refs/heads/codex/v5106-signed-upgrade-candidate'
+    if: github.ref == 'refs/heads/codex/v5106-v5102-screens-fixed-chaturanga'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
