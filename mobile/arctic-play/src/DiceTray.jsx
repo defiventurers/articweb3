@@ -36,18 +36,24 @@ export function DiceTray({state,legal,canAct,onAction,onChoices,onRoll,onSelect,
  const roll=()=>{if(canAct&&!state.dice.rolled)(onRoll||onChoices)?.();};
  if(returning)return <section className="dice-tray long-dice-tray ch-king-return" aria-label="Return your King"><strong>Your partner has released your King</strong><p>Place it on any empty square. Then pass your second move.</p><button type="button" className="primary" disabled={!canAct} onClick={()=>onSelect?.('control:revive')}>Place returning King</button></section>;
  return <section className="dice-tray long-dice-tray ch-heritage-dice" aria-label="Turn dice">
-  <div className="dice-heading"><span><strong>{state.revivalPassRequired?'King returned':state.dice.rolled?'Your long dice':'Chaturanga dice'}</strong><small>{state.revivalPassRequired?'Pass the second move to continue':long?'Two four-sided dice · 2, 3, 4, 5':'Legacy saved match · Original dice rules'}</small></span>{!state.dice.rolled&&<button type="button" className="primary" disabled={!canAct} onClick={roll}>Roll both</button>}{end&&<button type="button" className="secondary dice-end-turn" disabled={!canAct} onClick={()=>onAction(end)}>{state.revivalPassRequired?'Pass second move':'Pass remaining'}</button>}</div>
+  <div className="ch-v2-dice-stage">
+  <div className="dice-heading"><span><strong>{state.revivalPassRequired?'King returned':state.dice.rolled?'Your long dice':'Chaturanga dice'}</strong><small>{state.revivalPassRequired?'Pass the second move to continue':long?'Two four-sided dice · 2, 3, 4, 5':'Legacy saved match · Original dice rules'}</small></span>{!state.dice.rolled&&<button type="button" className="primary" disabled={!canAct} onClick={roll}>Roll both</button>}</div>
   {!state.revivalPassRequired&&<div className="dice-pair">{[0,1].map(index=>{
    const value=state.dice.values[index],used=state.dice.used[index],types=activeRoles(state)[value]||[],pass=legal.find(a=>a.kind==='pass'&&a.raw.index===index);
    return <div className={`die ${used?'used':''}`} key={index} aria-label={`Die ${index+1}${value?`: ${value}, ${types.map(t=>roleName(state,t)).join(' or ')}, ${used?'used':'available'}`:', not rolled'}`}>
     {index===0?<button type="button" className="ch-die-face" aria-label="Roll both long dice" disabled={!canAct||state.dice.rolled} onClick={roll}><LongIceDie value={value} spent={used}/><ChaturangaResultPips value={value}/><ChaturangaDiePieces state={state} types={types}/></button>:<div className="ch-die-face"><LongIceDie value={value} spent={used}/><ChaturangaResultPips value={value}/><ChaturangaDiePieces state={state} types={types}/></div>}
     <span className="long-die-legend"><strong>{used?'Used':value?`${value} · ${types.map(t=>roleName(state,t)).join(' / ')}`:`Die ${index+1}`}</strong>{value?<span className="dice-activation-images">{types.map(type=><img key={type} src={asset(pieceArt(state.turn,type))} alt={roleName(state,type)} width="26" height="26"/>)}</span>:<small>{index===0?'Tap to roll both':'Paired with the left die'}</small>}</span>
-    {pass&&<button type="button" className="ch-pass-die" disabled={!canAct} onClick={()=>onAction(pass)}>Pass die {index+1}</button>}
+
    </div>;
   })}</div>}
+  </div>
+  <div className="ch-v2-dice-actions">
+  {state.dice.rolled&&!state.revivalPassRequired&&[0,1].map(index=>{const pass=legal.find(a=>a.kind==='pass'&&a.raw.index===index);return pass?<button key={index} type="button" className="ch-pass-die" disabled={!canAct} onClick={()=>onAction(pass)}>Pass die {index+1}</button>:null;})}
+  {end&&<button type="button" className="secondary dice-end-turn" disabled={!canAct} onClick={()=>onAction(end)}>{state.revivalPassRequired?'Pass second move':'Pass remaining'}</button>}
   {state.dice.rolled&&!state.revivalPassRequired&&onHelp&&<button type="button" className="ch-dice-quick-help" onClick={onHelp}>✦ Show my moves &amp; dice guide</button>}
   <HelpSwitch/>
   {state.frozenTeams?.length>0&&<p className="ch-frozen-note" role="status">Frozen: {state.frozenTeams.map(t=>seatName('dominion',t)).join(', ')}. Their pieces stay on the board.</p>}
+  </div>
  </section>;
 }
 export function DominionTurnPrompt({state,confirm,busy,onBoth,onSkip,onAskSkip}){
