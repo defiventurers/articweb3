@@ -13,5 +13,5 @@ export {calibrateChaturangaGeometry} from './chaturangaArtworkGeometry.js';
 export function ChaturangaVictory(props){
  const [closed,setClosed]=useState(false);
  if(closed)return <div className="result-card ch-final-result"><strong>{props.outcome.draw?'Draw':'Match complete'}</strong><button onClick={()=>setClosed(false)}>Show match result</button><button onClick={props.onPlayAgain}>{props.isOnline?'Return to room':'Play again'}</button></div>;
- return <VictoryCelebration {...props} id="dominion" onFinalBoard={()=>setClosed(true)}/>;
+ return <VictoryCelebration {...props} id="dominion" onFinalBoard={()=>setClosed(true)} onPlayAgain={()=>{setClosed(true);props.onPlayAgain?.();}} onRematch={()=>{setClosed(true);props.onRematch?.();}}/>;
 }

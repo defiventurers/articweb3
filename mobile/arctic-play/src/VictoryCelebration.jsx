@@ -35,7 +35,7 @@ export function VictoryCelebration({id,title,outcome,visible=[],isOnline=false,v
    <div className="victory-army" aria-label={outcome?.draw?'Final position':'Winning army celebration'}>
     <div className="victory-sky" aria-hidden="true">✦ ✧ ✦</div>
     {winningPieces.length?winningPieces.map((piece,i)=><img key={piece.id||piece.source||i} src={piece.sprite} alt={piece.label||'Victorious piece'} className="victory-sprite" style={{'--victory-delay':Math.min(i*.05,1.5)+'s'}}/>):
-      <div className="victory-drawn" aria-hidden="true">{['polly','retsba','pengu','abster'].map(host=><img key={host} src={'art/launch-v1/hosts/'+host+'.webp'} alt=""/>)}</div>}
+      <div className="victory-drawn" aria-hidden="true">{['polly','retsba','pengu','abster'].map(host=><img key={host} src={'art/brand/hosts/'+host+(host==='polly'?'.webp':'.png')} alt=""/>)}</div>}
    </div>
    <p className="victory-reason">{outcome?.reason||'A glorious game in the frozen kingdom.'}</p>
    <p className="victory-heritage-note">{outcome?.draw?'Each move carried its own courage.':'The royal halls celebrate another chapter of strategy.'}</p>

@@ -1,0 +1,36 @@
+{
+  "reviewedBase": "853ab01d2c1711d4556cc18f12249e220c17a67b",
+  "featureDeployment": {
+    "commit": "f79a8fe98bb763004c9e2f10e2e5e6efe677e646",
+    "id": "dpl_C88yTRcaUcimQY4NdCWBrSc62zyQ",
+    "url": "https://arcticdominion.xyz/early-chaturanga-review.html"
+  },
+  "reviewType": "Labelled local simulation using actual retained Board and updated screen components; no account or multiplayer writes",
+  "widthsInspected": [
+    320,
+    393,
+    680
+  ],
+  "observed": [
+    "Top ranks retained; lower ranks use measured approved-art row centers",
+    "Both unspent die faces have opacity 1 and filter none",
+    "Turn notice directs the player to the game screen, with matching approved die images",
+    "Both-blocked guide waits until Back; countdown reads 4s and ends the turn",
+    "One-blocked countdown passes only die 1 and retains playable die 2",
+    "Knight moves off the boat landing square; boat die remains and newly legal destination highlights",
+    "Icy victory scene and return-to-final-board navigation render"
+  ],
+  "automated": {
+    "boardRulesTimerPwa": 52,
+    "shippedRuntimeUiGroups": 7,
+    "serverActorRevisionLegalAction": 1,
+    "sourceCompile": true,
+    "publicHashes": 435
+  },
+  "followup": "Use existing host art for drawn results, close victory before restart confirmation and scale the victory frame to the displayed panel width. Release 5.10.2-ch-screen2.",
+  "notClaimed": [
+    "Physical Android/iPhone acceptance",
+    "Fresh authenticated live multiplayer match",
+    "New APK distribution"
+  ]
+}
