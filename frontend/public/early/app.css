@@ -2128,27 +2128,6 @@ html[data-theme=light] .app[data-game=dominion][data-screen=match]{background:li
 
 .heritage-hall-illustrated{position:relative;isolation:isolate;overflow:hidden;min-height:110px;display:flex;align-items:center;color:#fff6df}.heritage-hall-background{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}.heritage-hall-illustrated::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#071b2ef0,#071b2ed9 58%,#071b2e55)}.heritage-hall-text{position:relative;max-width:75%}@media(max-width:440px){.heritage-hall-text{max-width:92%}.heritage-hall-illustrated{min-height:120px}}
 
-/*
- * Approved Chaturanga presentation (user asset 151658.jpg, 865 x 1536).
- * This sheet intentionally changes no game rule, result, room or wallet state.
- * Missing assets are a release blocker. Use the supplied upload pack; do not
- * ship this branch until all six files are installed and viewport QA passes.
- */
-.app[data-screen="lobby"][data-tab="games"] .v5914-games-header{
-  display:flex;justify-content:space-between;align-items:center;
-}
-.app[data-screen="lobby"][data-tab="games"] .v5914-games-heading{
-  font-family:Georgia,serif;font-weight:700;font-size:clamp(19px,5vw,26px);
-  margin:0;flex:1;text-align:left;padding-inline:12px;
-}
-.app[data-screen="lobby"][data-tab="games"] .v5914-games-header .discovery-brand{display:none}
-.app[data-screen="lobby"][data-tab="games"] .games-chronology{font:600 11px Georgia,serif;color:#8c7142}
-.app[data-screen="lobby"][data-tab="games"] .games-grid{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
-}
-@media (min-width:600px){
-  .app[data-screen="lobby"][data-tab="games"] .games-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-}
 .app[data-screen="match"][data-game="dominion"]{
   --ch-v2-width:min(100vw,680px);
   position:relative;isolation:isolate;

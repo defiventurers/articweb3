@@ -78,7 +78,8 @@ with zipfile.ZipFile(sys.argv[1]) as z:
   for (const file of ['index.html','startup.js','theme-init.js']) if (hash(await fs.readFile(path.join(output,file))) !== original.get(file)) throw Error('Protected baseline file changed: '+file);
   // User-approved board presentation shared with the published early edition.
   await fs.copyFile(path.join(root,'frontend/public/assets/launch-v1/chaturanga-match/approved-151658.jpg'),path.join(output,'art/launch-v1/chaturanga-match/approved-151658.jpg')).catch(async error=>{if(error.code!=='ENOENT')throw error;await fs.mkdir(path.join(output,'art/launch-v1/chaturanga-match'),{recursive:true});await fs.copyFile(path.join(root,'frontend/public/assets/launch-v1/chaturanga-match/approved-151658.jpg'),path.join(output,'art/launch-v1/chaturanga-match/approved-151658.jpg'));});
-  await fs.appendFile(path.join(output,'app.css'),'\n'+await fs.readFile(path.join(mobile,'src/chaturanga-match-v2.css'),'utf8'));
+  const boardCSS=await fs.readFile(path.join(mobile,'src/chaturanga-match-v2.css'),'utf8');
+  await fs.appendFile(path.join(output,'app.css'),'\n'+boardCSS.slice(boardCSS.indexOf('.app[data-screen="match"]')));
   const appFile = path.join(output,'app.js');
   let app = await fs.readFile(appFile, 'utf8');
   // Existing hook already requires an actual Android bridge. Do not create a fake bridge or bypass account access.
