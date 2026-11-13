@@ -10,6 +10,21 @@ const mobile=fileURLToPath(new URL('../',import.meta.url)),root=path.resolve(mob
 const require=createRequire(path.join(mobile,'build-deps/package.json')),{build}=await import(require.resolve('rolldown'));
 const destination=path.join(root,'server/arcticPlayWeb'),release=JSON.parse(await fs.readFile(path.join(mobile,'release-config.json')));
 const hash=b=>createHash('sha256').update(b).digest('hex');
+// User-approved Chaturanga artwork is a required, checksum-pinned source asset.
+// Fail closed: a missing file must never silently ship a broken match background.
+const requiredChaturangaArt={
+ 'approved-v2.webp':'c71e59b18a30ffd6301bb261c55411522723744f52a67550de371d4ab5750557',
+ 'board-surround-v2.webp':'6d11f0ec1ea938af24d5fc8eaf3c848f9e24009e4d3abb48060f769ce3708de4',
+ 'dice-panel-v2.webp':'24c3c32f8cff40b4e9f763fc857728669330ec36f21841b91d0b76c6dc52e339',
+ 'grid-v2.webp':'454f2e9555ef348b7053a3fb83b526d0bfe171564baa3531e45caebe4f5e8efa',
+ 'header-v2.webp':'28306ea2be618d1cc53a1c0053aab3a89d8b1d914ae67df525d09cf2095d78cc',
+ 'players-v2.webp':'48740b08286dc93d5b2abfabcf11b81fecd0f0563e3d9494ad8c48450509d986',
+};
+for(const [name,digest] of Object.entries(requiredChaturangaArt)){
+ const p=path.join(root,'frontend/public/assets/launch-v1/chaturanga-match',name);
+ let bytes;try{bytes=await fs.readFile(p)}catch{throw Error('Chaturanga v2 artwork missing: '+p+'; upload the approved asset pack to this branch');}
+ if(hash(bytes)!==digest)throw Error('Chaturanga v2 artwork checksum mismatch: '+name);
+}
 await materializeRuntimeArt(mobile);
 await fs.rm(destination,{recursive:true,force:true});await fs.mkdir(destination,{recursive:true});await fs.mkdir(path.join(mobile,'build'),{recursive:true});
 const inventory=JSON.parse(await fs.readFile(path.join(mobile,'runtime-art-sources.json')));
@@ -27,7 +42,7 @@ await bundle(path.join(root,'shared/fair-play/VerifierPage.jsx'),path.join(desti
 const nodeModules=['games.ts','offlineLicense.js','presentation.js','updates.js','learning.js','adventures.js','minimalLearning.js','ownerAccess.js','sanyouCalibration.js','boardView.js','practiceBoard.js','soloPractice.js','curriculum.js','learningOrientation.js','courseActivities.js','companionJourney.js','firstJourney.js','chaturangaLongDice.js','walletPortfolio.js'];
 for(const source of nodeModules)await bundle(path.join(mobile,'src',source),path.join(mobile,'build',source.replace(/\.(ts|js)$/,'.cjs')),'node');
 await bundle(path.join(root,'frontend/src/games/shanshui-xiangqi/mobileAdapter.js'),path.join(mobile,'build/shanshui.cjs'),'node');
-const cssNames=['approved-shell','launch','v5102-ux','browser-preview'];
+const cssNames=['approved-shell','launch','v5102-ux','browser-preview','chaturanga-match-v2'];
 const css=await Promise.all(cssNames.map(n=>fs.readFile(path.join(mobile,'src',n+'.css'),'utf8')));
 for(const n of ['shared/antarctic-visa/visa.css','shared/fair-play/fair-play.css','shared/compact-panels/compact-game-panels.css','frontend/src/games/shanshui-xiangqi/shanshui.css','frontend/src/games/co-tu-lenh/coTuLenh.css','frontend/src/games/shared/royal-result.css'])css.push(await fs.readFile(path.join(root,n),'utf8'));
 await fs.writeFile(path.join(destination,'app.css'),css.join('\n'));

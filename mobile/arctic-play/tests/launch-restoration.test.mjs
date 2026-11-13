@@ -18,7 +18,19 @@ test('Restored five-tab shell retains home, nine stories, source links, Shop and
  const {dom,doc,errors}=open();t.after(()=>dom.window.close());await waitFor(()=>doc.querySelector('.home-heritage'));
  assert.deepEqual([...doc.querySelectorAll('.bottom-nav small')].map(n=>n.textContent),['Home','Games','Shop','Chats','Passport']);
  assert.equal(doc.querySelector('.home-v2-hosts').getAttribute('src'),'art/home-v1/home-hosts-welcome.webp');
- assert.ok(doc.querySelector('.home-v2-shop'));button(doc,'Games').click();await waitFor(()=>doc.querySelector('[data-testid="story-adventure-gallery"]'));assert.equal(doc.querySelector('.ak-games-views button[aria-pressed="true"]').textContent,'Story Adventure');button(doc,'All Games').click();await waitFor(()=>doc.querySelectorAll('.all-game-tile').length===9);button(doc,'Halls').click();await waitFor(()=>doc.querySelector('.cultural-games'));
+ assert.ok(doc.querySelector('.home-v2-shop'));
+ button(doc,'Games').click();
+ await waitFor(()=>doc.querySelectorAll('.games-grid .hall-card').length===7);
+ assert.ok(doc.querySelector('.ctl-catalogue-entry'));
+ assert.ok(doc.querySelector('.shanshui-catalogue-entry'));
+ assert.equal(doc.querySelector('.ak-games-views'),null,'The Games tab must retain the v5.9.14 layout');
+ button(doc,'Home').click();await waitFor(()=>doc.querySelector('.home-v2-story'));
+ doc.querySelector('.home-v2-story').click();await waitFor(()=>button(doc,'Story Adventure · Nine games'));
+ button(doc,'Story Adventure · Nine games').click();
+ await waitFor(()=>doc.querySelector('[data-testid="story-adventure-gallery"]'));
+ assert.equal(doc.querySelector('.ak-games-views button[aria-pressed="true"]').textContent,'Story Adventure');
+ button(doc,'All Games').click();await waitFor(()=>doc.querySelectorAll('.all-game-tile').length===9);
+ button(doc,'Halls').click();await waitFor(()=>doc.querySelector('.expedition-hero strong'));
  const seen=new Set();
  for(let i=0;i<9;i++){
   const name=doc.querySelector('.expedition-hero strong').textContent;assert.ok(!seen.has(name));seen.add(name);
@@ -33,7 +45,9 @@ test('Restored five-tab shell retains home, nine stories, source links, Shop and
   // Catalogue remount returns to its first card; move to the next unseen entry.
   for(let n=0;n<=i&&i<8;n++){doc.querySelector('[aria-label="Next game"]').click();await new Promise(r=>setTimeout(r,15));}
  }
- assert.equal(seen.size,9);button(doc,'Shop').click();await waitFor(()=>doc.querySelector('.physical-shop'));
+ assert.equal(seen.size,9);
+ doc.querySelector('.overlay [aria-label="Close"]')?.click();
+ button(doc,'Shop').click();await waitFor(()=>doc.querySelector('.physical-shop'));
  assert.equal(doc.querySelectorAll('.physical-preview').length,9);button(doc,'Save interest').click();await waitFor(()=>button(doc,'Saved designs · 1'));button(doc,'Saved designs · 1').click();await waitFor(()=>doc.querySelectorAll('.physical-preview').length===1);
  assert.equal(JSON.parse(dom.window.localStorage.getItem('arctic-play.v1.physical-interests')).length,1);assert.deepEqual(errors,[]);
 });

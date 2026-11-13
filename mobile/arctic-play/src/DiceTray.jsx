@@ -7,6 +7,17 @@ const pips={1:[[78,41]],2:[[49,41],[108,41]],3:[[38,41],[78,41],[118,41]],4:[[47
 export function LongIceDie({value,label,spent=false}){
  const id=useId().replace(/:/g,'');return <svg className={'long-ice-die '+(spent?'spent':'')} viewBox="0 0 180 70" data-shape="four-sided-pasa" role="img" aria-label={label||`Long ice die${value?': '+value:': not rolled'}`}><title>{label||'Oblong ice die'}</title><defs><linearGradient id={id+'face'} x2=".3" y2="1"><stop stopColor="var(--long-die-light,#effdff)"/><stop offset=".5" stopColor="var(--long-die-face,#b9ebfa)"/><stop offset="1" stopColor="var(--long-die-bottom,#6ec3df)"/></linearGradient><linearGradient id={id+'top'} x2="1" y2="1"><stop stopColor="#fff"/><stop offset="1" stopColor="#b3e8f8"/></linearGradient><linearGradient id={id+'end'} x2=".5" y2="1"><stop stopColor="#abdff4"/><stop offset="1" stopColor="#458bad"/></linearGradient></defs><path d="M14 24 30 8H158L144 24Z" fill={`url(#${id}top)`} stroke="#e5fbff" strokeWidth="1.4"/><path d="M144 24 158 8 174 20V48L144 60Z" fill={`url(#${id}end)`} stroke="#75b9d4" strokeWidth="1.5"/><path d="M14 24H144V60H14Q6 58 6 51V33Q6 26 14 24Z" fill={`url(#${id}face)`} stroke="#79b9d0" strokeWidth="1.6"/><path d="M13 24H25V60H13Z M132 24H144V60H132Z" fill="#b68b3d" stroke="#f8df8e" strokeWidth="1"/><path d="m17 34 4 7-4 7m120-14 4 7-4 7" fill="none" stroke="#fff0b9" strokeWidth="1.4"/><path d="M15 28H139M15 56H137M27 12H151" stroke="#fff" strokeOpacity=".75" strokeWidth="1.7" fill="none"/><path d="m19 29 15 24m42-25-10 27m66-26 8 17m13-25 13 17" stroke="#fff" strokeOpacity=".28" strokeWidth="1" fill="none"/>{value?(pips[value]||[]).map(([x,y],i)=><g key={i} className="die-pip"><circle cx={x} cy={y} r="4.7" fill="none" stroke="var(--long-die-ink,#15546e)" strokeWidth="1.5"/><circle cx={x} cy={y} r="2.2" fill="var(--long-die-ink,#15546e)"/></g>):<text x="78" y="50" textAnchor="middle" fontFamily="Georgia,serif" fontSize="27" fontWeight="700" fill="var(--long-die-ink,#15546e)">?</text>}</svg>;
 }
+
+// The four-sided historical die values are represented with familiar pip faces.
+// The pips read state.dice.values and never generate randomness or affect legal moves.
+const HERITAGE_PIP_CELLS={2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8]};
+export function ChaturangaResultPips({value}){
+ const cells=HERITAGE_PIP_CELLS[value]||[];
+ return <span className="ch-v2-result-pips" aria-hidden="true">{value==null?<span className="ch-v2-await-roll">?</span>:Array.from({length:9},(_,i)=><span key={i} className={cells.includes(i)?'ch-v2-pip on':'ch-v2-pip'}/>)}</span>;
+}
+function ChaturangaDiePieces({state,types}){
+ return <span className="ch-v2-die-pieces" aria-hidden="true">{types.map(type=><img key={type} src={asset(pieceArt(state.turn,type))} alt="" loading="eager"/>)}</span>;
+}
 export const rollActionId=state=>isLongDiceState(state)?LONG_DICE_ACTION:'roll|control:roll';
 const helpKey='arctic-play.v1.chaturanga-roll-help.v1';
 export function rollHelpEnabled(){try{return localStorage.getItem(helpKey)!=='false';}catch{return true;}}
@@ -29,7 +40,7 @@ export function DiceTray({state,legal,canAct,onAction,onChoices,onRoll,onSelect,
   {!state.revivalPassRequired&&<div className="dice-pair">{[0,1].map(index=>{
    const value=state.dice.values[index],used=state.dice.used[index],types=activeRoles(state)[value]||[],pass=legal.find(a=>a.kind==='pass'&&a.raw.index===index);
    return <div className={`die ${used?'used':''}`} key={index} aria-label={`Die ${index+1}${value?`: ${value}, ${types.map(t=>roleName(state,t)).join(' or ')}, ${used?'used':'available'}`:', not rolled'}`}>
-    {index===0?<button type="button" className="ch-die-face" aria-label="Roll both long dice" disabled={!canAct||state.dice.rolled} onClick={roll}><LongIceDie value={value} spent={used}/></button>:<div className="ch-die-face"><LongIceDie value={value} spent={used}/></div>}
+    {index===0?<button type="button" className="ch-die-face" aria-label="Roll both long dice" disabled={!canAct||state.dice.rolled} onClick={roll}><LongIceDie value={value} spent={used}/><ChaturangaResultPips value={value}/><ChaturangaDiePieces state={state} types={types}/></button>:<div className="ch-die-face"><LongIceDie value={value} spent={used}/><ChaturangaResultPips value={value}/><ChaturangaDiePieces state={state} types={types}/></div>}
     <span className="long-die-legend"><strong>{used?'Used':value?`${value} · ${types.map(t=>roleName(state,t)).join(' / ')}`:`Die ${index+1}`}</strong>{value?<span className="dice-activation-images">{types.map(type=><img key={type} src={asset(pieceArt(state.turn,type))} alt={roleName(state,type)} width="26" height="26"/>)}</span>:<small>{index===0?'Tap to roll both':'Paired with the left die'}</small>}</span>
     {pass&&<button type="button" className="ch-pass-die" disabled={!canAct} onClick={()=>onAction(pass)}>Pass die {index+1}</button>}
    </div>;

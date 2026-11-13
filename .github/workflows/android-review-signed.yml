@@ -46,8 +46,8 @@ jobs:
               raise SystemExit('Invalid expected_version')
           if not re.fullmatch(r'[0-9]+',expected_code):
               raise SystemExit('Invalid expected_code')
-          if (version,code)!=(expected_version,int(expected_code)) or code<108:
-              raise SystemExit(f'Refusing stale/mismatched version: source={version}/{code}; expected={expected_version}/{expected_code}; floor=108')
+          if (version,code)!=(expected_version,int(expected_code)) or code<109:
+              raise SystemExit(f'Refusing stale/mismatched version: source={version}/{code}; expected={expected_version}/{expected_code}; floor=109')
           if root.attrib.get('package')!='xyz.arcticdominion.play':
               raise SystemExit('App identity changed')
           with open(os.environ['GITHUB_ENV'],'a') as out:

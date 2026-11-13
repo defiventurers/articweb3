@@ -15,6 +15,7 @@ parser.add_argument('--output',required=True,type=pathlib.Path)
 parser.add_argument('--keystore',type=pathlib.Path)
 parser.add_argument('--password-file',type=pathlib.Path)
 parser.add_argument('--javac-jar',type=pathlib.Path,help='Optional Eclipse ECJ compiler jar for a JRE-only build environment.')
+parser.add_argument('--unsigned-review-only',action='store_true',help='Create an aligned, unsigned review package for owner-local signing; no credentials needed.')
 args=parser.parse_args()
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 APP=ROOT/'android/app/src/main'
@@ -70,6 +71,18 @@ with zipfile.ZipFile(base,'a',zipfile.ZIP_DEFLATED) as archive:
     for file in sorted(dex.glob('*.dex')):archive.write(file,file.name)
 aligned=WORK/'aligned.apk';run(align,'-f','-p','4',base,aligned)
 verify_apk_layout(aligned)
+if args.unsigned_review_only:
+    apk=OUTPUT/f'AntarcticKingdoms-v{VERSION}-unsigned-aligned.apk'
+    shutil.copyfile(aligned,apk)
+    digest=hashlib.sha256(apk.read_bytes()).hexdigest()
+    (OUTPUT/f'{apk.name}.sha256').write_text(f'{digest}  {apk.name}\n')
+    metadata={'file':apk.name,'sha256':digest,'package':'xyz.arcticdominion.play',
+              'version':VERSION,'versionCode':VERSION_CODE,
+              'status':'UNSIGNED REVIEW ONLY - DO NOT INSTALL',
+              'certificateExpected':'20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37'}
+    (OUTPUT/'build-info-unsigned.json').write_text(json.dumps(metadata,indent=2)+'\n')
+    print(json.dumps(metadata,indent=2))
+    raise SystemExit(0)
 if not args.keystore or not args.password_file:
     raise SystemExit('Supply the original --keystore and --password-file; update builds never create a new app identity.')
 key=args.keystore;password=args.password_file
