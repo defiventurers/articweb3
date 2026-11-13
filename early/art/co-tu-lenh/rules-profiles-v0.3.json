@@ -1,0 +1,348 @@
+{
+  "schemaVersion": "0.3-research",
+  "status": "NOT_FINAL_NOT_IN_REPO",
+  "videoUrl": "https://www.youtube.com/watch?v=bdbllE9d4Ok",
+  "videoReviewed": true,
+  "videoNotes": "YouTube page metadata found, audiovisual frames/transcript unavailable. Video-era rules inferred from AncientChess 2015 booklet, NOT claimed to be transcribed.",
+  "heritage": {
+    "name": "Cờ Tư Lệnh",
+    "origin": "Vietnam",
+    "created": "circa 2010",
+    "creator": "Nguyễn Quý Hải",
+    "type": "modern xiangqi-inspired strategy game"
+  },
+  "board": {
+    "verticalColumnLines": 11,
+    "horizontalRowLines": 12,
+    "intersections": 132,
+    "columnIds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "rowIds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "rowZeroAt": "bottom",
+    "seaBetweenColumnLines": [
+      0,
+      2
+    ],
+    "riverBetweenRows": [
+      5,
+      6
+    ],
+    "fordColumns": null,
+    "fordStatus": "Historical profiles: unverified. YouTuber Rules: columns 5 and 7, checked against the video.",
+    "initialPositions": null,
+    "startingSetupStatus": "Historical profiles retain their reconstruction. YouTuber Rules uses the final video setup; see youtuber-rules-v1.json."
+  },
+  "units": {
+    "commander": {
+      "vietnamese": "Tư lệnh",
+      "quantityPerFaction": 1,
+      "domain": "land",
+      "maxOrthogonalRange": null,
+      "maxDiagonalRange": 0,
+      "canPassPieces": false,
+      "capturedValue": 100,
+      "captureOrthogonalRange": 1
+    },
+    "infantry": {
+      "vietnamese": "Bộ binh",
+      "quantityPerFaction": 2,
+      "domain": "land",
+      "maxOrthogonalRange": 1,
+      "maxDiagonalRange": 0,
+      "canPassPieces": false,
+      "capturedValue": 10
+    },
+    "tank": {
+      "vietnamese": "Xe tăng",
+      "quantityPerFaction": 2,
+      "domain": "land",
+      "maxOrthogonalRange": 2,
+      "maxDiagonalRange": 0,
+      "canPassPieces": false,
+      "capturedValue": 20
+    },
+    "militia": {
+      "vietnamese": "Dân quân",
+      "quantityPerFaction": 1,
+      "domain": "land",
+      "maxOrthogonalRange": 1,
+      "maxDiagonalRange": 1,
+      "canPassPieces": false,
+      "capturedValue": 10
+    },
+    "engineer": {
+      "vietnamese": "Công binh",
+      "quantityPerFaction": 2,
+      "domain": "land",
+      "maxOrthogonalRange": 1,
+      "maxDiagonalRange": 0,
+      "canPassPieces": false,
+      "capturedValue": 10,
+      "antiAirRadius": "unresolved_source_conflict"
+    },
+    "artillery": {
+      "vietnamese": "Pháo binh",
+      "quantityPerFaction": 2,
+      "domain": "land",
+      "maxOrthogonalRange": 3,
+      "maxDiagonalRange": 3,
+      "canPassPieces": "only_on_capture",
+      "capturedValue": 30
+    },
+    "antiaircraft": {
+      "vietnamese": "Cao xạ",
+      "quantityPerFaction": 2,
+      "domain": "land",
+      "maxOrthogonalRange": 1,
+      "maxDiagonalRange": 0,
+      "canPassPieces": false,
+      "capturedValue": 10,
+      "antiAirRadius": 1
+    },
+    "missile": {
+      "vietnamese": "Tên lửa",
+      "quantityPerFaction": 1,
+      "domain": "land",
+      "maxOrthogonalRange": 2,
+      "maxDiagonalRange": 1,
+      "canPassPieces": false,
+      "capturedValue": 20,
+      "antiAirRadius": 2
+    },
+    "airforce": {
+      "vietnamese": "Không quân",
+      "quantityPerFaction": 2,
+      "domain": "air",
+      "maxOrthogonalRange": 4,
+      "maxDiagonalRange": 4,
+      "canPassPieces": "flight",
+      "capturedValue": 40
+    },
+    "navy": {
+      "vietnamese": "Hải quân",
+      "quantityPerFaction": 2,
+      "domain": "sea",
+      "maxOrthogonalRange": 4,
+      "maxDiagonalRange": 4,
+      "canPassPieces": "water_naval_route_or_remote_fire_subject_to_coast",
+      "capturedValue": 80,
+      "maxRangedLandAttack": 3,
+      "antiAirRadius": 1
+    },
+    "headquarters": {
+      "vietnamese": "Sở chỉ huy",
+      "quantityPerFaction": 2,
+      "domain": "stationary",
+      "maxOrthogonalRange": 0,
+      "maxDiagonalRange": 0,
+      "canPassPieces": false,
+      "capturedValue": 10,
+      "holds": "commander_only"
+    }
+  },
+  "rulesProfiles": {
+    "youtuber_rules": {
+      "label": "YouTuber Rules",
+      "source": "https://www.youtube.com/watch?v=bdbllE9d4Ok",
+      "videoReviewed": true,
+      "status": "RESEARCH_DRAFT_WITH_EXPLICIT_APP_CLARIFICATIONS",
+      "immediateWin": {
+        "commander": 1,
+        "navy": 2,
+        "airforce": 2,
+        "landUnits": {
+          "infantry": 2,
+          "tank": 2,
+          "artillery": 2
+        }
+      },
+      "commanderMovementRange": "unlimited_unobstructed_orthogonal",
+      "missileDiagonalOneStep": true,
+      "defaultTimerMinutes": null,
+      "optionalWholeMatchMinutes": [
+        10,
+        15
+      ],
+      "engineerAirDefence": false,
+      "details": "youtuber-rules-v1.json"
+    },
+    "ancientchess_2015_standard": {
+      "heritageEra": "2015 video companion booklet",
+      "immediateWin": {
+        "commander": 1,
+        "navy": 2,
+        "airforce": 2,
+        "landUnits": {
+          "infantry": 2,
+          "tank": 2,
+          "artillery": 2
+        }
+      },
+      "commanderMovementRange": "unlimited_unobstructed_orthogonal",
+      "missileDiagonalOneStep": true,
+      "defaultTimerMinutes": null,
+      "optionalTournamentTimerMinutes": 15,
+      "timerWinner": "captured_unit_points",
+      "engineerAirDefence": "unresolved"
+    },
+    "ancientchess_2015_long": {
+      "heritageEra": "2015-2016 total war tournament variant",
+      "immediateWin": {
+        "commander": 1
+      },
+      "commanderMovementRange": "unlimited_unobstructed_orthogonal",
+      "missileDiagonalOneStep": true,
+      "defaultTimerMinutes": null,
+      "optionalTournamentTimerMinutes": 30,
+      "timerWinner": "captured_unit_points",
+      "engineerAirDefence": "unresolved"
+    },
+    "creator_2024_standard": {
+      "heritageEra": "author-associated 2024 BGA configuration explanation",
+      "immediateWin": {
+        "commander": 1,
+        "navy": 2,
+        "airforce": 2,
+        "landUnits": {
+          "infantry": 2,
+          "tank": 2,
+          "engineer": 2,
+          "artillery": 2,
+          "militia": 1
+        }
+      },
+      "commanderMovementRange": "unresolved_for_profile",
+      "missileDiagonalOneStep": "unresolved_for_profile",
+      "defaultTimerMinutes": null,
+      "optionalTournamentTimerMinutes": 15,
+      "timerWinner": "captured_unit_points",
+      "engineerAirDefence": "unresolved"
+    },
+    "bga_2024": {
+      "heritageEra": "BGA rule implementation documentation last edited 2024",
+      "immediateWin": {
+        "commander": 1,
+        "navy": 2,
+        "airforce": 2,
+        "landUnits": {
+          "infantry": 2,
+          "tank": 2,
+          "artillery": 2
+        }
+      },
+      "commanderMovementRange": 10,
+      "missileDiagonalOneStep": false,
+      "defaultTimerMinutes": null,
+      "engineerAirDefence": false
+    }
+  },
+  "commonSpecialRules": {
+    "heroPromotion": "piece checking opponent commander permanently gains +1 reach and diagonal access; heroic plane ignores AA",
+    "airStrikeReturn": "same turn optional when not capturing opposing plane",
+    "airDenial": {
+      "antiaircraft": {
+        "orthogonal": 1
+      },
+      "navy": {
+        "orthogonal": 1
+      },
+      "missile": {
+        "orthogonal": 2,
+        "diagonal": 1
+      }
+    },
+    "carrierMaxPiecesBGA": {
+      "tank": 3,
+      "airforce": 3,
+      "navy": 3,
+      "engineer": 2,
+      "headquarters": 2
+    },
+    "carrierCargoBGA": {
+      "tank": [
+        "commander",
+        "infantry",
+        "militia"
+      ],
+      "airforce": [
+        "commander",
+        "infantry",
+        "militia",
+        "tank"
+      ],
+      "navy": [
+        "commander",
+        "infantry",
+        "militia",
+        "tank",
+        "airforce"
+      ],
+      "engineer": [
+        "artillery",
+        "antiaircraft",
+        "missile"
+      ],
+      "headquarters": [
+        "commander"
+      ]
+    },
+    "notes": [
+      "Tank at most one Infantry",
+      "Airforce/Navy at most one Tank",
+      "Engineer cargo only one-step crossing",
+      "coast land/navy coexistence requires domain-aware occupancy",
+      "stack can split and multiple units capture in single turn",
+      "navy can fire on land without relocation",
+      "anti-aircraft path adjudication must honor heroic and kamikaze exception"
+    ]
+  },
+  "conflicts": [
+    "landDivisionSixVsNine",
+    "commanderUnlimitedVsTen",
+    "missileDiagonal2015VsBGA",
+    "engineerAntiAir2015BookletVsBGA",
+    "tank2015TextEightDirectionsVsAuthorOrthogonal",
+    "embarkTurnCostVsBGAStackSequencing",
+    "NavyDualCaptureVsBGA",
+    "timedVictoryPoints2016Vs2024"
+  ],
+  "primarySources": [
+    "https://www.youtube.com/watch?v=bdbllE9d4Ok",
+    "https://veryspecial.us/free-downloads/AncientChess.com-CommanderChess.pdf",
+    "https://en.doc.boardgamearena.com/Gamehelpcommanderchess",
+    "https://haiduongblog.wordpress.com/2016/10/13/summary-commander-chess-game-rules/",
+    "https://haiduongblog.wordpress.com/2024/01/18/"
+  ],
+  "licenseWarning": "Comicola reports rights transfer to Everjoy late 2024; seek legal clearance for commercial digital use before launch.",
+  "approval": {
+    "historical": false,
+    "rulesEngine": false,
+    "multiplayer": false,
+    "commercial": false
+  },
+  "defaultProfile": "youtuber_rules"
+}

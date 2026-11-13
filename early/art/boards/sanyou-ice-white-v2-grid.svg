@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1536" viewBox="0 0 1536 1536">
+<defs><radialGradient id="gold" cx="34%" cy="25%" r="70%"><stop stop-color="#fff9b5"/><stop offset=".3" stop-color="#ffe070"/><stop offset=".65" stop-color="#eda419"/><stop offset="1" stop-color="#9c4d00"/></radialGradient></defs>
+<polyline points="125.0,634.75 199.25,680.5 275.25,726.5 351.25,772.5 427.0,818.25" fill="none" stroke="#171b1b" stroke-width="4.5" stroke-linecap="round"/>
+<circle data-supplement-point="blue:L8-1" cx="125.0" cy="634.75" r="10.5" fill="url(#gold)" stroke="#3e2b0b" stroke-width="2.5"/>
+<circle data-supplement-point="blue:L8-2" cx="199.25" cy="680.5" r="10.5" fill="url(#gold)" stroke="#3e2b0b" stroke-width="2.5"/>
+<circle data-supplement-point="blue:L8-3" cx="275.25" cy="726.5" r="10.5" fill="url(#gold)" stroke="#3e2b0b" stroke-width="2.5"/>
+<circle data-supplement-point="blue:L8-4" cx="351.25" cy="772.5" r="10.5" fill="url(#gold)" stroke="#3e2b0b" stroke-width="2.5"/>
+<circle data-supplement-point="blue:L8-5" cx="427.0" cy="818.25" r="10.5" fill="url(#gold)" stroke="#3e2b0b" stroke-width="2.5"/>
+<polyline points="1409.0,634.25 1333.5,679.75 1257.75,725.75 1181.5,771.5 1105.0,817.25" fill="none" stroke="#171b1b" stroke-width="4.5" stroke-linecap="round"/>
+<circle data-supplement-point="green:L2-1" cx="1409.0" cy="634.25" r="10.5" fill="url(#gold)" stroke="#3e2b0b" stroke-width="2.5"/>
+<circle data-supplement-point="green:L2-2" cx="1333.5" cy="679.75" r="10.5" fill="url(#gold)" stroke="#3e2b0b" stroke-width="2.5"/>
+<circle data-supplement-point="green:L2-3" cx="1257.75" cy="725.75" r="10.5" fill="url(#gold)" stroke="#3e2b0b" stroke-width="2.5"/>
+<circle data-supplement-point="green:L2-4" cx="1181.5" cy="771.5" r="10.5" fill="url(#gold)" stroke="#3e2b0b" stroke-width="2.5"/>
+<circle data-supplement-point="green:L2-5" cx="1105.0" cy="817.25" r="10.5" fill="url(#gold)" stroke="#3e2b0b" stroke-width="2.5"/>
+</svg>
