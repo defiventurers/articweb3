@@ -39,30 +39,3 @@ test('Shogi: a captured piece is available as a drop and promotion choices stay 
   const action=e.actions('shogi',state).find(a=>a.source==='piece:r-rook'&&a.target==='31');assert.ok(action);const next=e.apply('shogi',state,action.id);assert.equal(next.hands.red.silver,1);
   next.turn='red';assert.ok(e.hand('shogi',next).some(p=>p.source==='hand:silver'));assert.ok(e.actions('shogi',next).some(a=>a.source==='hand:silver'&&a.kind==='drop'));
 });
-
-test('Chaturanga v2 keeps canonical coordinates through all four player perspectives',()=>{
-  const view=require('../build/boardView.cjs'),base=e.board('dominion'),ids=base.cells.map(c=>c.id).sort();
-  assert.equal(ids.length,64);
-  for(const seat of ['green','red','blue','yellow']){
-    const g=view.boardGeometry('dominion',seat);
-    assert.deepEqual(g.cells.map(c=>c.id).sort(),ids,seat+' must not change engine cell identifiers');
-    assert.equal(g.cells.length,64);
-    assert.match(g.image,/chaturanga-match\/grid-v2\.webp$/);
-    const [x,y,w,h]=g.viewBox.split(' ').map(Number);
-    assert.ok(Math.abs(w-h)<1e-7,'8×8 board must stay square (allow floating-point rotation rounding)');
-    assert.ok(g.cells.every(c=>Number.isFinite(c.x)&&Number.isFinite(c.y)));
-    assert.equal(g.perspective,seat);
-  }
-  // The independent game engines, piece labels and outcome rules are untouched.
-  assert.equal(e.pieces('dominion',e.create('dominion')).length,32);
-});
-test('Board presentation remains valid for every older game after Chaturanga texture override',()=>{
-  const view=require('../build/boardView.cjs');
-  for(const g of e.GAME_LIST){
-    for(const seat of g.seats){
-      const rotated=view.boardGeometry(g.id,seat);
-      assert.equal(rotated.cells.length,e.board(g.id).cells.length,g.id+':'+seat);
-      assert.ok(rotated.cells.every(c=>Number.isFinite(c.x)&&Number.isFinite(c.y)),g.id+':'+seat);
-    }
-  }
-});

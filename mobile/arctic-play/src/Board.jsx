@@ -5,7 +5,7 @@ import {Plus,Minus,ZoomIn} from 'lucide-react';
 import {board,pieces,COLORS,seatName} from './games.ts';
 import {boardGeometry,pieceRotation} from './boardView.js';
 import {SANYOU_CALIBRATION_KEY} from './sanyouCalibration.js';
-export function Board({id,state,legal=[],selected=null,suggested=null,trail,onSelect,onTarget,canAct,positionPieces,spotlight,destinationLabel='legal destination',inspectableSources=[],inspectableCells=[],placementCells=[],onInspect,onMiss,annotations=[],compactControls=false,perspective,controlsTarget=null}){
+export function Board({id,state,legal=[],selected=null,suggested=null,trail,onSelect,onTarget,canAct,positionPieces,spotlight,destinationLabel='legal destination',inspectableSources=[],inspectableCells=[],placementCells=[],onInspect,onMiss,annotations=[],compactControls=false,perspective,controlsTarget=null,hideBoardImage=false}){
   const [calibrationRevision,setCalibrationRevision]=useState(0);
   useEffect(()=>{const changed=e=>{if(e.detail?.key===SANYOU_CALIBRATION_KEY||e.key==='arctic-play.v1.'+SANYOU_CALIBRATION_KEY)setCalibrationRevision(n=>n+1);};window.addEventListener('arctic-storage',changed);window.addEventListener('storage',changed);return()=>{window.removeEventListener('arctic-storage',changed);window.removeEventListener('storage',changed);};},[]);
   const geometry=useMemo(()=>boardGeometry(id,perspective),[id,perspective,calibrationRevision]);
@@ -36,7 +36,7 @@ export function Board({id,state,legal=[],selected=null,suggested=null,trail,onSe
   return <section className="board-section" data-game={id}>
     <div className="board-viewport" ref={viewport} aria-busy={!art.ready} style={{aspectRatio:`${width}/${height}`,position:'relative'}} onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
       <svg data-testid="game-board" data-perspective={geometry.perspective} data-view-angle={geometry.angle} className="game-board" viewBox={geometry.viewBox} aria-label={`${id} board, ${seatName(id,geometry.perspective)} army at the bottom`} style={{transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`,visibility:art.ready?'visible':'hidden'}}>
-        {geometry.image?<><image href={geometry.image} x={geometry.imageX||0} y={geometry.imageY||0} width={geometry.imageWidth} height={geometry.imageHeight} preserveAspectRatio="none" transform={geometry.backgroundTransform}/>{geometry.overlay&&<image href={geometry.overlay} x="0" y="0" width={geometry.imageWidth} height={geometry.imageHeight} transform={geometry.backgroundTransform} pointerEvents="none"/>}</>:<>
+        {hideBoardImage?null:geometry.image?<><image href={geometry.image} x={geometry.imageX||0} y={geometry.imageY||0} width={geometry.imageWidth} height={geometry.imageHeight} preserveAspectRatio="none" transform={geometry.backgroundTransform}/>{geometry.overlay&&<image href={geometry.overlay} x="0" y="0" width={geometry.imageWidth} height={geometry.imageHeight} transform={geometry.backgroundTransform} pointerEvents="none"/>}</>:<>
           <defs><linearGradient id="wood" x2="1" y2="1"><stop stopColor="#e7c68a"/><stop offset="1" stopColor="#bd8e4d"/></linearGradient></defs>
           <rect width="900" height="1000" rx="24" fill="url(#wood)"/><rect x="40" y="90" width="820" height="820" fill="#f4d7a2" stroke="#9b692e" strokeWidth="4"/>
           {Array.from({length:10},(_,i)=><React.Fragment key={i}><path d={`M ${45+i*90} 95 V 905 M 45 ${95+i*90} H 855`} stroke="#73552d" strokeWidth="2"/></React.Fragment>)}
