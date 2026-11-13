@@ -75,5 +75,12 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/early",
+      "destination": "/early/",
+      "permanent": false
+    }
   ]
 }
