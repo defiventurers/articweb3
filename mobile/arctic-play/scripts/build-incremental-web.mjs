@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
+import {patchChaturangaScreen} from './patch-chaturanga-screen-v5102.mjs';
 
 const mobile = fileURLToPath(new URL('../', import.meta.url));
 const root = path.resolve(mobile, '../..');
@@ -90,6 +91,7 @@ with zipfile.ZipFile(sys.argv[1]) as z:
   app=app.replace('image:O_(`dominion/board.webp`),imageWidth:1e3,imageHeight:1e3','image:O_(`launch-v1/chaturanga-match/approved-151658.jpg`),imageX:-73*1000/717,imageY:-429*1000/708,imageWidth:865*1000/717,imageHeight:1536*1000/708');
   app=app.replace('viewBox:E.viewBox,','viewBox:E.viewBox,preserveAspectRatio:e===`dominion`?`none`:void 0,');
   app=app.replace('.then(()=>l(`loaded`),()=>l(`failed`))','.then(()=>l(`loaded`),()=>l(o.complete&&o.naturalWidth>0&&o.naturalHeight>0?`loaded`:`failed`))');
+  app=await patchChaturangaScreen(app);
   await fs.writeFile(appFile, app);
   for (const file of ['pwa-tools.js','pwa-tools.css','launch-visit.js']) await fs.copyFile(path.join(mobile,'src',file),path.join(output,file));
   const sharp = require('sharp');
