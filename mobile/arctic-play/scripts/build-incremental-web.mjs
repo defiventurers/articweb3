@@ -88,6 +88,7 @@ with zipfile.ZipFile(sys.argv[1]) as z:
   if ([...app.matchAll(config)].length !== 1) throw Error('Expected one shipped release-configuration anchor.');
   app = app.replace(config, `packageName:\`xyz.arcticdominion.play\`,versionName:\`${version}\`,versionCode:${versionCode},distribution:\`web-pwa\``);
   app=app.replace('image:O_(`dominion/board.webp`),imageWidth:1e3,imageHeight:1e3','image:O_(`launch-v1/chaturanga-match/approved-151658.jpg`),imageX:-73*1000/717,imageY:-429*1000/708,imageWidth:865*1000/717,imageHeight:1536*1000/708');
+  app=app.replace('viewBox:E.viewBox,','viewBox:E.viewBox,preserveAspectRatio:e===`dominion`?`none`:void 0,');
   await fs.writeFile(appFile, app);
   for (const file of ['pwa-tools.js','pwa-tools.css','launch-visit.js']) await fs.copyFile(path.join(mobile,'src',file),path.join(output,file));
   const sharp = require('sharp');
