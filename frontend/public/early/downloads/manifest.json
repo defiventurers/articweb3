@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "review": true,
+  "version": "5.10.2",
+  "versionCode": 106,
+  "filename": "AntarcticKingdoms-v5.10.2.apk",
+  "bytes": 52201720,
+  "sha256": "275cf9bf69aadfa4f4d844ff412e0885d8a5a656539f4bb583af27bfc95e8ecd",
+  "chunkBytes": 8388608,
+  "parts": [
+    {
+      "file": "part-000.bin",
+      "bytes": 8388608,
+      "sha256": "f2d8e926048bfe6494adc3d3e8700b82f402f5af431c00afd47d8ddd84265c9d"
+    },
+    {
+      "file": "part-001.bin",
+      "bytes": 8388608,
+      "sha256": "7f965d8a95822ddba3a5decad2e999569b6672c4ccb0ff3585ae1d0cb8937fd6"
+    },
+    {
+      "file": "part-002.bin",
+      "bytes": 8388608,
+      "sha256": "6140e726fb197b37f3620cc4ad24e11a824a938c867d2349638abff492ac0b2d"
+    },
+    {
+      "file": "part-003.bin",
+      "bytes": 8388608,
+      "sha256": "a77ac5a1229ac4caa26d92dff655b1bc159b85a221d0c74ab04db96bf9a33e8e"
+    },
+    {
+      "file": "part-004.bin",
+      "bytes": 8388608,
+      "sha256": "4ca8029e5176e93752683b9ea67e43e250fcb792b66c05c8e77194c659e89bae"
+    },
+    {
+      "file": "part-005.bin",
+      "bytes": 8388608,
+      "sha256": "a337cfecd6130310199e808f3ff5d350644f9c5c81790d43c50186e85de2c0b3"
+    },
+    {
+      "file": "part-006.bin",
+      "bytes": 1870072,
+      "sha256": "9ec810a3d86c0c4c439f9a934afb53b6a339587324378a0bb3df2bbbe57564c2"
+    }
+  ]
+}
