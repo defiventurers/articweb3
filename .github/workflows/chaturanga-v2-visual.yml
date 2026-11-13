@@ -1,0 +1,59 @@
+name: Chaturanga v2 responsive artwork acceptance
+on:
+  pull_request:
+    paths:
+      - 'mobile/arctic-play/**'
+      - 'frontend/public/assets/launch-v1/chaturanga-match/**'
+      - '.github/workflows/chaturanga-v2-visual.yml'
+permissions:
+  contents: read
+jobs:
+  five-viewports:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install source build and security dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd server && npm ci --ignore-scripts --no-audit --no-fund)
+          (cd shared/fair-play && npm ci --ignore-scripts --no-audit --no-fund)
+          (cd mobile/arctic-play/build-deps && npm ci --ignore-scripts --no-audit --no-fund)
+          (cd frontend && npm ci --ignore-scripts --no-audit --no-fund)
+      - name: Install browser for geometry acceptance
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Build source; capture actual React match DOM
+        shell: bash
+        run: |
+          set -euo pipefail
+          node mobile/arctic-play/scripts/build-current.mjs --native
+          node mobile/arctic-play/tests/chaturanga-visual-fixture.mjs
+      - name: Render and check the match at five viewports
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --directory server/arcticPlayWeb > "$RUNNER_TEMP/ch-visual-http.log" 2>&1 &
+          python3 - <<'PY'
+          import time,urllib.request
+          for i in range(30):
+            try:
+              urllib.request.urlopen('http://127.0.0.1:8765/chaturanga-review.html',timeout=1)
+              break
+            except Exception:
+              time.sleep(1)
+          else: raise SystemExit('static preview server failed')
+          PY
+          node mobile/arctic-play/tests/chaturanga-visual-playwright.mjs
+      - name: Upload visual geometry and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaturanga-v5102-restore-alignment-screenshots
+          path: mobile/arctic-play/visual-review/*
+          if-no-files-found: warn
+          retention-days: 7
