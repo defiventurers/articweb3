@@ -23,6 +23,7 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: shared/fair-play
       - run: node mobile/arctic-play/scripts/build-current.mjs --native
+      - run: node --test server/tests/room-health-regression.test.js
       - run: npm run test:current
         working-directory: mobile/arctic-play
       - run: node --test mobile/arctic-play/tests/launch-restoration.test.mjs
