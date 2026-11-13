@@ -1,8 +1,8 @@
 /* Approved 865x1536 plate. Explicit containing blocks prevent legacy flex/size containment from collapsing the board and dice. */
 .app[data-screen="match"][data-game="dominion"]{
- --ch-w:min(100vw,680px);--ch-plate:calc(var(--ch-w)*1536/865);
+ --ch-extra:0px;--ch-w:min(100vw,680px);--ch-plate:calc(var(--ch-w)*1536/865);
  position:relative!important;isolation:isolate;display:block!important;box-sizing:border-box;
- width:100%;max-width:680px;height:auto!important;min-height:calc(var(--ch-plate) + 190px)!important;
+ width:100%;max-width:680px;height:auto!important;min-height:calc(var(--ch-plate) + 190px + var(--ch-extra))!important;
  margin:0 auto!important;padding:0!important;overflow:visible!important;background:#06223d!important;color:#fff5dc;
 }
 .app[data-screen="match"][data-game="dominion"]::before{
@@ -16,8 +16,8 @@
  margin:0!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;z-index:2;
 }
 .app[data-screen="match"][data-game="dominion"] .match-header h1{position:absolute!important;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}
-.app[data-screen="match"][data-game="dominion"] .match-header>div:not(.header-controls){position:absolute!important;top:74%;left:24%;right:24%;text-align:center;margin:0;padding:0}
-.app[data-screen="match"][data-game="dominion"] .match-header small{font:italic 600 clamp(10px,calc(var(--ch-w)*2.6/100),17px)/1.2 Georgia,serif;color:#fff2ca!important;text-shadow:0 1px 3px #001328;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app[data-screen="match"][data-game="dominion"] .match-header>div:not(.header-controls){position:absolute!important;top:70.5%;left:24%;right:24%;height:9%;display:flex;align-items:center;justify-content:center;text-align:center;margin:0;padding:0;line-height:1}
+.app[data-screen="match"][data-game="dominion"] .match-header small{display:block;font:italic 600 clamp(8px,calc(var(--ch-w)*2.3/100),15px)/1 Georgia,serif;color:#fff2ca!important;text-shadow:0 1px 3px #001328;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .app[data-screen="match"][data-game="dominion"] .match-header .icon-btn[aria-label="Back to games"]{position:absolute;left:5.2%;top:19.7%;width:7.3%;height:24.6%;min-width:24px;min-height:24px;background:transparent!important;box-shadow:none!important}
 .app[data-screen="match"][data-game="dominion"] .match-header .header-controls{position:absolute!important;left:78.1%;right:4.5%;top:19.7%;display:flex;gap:0}
 .app[data-screen="match"][data-game="dominion"] .match-header .header-controls button{width:33.333%;height:calc(var(--ch-w)*54/865);min-width:20px;min-height:24px;padding:0;background:none!important;border:0!important;box-shadow:none!important}
@@ -57,12 +57,15 @@
 .app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .dice-heading>button{position:absolute!important;left:30.75%;top:56%;width:38.5%;height:24%;min-height:0!important;padding:0!important;margin:0!important;border:0!important;background:none!important;box-shadow:none!important;color:#123950!important;font:800 clamp(15px,calc(var(--ch-w)*4.5/100),30px)/1 Georgia;text-shadow:0 1px #fff9}
 .app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .ch-roll-help-toggle{position:absolute!important;left:14%;top:83%;width:72%;height:15%;min-height:24px!important;display:flex;justify-content:center;align-items:center;gap:6px;padding:0!important;margin:0!important;font:600 clamp(10px,calc(var(--ch-w)*2.7/100),18px)/1.2 Georgia;color:#fff2d0;text-shadow:0 1px 2px #00152b}
 .app[data-screen="match"][data-game="dominion"] .ch-roll-help-toggle input{width:18px;height:18px;min-width:18px;padding:0;accent-color:#b89543}
-.app[data-screen="match"][data-game="dominion"] .ch-pass-die{position:absolute;top:calc(100% + 2px);left:8%;width:84%;min-height:24px!important;padding:2px!important;font-size:clamp(9px,calc(var(--ch-w)*2/100),13px)}
+.app[data-screen="match"][data-game="dominion"] .ch-pass-die{position:absolute;top:calc(var(--ch-w)*265/865 + 6px);left:3%;width:94%;min-height:30px!important;padding:4px!important;font-size:clamp(11px,calc(var(--ch-w)*2/100),13px);background:#123c59!important;border:1px solid #c4a65a!important;color:#fff2d0!important;border-radius:8px}
 .app[data-screen="match"][data-game="dominion"] .ch-dice-quick-help{position:absolute;left:10%;top:calc(100% + 6px);width:80%;min-height:28px;font-size:12px}
-.app[data-screen="match"][data-game="dominion"] .command-area{position:absolute!important;top:calc(var(--ch-plate) + 42px);left:3%;width:94%!important;max-width:none!important;max-height:none!important;padding:0!important;margin:0!important;border:0!important;background:none!important;overflow:visible!important;z-index:3}
+.app[data-screen="match"][data-game="dominion"] .command-area{position:absolute!important;top:calc(var(--ch-plate) + 42px + var(--ch-extra));left:3%;width:94%!important;max-width:none!important;max-height:none!important;padding:0!important;margin:0!important;border:0!important;background:none!important;overflow:visible!important;z-index:3}
 .app[data-screen="match"][data-game="dominion"] .command-area .turn-line{display:none!important}
 .app[data-screen="match"][data-game="dominion"] .selection-hint{font:12px/1.4 system-ui;margin:0!important;color:#fff2d0}
-.app[data-screen="match"][data-game="dominion"] .chat-bar{position:absolute!important;top:calc(var(--ch-plate) + 88px);left:2%;width:96%;height:auto!important;min-height:46px!important;padding:4px!important;margin:0!important;z-index:4}
+.app[data-screen="match"][data-game="dominion"] .chat-bar{position:absolute!important;top:calc(var(--ch-plate) + 88px + var(--ch-extra));left:2%;width:96%;height:auto!important;min-height:46px!important;padding:4px!important;margin:0!important;z-index:4}
 .app[data-screen="match"][data-game="dominion"] .board-art-loading{z-index:5}
 .app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .long-ice-die :is(text,.die-pip){transform:translateX(12px)}
 .app[data-screen="match"][data-game="dominion"] .ch-heritage-dice .long-ice-die text{font-size:60px;fill:#123950}
+
+.app[data-screen="match"][data-game="dominion"]:has(.ch-pass-die){--ch-extra:40px}
+.app[data-screen="match"][data-game="dominion"]:has(.ch-pass-die) .ch-dice-quick-help{top:calc(100% + 46px)}

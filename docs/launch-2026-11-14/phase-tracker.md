@@ -118,3 +118,10 @@ Dashboard: https://antarctic-launch-dashboard.avidandsouza.chatgpt.site
 The visit count is anonymous browser sessions, not people; prelaunch QA sessions are retained and labelled rather than deleted. Known automation filtering is best effort, not bot-proof analytics. The installed v5.10.3 APK, loading screen, approved icon, gameplay and account data are unchanged. No player reset or mainnet release occurred.
 
 Next pending phase: 6, public website/PWA launch and live installation, authentication, multiplayer and APK download checks.
+
+
+## Phase 6 — Chaturanga phone layout repair
+
+Reviewed main `11c710284087c555471faef3c0113b82945cb866` and the v5.10.2 browser/source presentation. Legacy fixed viewport, flex sizing and size containment collapsed the illustrated regions. Explicit plate-relative dimensions now keep header, player names, board, dice, roll button and guide in their own regions. Additional pass controls and notes sit below the artwork. The approved 865×1536 image, original penguin pieces, board mapping and rules remain intact. Source CSS and the shipped browser package share these corrections; public cache release is `5.10.2-ch-layout5`.
+
+The public before/after-roll component fixtures permit rendered checks at 320, 393 and 680 pixels without signing into a player account. Desktop and phone inspection found and corrected narrow header and pass-button collisions. These are layout checks; real signed-in multiplayer and physical-phone acceptance remain phase 6 gates. No new APK is claimed.
