@@ -1,0 +1,107 @@
+name: Build unsigned v5.10.6 APK for original-key offline signing
+on:
+  push:
+    branches: [codex/v5106-signed-upgrade-candidate]
+    paths:
+      - '.github/workflows/android-v5106-unsigned-transfer.yml'
+      - 'mobile/arctic-play/**'
+      - 'frontend/**'
+      - 'shared/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unsigned-review:
+    if: github.ref == 'refs/heads/codex/v5106-signed-upgrade-candidate'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Require exact review candidate and prohibit app identity downgrade
+        run: |
+          python3 - <<'PY'
+          import json,xml.etree.ElementTree as E
+          cfg=json.load(open('mobile/arctic-play/release-config.json'))
+          root=E.parse('mobile/arctic-play/android/app/src/main/AndroidManifest.xml').getroot()
+          ns='{http://schemas.android.com/apk/res/android}'
+          assert (cfg['packageName'],cfg['versionName'],cfg['versionCode'])==('xyz.arcticdominion.play','5.10.6',110),cfg
+          assert (root.get('package'),root.get(ns+'versionName'),root.get(ns+'versionCode'))==('xyz.arcticdominion.play','5.10.6','110')
+          print('Source identity gate passed')
+          PY
+      - name: Locate installed Android SDK, provision 36 only if needed
+        shell: bash
+        run: |
+          set -euo pipefail
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          for c in "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/cmdline-tools/16.0/bin" "$ANDROID_HOME/cmdline-tools/13.0/bin" "$ANDROID_HOME/tools/bin"; do
+            if test -x "$c/sdkmanager"; then
+              export PATH="$c:$PATH"
+              echo "$c" >> "$GITHUB_PATH"
+              break
+            fi
+          done
+          if test -f "$ANDROID_HOME/platforms/android-36/android.jar" && test -f "$ANDROID_HOME/build-tools/36.0.0/aapt2"; then
+            echo 'Android 36 SDK already installed'
+          else
+            command -v sdkmanager || { echo '::error::No Android SDK manager available on runner'; exit 1; }
+            yes | sdkmanager --licenses > /dev/null || true
+            sdkmanager --install 'platforms;android-36' 'build-tools;36.0.0'
+          fi
+          test -f "$ANDROID_HOME/platforms/android-36/android.jar"
+          test -x "$ANDROID_HOME/build-tools/36.0.0/aapt2"
+      - name: Install pinned build dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: mobile/arctic-play/build-deps
+      - name: Install server and proof-verifier dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd server && npm ci --ignore-scripts --no-audit --no-fund)
+          (cd shared/fair-play && npm ci --ignore-scripts --no-audit --no-fund)
+      - name: Build exact source and test all current engines
+        shell: bash
+        run: |
+          set -euo pipefail
+          node mobile/arctic-play/scripts/build-current.mjs --native
+          (cd mobile/arctic-play && npm run test:current)
+      - name: Compile and align unsigned APK; never access secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/unsigned-review"
+          python3 mobile/arctic-play/scripts/build-apk.py \
+            --sdk "$ANDROID_HOME" --jdk "$JAVA_HOME" \
+            --unsigned-review-only --output "$RUNNER_TEMP/unsigned-review"
+          apk="$RUNNER_TEMP/unsigned-review/AntarcticKingdoms-v5.10.6-unsigned-aligned.apk"
+          test -s "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -p 4 "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt2" dump badging "$apk" | grep -F "package: name='xyz.arcticdominion.play' versionCode='110' versionName='5.10.6'"
+          python3 - <<'PY'
+          import os,zipfile,json,pathlib
+          p=pathlib.Path(os.environ['RUNNER_TEMP'])/'unsigned-review/AntarcticKingdoms-v5.10.6-unsigned-aligned.apk'
+          with zipfile.ZipFile(p) as z:
+            assert z.testzip() is None
+            assert z.getinfo('resources.arsc').compress_type==zipfile.ZIP_STORED
+            version=json.loads(z.read('assets/app-version.json'))
+            assert version['version']=='5.10.6' and version['versionCode']==110
+          print('Unsigned archive and version verified')
+          PY
+          test -s "$ANDROID_HOME/build-tools/36.0.0/lib/apksigner.jar"
+          cp "$ANDROID_HOME/build-tools/36.0.0/lib/apksigner.jar" "$RUNNER_TEMP/unsigned-review/apksigner-sdk36.jar"
+      - name: Upload unsigned APK and signer program (NO private credentials)
+        uses: actions/upload-artifact@v4
+        with:
+          name: v5106-unsigned-aligned-owner-local-signing
+          path: ${{ runner.temp }}/unsigned-review/*
+          if-no-files-found: error
+          retention-days: 5
