@@ -54,7 +54,10 @@ if(!onPhone)throw Error('Missing local match mode');
 onPhone.click();
 await until(()=>doc.querySelector('.app.ch-v2[data-screen="match"]'),'Chaturanga match');
 await until(()=>doc.querySelector('.app.ch-v2 .game-board'),'Chaturanga SVG board');
-const app=doc.querySelector('.app.ch-v2');
+const app=doc.querySelector('.app.ch-v2').cloneNode(true);
+// The actual match starts with a legal dice-roll dialog. Remove it only from
+// this STATIC visual snapshot to inspect the board and typography behind it.
+app.querySelectorAll('.overlay[role="presentation"]').forEach(element=>element.remove());
 if(doc.querySelectorAll('.app.ch-v2 .game-board [data-cell]').length!==64)throw Error('Expected 64 live board cells');
 const out=path.join(root,'server/arcticPlayWeb/chaturanga-review.html');
 fs.writeFileSync(out,'<!doctype html><html data-theme="dark"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="fair-play.css"><style>.app.ch-v2 .game-board{visibility:visible!important}.app.ch-v2 .board-art-loading{display:none!important}</style></head><body><div id="root">'+app.outerHTML+'</div></body></html>');
