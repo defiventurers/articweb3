@@ -90,14 +90,7 @@ html:has(.app.ch-v2),body:has(.app.ch-v2),#root:has(.app.ch-v2){
 .app.ch-v2 .match-header :is(.header-theme,.fair-mini,.icon-btn[aria-label="Match options"]) svg{
   opacity:0!important; /* icons are already painted in the approved art */
 }
-.app.ch-v2 .match-header .header-update{
-  top:calc(var(--ch-width) * .183)!important;
-  left:calc(var(--ch-width) * .86)!important;
-  width:44px!important;height:44px!important;
-  color:#e7d19f!important;background:#0a234bdd!important;
-  border:1px solid #d5b67699!important;border-radius:50%!important;
-}
-.app.ch-v2 .match-header .header-update svg{opacity:1!important;width:17px;height:17px}
+.app.ch-v2 .match-header .header-update{display:none!important}
 /* The 2v2 label sits exactly inside the horizontal stone-gold capsule. */
 .app.ch-v2 .match-team-banner{
   position:absolute!important;z-index:3!important;
@@ -331,4 +324,12 @@ html:has(.app.ch-v2),body:has(.app.ch-v2),#root:has(.app.ch-v2){
   .app.ch-v2 :is(.ch-v2-dice-stage,.player-pill,.match-header) *{
     transition:none!important;animation:none!important;
   }
+}
+
+.app.ch-v2 .command-area>.ch-v2-updates-action{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-height:44px!important;min-width:115px!important;margin:4px 0 8px!important;
+  border-radius:10px!important;background:#183b58!important;
+  color:#f5e3bc!important;border:1px solid #b79862!important;
+  font:700 12px/1.2 system-ui,sans-serif!important;
 }
