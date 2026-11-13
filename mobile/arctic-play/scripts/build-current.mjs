@@ -13,6 +13,7 @@ const hash=b=>createHash('sha256').update(b).digest('hex');
 // User-approved Chaturanga artwork is a required, checksum-pinned source asset.
 // Fail closed: a missing file must never silently ship a broken match background.
 const requiredChaturangaArt={
+ 'approved-151658.jpg':'44a2974a32f2c0687cc3d59ac071411b99bea7661cc16270a8f4dc5ac6ac04f8',
  'approved-v2.webp':'c71e59b18a30ffd6301bb261c55411522723744f52a67550de371d4ab5750557',
  'board-surround-v2.webp':'6d11f0ec1ea938af24d5fc8eaf3c848f9e24009e4d3abb48060f769ce3708de4',
  'dice-panel-v2.webp':'24c3c32f8cff40b4e9f763fc857728669330ec36f21841b91d0b76c6dc52e339',
@@ -29,7 +30,7 @@ await materializeRuntimeArt(mobile);
 await fs.rm(destination,{recursive:true,force:true});await fs.mkdir(destination,{recursive:true});await fs.mkdir(path.join(mobile,'build'),{recursive:true});
 const inventory=JSON.parse(await fs.readFile(path.join(mobile,'runtime-art-sources.json')));
 for(const a of inventory.assets){const bytes=await fs.readFile(path.join(root,a.source));if(hash(bytes)!==a.sha256)throw Error('Artwork source changed: '+a.source);const target=path.join(destination,a.url);await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);}
-for(const folder of ['launch-v1']){const from=path.join(root,'frontend/public/assets',folder);try{await fs.cp(from,path.join(destination,'art',folder),{recursive:true,filter:source=>!source.includes('/social')&&!source.endsWith('.md')});}catch(e){if(e.code!=='ENOENT')throw e;}}
+for(const folder of ['launch-v1','chaturanga-final-four']){const from=path.join(root,'frontend/public/assets',folder);try{await fs.cp(from,path.join(destination,'art',folder),{recursive:true,filter:source=>!source.includes('/social')&&!source.endsWith('.md')});}catch(e){if(e.code!=='ENOENT')throw e;}}
 const alias=Object.fromEntries(['react','react-dom','lucide-react'].map(n=>[n,path.join(mobile,'build-deps/node_modules',n)]));
 const plugins=[{name:'explicit-css',load(id){if(id.endsWith('.css'))return {code:'',moduleType:'js'};}}];
 const bundle=(input,output,platform='browser')=>build({input,platform,plugins,resolve:{alias},onwarn(w,d){if(w.code==='MODULE_LEVEL_DIRECTIVE')return;if(['UNRESOLVED_IMPORT','MISSING_GLOBAL_NAME'].includes(w.code))throw Error(w.message);d(w);},transform:{target:'es2020',define:{'process.env.NODE_ENV':'"production"',...(platform==='browser'?{'import.meta.env':'{}','import.meta.url':'globalThis.location.href'}:{})}},output:{file:output,format:platform==='node'?'cjs':'iife',minify:platform!=='node',...(platform==='node'?{banner:'if (!globalThis.crypto) globalThis.crypto = require("node:crypto").webcrypto;'}:{})}});

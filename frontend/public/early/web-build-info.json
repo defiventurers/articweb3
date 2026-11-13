@@ -3,7 +3,7 @@
   "versionCode": 106,
   "baselineVersion": "5.9.15",
   "baselineSha256": "27ab56bc1c8f2575f6d6ea0573432ac354102283e725d5bb33d1ed37b3cc2488",
-  "buildId": "5.10.2-d8a2966e6c7ec98c",
+  "buildId": "5.10.2-approved-ch151658-v1",
   "originalFiles": 420,
   "changedOriginals": [
     "app-version.json",
@@ -43,5 +43,12 @@
   "offlinePolicy": "Only explicitly hashed public shell/assets; accounts and APIs never cached. Existing matches keep their release until all tabs close.",
   "liveLoginVerified": false,
   "liveMultiplayerVerified": false,
-  "published": false
+  "published": false,
+  "approvedBoard": "151658.jpg",
+  "boardBounds": {
+    "left": 73,
+    "top": 429,
+    "right": 790,
+    "bottom": 1137
+  }
 }

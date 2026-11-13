@@ -76,6 +76,10 @@ with zipfile.ZipFile(sys.argv[1]) as z:
     });
   }
   for (const file of ['index.html','startup.js','theme-init.js']) if (hash(await fs.readFile(path.join(output,file))) !== original.get(file)) throw Error('Protected baseline file changed: '+file);
+  // User-approved board presentation shared with the published early edition.
+  await fs.copyFile(path.join(root,'frontend/public/assets/launch-v1/chaturanga-match/approved-151658.jpg'),path.join(output,'art/launch-v1/chaturanga-match/approved-151658.jpg')).catch(async error=>{if(error.code!=='ENOENT')throw error;await fs.mkdir(path.join(output,'art/launch-v1/chaturanga-match'),{recursive:true});await fs.copyFile(path.join(root,'frontend/public/assets/launch-v1/chaturanga-match/approved-151658.jpg'),path.join(output,'art/launch-v1/chaturanga-match/approved-151658.jpg'));});
+  const boardCSS=await fs.readFile(path.join(mobile,'src/chaturanga-match-v2.css'),'utf8');
+  await fs.appendFile(path.join(output,'app.css'),'\n'+boardCSS.slice(boardCSS.indexOf('.app[data-screen="match"]')));
   const appFile = path.join(output,'app.js');
   let app = await fs.readFile(appFile, 'utf8');
   // Existing hook already requires an actual Android bridge. Do not create a fake bridge or bypass account access.
@@ -83,6 +87,8 @@ with zipfile.ZipFile(sys.argv[1]) as z:
   const config = /packageName:`xyz\.arcticdominion\.play`,versionName:`\d+\.\d+\.\d+`,versionCode:\d+,distribution:`(?:direct-apk|web-pwa)`/g;
   if ([...app.matchAll(config)].length !== 1) throw Error('Expected one shipped release-configuration anchor.');
   app = app.replace(config, `packageName:\`xyz.arcticdominion.play\`,versionName:\`${version}\`,versionCode:${versionCode},distribution:\`web-pwa\``);
+  app=app.replace('image:O_(`dominion/board.webp`),imageWidth:1e3,imageHeight:1e3','image:O_(`launch-v1/chaturanga-match/approved-151658.jpg`),imageX:-73*1000/717,imageY:-429*1000/708,imageWidth:865*1000/717,imageHeight:1536*1000/708');
+  app=app.replace('viewBox:E.viewBox,','viewBox:E.viewBox,preserveAspectRatio:e===`dominion`?`none`:void 0,');
   await fs.writeFile(appFile, app);
   for (const file of ['pwa-tools.js','pwa-tools.css','launch-visit.js']) await fs.copyFile(path.join(mobile,'src',file),path.join(output,file));
   const sharp = require('sharp');
@@ -117,6 +123,7 @@ with zipfile.ZipFile(sys.argv[1]) as z:
   await fs.writeFile(path.join(output,'app-version.json'),JSON.stringify(metadata));
   const assetManifestFile = path.join(output,'game-assets.json');
   const assets = JSON.parse(await fs.readFile(assetManifestFile)); assets.version = version;
+  if(!assets.assets.some(a=>a.url==='art/launch-v1/chaturanga-match/approved-151658.jpg'))assets.assets.push({url:'art/launch-v1/chaturanga-match/approved-151658.jpg'});
   for (const asset of assets.assets) {
     if (typeof asset.url !== 'string' || asset.url.startsWith('/') || asset.url.split('/').includes('..')) throw Error('Unsafe game asset URL.');
     asset.bytes = (await fs.stat(path.join(output,asset.url))).size;
