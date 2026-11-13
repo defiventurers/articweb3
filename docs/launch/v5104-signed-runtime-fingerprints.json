@@ -1,0 +1,18 @@
+{
+  "source": "Owner-provided, original-certificate signed AntarcticKingdoms-v5.10.4.apk; SHA-256 verified read-only, 13 November 2026 IST",
+  "package": "xyz.arcticdominion.play",
+  "versionName": "5.10.4",
+  "versionCode": 108,
+  "apkSha256": "7f0eb1b7bb2cb1d5d974249251bdb0356b15ccc298939f459bc42d296ffd414d",
+  "signerCertificateSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+  "entrySha256": {
+    "assets/app.js": "4c9566863faf12c17320c35d9c12f7b6cb71d95a53dab7fdaa33a7920922e38f",
+    "assets/app.css": "0b9d5df3fc83c760cd95f94c8f706e0a7ee1a98b04e7789e469db0f821de6770",
+    "assets/fair-worker.js": "8112b81cf0aea8284c16eefb9f46992e5809a9570f717ee44e196a8650d5a0bf",
+    "assets/verifier.js": "5bc0e1e68b4a443e1291e26486cdf4e9281fed85516b81f74e39d7a19a4ec155",
+    "assets/startup.js": "a1d187c953f6c1689d66d01c3d390c60242af4354a37875f87b2010c888d5fa6",
+    "assets/theme-init.js": "fe6a64930cf41a9c91311602d52ee4dc5c420823c9d23bcb6467d2d07a4aab57",
+    "assets/game-assets.json": "d0d85bba5c58b859bfa8fe3a7eee5f417bb1b1e96289a4f92dd3a35df43a421b"
+  },
+  "notes": "Fingerprints prove exact original APK bytes only. They do not by themselves prove equivalence of regenerated minified bundles; use functional verifier tests and source audit in addition to preserving files."
+}

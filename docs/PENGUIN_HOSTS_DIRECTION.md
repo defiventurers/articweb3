@@ -1,6 +1,12 @@
 # Four Penguin Hosts: Heritage Catalogue Direction
 
-## Accepted mascot names — 9 November 2026
+## Final user references — 11 November 2026
+
+The user has explicitly approved four new plush 3D feathered character references and instructed: “refer to these and nothing else ... these are the final”. Final names: **Nova** (pink, stable ID `polly`), **Rocco** (red, `retsba`), **Piko** (blue, `pengu`), **Ziggy** (green, `abster`). This newest instruction supersedes the older flat reference images and older AGENTS display names. Preserve the exact new silhouettes, colours, hair/plumes, facial features, beaks and plush render style. The legacy IDs are implementation identities only.
+
+Roles: Nova welcome/practice; Rocco tactics; Piko rules and Fair Play navigation; Ziggy puzzles and reflection. Only explicitly requested Chaturanga adaptations dress these characters as game pieces; source-native heritage roles remain intact.
+
+## Historical naming record — 9 November 2026
 
 The user-approved display names are Nova (pink, legacy ID `polly`), Rocco (red, `retsba`), Piko (blue, `pengu`), and Ziggy (green, `abster`). This naming decision supersedes the older Polly/Retsba/Pengu/Abster display names in historical project instructions. IDs, asset paths, saved preferences, entitlements and heritage roles remain stable. This update changes names only; it does not approve a visual redesign or alter the older visual specifications below.
 

@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "chainId": 46630,
+  "network": "Robinhood testnet",
+  "owner": "0xaE139be36A9AaF91af8F719740cE3a2F7102E66e",
+  "operator": "0xaE139be36A9AaF91af8F719740cE3a2F7102E66e",
+  "metadataBase": "https://articweb3.onrender.com/arctic-play/v3/passport/metadata/46630/",
+  "createdAt": "2026-11-12T12:05:41.840Z",
+  "contracts": {
+    "FairPlayRegistry": {
+      "address": "0xB247E10c115D8FfE508452F94521ADaB377EA8fd",
+      "nonce": 0,
+      "status": "confirmed",
+      "gasEstimate": "1032032",
+      "compiler": "0.8.24+commit.e11b9ed9.Emscripten.clang",
+      "sourceSha256": "7a7afb11371dc3823011ab4dd1ccef84b71b750a32602708d667a0ed710274f8",
+      "runtimeHash": "dac8ec3e3451e234121c7bfd67f470348dae33f1b8d0d2b84bf8ef76bcfd0e17",
+      "transactionHash": "0x719f63584fe04fd523898f215240b80c80a666c19b78c86c77425ddc96755fc9",
+      "blockNumber": 152286166,
+      "blockHash": "0x0fc7d82eca81e17dbe8a0427cf392e73085d51dad0040f54087716af2a8b2257"
+    },
+    "AntarcticPassport": {
+      "address": "0xF059141A4e21eF5786e66e96F1c4357858a0De11",
+      "nonce": 1,
+      "status": "confirmed",
+      "gasEstimate": "1666154",
+      "compiler": "0.8.24+commit.e11b9ed9.Emscripten.clang",
+      "sourceSha256": "6e08eac56d51d17422647a95dd15b46ec5f9304eb203d6fdbc0a9a3e2baa08f2",
+      "runtimeHash": "b1e5872d4f1b79ed61a6a7104533df8c1bac1d0adf117efa91d550af06b0adba",
+      "transactionHash": "0x968d1a97b997fe3fd5cd6747c2a7d031aa852ee47ef7298449d4068a083f735d",
+      "blockNumber": 152286212,
+      "blockHash": "0x24ab398c1db66e9e82775e077e2a3d7cea6beb80f8d6fd04471a8be7cc43aa1b"
+    }
+  },
+  "smoke": {
+    "purpose": "Operator testnet rehearsal; not a player match or victory",
+    "matchId": "0x1b73301824ef760789fac022766ed7632fc4604bfb7ea15ed6dd2340b124d18d",
+    "headerHash": "0xf8523bb48d0c01193bf2b776e159f5f2d78914d9759d4bc0473f725d024b2144",
+    "eventHash": "0x747cc00533dbf6d7f63f646887b657d2c549b372dfe759e47bb26f40c26cbe4c",
+    "transactions": {
+      "registerMatch": "0x6e9389a7c62ab23303069f9f4e76c0f365ccad385301f56dcd29f87d608cde93",
+      "commitRoll": "0x4c23f275bb750d06ddcb21f0ed303f88d7ac4b314ae54e1ee25c2c601eff4f3f",
+      "appendCheckpoint": "0x037662df57d89351a099e2bfb18124bcb7d507901bbab732ebddd351a9568ab7"
+    },
+    "round": 33893843,
+    "intentHash": "0x711594153777a331f88658fc67d0e84b48938dc2eef9ec622c181ed0a6046805",
+    "root": "0x8cf943c9bba35451c185e2611c0c6be7f5f824e1397f5a549e9e2816b4c5d699",
+    "confirmed": true,
+    "beaconRequestTimingVerified": true,
+    "checkedAt": "2026-11-12T12:06:34.001Z"
+  },
+  "backendEnabled": false
+}

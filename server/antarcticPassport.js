@@ -1,7 +1,7 @@
 const {getAddress}=require('ethers');
 const {createPassportStore}=require('./antarcticPassportStore');
 const CHAINS=Object.fromEntries(Object.values(require('./gameWalletChains.json')).map(c=>[c.id,{name:c.name,explorer:c.blockExplorers.default.url,testnet:c.testnet}]));
-function createPassportRoutes({store=createPassportStore(),chainId=Number(process.env.AK_VISA_CHAIN_ID||11124),accountStore,deliveryEnabled=process.env.AK_VISA_DELIVERY_ENABLED==='true'}={}){
+function createPassportRoutes({store=createPassportStore(),chainId=Number(process.env.AK_VISA_CHAIN_ID||46630),accountStore,deliveryEnabled=process.env.AK_VISA_DELIVERY_ENABLED==='true',deliveryRuntime=require('./passportDeliveryRuntime').runtime}={}){
  if(!CHAINS[chainId])throw Error('Unsupported passport network.');
  function response(p){if(!p)return null;return {...p,network:CHAINS[p.chainId]?.name,deliveries:p.deliveries.map(d=>{const id=d.chainId||p.chainId,chain=CHAINS[id];return {...d,chainId:id,status:!deliveryEnabled&&['queued','retry','sending'].includes(d.status)?'awaiting_setup':d.status,...(chain&&/^0x[0-9a-f]{64}$/i.test(d.transactionHash||'')?{explorerUrl:chain.explorer+'/tx/'+d.transactionHash}:{})};})};}
  async function syncAchievements(accountId){if(!accountStore||!store.configured||!store.enqueueAchievement)return;const account=await accountStore.get('account',accountId);for(const a of require('./antarcticAchievements').earnedAchievements(account))await store.enqueueAchievement(accountId,a);}

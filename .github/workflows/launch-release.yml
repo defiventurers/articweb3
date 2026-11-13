@@ -1,0 +1,36 @@
+name: Launch source and proof checks
+on:
+  pull_request:
+    paths: ['mobile/arctic-play/**', 'server/**', 'shared/fair-play/**', 'contracts/launch/**', '.github/workflows/launch-release.yml']
+  push:
+    branches: [main]
+    paths: ['mobile/arctic-play/**', 'server/**', 'shared/fair-play/**', 'contracts/launch/**', '.github/workflows/launch-release.yml']
+permissions:
+  contents: read
+jobs:
+  launch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: server
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: mobile/arctic-play/build-deps
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: shared/fair-play
+      - run: node mobile/arctic-play/scripts/build-current.mjs --native
+      - run: npm run test:current
+        working-directory: mobile/arctic-play
+      - run: node --test mobile/arctic-play/tests/launch-restoration.test.mjs
+      - run: npm run test:launch
+        working-directory: server
+      - run: node --test shared/fair-play/core.test.mjs shared/fair-play/long-dice.test.mjs mobile/arctic-play/tests/wallet-portfolio.test.mjs
+      - run: node mobile/arctic-play/tests/chaturanga-release-ui.test.mjs server/arcticPlayWeb/app.js server/arcticPlayWeb/bot.js server/arcticPlayWeb/learn.js
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: contracts/launch
+      - run: npm test
+        working-directory: contracts/launch

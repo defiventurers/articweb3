@@ -5,8 +5,9 @@ const {Pool}=require('pg');
 // No plaintext Google identity or player name is ever used in a mint argument.
 function createPassportStore({databaseUrl=process.env.DATABASE_URL,pool}={}){
  const db=pool|| (databaseUrl?new Pool({connectionString:databaseUrl,ssl:process.env.DATABASE_SSL==='true'||/sslmode=require/.test(databaseUrl)?{rejectUnauthorized:false}:undefined}):null);
- let ready,workerLock;
- function init(){if(!db)throw Object.assign(Error('Passport registration is awaiting database setup.'),{status:503});return ready||(ready=db.query(`
+ let ready;
+ db?.on?.('error',()=>{});
+ function init(){if(!db)throw Object.assign(Error('Passport registration is awaiting database setup.'),{status:503});return ready||(ready=(async()=>{const c=await db.connect();try{await c.query('BEGIN');await c.query("SELECT pg_advisory_xact_lock(hashtextextended('ak-passport-schema-v1',0))");await c.query(`
  CREATE TABLE IF NOT EXISTS ak_passports (
   account_id UUID PRIMARY KEY, id UUID NOT NULL UNIQUE, claim_id TEXT NOT NULL UNIQUE,
   player_name TEXT NOT NULL, wallet TEXT NOT NULL UNIQUE, chain_id INTEGER NOT NULL,
@@ -29,7 +30,7 @@ function createPassportStore({databaseUrl=process.env.DATABASE_URL,pool}={}){
  ALTER TABLE ak_passport_deliveries ADD CONSTRAINT ak_passport_deliveries_kind_check CHECK (kind IN ('visa','arrival','achievement'));
  CREATE UNIQUE INDEX IF NOT EXISTS ak_passport_delivery_identity ON ak_passport_deliveries(account_id,kind,achievement_code);
  CREATE INDEX IF NOT EXISTS ak_passport_delivery_due ON ak_passport_deliveries(status,run_after);
- `).catch(e=>{ready=null;throw e;}));}
+ `);await c.query('COMMIT');}catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}})().catch(e=>{ready=null;throw e;}));}
  const serialize=r=>r&&({id:r.id,number:'AK-'+r.id.replaceAll('-','').slice(0,16).toUpperCase(),playerName:r.player_name,wallet:r.wallet,chainId:r.chain_id,createdAt:Number(r.created_at),souvenir:r.souvenir,walletProvider:r.wallet_provider,achievementOptIn:r.achievement_opt_in});
  async function get(accountId){await init();const p=(await db.query('SELECT * FROM ak_passports WHERE account_id=$1',[accountId])).rows[0];if(!p)return null;const jobs=(await db.query('SELECT kind,status,tx_hash,token_id,chain_id,achievement_code,achievement_token_id FROM ak_passport_deliveries WHERE account_id=$1 ORDER BY kind DESC',[accountId])).rows;return {...serialize(p),deliveries:jobs.map(r=>({kind:r.kind,status:r.status,transactionHash:r.tx_hash,tokenId:r.token_id,chainId:r.chain_id,achievement:r.achievement_code,...(r.achievement_code?{title:require('./antarcticAchievements').ACHIEVEMENTS.find(a=>a.code===r.achievement_code)?.title||'Achievement NFT'}:{})}))};}
  async function register(accountId,{playerName,wallet,chainId,souvenir,consentVersion,walletProvider='external',achievementOptIn=false},at){await init();const c=await db.connect();try{await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',['passport:'+accountId]);const old=(await c.query('SELECT * FROM ak_passports WHERE account_id=$1',[accountId])).rows[0];if(old){if(Number(old.chain_id)!==Number(chainId))throw Object.assign(Error('This account has a passport on another network. A reviewed migration is required before issuing on a new network.'),{status:409});if(old.wallet.toLowerCase()!==wallet.toLowerCase())throw Object.assign(Error('Your passport is already issued to another wallet. Contact support before changing it.'),{status:409});await c.query('COMMIT');return get(accountId);}

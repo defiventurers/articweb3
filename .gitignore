@@ -15,3 +15,20 @@ playwright-report/
 test-results/
 coverage/
 .DS_Store
+
+# Reproducible launch outputs (sources and approved artwork are tracked).
+server/arcticPlayWeb/
+mobile/arctic-play/android/app/src/main/assets/
+mobile/arctic-play/build/
+contracts/launch/artifacts/
+contracts/launch/deployment-*.json
+frontend/public/play/
+**/__pycache__/
+mobile/arctic-play/runtime-assets/art/
+
+*-failure.html
+
+**/node_modules
+/contracts/launch/artifacts/
+/contracts/launch/deployments/
+/contracts/launch/operator-dist/

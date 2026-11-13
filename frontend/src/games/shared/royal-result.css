@@ -1,0 +1,33 @@
+/* Royal result for Cờ Tư Lệnh and Shanshui Xiangqi, web and Android. */
+.ak-royal-result{position:fixed;inset:0;z-index:1200;overflow:hidden;background:#061b32;color:#fcf2dd;display:flex;justify-content:center;align-items:stretch;isolation:isolate;box-sizing:border-box}
+.ak-royal-result *{box-sizing:border-box}
+.ak-royal-scroll{z-index:1;position:relative;width:min(100%,700px);height:100%;overflow-y:auto;padding:16px clamp(14px,4vw,28px) max(26px,env(safe-area-inset-bottom));text-align:center;display:flex;align-items:center;flex-direction:column;gap:8px;background:radial-gradient(circle at 50% 15%,#1f526eaa,transparent 62%)}
+.ak-royal-header{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 0 10px;border-bottom:1px solid #d6b16b73;font:700 12px Georgia,serif;letter-spacing:2px;color:#ecd7ae}
+.ak-royal-header button{min-height:44px;min-width:44px;border-radius:50%;border:1px solid #d5b67a;background:#e1d6bf19;color:#fff9e9;font-size:18px}
+.ak-royal-sky{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,#275d68 2%,#061b32 80%)}
+.ak-royal-sky i{position:absolute;font:36px Georgia;color:#d5b76f99;animation:ak-royal-float 5s ease-in-out infinite alternate}
+.ak-royal-sky i:nth-child(1){top:10%;left:4%}.ak-royal-sky i:nth-child(2){top:40%;right:6%;animation-delay:1s}.ak-royal-sky i:nth-child(3){bottom:17%;left:6%;animation-delay:2s}
+.ak-royal-crown{display:block;width:clamp(62px,16vw,99px);height:auto;margin:4px 0 0;filter:drop-shadow(0 5px 7px #001727)}
+.ak-royal-eyebrow{font:700 10px Georgia,serif;letter-spacing:1.7px;color:#edd09a;text-transform:uppercase;margin:0}
+.ak-royal-scroll h1{font:700 clamp(30px,8.8vw,60px)/1.09 Georgia,serif;color:#ffe0a1;text-shadow:0 3px 8px #0008;margin:0}
+.ak-royal-scroll h2{font:700 clamp(19px,5.3vw,29px)/1.15 Georgia,serif;color:#fff9e8;margin:0;text-wrap:balance}
+.ak-royal-game{font:700 12px Georgia,serif;letter-spacing:1.5px;color:#b9deeb;text-transform:uppercase;margin:0}
+.ak-royal-army{position:relative;width:100%;flex-shrink:0;min-height:174px;max-height:32dvh;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;align-content:center;gap:0 2px;overflow:hidden;border:2px solid #d9b676;border-radius:17px;padding:35px 10px 9px;margin:8px 0;background:linear-gradient(180deg,#173e55,#376a7e66 62%,#abcfe633)}
+.ak-royal-army:after{content:'';position:absolute;bottom:0;left:0;right:0;height:14px;background:linear-gradient(#d5f2ff33,#9dd4ecbb)}
+.ak-royal-aurora{position:absolute;inset:0;background:radial-gradient(ellipse at 40% 10%,#7ad2b65e,transparent 72%);pointer-events:none}
+.ak-royal-skyline{position:absolute;top:4px;left:0;right:0;color:#ffe6a1;letter-spacing:18px;font-size:17px;margin:0}
+.ak-royal-unit{position:relative;z-index:1;width:clamp(37px,10vw,70px);height:clamp(53px,14vw,87px);object-fit:contain;filter:drop-shadow(0 4px 5px #001b2db8);animation:ak-royal-cheer 1.4s ease-in-out var(--ak-delay,0s) infinite alternate}
+.ak-royal-no-pieces{font:italic 20px Georgia,serif;color:#f5e7c3}
+.ak-royal-caption{font:700 15px/1.35 Georgia,serif;margin:4px 0 0}
+.ak-royal-reason{font:13px/1.5 Georgia,serif;color:#d7e5ee;max-width:36rem;margin:0}
+.ak-royal-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
+.ak-royal-actions button{min-height:48px;border:1px solid #c7d7e0;border-radius:11px;background:#d8ecf4;color:#19384e;font:700 12px/1.2 system-ui;padding:8px}
+.ak-royal-actions button.ak-royal-primary{grid-column:span 2;background:linear-gradient(#f8dfac,#cea24e);border-color:#f9dfa3;font-size:15px}
+.ak-royal-disclaimer{color:#b8cad5;font:11px/1.4 system-ui;text-align:center;max-width:33rem;margin-top:4px}
+@keyframes ak-royal-cheer{from{transform:translateY(3px) rotate(-2deg)}to{transform:translateY(-8px) rotate(3deg)}}
+@keyframes ak-royal-float{from{transform:translateY(-12px);opacity:.4}to{transform:translateY(9px);opacity:.8}}
+@media(prefers-reduced-motion:reduce){.ak-royal-result *, .ak-royal-result *::before,.ak-royal-result *::after{animation:none!important;transition:none!important}}
+@media(max-height:700px){.ak-royal-scroll{gap:5px}.ak-royal-crown{width:62px}.ak-royal-army{min-height:145px;max-height:26dvh}.ak-royal-scroll h1{font-size:30px}.ak-royal-army .ak-royal-unit{width:35px;height:50px}}
+
+.ak-royal-army.crowded .ak-royal-unit{width:clamp(27px,8vw,48px);height:clamp(35px,10vw,56px)}
+.ak-royal-army.crowded{overflow-y:auto;align-content:center;scrollbar-width:thin}

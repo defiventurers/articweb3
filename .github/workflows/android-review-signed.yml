@@ -1,0 +1,142 @@
+name: Build versioned signed Android review APK (manual; no publication)
+on:
+  workflow_dispatch:
+    inputs:
+      expected_version:
+        description: 'Expected version name from approved source (for example 5.10.4)'
+        type: string
+        required: true
+      expected_code:
+        description: 'Expected incremented Android versionCode (at least 108)'
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  review:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Require reviewed release version and block downgrade
+        shell: bash
+        env:
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+          EXPECTED_CODE: ${{ inputs.expected_code }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,re,xml.etree.ElementTree as ET
+          p='mobile/arctic-play/android/app/src/main/AndroidManifest.xml'
+          root=ET.parse(p).getroot()
+          ns='{http://schemas.android.com/apk/res/android}'
+          version=root.attrib[ns+'versionName']
+          code=int(root.attrib[ns+'versionCode'])
+          expected_version=os.environ['EXPECTED_VERSION']
+          expected_code=os.environ['EXPECTED_CODE']
+          if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+',expected_version):
+              raise SystemExit('Invalid expected_version')
+          if not re.fullmatch(r'[0-9]+',expected_code):
+              raise SystemExit('Invalid expected_code')
+          if (version,code)!=(expected_version,int(expected_code)) or code<109:
+              raise SystemExit(f'Refusing stale/mismatched version: source={version}/{code}; expected={expected_version}/{expected_code}; floor=109')
+          if root.attrib.get('package')!='xyz.arcticdominion.play':
+              raise SystemExit('App identity changed')
+          with open(os.environ['GITHUB_ENV'],'a') as out:
+              out.write(f'AK_VERSION={version}\nAK_CODE={code}\n')
+          print('Approved source version and package gate passed:',version,code)
+          PY
+      - name: Verify secure signer configuration
+        id: signer
+        shell: bash
+        env:
+          ORIGINAL_JKS_B64: ${{ secrets.AK_ANDROID_RELEASE_JKS_B64 }}
+          ORIGINAL_JKS_PASSWORD: ${{ secrets.AK_ANDROID_RELEASE_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$ORIGINAL_JKS_B64" ] || [ -z "$ORIGINAL_JKS_PASSWORD" ]; then
+            echo "::error::Missing original-keystore secrets; no APK can be signed."
+            exit 1
+          else
+            echo "ready=yes" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install Android API 36 SDK
+        if: steps.signer.outputs.ready == 'yes'
+        shell: bash
+        run: |
+          command -v sdkmanager || { echo '::error::Android SDK command-line tools are missing'; exit 1; }
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager --install 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Install Android frontend dependencies
+        if: steps.signer.outputs.ready == 'yes'
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: mobile/arctic-play/build-deps
+      - name: Compile current 9-game source
+        if: steps.signer.outputs.ready == 'yes'
+        run: node mobile/arctic-play/scripts/build-current.mjs --native
+      - name: Run source and gameplay regression tests
+        if: steps.signer.outputs.ready == 'yes'
+        run: npm run test:current
+        working-directory: mobile/arctic-play
+      - name: Sign APK with original trusted identity only
+        if: steps.signer.outputs.ready == 'yes'
+        shell: bash
+        env:
+          ORIGINAL_JKS_B64: ${{ secrets.AK_ANDROID_RELEASE_JKS_B64 }}
+          ORIGINAL_JKS_PASSWORD: ${{ secrets.AK_ANDROID_RELEASE_KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          sign_dir="$(mktemp -d "$RUNNER_TEMP/ak-secret.XXXXXXXX")"
+          echo "SIGNING_DIR=$sign_dir" >> "$GITHUB_ENV"
+          chmod 700 "$sign_dir"
+          printf '%s' "$ORIGINAL_JKS_B64" | base64 --decode > "$sign_dir/release.jks"
+          printf '%s' "$ORIGINAL_JKS_PASSWORD" > "$sign_dir/password"
+          chmod 600 "$sign_dir/release.jks" "$sign_dir/password"
+          python3 mobile/arctic-play/scripts/build-apk.py \
+            --sdk "$ANDROID_HOME" --jdk "$JAVA_HOME" \
+            --keystore "$sign_dir/release.jks" --password-file "$sign_dir/password" \
+            --output "$RUNNER_TEMP/review-apk"
+      - name: Confirm signer fingerprint, APK alignment, hash and embedded version
+        if: steps.signer.outputs.ready == 'yes'
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="$RUNNER_TEMP/review-apk/AntarcticKingdoms-v${AK_VERSION}.apk"
+          test -s "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$apk" > "$RUNNER_TEMP/certificate-check.txt"
+          grep -qi '20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37' "$RUNNER_TEMP/certificate-check.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -p 4 "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt2" dump badging "$apk" | grep -F "package: name='xyz.arcticdominion.play' versionCode='${AK_CODE}' versionName='${AK_VERSION}'"
+          python3 - <<'PY'
+          import json,os,pathlib,zipfile
+          p=pathlib.Path(os.environ['RUNNER_TEMP'])/'review-apk'/('AntarcticKingdoms-v'+os.environ['AK_VERSION']+'.apk')
+          with zipfile.ZipFile(p) as z:
+              d=json.loads(z.read('assets/app-version.json'))
+              assert d['version']==os.environ['AK_VERSION'] and d['versionCode']==int(os.environ['AK_CODE']),d
+              assert z.getinfo('resources.arsc').compress_type==zipfile.ZIP_STORED, 'resources.arsc must be uncompressed'
+              assert z.testzip() is None
+          print('Archive, embedded version and signer verified')
+          PY
+          echo "### Signed review APK ready for **real-device testing**, not public release." >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: steps.signer.outputs.ready == 'yes' && success()
+        with:
+          name: AntarcticKingdoms-v${{ env.AK_VERSION }}-signed-review
+          path: |
+            ${{ runner.temp }}/review-apk/AntarcticKingdoms-v${{ env.AK_VERSION }}.apk
+            ${{ runner.temp }}/review-apk/AntarcticKingdoms-v${{ env.AK_VERSION }}.apk.sha256
+            ${{ runner.temp }}/review-apk/build-info.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Clean original private signing files
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "$SIGNING_DIR" ] && [ -d "$SIGNING_DIR" ]; then rm -rf -- "$SIGNING_DIR"; fi

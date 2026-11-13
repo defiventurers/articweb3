@@ -1,10 +1,11 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {NETWORKS} from './chain.js';
-const names={shogi:'Shogi',sannin:'Sannin Shogi',sanguo:'Sanguo Qi',sanyou:'San You Qi',yanyi:'Sanguo Yan Yi Qi',xiangqi:'Xiangqi',dominion:'Chaturanga'};
+const names={shogi:'Shogi',sannin:'Sannin Shogi',sanguo:'Sanguo Qi',sanyou:'San You Qi',yanyi:'Sanguo Yan Yi Qi',xiangqi:'Xiangqi',dominion:'Chaturanga',shanshui:'Shanshui Xiangqi','shanshui-2v2':'Shanshui Xiangqi · 2v2','co-tu-lenh':'Cờ Tư Lệnh'};
 const seat=s=>({red:'Red',green:'Green',blue:'Blue',black:'Blue',yellow:'Pink'})[s]||s;
 const short=s=>s?String(s).slice(0,10)+'…'+String(s).slice(-6):'—';
 function describe(event) {
  const id=event.signed.intent.actionId||'',kind=event.kind==='resign'?'resign':id.split('|')[0];
+ if(id.startsWith('ctl:')){try{const action=JSON.parse(id.slice(4));return ({'end-turn':'End turn',concede:'Concede'})[action.kind]||`${action.kind} ${action.id||''}${Number.isInteger(action.x)?` → ${action.x+1},${action.y+1}`:''}`;}catch{return 'Commander action';}}
  if(event.rng)return 'Roll '+event.rng.values.join(' + ');
  return ({resign:'Leave this seat',end:'End turn',skip:'Skip turn',claim:'Claim the defeated army',drop:'Drop a captured piece',castle:'Castle'})[kind]||'Move '+id.split('|').slice(1,3).join(' → ').replace(/piece:|hand:/g,'').replace(/-/g,' ');
 }

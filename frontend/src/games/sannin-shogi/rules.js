@@ -287,7 +287,13 @@ function positionKey(state) {
       ? [owner, type, promoted ? 1 : 0, status, cell || "", hasMoved ? 1 : 0, everChecked ? 1 : 0, illuminationReady ? 1 : 0]
       : [owner, type, promoted ? 1 : 0, status, cell || ""])
     .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
-  return JSON.stringify([state.turn, state.activeFactions, state.alliance, state.castlingCancelled, state.pending, pieces]);
+  // JSONB and signed-proof canonicalization may reorder object properties.
+  // Preserve the original logical key order so transport cannot change whether
+  // an otherwise identical reply is considered a repeated position.
+  const cancelled=Object.fromEntries(FACTIONS.map(faction=>[faction,Boolean(state.castlingCancelled[faction])]));
+  const attack=state.pending.attack;
+  const pending={attack:attack?{actor:attack.actor,target:attack.target,targets:attack.targets}:null,...(state.pending.invalidAllianceCheck?{invalidAllianceCheck:true}:{})};
+  return JSON.stringify([state.turn, state.activeFactions, state.alliance, cancelled, pending, pieces]);
 }
 
 function generateFor(state, faction, options = {}) {

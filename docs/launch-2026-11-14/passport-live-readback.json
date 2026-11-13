@@ -1,0 +1,94 @@
+{
+  "checkedAt": "2026-11-12T13:22:48.067077+00:00",
+  "initialDeployment": {
+    "commit": "f413cb4bf3c2d696a0fb01dbc0285a7080a96e1f",
+    "deployId": "dep-dbqrdbbsuf0c738ckv50",
+    "status": "live"
+  },
+  "privateConsole": {
+    "url": "https://antarctic-robinhood-testnet-console.avidandsouza.chatgpt.site",
+    "deployId": "appgdep_6af5b6500ee48191b7e0b41d80374828",
+    "status": "succeeded"
+  },
+  "publicDeliveryStatus": {
+    "version": 1,
+    "enabled": true,
+    "ready": false,
+    "status": "awaiting_minter_role",
+    "chainId": 46630,
+    "confirmationPolicy": "2 canonical L2 blocks; Ethereum finality not established",
+    "contract": "0xF059141A4e21eF5786e66e96F1c4357858a0De11",
+    "signer": "0x009bFDc9d4C2738c1594c485040aa1994723330b",
+    "kinds": [
+      "visa"
+    ],
+    "minter": false,
+    "funded": false,
+    "balance": "0.0",
+    "minimumBalance": "0.000007",
+    "checkedAt": "2026-11-12T13:22:45.321Z",
+    "checkStage": null
+  },
+  "checks": {
+    "registrationAvailable": true,
+    "effectiveDeliveryEnabled": false,
+    "playerCheckPageAndScriptServed": true,
+    "publicConfigCors": "*",
+    "unauthenticatedAcceptanceHttpStatus": 401,
+    "passportCoverHttpStatus": 200,
+    "webArtworkInventory": 437
+  },
+  "liveParaAcceptanceConfirmed": false,
+  "mainnetExecuted": false,
+  "note": "Service status reached the role gate after its chain, reviewed runtime hash, schema and signer-lock checks; owner minter grant/test gas and actual Para-to-mint evidence remain pending.",
+  "deployment": {
+    "commit": "a4895f0119a07a5a81cd483a52b4cfa2339e983b",
+    "deployId": "dep-dbqrp1gae00c738pmgrg",
+    "status": "live"
+  },
+  "finalChecks": [
+    {
+      "path": "/arctic-play/v3/passport/delivery/config",
+      "status": 200,
+      "data": {
+        "version": 1,
+        "enabled": true,
+        "ready": false,
+        "status": "awaiting_minter_role",
+        "chainId": 46630,
+        "confirmationPolicy": "2 canonical L2 blocks; Ethereum finality not established",
+        "contract": "0xF059141A4e21eF5786e66e96F1c4357858a0De11",
+        "signer": "0x009bFDc9d4C2738c1594c485040aa1994723330b",
+        "kinds": [
+          "visa"
+        ],
+        "minter": false,
+        "funded": false,
+        "balance": "0.0",
+        "minimumBalance": "0.000007",
+        "checkedAt": "2026-11-12T13:22:45.321Z",
+        "checkStage": null
+      }
+    },
+    {
+      "path": "/arctic-play/v3/passport/config",
+      "status": 200,
+      "data": {
+        "version": 1,
+        "registration": true,
+        "deliveryEnabled": false,
+        "chainId": 46630,
+        "network": "Robinhood Chain Testnet",
+        "visa": "soulbound",
+        "arrival": "transferable"
+      }
+    },
+    {
+      "path": "/arctic-play/passport-check/",
+      "status": 200,
+      "data": {
+        "correctPage": true
+      }
+    }
+  ]
+}

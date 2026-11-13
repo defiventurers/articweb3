@@ -61,7 +61,7 @@ export async function startGameWallet(purpose='manage'){
  const verifier=b64url(crypto.getRandomValues(new Uint8Array(32))),challenge=b64url(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))));
  harborConnection.assertIntent(harborIntent);
  if(!write('auth-handoff',{verifier,at:Date.now()}))throw Error('This phone could not save sign-in. Free some storage and try again.');
- const value=await cloudRequest('/auth/para/start',{method:'POST',data:{challenge,purpose,platform:window.Android?'android':'web'},auth:purpose!=='login',timeoutMs:20000});
+ const value=await cloudRequest('/auth/para/start',{method:'POST',data:{challenge,purpose,platform:window.Android?'android':'web',returnPath:location.pathname.startsWith('/play/')?'/play/':'/arctic-play/app/'},auth:purpose!=='login',timeoutMs:20000});
  const u=new URL(value.url);if(u.origin!=='https://articweb3.onrender.com'||u.pathname!=='/arctic-play/wallet/'||!/^[A-Za-z0-9_-]{43}$/.test(u.searchParams.get('attempt')||''))throw Error('Sign-in could not be opened.');
  if(window.Android){if(typeof window.Android.openAuth!=='function')throw Error('Sign-in is unavailable in this installation. Reopen the app and try again.');if(!window.Android.openAuth(value.url))throw Error('The app could not open sign-in. Try again or use a recovery code.');}else location.assign(value.url);
 }

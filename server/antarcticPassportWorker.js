@@ -1,10 +1,11 @@
-const {JsonRpcProvider,Wallet,Contract}=require('ethers');
+const {JsonRpcProvider,Wallet,Contract,FetchRequest,id,formatEther,ZeroAddress}=require('ethers');
+const {createHash}=require('node:crypto');
 const {createPassportStore}=require('./antarcticPassportStore');
-const VISA_ABI=['function mintVisa(address recipient,bytes32 claimId) returns (uint256)','function tokenForClaim(bytes32) view returns (uint256)','function ownerOf(uint256) view returns (address)'];
+const VISA_ABI=['function mintVisa(address recipient,bytes32 claimId) returns (uint256)','function tokenForClaim(bytes32) view returns (uint256)','function ownerOf(uint256) view returns (address)','function tokenURI(uint256) view returns (string)','function hasRole(bytes32,address) view returns (bool)','function totalIssued() view returns (uint256)','event Transfer(address indexed from,address indexed to,uint256 indexed tokenId)'];
 const ACHIEVEMENT_ABI=['function mintAchievement(address recipient,uint256 tokenId,bytes32 claimId)','function recipientForClaim(bytes32) view returns (address)','function tokenForClaim(bytes32) view returns (uint256)'];
 const ARRIVAL_ABI=['function mintArrival(address recipient,bytes32 claimId)','function recipientForClaim(bytes32) view returns (address)'];
 function workerConfig(env=process.env){
- const chainId=Number(env.AK_VISA_CHAIN_ID||11124);if(!require('./gameWalletChains.json')[chainId])throw Error('Unsupported visa chain.');
+ const chainId=Number(env.AK_VISA_CHAIN_ID||46630);if(!require('./gameWalletChains.json')[chainId])throw Error('Unsupported visa chain.');
  if(env.AK_VISA_DELIVERY_ENABLED!=='true')throw Error('NFT delivery is disabled.');
  if(!require('./gameWalletChains.json')[chainId].testnet&&env.AK_VISA_MAINNET_APPROVED!=='true')throw Error('Mainnet NFT delivery has not been approved.');
  for(const k of ['AK_VISA_RPC_URL','AK_VISA_MINTER_KEY','AK_VISA_CONTRACT'])if(!env[k])throw Error(k+' is required.');
@@ -16,10 +17,10 @@ function workerConfig(env=process.env){
 // One sequential sender per signer. Check the on-chain claim before every send,
 // including recovery after a process died between broadcast and persistence.
 async function deliverOne({store,adapter,now=Date.now}){
- const job=await store.claimJob(now(),adapter.chainId);if(!job)return false;
+ const job=await store.claimJob(now(),adapter.chainId,adapter.supportedKinds);if(!job)return false;
  try{
   if(job.chain_id!==adapter.chainId)throw Object.assign(Error('Wrong network.'),{permanent:true,code:'NETWORK_MISMATCH'});
-  const existing=await adapter.lookup(job);if(existing){if(existing.recipient.toLowerCase()!==job.wallet.toLowerCase()||(job.kind==='achievement'&&String(existing.tokenId)!==String(job.achievement_token_id)))throw Object.assign(Error('Claim recipient mismatch.'),{permanent:true,code:'RECIPIENT_MISMATCH'});await store.updateJob(job.id,{status:existing.confirmed===false?'submitted':'confirmed',tokenId:existing.tokenId||null,leaseUntil:0,runAfter:now()+30000,errorCode:null});return true;}
+  const existing=await adapter.lookup(job);if(existing){if(existing.recipient.toLowerCase()!==job.wallet.toLowerCase()||(job.kind==='achievement'&&String(existing.tokenId)!==String(job.achievement_token_id)))throw Object.assign(Error('Claim recipient mismatch.'),{permanent:true,code:'RECIPIENT_MISMATCH'});await store.updateJob(job.id,{status:existing.confirmed===true?'confirmed':'submitted',tokenId:existing.tokenId||null,leaseUntil:0,runAfter:now()+30000,errorCode:null});return true;}
   let tx=job.tx_hash;
   if(!tx){tx=await adapter.send(job);await store.updateJob(job.id,{status:'submitted',txHash:tx,errorCode:null});}
   const receipt=await adapter.receipt(tx);
@@ -38,4 +39,4 @@ async function createAdapter(config){const provider=new JsonRpcProvider(config.r
 };}
 async function main(){const config=workerConfig(),store=createPassportStore();let adapter;try{adapter=await createAdapter(config);await store.init();await store.acquireWorkerLock(config.chainId+':'+adapter.address.toLowerCase());let stopping=false;process.on('SIGTERM',()=>{stopping=true;});process.on('SIGINT',()=>{stopping=true;});while(!stopping){await deliverOne({store,adapter});await new Promise(r=>setTimeout(r,3000));}}finally{await store.close();adapter?.close();}}
 if(require.main===module)main().catch(()=>{console.error('Passport worker stopped. Check configuration, database and signer access.');process.exitCode=1;});
-module.exports={deliverOne,workerConfig,createAdapter};
+module.exports={deliverOne,workerConfig,createAdapter,createPassportReader:(config,options)=>createAdapter({...config,key:undefined,readOnly:true},options)};

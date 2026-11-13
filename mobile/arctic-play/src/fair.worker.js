@@ -1,4 +1,4 @@
-import * as engine from './games.ts';
+import * as engine from './fairEngine.js';
 import {verifyBundle,copy} from '../../../shared/fair-play/core.js';
 import {verifyRandomness} from '../../../shared/fair-play/beacon.js';
 import {verifyCheckpoint} from '../../../shared/fair-play/chain.js';

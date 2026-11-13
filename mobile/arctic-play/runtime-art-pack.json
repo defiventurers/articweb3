@@ -1,0 +1,34 @@
+{
+  "format": "zip-stored-v1",
+  "files": 333,
+  "bytes": 39474032,
+  "sha256": "3ebe855c57c89aa153b92f55d29784532db41a47af64451a77f8296134dc353e",
+  "parts": [
+    {
+      "file": "runtime-art-part-00.bin",
+      "bytes": 8388608,
+      "sha256": "ce94a040aa6b65bc458efcc38af635ae0fb8152e1ae664f70573e3232e7fd723"
+    },
+    {
+      "file": "runtime-art-part-01.bin",
+      "bytes": 8388608,
+      "sha256": "d888f51a35b4a4f25d60b0c3080ce55f49fbadb441fe3fc97ba8fd2304aa4002"
+    },
+    {
+      "file": "runtime-art-part-02.bin",
+      "bytes": 8388608,
+      "sha256": "688f64e44137750bf990646d204e523866ca9a01c778e7fd53081500409001bb"
+    },
+    {
+      "file": "runtime-art-part-03.bin",
+      "bytes": 8388608,
+      "sha256": "03ac9f29d1077e75934471866cc2d9a3b090315755da984cc96c597106e8c729"
+    },
+    {
+      "file": "runtime-art-part-04.bin",
+      "bytes": 5919600,
+      "sha256": "7c865ae59ef0f43e36b3252785af1fdfdb22722ccb5e685d22d4a65df1b19d41"
+    }
+  ],
+  "provenance": "Public artwork imported from the verified v5.9.15 APK. See runtime-art-sources.json."
+}

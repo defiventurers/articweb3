@@ -1,0 +1,41 @@
+{
+  "inputSha256": "52f0dd2350eabbb9fbc3bee49c847d19e370fa825d6b5a31eb3a327b9ff9ff92",
+  "inputAuthority": "Owner-supplied deployment console export; onchain receipts not independently retrieved in this review.",
+  "chainIdDeclared": 46630,
+  "owner": "0xaE139be36A9AaF91af8F719740cE3a2F7102E66e",
+  "operator": "0xaE139be36A9AaF91af8F719740cE3a2F7102E66e",
+  "deploymentAddresses": {
+    "FairPlayRegistry": "0xB247E10c115D8FfE508452F94521ADaB377EA8fd",
+    "AntarcticPassport": "0xF059141A4e21eF5786e66e96F1c4357858a0De11"
+  },
+  "offlineChecks": {
+    "bothCreationAddressesMatchOwnerNonces": true,
+    "declaredCompilerSourceAndRuntimeHashesMatchCompiledArtifacts": true,
+    "singleEventCheckpointRootMatches": true
+  },
+  "onchainReview": {
+    "status": "pending",
+    "rpc": "Timed out",
+    "explorerApi": "HTTP 403",
+    "receiptStatus": "Not independently established",
+    "sourceVerification": "No result included in export",
+    "eventIndex": "No report included in export"
+  },
+  "beaconTiming": {
+    "round": 33893843,
+    "publicationUtc": "2026-11-12T12:01:33+00:00",
+    "recordCreatedAt": "2026-11-12T12:05:41.840Z",
+    "rehearsalCheckedAt": "2026-11-12T12:06:34.001Z",
+    "publicationPredatesRecordCreation": true,
+    "operatorRequestTimeIncluded": false,
+    "independentFutureRequestTimingEstablished": false,
+    "toolCorrection": "Choose a future round from max(L2 block timestamp, client wall time); retain old rehearsal and allow a fresh one without redeploying."
+  },
+  "liveBackend": {
+    "reachable": true,
+    "fairProofCapabilityEnabled": true,
+    "registryConfigured": false,
+    "registry": null
+  },
+  "phase3Complete": false
+}

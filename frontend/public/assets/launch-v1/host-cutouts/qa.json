@@ -1,0 +1,94 @@
+{
+  "method": "Built-in imagegen reference edits, transparent_background=true; lossless WebP packaging only.",
+  "approvedInputs": [
+    "upload/1.jpg Ziggy",
+    "upload/2.jpg Piko",
+    "upload/3.jpg Nova",
+    "upload/4.jpg Rocco"
+  ],
+  "cutouts": [
+    {
+      "file": "abster.webp",
+      "source": "exec-bc2a679e-a5dd-4bde-84ba-32f26e1fc7e9.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPixels": 855901,
+      "meaningfulBBox": [
+        76,
+        4,
+        1038,
+        1373
+      ],
+      "borderPixelsAlpha16OrMore": 0,
+      "sourceSHA256": "d2c67113f57dc30f5d31bac933fb3492786686b11a88466b43ce151ef338ca43",
+      "bytes": 974636,
+      "losslessRGBAIdentical": true
+    },
+    {
+      "file": "polly.webp",
+      "source": "exec-47e27747-8a72-4951-9c37-45a80b7273c3.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPixels": 941241,
+      "meaningfulBBox": [
+        234,
+        22,
+        843,
+        1339
+      ],
+      "borderPixelsAlpha16OrMore": 0,
+      "sourceSHA256": "4ba9eb5348ac6010a16582403eaa7009e66247ebd8962969fd43546251ea5b83",
+      "bytes": 764974,
+      "losslessRGBAIdentical": true
+    },
+    {
+      "file": "retsba.webp",
+      "source": "exec-21c1b769-c370-4513-bf17-95775aee04f1.png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPixels": 704488,
+      "meaningfulBBox": [
+        60,
+        17,
+        1073,
+        1360
+      ],
+      "borderPixelsAlpha16OrMore": 0,
+      "sourceSHA256": "b9fcda551b888115cf93156b0eedb38f7b0e4fea04510b7eacca4f312c76c8c2",
+      "bytes": 1138550,
+      "losslessRGBAIdentical": true
+    }
+  ],
+  "piko": "Not produced: image service blocked output on two benign background-removal attempts. Approved original remains hosts/pengu.webp. No alternate character or non-imagegen cutout was substituted.",
+  "home": {
+    "file": "home-hosts-final.webp",
+    "source": "exec-98892af7-4188-467c-8707-a79b70e9bed0.png",
+    "dimensions": [
+      1672,
+      941
+    ],
+    "bytes": 280406,
+    "status": "DRAFT new composition using only the four final approved references"
+  }
+}
