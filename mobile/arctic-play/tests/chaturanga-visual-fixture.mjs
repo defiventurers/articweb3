@@ -57,6 +57,6 @@ await until(()=>doc.querySelector('.app.ch-v2 .game-board'),'Chaturanga SVG boar
 const app=doc.querySelector('.app.ch-v2');
 if(doc.querySelectorAll('.app.ch-v2 .game-board [data-cell]').length!==64)throw Error('Expected 64 live board cells');
 const out=path.join(root,'server/arcticPlayWeb/chaturanga-review.html');
-fs.writeFileSync(out,'<!doctype html><html data-theme="dark"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="fair-play.css"></head><body><div id="root">'+app.outerHTML+'</div></body></html>');
+fs.writeFileSync(out,'<!doctype html><html data-theme="dark"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="fair-play.css"><style>.app.ch-v2 .game-board{visibility:visible!important}.app.ch-v2 .board-art-loading{display:none!important}</style></head><body><div id="root">'+app.outerHTML+'</div></body></html>');
 console.log('Created actual compiled Chaturanga battle fixture:',out,'status=',doc.querySelector('.match-header small')?.textContent,'players=',[...doc.querySelectorAll('.player-pill strong')].map(x=>x.textContent).join('/'));
 dom.window.close();
