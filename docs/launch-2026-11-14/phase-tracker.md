@@ -136,3 +136,11 @@ The victory scene uses the same approved icy artwork, gold details, piece sprite
 Validation: 52 automated checks pass, plus the shipped-app navigation and result groups. This includes position-based unlock/promotion cases, controlled four-second timing, guide/visibility interruption, fresh-position and turn-authority cancellation, existing long-dice/board/PWA checks, real shipped-app navigation and king return, and source compilation. Live rendered review is recorded after deployment; signed-in multiplayer and physical-phone acceptance remain separate launch gates.
 
 Live rendered review completed on the public local-simulation page at 320, 393 and 680px. Both blocked dice end the turn after Back + four seconds; a single blocked die is passed independently; a knight can unlock and retain the boat die. Both unspent dice have opacity 1/filter none. The themed victory scene renders and returns to the board. Follow-up covers draw fallback assets, restart confirmation visibility and a panel-scaled victory frame. Evidence: `evidence/chaturanga-screen-flow.json`. Validation: 52 automated cases, seven shipped-runtime UI groups and one real-worker server actor/revision/action check pass. Physical-phone and authenticated multiplayer acceptance remain open.
+
+## Games Adventure redesign — review candidate
+
+- Implemented the supplied Adventure reference in an isolated, reproducible review build on `codex/games-adventure-reference`, based on `8ad5a8f3030954e22606de514ca598aaa0d75324`.
+- Existing approved Chaturanga hero/logo retained; missing palace recreated and labelled for visual approval.
+- Four runtime navigation groups and eight heritage/PWA tests pass (one baseline-dependent test skipped). Browser presentation checked at 360×800, 393×852 and 393×960.
+- [Review record and screenshots](games-adventure-reference-review.md). Production package, gameplay and backend unchanged.
+- Remaining: visual acceptance, production packaging integration and deployment, then live/physical-device checks. This does not complete Phase 6.
