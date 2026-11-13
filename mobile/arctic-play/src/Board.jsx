@@ -1,3 +1,4 @@
+import {calibrateChaturangaGeometry} from './chaturangaArtworkGeometry.js';
 import {useBoardAssets} from './gameAssets.js';
 import {createPortal} from 'react-dom';
 import React,{useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
@@ -8,7 +9,7 @@ import {SANYOU_CALIBRATION_KEY} from './sanyouCalibration.js';
 export function Board({id,state,legal=[],selected=null,suggested=null,trail,onSelect,onTarget,canAct,positionPieces,spotlight,destinationLabel='legal destination',inspectableSources=[],inspectableCells=[],placementCells=[],onInspect,onMiss,annotations=[],compactControls=false,perspective,controlsTarget=null}){
   const [calibrationRevision,setCalibrationRevision]=useState(0);
   useEffect(()=>{const changed=e=>{if(e.detail?.key===SANYOU_CALIBRATION_KEY||e.key==='arctic-play.v1.'+SANYOU_CALIBRATION_KEY)setCalibrationRevision(n=>n+1);};window.addEventListener('arctic-storage',changed);window.addEventListener('storage',changed);return()=>{window.removeEventListener('arctic-storage',changed);window.removeEventListener('storage',changed);};},[]);
-  const geometry=useMemo(()=>boardGeometry(id,perspective),[id,perspective,calibrationRevision]);
+  const geometry=useMemo(()=>{const geometry=boardGeometry(id,perspective);return id==='dominion'?calibrateChaturangaGeometry(geometry):geometry;},[id,perspective,calibrationRevision]);
   const units=useMemo(()=>positionPieces||pieces(id,state),[id,state,positionPieces]);
   const art=useBoardAssets([geometry.image,geometry.overlay,...units.map(p=>p.sprite)]);
   const byCell=useMemo(()=>new Map(units.map(p=>[p.cell,p])),[units]);

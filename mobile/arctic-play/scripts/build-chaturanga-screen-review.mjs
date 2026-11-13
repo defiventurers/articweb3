@@ -1,0 +1,9 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';
+import {createChaturangaReview} from '../tests/chaturanga-review-fixture.js';
+const mobile=fileURLToPath(new URL('../',import.meta.url)),root=path.resolve(mobile,'../..'),publicDir=path.join(root,'frontend/public');
+const source=await fs.readFile(path.join(publicDir,'early/app.js'),'utf8'),anchor='(0,Gl.createRoot)(document.getElementById(`root`)).render(/* @__PURE__ */ (0,x.jsx)(Gw,{children:/* @__PURE__ */ (0,x.jsx)(Ww,{})}))';
+if(source.split(anchor).length!==2)throw Error('Unexpected retained app bootstrap');
+const fixture=source.replace(anchor,`const AKReview=(${createChaturangaReview.toString()})(d,window.AKChaturangaRelease,X_);(0,Gl.createRoot)(document.getElementById('root')).render(d.createElement(AKReview))`);
+await fs.writeFile(path.join(publicDir,'early-chaturanga-review.js'),fixture);
+await fs.writeFile(path.join(publicDir,'early-chaturanga-review.html'),'<!doctype html><html data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chaturanga screen review</title><base href="/early/"><link rel="stylesheet" href="/early/app.css?v=ch-screen1"><style>.ch-review-controls{max-width:680px;margin:0 auto;padding:12px;background:#0b3048;color:#fff2cf;font:13px system-ui;box-sizing:border-box}.ch-review-controls p{margin:5px 0 10px}.ch-review-controls nav{display:flex;flex-wrap:wrap;gap:6px}.ch-review-controls button{background:#164461;color:#fff2ce;border:1px solid #b99e62;border-radius:8px;min-height:36px;padding:6px 10px;font:12px system-ui}</style></head><body><div id="root"></div><script src="/early-chaturanga-review.js"></script></body></html>');
+console.log('Built local-only review using the actual shipped Board and updated screen components');

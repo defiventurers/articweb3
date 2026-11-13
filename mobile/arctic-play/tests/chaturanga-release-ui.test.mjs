@@ -26,9 +26,9 @@ const a=open();try{
  a.d.querySelector('.home-chaturanga').click();await wait(()=>a.d.querySelector('.cg-panel[data-game=dominion]'));
  buttons(a.d).find(b=>b.textContent.includes('On this phone')).click();await wait(()=>a.d.querySelector('[data-screen=match]'));
  await wait(()=>a.d.querySelector('[role=dialog][aria-label="Your turn"]'));
- assert.equal(buttons(a.d).some(b=>/Roll one die/i.test(b.textContent)),false);assert.ok(a.d.querySelector('.ch-board-space'));
+ assert.equal(buttons(a.d).some(b=>/Roll one die/i.test(b.textContent)),false);for(const die of a.d.querySelectorAll('.dominion-turn-prompt .long-ice-die')){assert.equal(die.dataset.faces,'2,3,4,5');assert.ok(die.querySelector('image').getAttribute('href').endsWith('approved-151658.jpg'));}assert.ok(a.d.querySelector('.ch-board-space'));
  assert.equal(position(a.w).rulesProfile,LONG_DICE_PROFILE);checks.push('Home opens the themed Chaturanga setup; new shared-phone matches select the versioned rules and adaptive board space');
- await wait(()=>!a.d.querySelector('[role=dialog] [aria-label="Roll both long dice"]').disabled);a.d.querySelector('[role=dialog] [aria-label="Roll both long dice"]').click();await wait(()=>a.d.querySelector('.ch-roll-guide'),'post-roll guide');
+ assert.ok(a.d.querySelector('.dominion-turn-prompt').textContent.includes('Roll both dice on the game screen'));assert.equal(a.d.querySelector('[role=dialog] [aria-label="Roll both long dice"]'),null);a.d.querySelector('#dominion-back-board').click();await wait(()=>!a.d.querySelector('.ch-heritage-dice [aria-label="Roll both long dice"]').disabled);a.d.querySelector('.ch-heritage-dice [aria-label="Roll both long dice"]').click();await wait(()=>a.d.querySelector('.ch-roll-guide'),'post-roll guide');
  assert.deepEqual(position(a.w).dice.values,[5,3]);assert.ok(a.d.querySelector('.ch-roll-guide').textContent.includes('Knight'));assert.ok(a.d.querySelector('.ch-roll-guide').textContent.includes('Pawn'));
  const pawn=buttons(a.d).find(b=>b.classList.contains('ch-guide-piece')&&b.textContent.startsWith('Pawn'));assert.ok(!pawn.disabled);pawn.click();await wait(()=>!a.d.querySelector('.ch-roll-guide'));
  const selected=a.d.querySelector('[data-cell][aria-pressed=true]');assert.ok(selected);const saved=position(a.w),source='piece:'+selected.dataset.piece;
@@ -36,9 +36,9 @@ const a=open();try{
  await wait(()=>position(a.w).dice.used[0]);assert.equal(position(a.w).turn,'green');assert.equal(a.d.querySelector('.ch-roll-guide'),null);checks.push('Clicking the left die rolls both; guide shows the real activations and highlights a legal piece; its board move spends exactly one die');
  const toggle=a.d.querySelector('.ch-heritage-dice .ch-roll-help-toggle input');toggle.click();assert.equal(a.w.localStorage.getItem('arctic-play.v1.chaturanga-roll-help.v1'),'false');
  await wait(()=>text(a.d,'Pass die 2')?.disabled===false);text(a.d,'Pass die 2').click();await wait(()=>a.d.querySelector('[role=dialog][aria-label="Your turn"]'));
- await wait(()=>text(a.d,'Roll both dice')?.disabled===false);text(a.d,'Roll both dice').click();await wait(()=>position(a.w).turn==='red'&&position(a.w).dice.rolled&&a.d.querySelector('.ch-heritage-dice .dice-end-turn')&&!a.d.querySelector('.ch-heritage-dice .dice-end-turn').disabled);
+ await wait(()=>text(a.d,'Back to the board')?.disabled===false);text(a.d,'Back to the board').click();await wait(()=>text(a.d,'Roll both')?.disabled===false);text(a.d,'Roll both').click();await wait(()=>position(a.w).turn==='red'&&position(a.w).dice.rolled&&a.d.querySelector('.ch-heritage-dice .dice-end-turn')&&!a.d.querySelector('.ch-heritage-dice .dice-end-turn').disabled);
  assert.equal(a.d.querySelector('.ch-roll-guide'),null);a.d.querySelector('.ch-heritage-dice .ch-roll-help-toggle input').click();await wait(()=>a.d.querySelector('.ch-roll-guide'));
- text(a.d,'Continue to the board').click();await wait(()=>!a.d.querySelector('.ch-roll-guide'));checks.push('Assistance can be disabled persistently and restored from the dice tray');
+ text(a.d,'Back to the board').click();await wait(()=>!a.d.querySelector('.ch-roll-guide'));checks.push('Assistance can be disabled persistently and restored from the dice tray');
  await wait(()=>text(a.d,'Pass remaining')?.disabled===false);text(a.d,'Pass remaining').click();await wait(()=>position(a.w).turn==='blue'&&!position(a.w).dice.rolled);
  await wait(()=>text(a.d,'Pass turn')?.disabled===false);text(a.d,'Pass turn').click();await wait(()=>text(a.d,'Yes, pass turn')?.disabled===false);text(a.d,'Yes, pass turn').click();await wait(()=>position(a.w).turn==='yellow');checks.push('Passing one die, remaining dice and an unrolled turn all use the intended controls and confirmation');
 }catch(e){fs.writeFileSync(path.resolve('chaturanga-ui-failure.html'),a.d.body.innerHTML);throw e}finally{a.dom.window.close()}
@@ -51,4 +51,10 @@ const b=open({saved:frozen,theme:'light'});try{
  assert.equal(position(b.w).board[3][3].team,'green');await wait(()=>text(b.d,'Pass second move')&&text(b.d,'Pass second move')?.disabled===false);text(b.d,'Pass second move').click();await wait(()=>position(b.w).turn==='red');
  checks.push('Light-theme king-return flow selects any empty square and requires the second-move pass without an erroneous roll prompt');
 }catch(e){fs.writeFileSync(path.resolve('chaturanga-ui-failure.html'),b.d.body.innerHTML);throw e}finally{b.dom.window.close()}
+const won=createLongDiceGame({teamMode:'2v2'});Object.assign(won,{gameOver:true,winner:'green',winningTeam:'green-pink',winningSeats:['green','yellow']});
+const c=open({saved:won});try{
+ await wait(()=>c.d.querySelector('.home-chaturanga'));c.d.querySelector('.home-chaturanga').click();await wait(()=>c.d.querySelector('[data-testid="victory-celebration"]'));
+ assert.equal(c.d.querySelector('[data-testid="victory-celebration"]').dataset.game,'dominion');assert.ok(c.d.querySelector('#victory-heading').textContent.includes('VICTORY'));assert.ok(c.d.querySelectorAll('.victory-sprite').length>0);
+ c.d.querySelector('.victory-close').click();await wait(()=>!c.d.querySelector('[data-testid="victory-celebration"]'));text(c.d,'Show match result').click();await wait(()=>c.d.querySelector('[data-testid="victory-celebration"]'));checks.push('Icy victory result retains the real winning pieces and can return to the final board and reopen');
+}finally{c.dom.window.close()}
 assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:checks.length,checks},null,2));

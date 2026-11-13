@@ -1,4 +1,4 @@
-import React,{useMemo} from 'react';
+import React,{useMemo,useEffect,useRef} from 'react';
 import {ArrowLeft,BookOpen,RotateCcw,Share2,Home,Users,Eye} from 'lucide-react';
 import {DOMINION_TEAMS} from './dominionTeams.js';
 import {seatName} from './games.ts';
@@ -15,10 +15,16 @@ export function victorySeats(outcome,id){
 }
 
 export function VictoryCelebration({id,title,outcome,visible=[],isOnline=false,viewerWon=true,onBack,onPlayAgain,onRematch,onFinalBoard,onShare}){
+ const panel=useRef(null),close=useRef(onFinalBoard);close.current=onFinalBoard;
+ useEffect(()=>{
+  const previous=document.activeElement,overflow=document.body.style.overflow;document.body.style.overflow='hidden';panel.current?.querySelector('button')?.focus();
+  const key=e=>{if(e.key==='Escape'){e.preventDefault();close.current?.();}if(e.key==='Tab'){const buttons=[...panel.current.querySelectorAll('button:not(:disabled)')],first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}};
+  const node=panel.current;node?.addEventListener('keydown',key);return()=>{document.body.style.overflow=overflow;node?.removeEventListener('keydown',key);if(previous?.isConnected)previous.focus();};
+ },[]);
  const winners=victorySeats(outcome,id);
  const winningPieces=useMemo(()=>visible.filter(piece=>winners.includes(piece.owner)).slice(0,36),[visible,winners.join('|')]);
  const resultLabel=outcome?.draw?'A remarkable draw':outcome?.winningTeam?winners.map(seat=>seat==='yellow'?'Pink':seatName(id,seat)).join(' + ')+' are victorious!':(winners.map(seat=>seatName(id,seat)).join(' + ')||'A player')+' is victorious!';
- return <section className="victory-overlay" role="dialog" aria-modal="true" aria-labelledby="victory-heading" data-testid="victory-celebration">
+ return <section ref={panel} className="victory-overlay" role="dialog" aria-modal="true" aria-labelledby="victory-heading" data-testid="victory-celebration" data-game={id}>
   <div className="victory-canvas" aria-hidden="true"><span className="victory-snowflake snow-1">✧</span><span className="victory-snowflake snow-2">✧</span><span className="victory-snowflake snow-3">✦</span></div>
   <div className="victory-scroll">
    <div className="victory-top"><span>ANTARCTIC KINGDOMS · THE ROYAL RESULT</span><button onClick={onFinalBoard} className="victory-close" aria-label="View final board"><Eye size={20}/></button></div>
