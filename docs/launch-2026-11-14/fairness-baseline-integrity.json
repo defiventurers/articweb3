@@ -1,0 +1,61 @@
+{
+  "ok": false,
+  "protocol": "ak-fair-play-v1",
+  "rulesHash": "63845f4daef97f9721ccecd9cb3c7ef363842835a2566f8f48c7e515863cd952",
+  "engineHash": "eced69cddead21aab99e18e22b43c7b52fe37d3688d00f6b78f542cf220f6269",
+  "checkedSourceFiles": 105,
+  "mismatches": [
+    {
+      "kind": "engine",
+      "path": "server/arcticPlayEngine.cjs",
+      "expected": "dab5b2df6d25e3c9572e93a0216b7d6d355493688983a959397bc40e2dad239b",
+      "actual": "eced69cddead21aab99e18e22b43c7b52fe37d3688d00f6b78f542cf220f6269"
+    },
+    {
+      "kind": "source",
+      "path": "frontend/src/games/heritage-arcade/ported/game/millsRules.ts",
+      "expected": "3bd8a1af8968e9ddbabc6cea372662ec5a2e4aa119d8645363d53a22fb72ed4c",
+      "actual": "ff95d8a796631058e773d62fb795d08f7d4372a4c888a122afd4d7c58bdc3a5a"
+    },
+    {
+      "kind": "source",
+      "path": "frontend/src/games/heritage-arcade/ported/game/sanguoYanYiRules.ts",
+      "expected": "ee1854cb9f08e222c7c65a76dbfc6bdf0122bce9e867f2462110e798822fc749",
+      "actual": "449a20e3959987a07663be3b77565ddcdba746fdcf4cf9959ef62e8a65b47d69"
+    },
+    {
+      "kind": "source-missing",
+      "path": "frontend/src/games/san-you-qi/sanyouArtwork.js",
+      "expected": "8799bc16c4c3357f3e5bc92520f80da405c99b31fc785cfa8669f1cdd338dbf0"
+    },
+    {
+      "kind": "source-missing",
+      "path": "frontend/src/games/san-you-qi/sanyouFinalPositions.json",
+      "expected": "8fbc87dbe32791a72d4f2da22e48c4913f9c6e98112839cf0f7a0fd2908b5b9b"
+    },
+    {
+      "kind": "source",
+      "path": "frontend/src/games/sannin-shogi/rules.js",
+      "expected": "a1977c7894544d51040dfd17499b255ded166b3048bee0edb983049bc33f126c",
+      "actual": "3bcb6c150bbdd60ed37e41442d8ddba4dace6b0c9e930784862a57346e5c04d0"
+    },
+    {
+      "kind": "source",
+      "path": "mobile/arctic-play/src/dominion.js",
+      "expected": "37da31c447bf96a5533dc448640d12643445ce8598fc8c535c0e50b6eb3cb8bc",
+      "actual": "6d15e21b89e2b99c41216e9fbc2440613e38b3d395afd28801509cd48824a064"
+    },
+    {
+      "kind": "source",
+      "path": "mobile/arctic-play/src/games.ts",
+      "expected": "ce8674a71f278e3db30f2735bb06a08f21488519d78c5d8057d0cbd91657effc",
+      "actual": "92e7f2195d80e3221e9033cd1046a19d7f051a961799d23bc516406a4c9cec1b"
+    },
+    {
+      "kind": "source",
+      "path": "server/gameRules.js",
+      "expected": "77c800fc25e4c08518d3fbb329dcbb1167007c2610d783cc861f79dc7eab8fff",
+      "actual": "cdd3b7b0a60fb505697fd6d92b65b31d97ec958839cd421f6445fd16ea1078b2"
+    }
+  ]
+}

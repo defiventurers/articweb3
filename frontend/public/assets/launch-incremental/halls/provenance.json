@@ -1,0 +1,38 @@
+{
+  "india": {
+    "sourceRef": "origin/main",
+    "sourcePath": "frontend/public/assets/launch-v1/india-hall.webp",
+    "gitBlobSha": "a793dd7319d5aee9bd05a2cdd9447460c579bf25",
+    "sha256": "f36b04f8089f11d0f3da6a51063e19352c93c02cca17ca9e3461605ae88fe490",
+    "bytes": 365266,
+    "status": "DRAFT decorative review-candidate art",
+    "sourceCommit": "08b8b79c8533d9a82da32c3ea3446b91dea8495a"
+  },
+  "china": {
+    "sourceRef": "origin/main",
+    "sourcePath": "frontend/public/assets/launch-v1/china-hall.webp",
+    "gitBlobSha": "fba11b9b80e522c9b2f04235844bbd24ab0573b6",
+    "sha256": "863df42cab64b2b656d13fb23de34fb59f3bf65f1c552a241949c70842380730",
+    "bytes": 299968,
+    "status": "DRAFT decorative review-candidate art",
+    "sourceCommit": "08b8b79c8533d9a82da32c3ea3446b91dea8495a"
+  },
+  "japan": {
+    "sourceRef": "origin/main",
+    "sourcePath": "frontend/public/assets/launch-v1/japan-hall.webp",
+    "gitBlobSha": "6fb3f9933b10d9d56ecfdefc8b8bdbda58e10d63",
+    "sha256": "7d735799232551f0edcfdfa2b0d99ddd3649afd2b0daa8ee85ed1099daf7fc91",
+    "bytes": 268764,
+    "status": "DRAFT decorative review-candidate art",
+    "sourceCommit": "08b8b79c8533d9a82da32c3ea3446b91dea8495a"
+  },
+  "vietnam": {
+    "sourceRef": "origin/main",
+    "sourcePath": "frontend/public/assets/launch-v1/vietnam-hall.webp",
+    "gitBlobSha": "643e406bde862e12d3ed773bd2c59ff7ca4ecdf3",
+    "sha256": "9528739a2e5c34290ad0a08825781f01fe50c08dd68047ed9372e778328d9c94",
+    "bytes": 300590,
+    "status": "DRAFT decorative review-candidate art",
+    "sourceCommit": "08b8b79c8533d9a82da32c3ea3446b91dea8495a"
+  }
+}

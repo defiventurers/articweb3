@@ -6,8 +6,6 @@ const hash=x=>createHash('sha256').update(String(x)).digest('hex');
 const secret=()=>randomBytes(32).toString('base64url');
 const valid=x=>typeof x==='string'&&/^[A-Za-z0-9_-]{43}$/.test(x);
 function createGoogleGameWallet({enabled=process.env.AK_WALLET_ENABLED==='true',clientId=process.env.AK_WALLET_CLIENT_ID,connectionId=process.env.AK_WALLET_GOOGLE_CONNECTION_ID,network=process.env.AK_WALLET_NETWORK||'sapphire_devnet',chainId=Number(process.env.AK_VISA_CHAIN_ID||11124),productionApproved=process.env.AK_WALLET_PRODUCTION_APPROVED==='true',fetcher=fetch,websiteReturnUri=process.env.AK_GOOGLE_WEBSITE_RETURN_URI||'https://arcticdominion.xyz/'}={}){
- // A disabled legacy provider must not reject the passport/Para chain setting.
- // Keep strict environment validation when this provider is explicitly enabled.
  if(enabled&&(!['sapphire_devnet','sapphire_mainnet'].includes(network)||![11124,2741].includes(chainId)))throw Error('Unsupported embedded wallet environment.');
  const ready=!!(enabled&&clientId&&connectionId&&((network==='sapphire_devnet'&&chainId===11124)||(network==='sapphire_mainnet'&&chainId===2741&&productionApproved)));
  const web=new URL(websiteReturnUri);if(web.protocol!=='https:'||web.username||web.password||web.search||web.hash)throw Error('Invalid website return URI.');

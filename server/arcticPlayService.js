@@ -19,8 +19,6 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
   const subscriptions = new Map(), bots = new Map(), writes = new Map(), rates = new WeakMap(), processing = new Set();
   const workers=createArcticPlayWorkerPool();
   const company=require('./companyService').createCompanyService({...companyOptions,launchOptions:{rooms,...companyOptions?.launchOptions}});
-  const fair=require('./fairPlayService').createFairPlayService({store:company.store,engine:require('./fairPlayEngine.cjs'),saveRoom:room=>persist(room,true),...fairOptions});
-  company.attachProofService(fair);
   const access=require('./companyAccess').createAccessService({store:company.store,withAccount:company.withAccountSession,onVerifiedProgress:company.syncPassportAchievements,...accessOptions});
   const settling=new Set();
   const proofParts=new WeakMap();

@@ -38,6 +38,29 @@ test('Altered, missing, duplicated and cross-match records cannot verify',async(
   await assert.rejects(core.verifyBundle(f.bundle,{...f.opts,trustedKeys:[]}));
   assert.equal((await core.verifyBundle(f.bundle,f.opts)).moves,1);
 });
+test('Sannin replay recreates the rules state after canonical proof transport',async()=>{
+  const f=await fixture('sannin');let state=f.state;
+  for(let i=0;i<3;i++){
+    const n=f.actors.findIndex(a=>a.seat===engine.turn(state));
+    const action=engine.actions('sannin',state)[0];
+    const signed=await core.makeIntent({bundle:f.bundle,actor:f.actors[n].id,actionId:action.id,before:state},f.keys[n].privateKey);
+    state=engine.apply('sannin',state,action.id);
+    await core.appendEvent(f.bundle,{signed,after:state},server.privateKey);
+  }
+  const transported=JSON.parse(core.canonical(f.bundle));
+  const report=await core.verifyBundle(transported,f.opts);
+  assert.equal(report.moves,3);
+  assert.equal(await core.stateHash(report.state),await core.stateHash(state));
+  assert.equal(report.chain.status,'unanchored');
+});
+test('a service-signed substituted initial position still fails the published initial-state check',async()=>{
+  const f=await fixture('sannin');
+  f.bundle.header.initialState.turn='not-a-seat';
+  f.bundle.header.initialStateHash=await core.stateHash(f.bundle.header.initialState);
+  f.bundle.headerHash=await core.hashObject(f.bundle.header);
+  f.bundle.headerSignature=await core.sign(server.privateKey,core.headerMessage(f.bundle.headerHash));
+  await assert.rejects(core.verifyBundle(f.bundle,f.opts),/starting board does not match the published rules/);
+});
 test('An empty ongoing match is labelled empty, not verified',async()=>{
   const f=await fixture();assert.equal((await core.verifyBundle(f.bundle,f.opts)).status,'empty');
 });

@@ -1,0 +1,38 @@
+{
+  "red": {
+    "sourcePath": "frontend/public/assets/launch-v1/chaturanga-pieces/red-snow-guard.webp",
+    "sourceCommit": "08b8b79c8533d9a82da32c3ea3446b91dea8495a",
+    "sourceGitBlobSha": "c59c279c4d7e83535c62600f983aacc713186a79",
+    "sha256": "b508c6ebb6671344f5aefc8619b003677ac75b3a5932fbaddb02be0a396867bf",
+    "bytes": 82222,
+    "status": "DRAFT costume; selected for incremental review candidate",
+    "identity": "Rocco"
+  },
+  "blue": {
+    "sourcePath": "frontend/public/assets/launch-v1/chaturanga-pieces/blue-snow-guard.webp",
+    "sourceCommit": "08b8b79c8533d9a82da32c3ea3446b91dea8495a",
+    "sourceGitBlobSha": "c4069e8f73b5e5fab74274ce824f8fc7ffc419db",
+    "sha256": "19f3e73ed011bee6a4208ef2c94b6939c2a6450ec540594d50dec87d23b68fb1",
+    "bytes": 80770,
+    "status": "DRAFT costume; selected for incremental review candidate",
+    "identity": "Piko"
+  },
+  "green": {
+    "sourcePath": "frontend/public/assets/launch-v1/chaturanga-pieces/green-snow-guard.webp",
+    "sourceCommit": "08b8b79c8533d9a82da32c3ea3446b91dea8495a",
+    "sourceGitBlobSha": "b7ad45c66163af58c242e07da8fe7b1e5f128ab2",
+    "sha256": "ddefc71fdcd9b9a09bcbb19d9c501b23596fa443a09e7519174ef415f3f7b5e6",
+    "bytes": 92792,
+    "status": "DRAFT costume; selected for incremental review candidate",
+    "identity": "Ziggy"
+  },
+  "pink": {
+    "sourcePath": "frontend/public/assets/launch-v1/chaturanga-pieces/pink-snow-guard.webp",
+    "sourceCommit": "08b8b79c8533d9a82da32c3ea3446b91dea8495a",
+    "sourceGitBlobSha": "6ec224209fbac537bccaab0be0c0205d235d082d",
+    "sha256": "5eaabddcab5805015a9e3093fc8b1d1704ff3548b5f1c400bfd0706d562cba6a",
+    "bytes": 82984,
+    "status": "DRAFT costume; selected for incremental review candidate",
+    "identity": "Nova"
+  }
+}
