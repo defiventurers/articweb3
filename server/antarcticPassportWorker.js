@@ -1,7 +1,7 @@
 const {JsonRpcProvider,Wallet,Contract,FetchRequest,id,formatEther,ZeroAddress}=require('ethers');
 const {createHash}=require('node:crypto');
 const {createPassportStore}=require('./antarcticPassportStore');
-const VISA_ABI=['function mintVisa(address recipient,bytes32 claimId) returns (uint256)','function tokenForClaim(bytes32) view returns (uint256)','function ownerOf(uint256) view returns (address)','function tokenURI(uint256) view returns (string)','function hasRole(bytes32,address) view returns (bool)','event Transfer(address indexed from,address indexed to,uint256 indexed tokenId)'];
+const VISA_ABI=['function mintVisa(address recipient,bytes32 claimId) returns (uint256)','function tokenForClaim(bytes32) view returns (uint256)','function ownerOf(uint256) view returns (address)','function tokenURI(uint256) view returns (string)','function totalIssued() view returns (uint256)','function hasRole(bytes32,address) view returns (bool)','event Transfer(address indexed from,address indexed to,uint256 indexed tokenId)'];
 const ACHIEVEMENT_ABI=['function mintAchievement(address recipient,uint256 tokenId,bytes32 claimId)','function recipientForClaim(bytes32) view returns (address)','function tokenForClaim(bytes32) view returns (uint256)'];
 const EGG_ABI=['function mintEgg(address recipient,bytes32 claimId,uint8 edition) returns (uint256)','function tokenForClaim(bytes32) view returns (uint256)','function ownerOf(uint256) view returns (address)','function hasRole(bytes32,address) view returns (bool)','function tokenURI(uint256) view returns (string)','event Transfer(address indexed from,address indexed to,uint256 indexed tokenId)'];
 const ARRIVAL_ABI=['function mintArrival(address recipient,bytes32 claimId)','function recipientForClaim(bytes32) view returns (address)'];
@@ -92,6 +92,43 @@ async function createAdapter(config,{provider:provided}={}){
   };return adapter;
  }catch(e){if(!provided)provider.destroy();throw e;}
 }
+
+// Owner-dashboard verifier is read-only: never construct a signer or use a mint key.
+// Canonical receipt + claim + current/safe owner are all checked on the same chain.
+async function createPassportReader(config,{provider:provided}={}){
+ const req=new FetchRequest(config.rpc);req.timeout=12000;
+ const provider=provided||new JsonRpcProvider(req,undefined,{cacheTimeout:0});
+ try{
+  if(Number((await provider.getNetwork()).chainId)!==Number(config.chainId))throw Error('Reader network mismatch.');
+  const code=await provider.getCode(config.visa);
+  if(code==='0x')throw Error('Reader Passport contract unavailable.');
+  if(Number(config.chainId)===46630){const expected=require('../shared/chain/launch-contracts.json').contracts.AntarcticPassport.runtimeHash;
+   if(createHash('sha256').update(Buffer.from(code.slice(2),'hex')).digest('hex')!==expected)throw Error('Reader Passport code differs from reviewed contract.');}
+  const visa=new Contract(config.visa,VISA_ABI,provider);
+  return {chainId:Number(config.chainId),contract:config.visa,async send(){throw Error('Read-only verifier cannot send transactions.');},
+   async verifyPassport(job){
+    const result={confirmed:false,chainId:Number(config.chainId),contract:config.visa,wallet:job.wallet,tokenId:null,transactionHash:job.tx_hash||null,confirmationPolicy:'2 canonical L2 blocks; Ethereum finality not established'};
+    if(Number(job.chain_id)!==Number(config.chainId)||!/^0x[0-9a-f]{64}$/i.test(job.tx_hash||''))return result;
+    const current=await visa.tokenForClaim(job.claim_id);if(current===0n)return result;
+    result.tokenId=String(current);
+    const tip=await provider.getBlockNumber(),safeBlock=Math.max(0,tip-1),safeId=await visa.tokenForClaim(job.claim_id,{blockTag:safeBlock});
+    if(safeId!==current)return result;
+    const recipient=await visa.ownerOf(current),safeOwner=await visa.ownerOf(current,{blockTag:safeBlock});
+    if(recipient.toLowerCase()!==job.wallet.toLowerCase()||safeOwner.toLowerCase()!==job.wallet.toLowerCase())return result;
+    const receipt=await provider.getTransactionReceipt(job.tx_hash);if(!receipt||receipt.status!==1||await receipt.confirmations()<2||receipt.to?.toLowerCase()!==config.visa.toLowerCase())return result;
+    const block=await provider.getBlock(receipt.blockNumber);if(block?.hash!==receipt.blockHash)return result;
+    const minted=receipt.logs.some(log=>{if(log.address.toLowerCase()!==config.visa.toLowerCase())return false;try{
+     const e=visa.interface.parseLog(log);return e?.name==='Transfer'&&e.args.from===ZeroAddress&&e.args.to.toLowerCase()===job.wallet.toLowerCase()&&String(e.args.tokenId)===String(current);
+    }catch{return false;}});
+    if(!minted)return result;
+    return {...result,confirmed:true,blockNumber:receipt.blockNumber,blockHash:receipt.blockHash,mintedAt:Number(block.timestamp)*1000,tokenURI:await visa.tokenURI(current)};
+   },
+   async collectionSnapshot(){return {totalIssued:String(await visa.totalIssued()),contract:config.visa,chainId:Number(config.chainId),checkedAt:new Date().toISOString()};},
+   close(){if(!provided)provider.destroy();}
+  };
+ }catch(e){if(!provided)provider.destroy();throw e;}
+}
+
 async function main(){
  const config=workerConfig(),store=createPassportStore();let adapter;
  try{
@@ -106,4 +143,4 @@ async function main(){
  }finally{await store.close();adapter?.close();}
 }
 if(require.main===module)main().catch(()=>{console.error('Passport worker stopped. Check configuration, database and signer access.');process.exitCode=1;});
-module.exports={deliverOne,workerConfig,createAdapter};
+module.exports={deliverOne,workerConfig,createAdapter,createPassportReader};
