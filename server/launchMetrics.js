@@ -3,7 +3,8 @@ const {createHash,timingSafeEqual}=require('node:crypto');
 const chains=require('./gameWalletChains.json');
 const LIVE_HALLS={subcontinent:['dominion'],china:['xiangqi','sanguo','sanyou','yanyi','shanshui','shanshui-2v2'],japan:['shogi','sannin'],vietnam:['co-tu-lenh']};
 const PENDING=new Set(['queued','sending','submitted','retry']);
-function createLaunchMetrics({databaseUrl=process.env.DATABASE_URL,pool,now=Date.now,launchAt=Date.parse(process.env.AK_LAUNCH_AT||'2026-11-14T00:00:00+05:30'),ownerKey=process.env.AK_LAUNCH_OWNER_KEY,chainId=Number(process.env.AK_VISA_CHAIN_ID||11124),rooms,deliveryEnabled=process.env.AK_VISA_DELIVERY_ENABLED==='true'}={}){
+function createLaunchMetrics({databaseUrl=process.env.DATABASE_URL,pool,now=Date.now,launchAt=Date.parse(process.env.AK_LAUNCH_AT||'2026-11-14T00:00:00+05:30'),ownerKey=process.env.AK_LAUNCH_OWNER_KEY,serviceKey=process.env.AK_LAUNCH_SERVICE_KEY,operationsOptions={},chainId=Number(process.env.AK_VISA_CHAIN_ID||46630),rooms,deliveryEnabled=process.env.AK_VISA_DELIVERY_ENABLED==='true'}={}){
+ const ownerCredential=ownerKey||serviceKey;let launchOperations;
  const db=pool||(databaseUrl?new Pool({connectionString:databaseUrl,ssl:process.env.DATABASE_SSL==='true'||/sslmode=require/.test(databaseUrl)?{rejectUnauthorized:false}:undefined}):null);let ready;
  if(!Number.isFinite(launchAt)||!chains[chainId])throw Error('Invalid launch configuration.');
  const init=()=>{if(!db)throw Object.assign(Error('Launch statistics are awaiting durable storage.'),{status:503});return ready||(ready=db.query('CREATE TABLE IF NOT EXISTS ak_launch_visits (day DATE NOT NULL, session_hash TEXT NOT NULL, first_at BIGINT NOT NULL, PRIMARY KEY(day,session_hash))').catch(e=>{ready=null;throw e;}));};
@@ -28,7 +29,7 @@ function createLaunchMetrics({databaseUrl=process.env.DATABASE_URL,pool,now=Date
   const halls={};for(const [id,ids]of Object.entries(LIVE_HALLS)){const live=[...rooms.values()].filter(r=>r.gameId==='arctic-play'&&['waiting','playing'].includes(r.status)&&ids.includes(r.tableId));halls[id]={tables:live.length,players:live.reduce((n,r)=>n+Object.values(r.players||{}).filter(p=>!p.bot&&!p.left).length,0)};}
   return {generatedAt:now(),available:true,halls,definition:'Human seats in active private tables; not concurrent connected-player presence.'};
  }
- async function route({path,method,req,body,error}){
+ async function route({path,method,req,body,error,url}){
   if(path==='/launch/activity'&&method==='GET')return activity();
   if(path==='/launch/public'&&method==='GET')return snapshot();
   if(path==='/launch/visit'&&method==='POST'){
@@ -37,12 +38,15 @@ function createLaunchMetrics({databaseUrl=process.env.DATABASE_URL,pool,now=Date
    const h=createHash('sha256').update('AK-VISIT:'+since+':'+day+':'+b.sessionId).digest('hex');
    await db.query('INSERT INTO ak_launch_visits(day,session_hash,first_at) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[day,h,at]);return {ok:true};
   }
-  if(path==='/launch/owner'&&method==='GET'){
+  if((path==='/launch/owner'&&method==='GET')||(path==='/launch/owner/v2'&&method==='GET')||(path==='/launch/owner/verify-passport'&&method==='POST')){
    const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
-   if(!ownerKey||ownerKey.length<32||Buffer.byteLength(supplied)!==Buffer.byteLength(ownerKey)||!timingSafeEqual(Buffer.from(supplied),Buffer.from(ownerKey)))throw error('Owner access required.',401);
-   return snapshot(true);
+   if(!ownerCredential||ownerCredential.length<32||Buffer.byteLength(supplied)!==Buffer.byteLength(ownerCredential)||!timingSafeEqual(Buffer.from(supplied),Buffer.from(ownerCredential)))throw error('Owner access required.',401);
+   if(path==='/launch/owner')return snapshot(true);
+   if(!launchOperations)launchOperations=require('./launchOperations').createLaunchOperations({pool:db,...operationsOptions});
+   if(path==='/launch/owner/v2')return launchOperations.snapshot(url?.searchParams.get('period')||'current');
+   return launchOperations.verifyImported(await body(req));
   }
  }
- return {route,activity,snapshot,close:()=>db?.end()};
+ return {route,activity,snapshot,close:async()=>{launchOperations?.close();await db?.end();}};
 }
 module.exports={createLaunchMetrics,LIVE_HALLS};

@@ -11,7 +11,7 @@ function createPassportRuntime({env=process.env,storeFactory=createPassportStore
  async function tick(){
   if(stopped)return;
   let stage='configuration';try{
-   if(!config){config=workerConfig(env);state={...state,enabled:true,status:'checking',contract:config.visa,signer:new Wallet(config.key).address,kinds:['visa',...(config.arrival?['arrival']:[]),...(config.achievements?['achievement']:[])]};}
+   if(!config){config=workerConfig(env);state={...state,enabled:true,status:'checking',contract:config.visa,signer:new Wallet(config.key).address,kinds:['visa',...(config.arrival?['arrival']:[]),...(config.achievements?['achievement']:[])],eggReady:false};}
    stage='network_and_code';adapter||=await adapterFactory(config);
    stage='database';if(!store){store=storeFactory();await store.init();}
    stage='sender_lock';
@@ -34,8 +34,14 @@ function createPassportRuntime({env=process.env,storeFactory=createPassportStore
   if(!job||job.status!=='confirmed'||job.chain_id!==config.chainId)return {confirmed:false,status:job?.status||'not_registered'};
   return {...await adapter.verifyPassport(job),checkedAt:new Date(now()).toISOString()};
  }
+ async function verifyEgg(accountId){
+  if(!adapter||!store||!adapter.verifyEgg)return {confirmed:false,status:state.status};
+  const job=await store.deliveryEvidence(accountId,'egg');
+  if(!job||job.status!=='confirmed'||job.chain_id!==config.chainId)return {confirmed:false,status:job?.status||'not_eligible'};
+  return {...await adapter.verifyEgg(job),checkedAt:new Date(now()).toISOString()};
+ }
  async function stop(){if(stopped)return;stopped=true;clearTimeout(timer);await inFlight;adapter?.close();await store?.close();state={...state,ready:false,status:'stopped'};}
- return {start,status,verify,stop,tick};
+ return {start,status,verify,verifyEgg,stop,tick};
 }
 const runtime=createPassportRuntime();
 module.exports={createPassportRuntime,runtime};

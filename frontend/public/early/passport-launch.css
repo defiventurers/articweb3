@@ -1,0 +1,53 @@
+/* Passport-only release: faithful HomeLanding markup and the pre-existing app.css.
+ * Only supplemental Passport and modal styling lives here. Do not restyle Home. */
+html.home-v2-active .app[data-screen="lobby"][data-tab="home"] {background:var(--heritage-page)}
+html.home-v2-active .app[data-screen="lobby"][data-tab="profile"] {background:var(--heritage-page)}
+html.home-v2-active body{background:var(--heritage-page)}
+.app[data-screen="lobby"]{display:flex;flex-direction:column;min-height:100dvh;position:relative}
+.app[data-screen="lobby"] .lobby-header.discovery-header{position:relative;flex-shrink:0}
+.app[data-screen="lobby"] .lobby-content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+#home-view[hidden],#passport-view[hidden],.panel[hidden],#soon-dialog[hidden],[hidden]{display:none!important}
+.app[data-screen="lobby"] .bottom-nav{z-index:25}
+.home-v2-hero .home-v2-hosts{pointer-events:none}
+#passport-view{max-width:650px;margin:0 auto;padding:14px 0 32px;color:#f4e6c5}
+#passport-view .passport-hero{position:relative;text-align:center;padding:25px 10px 10px}
+#passport-view h1{font:600 clamp(2.4rem,9vw,3.4rem)/1.07 Georgia,'Times New Roman',serif;color:#f3ecdc;margin:8px 0 12px}
+#passport-view h1 em{font-style:normal;color:var(--heritage-gold)}
+#passport-view h2{font:600 1.46rem/1.2 Georgia,'Times New Roman',serif;color:#f5e8c8;margin:8px 0}
+#passport-view .overline,.soon-body .overline{font:700 .7rem/1.5 system-ui,sans-serif;letter-spacing:.18em;color:#e3c282}
+#passport-view .passport-hero p{color:#bcd1da}
+#passport-view .panel{background:linear-gradient(140deg,#10334e,#0a253f);border:1px solid #a48a5e8f;border-radius:18px;padding:19px 16px;margin:13px 0;box-shadow:0 6px 25px #00172d44}
+#passport-view .panel p{font:400 .9rem/1.55 system-ui,sans-serif;color:#c8d8e1;margin:5px 0 14px}
+#passport-view .eyebrow{font-size:.69rem;letter-spacing:.14em;font-weight:750;color:#eccd8c}
+#passport-view #connection-status{font-size:.88rem;min-height:50px;color:#dcd4b5;margin-top:14px}
+#passport-view .primary,.soon-body .primary{display:block;width:100%;min-height:52px;padding:12px 14px;border-radius:14px;background:linear-gradient(110deg,#ddb66d,#f4df9f,#cba460);color:#173446;font-weight:750;border:1px solid #c89f55;box-shadow:0 3px 10px #06192a3d}
+#passport-view .secondary{width:100%;min-height:49px;border:1px solid #bb9955;border-radius:12px;background:#123957;color:#f5dfad;padding:12px;font-weight:700}
+#passport-view .primary:disabled,#passport-view .secondary:disabled{opacity:.55}
+#passport-view .fine{font-size:.74rem!important;color:#bed0d5!important}
+#passport-view .wallet-display{border:1px solid #8e8269;background:#092139;border-radius:13px;padding:12px;margin:14px 0}
+#passport-view .wallet-display small{display:block;color:#e2be7b}
+#passport-view .wallet-display code{font:.81rem/1.55 ui-monospace,monospace;display:block;overflow-wrap:anywhere;color:#e2f1fa;padding:6px 0}
+#passport-view .wallet-display button,#passport-view .text-button{padding:9px 0;color:#f6ce8b;background:transparent;text-decoration:underline;border:0}
+#passport-view .field{display:block;color:#e8d7b8;font-size:.85rem;margin:14px 0}
+#passport-view .field input{display:block;width:100%;margin-top:6px;border:1px solid #678299;background:#06192b;color:#f6fbff;border-radius:10px;padding:12px}
+#passport-view .checkline{display:flex;align-items:flex-start;gap:12px;font-size:.83rem;line-height:1.55;color:#d8e2e6;margin:10px 0 18px}
+#passport-view .checkline input{flex:0 0 20px;width:20px;height:20px;accent-color:#dabb78}
+#passport-view .nft-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:20px 0}
+#passport-view .nft-tile{background:#061e36;border:1px solid #7e816f;border-radius:13px;padding:10px;display:flex;flex-direction:column;gap:6px}
+#passport-view .nft-tile img{width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:9px}
+#passport-view .nft-tile strong{font-size:.86rem;color:#f2deab}
+#passport-view .nft-tile span,#passport-view .nft-tile a{font-size:.73rem;color:#c2dce9;overflow-wrap:anywhere}
+#passport-view .nft-tile a{color:#efd096}
+#passport-view .instagram{display:block;color:#f5d98e;text-decoration:none;font-weight:700;border-top:1px solid #44617b;padding-top:15px;font-size:.9rem}
+#passport-view .error{border-radius:12px;background:#6f222f;color:#ffeced;margin:12px 0;padding:13px;font-size:.86rem}
+/* The approved screenshot retains the download icon in the header. */
+html.home-v2-active .app[data-screen="lobby"] .discovery-header .header-update{display:grid!important;min-width:40px;min-height:44px}
+#passport-view .founding-offer{padding:12px;background:#1b3b53;border-left:3px solid #d9b874;border-radius:8px}
+#passport-view .founding-offer strong{color:#ffdfa0}
+#soon-dialog{position:fixed;inset:auto 16px 22%;width:min(430px,calc(100% - 32px));max-width:none;border:1px solid #d4b675;background:linear-gradient(#153751,#071c32);color:#f5f0e5;border-radius:20px;padding:0;box-shadow:0 22px 80px #000b;z-index:70}
+#soon-dialog::backdrop{background:#021327c7}
+#soon-dialog .soon-body{padding:24px}
+#soon-dialog h2{font:600 1.9rem/1.15 Georgia,'Times New Roman',serif;color:#f7da99;margin:7px 0 15px}
+#soon-dialog p{font-size:.91rem;line-height:1.6;color:#d7e5ec;margin:0 0 14px}
+#soon-dialog button{margin-top:13px}
+@media(max-width:359px){#passport-view .nft-grid{gap:8px}#passport-view .panel{padding:14px 12px}}

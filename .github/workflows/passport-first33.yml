@@ -1,0 +1,67 @@
+name: Antarctic Passport First-33 Acceptance
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/passport-first33.yml'
+      - 'server/antarcticPassport*.js'
+      - 'server/passportDeliveryRuntime.js'
+      - 'server/launchMetrics.js'
+      - 'server/paraGameWallet.js'
+      - 'server/wallet-build/auth-return.mjs'
+      - 'server/tests/passport-first33.test.js'
+      - 'frontend/public/early/**'
+      - 'contracts/launch/**'
+  push:
+    branches:
+      - codex/passport-only-first33-20261114
+permissions:
+  contents: read
+jobs:
+  passport-first33:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local-passport-test
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      AK_PASSPORT_TEST_DATABASE_URL: postgres://postgres:local-passport-test@127.0.0.1:5432/postgres
+      AK_VISA_CHAIN_ID: '46630'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install server test dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: server
+      - name: Verify source JavaScript syntax
+        run: |
+          node --check server/antarcticPassport.js
+          node --check server/antarcticPassportStore.js
+          node --check server/antarcticPassportWorker.js
+          node --check server/passportDeliveryRuntime.js
+          node --check server/launchMetrics.js
+          node --check server/paraGameWallet.js
+          node --check frontend/public/early/passport-launch.js
+      - name: Install contract compilation and local EVM test tools
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: contracts/launch
+      - name: Verify screenshot-matched heritage Home and Passport-only navigation
+        run: node --test frontend/public/early/heritage-launch.test.mjs
+      - name: Run real PostgreSQL first-33 allocation race and Para acceptance
+        run: node --test tests/passport-first33.test.js tests/passport-delivery-phase4.test.js tests/para-game-wallet.test.js
+        working-directory: server
+      - name: Compile egg + passport contracts and test local onchain minting
+        run: npm test
+        working-directory: contracts/launch

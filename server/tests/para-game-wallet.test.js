@@ -5,7 +5,7 @@ const pair=generateKeyPairSync('rsa',{modulusLength:2048}),jwk={...pair.publicKe
 const digest=x=>createHash('sha256').update(x).digest('hex');
 test('Para portal accepts the passport check, Android and existing web login destinations',async()=>{
  const {isAllowedWalletReturn:allowed}=await import('../wallet-build/auth-return.mjs'),origin='https://articweb3.onrender.com';
- for(const url of ['/arctic-play/passport-check/?auth_ticket=qa','https://articweb3.onrender.com/arctic-play/passport-check/?auth_ticket=qa','/arctic-play/app/?auth_ticket=qa','arcticplay://auth?ticket=qa','https://arcticdominion.xyz/?auth_ticket=qa','https://arcticdominion.xyz/play/?auth_ticket=qa','https://www.arcticdominion.xyz/play/?auth_ticket=qa'])assert.equal(allowed(url,origin),true,url);
+ for(const url of ['/arctic-play/passport-check/?auth_ticket=qa','https://articweb3.onrender.com/arctic-play/passport-check/?auth_ticket=qa','/arctic-play/app/?auth_ticket=qa','arcticplay://auth?ticket=qa','https://arcticdominion.xyz/?auth_ticket=qa','https://arcticdominion.xyz/play/?auth_ticket=qa','https://arcticdominion.xyz/early/?auth_ticket=qa','https://www.arcticdominion.xyz/play/?auth_ticket=qa'])assert.equal(allowed(url,origin),true,url);
 });
 test('Para portal rejects external, credential-bearing and unexpected login return destinations',async()=>{
  const {isAllowedWalletReturn:allowed}=await import('../wallet-build/auth-return.mjs'),origin='https://articweb3.onrender.com';

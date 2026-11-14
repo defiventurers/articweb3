@@ -42,7 +42,7 @@ test('real PostgreSQL + local EVM: attested Para login, consent, passport-first 
  const store=makeStore(),second=makeStore();
  const ganache=(await import('../../contracts/launch/node_modules/ganache/dist/node/core.js')).default;
  const local=ganache.provider({logging:{quiet:true},chain:{chainId:46630}}),provider=new BrowserProvider(local,undefined,{cacheTimeout:0});
- const {compileBundle}=await import('../../contracts/launch/compile.mjs'),{artifacts}=compileBundle();
+ const {compile}=await import('../../contracts/launch/compile.mjs'),artifacts=compile();
  const owner=await provider.getSigner(0),minter=Wallet.createRandom(),player=Wallet.createRandom(),other=Wallet.createRandom();
  const contract=await new ContractFactory(artifacts.AntarcticPassport.abi,artifacts.AntarcticPassport.bytecode,owner).deploy(await owner.getAddress(),await owner.getAddress(),'https://articweb3.onrender.com/arctic-play/v3/passport/metadata/46630/');await contract.waitForDeployment();
  const cfg={chainId:46630,rpc:'https://local.invalid',key:minter.privateKey,visa:await contract.getAddress()};
