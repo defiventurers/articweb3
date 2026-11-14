@@ -54,12 +54,12 @@ jobs:
           node --check server/launchMetrics.js
           node --check server/paraGameWallet.js
           node --check frontend/public/early/passport-launch.js
-      - name: Run real PostgreSQL first-33 allocation race and Para acceptance
-        run: node --test tests/passport-first33.test.js tests/passport-delivery-phase4.test.js tests/para-game-wallet.test.js
-        working-directory: server
       - name: Install contract compilation and local EVM test tools
         run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: contracts/launch
+      - name: Run real PostgreSQL first-33 allocation race and Para acceptance
+        run: node --test tests/passport-first33.test.js tests/passport-delivery-phase4.test.js tests/para-game-wallet.test.js
+        working-directory: server
       - name: Compile egg + passport contracts and test local onchain minting
         run: npm test
         working-directory: contracts/launch
