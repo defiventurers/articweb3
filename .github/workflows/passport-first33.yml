@@ -9,6 +9,7 @@ on:
       - 'server/paraGameWallet.js'
       - 'server/wallet-build/auth-return.mjs'
       - 'server/tests/passport-first33.test.js'
+      - 'server/tests/egg-metadata-paused.test.js'
       - 'frontend/public/early/**'
       - 'contracts/launch/**'
   push:
@@ -60,7 +61,7 @@ jobs:
       - name: Verify screenshot-matched heritage Home and Passport-only navigation
         run: node --test frontend/public/early/heritage-launch.test.mjs
       - name: Run real PostgreSQL first-33 allocation race and Para acceptance
-        run: node --test tests/passport-first33.test.js tests/passport-delivery-phase4.test.js tests/para-game-wallet.test.js
+        run: node --test tests/passport-first33.test.js tests/passport-delivery-phase4.test.js tests/para-game-wallet.test.js tests/egg-metadata-paused.test.js
         working-directory: server
       - name: Compile egg + passport contracts and test local onchain minting
         run: npm test

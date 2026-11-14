@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "compile": "node compile.mjs",
-    "test": "node --test launch.test.mjs egg.test.mjs",
+    "test": "node --test launch.test.mjs egg.test.mjs egg-wallet.test.mjs",
     "deploy:testnet": "node deploy.mjs"
   },
   "dependencies": {

@@ -6,6 +6,12 @@ const rpc=process.env.AK_LAUNCH_RPC_URL||'https://rpc.testnet.chain.robinhood.co
 if(!/^0x[0-9a-fA-F]{40}$/.test(passport||'')||/^0x0{40}$/i.test(passport||''))throw Error('Set AK_EXISTING_PASSPORT_CONTRACT to the already deployed, reviewed Passport contract.');
 const url=new URL(rpc);if(url.protocol!=='https:'||url.username||url.password)throw Error('Use an HTTPS RPC without credentials.');
 const artifacts=compile(),abi=artifacts.AntarcticMysteryEgg.abi,metadata='https://articweb3.onrender.com/arctic-play/v3/passport/egg-metadata/46630/';
+if(process.argv.includes('--wallet')){
+ if(process.argv.includes('--broadcast'))throw Error('Choose either browser-wallet preparation or key-based broadcast.');
+ const {buildEggWallet}=await import('./egg-wallet.mjs');
+ await buildEggWallet({artifact:artifacts.AntarcticMysteryEgg,passport,rpc,metadata,admin:process.env.AK_EGG_ADMIN_ADDRESS,minter:process.env.AK_PASSPORT_SIGNER_ADDRESS_46630,output:process.env.AK_EGG_WALLET_OUTPUT});
+ process.exit(0);
+}
 if(!process.argv.includes('--broadcast')){console.log(JSON.stringify({mode:'PLAN_ONLY',chainId,passport,contract:'AntarcticMysteryEgg',maxSupply:33,metadata,requires:'Owner / deployer wallet and separate reviewed minter, funded with test ETH; existing Passport untouched.',broadcast:false},null,2));process.exit(0);}
 if(!process.env.AK_LAUNCH_DEPLOYER_KEY)throw Error('Configure a dedicated testnet deployer private key in the secure operator environment, never in source.');
 const provider=new JsonRpcProvider(rpc,undefined,{cacheTimeout:0});

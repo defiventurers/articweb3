@@ -57,8 +57,10 @@ function createCompanyService({store=createCompanyStore(),now=Date.now,extraRout
     const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...(allowed?{'Access-Control-Allow-Origin':publicRead?'*':origin,'Vary':'Origin','Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'GET,POST,DELETE,OPTIONS'}:{})};
     if(req.method==='OPTIONS'){res.writeHead(204,headers);res.end();return true;}
     // Reversible reset hold: block account/session/registration writes before routing.
-    // Keep the sender status readable so operations can verify that minting stopped.
-    if(process.env.AK_LAUNCH_RESET_PAUSED==='true'&&url.pathname!=='/arctic-play/v3/passport/delivery/config'){
+    // Metadata and sender status are read-only; keep them available while all
+    // account/session/registration writes remain paused.
+    const pauseRead=req.method==='GET'&&(url.pathname==='/arctic-play/v3/passport/delivery/config'||/^\/arctic-play\/v3\/passport\/(metadata|achievement-metadata|egg-metadata)\//.test(url.pathname));
+    if(process.env.AK_LAUNCH_RESET_PAUSED==='true'&&!pauseRead){
       res.writeHead(503,{...headers,'Retry-After':'300'});
       res.end(JSON.stringify({error:'Passport registration is temporarily paused while we prepare the launch. Please try again shortly.',code:'LAUNCH_RESET_PAUSED',paused:true}));return true;
     }

@@ -25,3 +25,18 @@ With explicit deployment authorization, `--broadcast` deploys the passport. `--w
 Official deployment source checked November 11, 2026: https://docs.robinhood.com/chain/deploy-smart-contracts/ confirms standard EVM tools and testnet chain ID 46630. OpenZeppelin ERC-721 behavior: https://docs.openzeppelin.com/contracts/5.x/api/token/erc721 . No claim is made that Abstract AGW or zkSync deployment tools work unchanged on Robinhood.
 
 A testnet token does not automatically become a mainnet token. Separate contracts, explicit account/achievement mapping and a reviewed backend storage migration are needed. The baseline storage currently prevents silently issuing a second-chain passport for an existing account.
+
+### Egg deployment with Rabby (no private key)
+
+Use the existing deployment entry point with `--wallet`:
+
+```sh
+AK_EXISTING_PASSPORT_CONTRACT=0xF059141A4e21eF5786e66e96F1c4357858a0De11 \
+AK_EGG_ADMIN_ADDRESS=0xaE139be36A9AaF91af8F719740cE3a2F7102E66e \
+AK_PASSPORT_SIGNER_ADDRESS_46630=0x4378fDEfE1BB9d3D3B3b1B6433A6C29c560aEcCc \
+node contracts/launch/deploy-eggs.mjs --wallet
+```
+
+This compiles the existing Egg and prepares `/ops/egg-deploy/` without broadcasting. The page has no external script dependencies or keys. It accepts only the specified owner on chain 46630, scans the owner's creation addresses before signing, and verifies the compiled runtime (with the existing Passport immutable), admin, minter and 33-edition cap. A lost wallet response blocks another submission; existing code or a pasted transaction hash resumes verification. The page records the hash immediately and checks canonical receipts and two L2 confirmations. It never creates a Passport, mints an edition, changes Render, or opens registration.
+
+After the owner signs, independently verify the creation transaction and explorer source. Merge only `AK_EGG_CONTRACT_46630` into the existing Render service configuration, deploy that configuration, and read `/arctic-play/v3/passport/delivery/config` until `eggReady` is true and `kinds` contains both `visa` and `egg`. Retain the confirmed receipt; do not rerun deployment preparation as a reason to deploy again.
