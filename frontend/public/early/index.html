@@ -1,36 +1,46 @@
 <!doctype html>
-<html lang="en" data-theme="dark"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#071936">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://articweb3.onrender.com; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'">
-<meta name="description" content="Enter Lantern Harbor. Register for your free Antarctic Passport and discover the first 33 Mystery Golden Eggs.">
-<title>Antarctic Passport • Lantern Harbor</title>
-<link rel="stylesheet" href="./passport-launch.css?v=20261114-1">
-<script src="./passport-launch.js?v=20261114-1" defer></script>
-</head><body>
-<div class="app">
-<header class="brand-header">
-<img class="brand-logo" src="./art/home-v1/brand-logo.webp" width="240" height="82" alt="Antarctic Gaming Co.">
-<span class="eyebrow">LANTERN HARBOR • FOUNDING DAY</span>
+<html lang="en" class="home-v2-active" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#061a32">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="Enter Lantern Harbor. Claim your free Antarctic Passport and discover the first 33 Mystery Golden Eggs.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://articweb3.onrender.com; font-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'">
+<title>Antarctic Kingdoms • Lantern Harbor</title>
+<link rel="stylesheet" href="./app.css?v=ch-screen2">
+<link rel="stylesheet" href="./passport-launch.css?v=heritage-home-20261114">
+<script src="./passport-launch.js?v=heritage-home-20261114" defer></script>
+</head>
+<body>
+<div class="app" data-screen="lobby" data-tab="home">
+<header class="lobby-header discovery-header">
+  <h1 class="discovery-sr-only">Antarctic Kingdoms</h1>
+  <button type="button" class="discovery-brand" data-tab="home" aria-label="Antarctic Kingdoms home"><img src="./art/home-v1/brand-logo.webp" width="190" height="56" alt="Antarctic Gaming Co."><span><small>ANTARCTIC KINGDOMS</small><strong>Antarctic Kingdoms</strong></span></button>
+  <div class="header-controls">
+    <button type="button" data-soon class="icon-btn header-theme" aria-label="Theme options — coming soon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.985 12.486A9 9 0 0 1 11.514 3.015a9 9 0 1 0 9.47 9.47z"/></svg></button>
+    <button type="button" data-soon class="avatar-btn" aria-label="Player profile — coming soon"><span class="avatar" style="width:36px;height:36px"><img src="./art/tokens/token-sanguo-blue-general.webp" width="36" height="36" alt=""></span></button>
+    <button type="button" data-soon class="icon-btn header-update" aria-label="Download — coming soon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/></svg></button>
+  </div>
 </header>
-<main id="main">
-<section id="home-view" class="view">
-<div class="hero"><div class="hero-backdrop"></div><div class="hero-content">
-<span class="overline">A NEW ADVENTURE BEGINS</span>
-<h1>Welcome to<br><em>Antarctic Kingdoms</em></h1>
-<p>Discover the world today. Your Antarctic Passport is the first step.</p>
-<img class="hero-passport" src="./art/passport-book-v2/company-passport-cover.webp" width="320" height="320" alt="Blue and gold Antarctic Passport">
-</div></div>
-<div class="founding-promo">
-<div class="promo-icon"><img src="./mystery-golden-egg.svg" width="128" height="148" alt="Mystery Golden Egg"></div>
-<div><span class="overline">NOVEMBER 14 • CHILDREN'S DAY</span><h2>The first 33 explorers</h2><p>Eligible adult beta testers may receive a limited testnet Mystery Golden Egg alongside their free Antarctic Passport. Registration order determines eligibility; NFTs are confirmed only on-chain. No monetary value.</p></div>
-</div>
-<button type="button" class="primary main-cta" data-soon>Explore Antarctic Kingdoms <span aria-hidden="true">→</span></button><p class="footer-note">To sign up, tap <strong>Passport</strong> in the bottom navigation.</p>
-<div class="tile-grid">
-<button type="button" class="feature-tile" data-soon><span class="tile-icon">♟</span><strong>Explore the Halls</strong><small>Our heritage games await</small></button>
-<button type="button" class="feature-tile" data-soon><span class="tile-icon">✦</span><strong>Play with Friends</strong><small>Gather your kingdom</small></button>
-</div>
-<p class="footer-note">Stay curious. Keep playing. Keep discovering.</p>
+<main id="main" class="lobby-content" data-view="home">
+<section id="home-view" class="home-landing home-v2 home-heritage" aria-labelledby="home-v2-title">
+  <section class="home-v2-hero" aria-label="Welcome to Lantern Harbor">
+    <div class="home-v2-scene" aria-hidden="true"></div>
+    <div class="home-heritage-frame" aria-hidden="true"><span>✦</span></div>
+    <img class="home-v2-hosts" src="./art/home-v1/home-hosts-welcome.webp" width="1200" height="800" alt="The four Antarctic Kingdoms penguin hosts welcome visitors to Lantern Harbor" fetchpriority="high">
+    <div class="home-v2-copy"><p>LANTERN HARBOR</p><h2 id="home-v2-title" class="home-v2-title">Antarctic<br><em>Kingdoms</em></h2><span>Timeless games.<br>A world of stories.</span></div>
+    <p class="home-heritage-signature"><span aria-hidden="true">✧</span> YOUR SEAT IN THE STORY <span aria-hidden="true">✧</span></p>
+  </section>
+  <div class="home-play-actions home-v2-actions">
+    <button type="button" data-soon class="home-v2-primary home-resume home-chaturanga" aria-label="Continue playing Chaturanga — coming soon"><span><em>INDIAN ROOTS · ICY COURT</em><strong>Continue playing</strong><small>Chaturanga</small></span><img src="./art/chaturanga-heritage-v1/cover.webp" class="home-v2-resume-cover" width="180" height="120" alt="" decoding="async"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+  </div>
+  <div class="home-v2-secondary" aria-label="Learn and play together">
+    <button type="button" data-soon class="home-v2-tile" aria-label="Learn a game — coming soon"><em>THE ACADEMY</em><strong>Learn a game</strong><small>One piece at a time</small><img src="./art/home-v1/learn-pengu.webp" width="822" height="900" alt="" decoding="async"><span class="home-tile-arrow" aria-hidden="true">↗</span></button>
+    <button type="button" data-soon class="home-v2-tile home-v2-friends" aria-label="Join friends — coming soon"><em>THE GATHERING</em><strong>Join friends</strong><small>Play with a room code</small><img src="./art/home-v1/join-friends.webp" width="985" height="900" alt="" decoding="async"><span class="home-tile-arrow" aria-hidden="true">↗</span></button>
+  </div>
+  <button type="button" data-soon class="home-v2-journey" aria-label="Your Antarctic Passport discoveries — coming soon; use the Passport tab to register"><img src="./art/home-v1/passport-journey.webp" width="1200" height="600" alt="" decoding="async"><span><em>COLLECT YOUR DISCOVERIES</em><strong>Your Antarctic Passport</strong><small>A new hall. A new chapter.</small></span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+  <button type="button" data-soon class="home-v2-shop" aria-label="Bring the game home — coming soon"><span><strong>Bring the game home</strong><small>Physical boards · Concept preview</small></span><img src="./art/home-v1/physical-board-preview.webp" width="1200" height="800" alt="" decoding="async"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
 </section>
 <section id="passport-view" class="view" hidden>
 <div class="passport-hero"><span class="overline">YOUR JOURNEY STARTS HERE</span><h1>Antarctic<br><em>Passport</em></h1><p>One sign-in. Your own wallet. Your place in the Kingdom.</p></div>
@@ -64,14 +74,15 @@
 </div>
 <div id="passport-error" role="alert" class="error" hidden></div>
 </section>
+
 </main>
 <nav class="bottom-nav" aria-label="Main navigation">
-<button type="button" class="nav-item selected" data-tab="home" aria-current="page"><span aria-hidden="true">⌂</span><small>Home</small></button>
-<button type="button" class="nav-item" data-soon><span aria-hidden="true">♟</span><small>Games</small></button>
-<button type="button" class="nav-item" data-soon><span aria-hidden="true">◇</span><small>Shop</small></button>
-<button type="button" class="nav-item" data-soon><span aria-hidden="true">♧</span><small>Chats</small></button>
-<button type="button" class="nav-item" data-tab="passport"><span aria-hidden="true">▣</span><small>Passport</small></button>
+<button type="button" class="active" data-tab="home" aria-current="page"><span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></span><small>Home</small></button>
+<button type="button" class="" data-soon ><span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 7h11a4 4 0 0 1 3.8 3l1 5.5a3 3 0 0 1-5 2.5l-2.5-2H9.2l-2.5 2a3 3 0 0 1-5-2.5l1-5.5a4 4 0 0 1 3.8-3z"/><path d="M7 11v5m-2.5-2.5h5M16.5 12h.01M19 14h.01"/></svg></span><small>Games</small></button>
+<button type="button" class="" data-soon ><span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="6" width="16" height="15" rx="2"/><path d="M8 8V5a4 4 0 0 1 8 0v3"/></svg></span><small>Shop</small></button>
+<button type="button" class="" data-soon ><span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 8.7 3.9a8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg></span><small>Chats</small></button>
+<button type="button" class="" data-tab="passport" ><span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="10" cy="9" r="2"/><path d="M7 15h6m-6 3h10"/></svg></span><small>Passport</small></button>
 </nav>
-<dialog id="soon-dialog"><div class="soon-body"><span class="overline">ANTARCTIC KINGDOMS</span><h2>Coming Soon</h2><p>Our halls are getting ready. Today is dedicated to Antarctic Passport signups and the first 33 Mystery Golden Eggs.</p><button type="button" id="close-soon" class="primary">Back to Lantern Harbor</button></div></dialog>
+<dialog id="soon-dialog" aria-labelledby="soon-title"><div class="soon-body"><span class="overline">ANTARCTIC KINGDOMS</span><h2 id="soon-title">Coming Soon</h2><p>The halls are getting ready. Today, Antarctic Passport signups are open for eligible adults, with 33 limited Mystery Golden Eggs reserved in signup order.</p><p>To register, select <strong>Passport</strong> in the bottom navigation.</p><button type="button" id="close-soon" class="primary">Back to Lantern Harbor</button></div></dialog>
 </div>
 </body></html>

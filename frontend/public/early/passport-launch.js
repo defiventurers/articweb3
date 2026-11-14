@@ -12,7 +12,12 @@ async function api(path,data,needsAuth=true,timeoutMs=30000){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
  try{const response=await fetch(root+path,{method:data?'POST':'GET',mode:'cors',cache:'no-store',signal:controller.signal,headers:{...(data?{'Content-Type':'application/json'}:{}),...(needsAuth&&session?{Authorization:'Bearer '+session}:{})},body:data?JSON.stringify(data):undefined});let result=await response.json().catch(()=>({}));if(!response.ok)throw Error(result.error||'Lantern Harbor is still connecting. Please try again.');return result;}catch(e){if(e.name==='AbortError')throw Error('The server is still waking up. Please try again.');throw e;}finally{clearTimeout(timer);}
 }
-function tab(name){for(const v of ['home','passport'])$(v+'-view').hidden=v!==name;for(const b of document.querySelectorAll('[data-tab]')){const selected=b.dataset.tab===name;b.classList.toggle('selected',selected);if(selected)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');}window.scrollTo(0,0);if(name==='passport')refresh().catch(e=>error(e.message));}
+function tab(name){for(const v of ['home','passport'])$(v+'-view').hidden=v!==name;
+ const app=document.querySelector('.app[data-screen="lobby"]');app.dataset.tab=name==='passport'?'profile':'home';
+ const main=$('main');main.dataset.view=name==='passport'?'profile':'home';
+ for(const b of document.querySelectorAll('[data-tab]')){const selected=b.dataset.tab===name;
+ b.classList.toggle('active',selected);if(selected)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');}
+ main.scrollTop=0;window.scrollTo(0,0);if(name==='passport')refresh().catch(e=>error(e.message));}
 function comingSoon(){const d=$('soon-dialog');if(typeof d.showModal==='function'&&!d.open)d.showModal();else d.setAttribute('open','');}
 function rewardStatus(kind){const d=passport?.deliveries?.find(v=>v.kind===kind);if(!d)return kind==='egg'?'Not allocated — limited to the first 33 eligible registrations.':'Registration is pending.';
  if(d.status==='confirmed')return 'Confirmed on '+(passport.network||'the selected network')+' • #'+(d.tokenId||'');
