@@ -4,7 +4,7 @@ const {Wallet}=require('ethers');
 const {createPassportRoutes}=require('../antarcticPassport');
 const {createPassportStore}=require('../antarcticPassportStore');
 const now=Date.parse('2026-11-14T12:00:00.000Z');
-const base={playerName:'Explorer',walletMode:'embedded',souvenir:false,achievementOptIn:false,consentVersion:'antarctic-visa-v2',campaign:'first33-20261114'};
+const base={playerName:'Explorer',walletMode:'embedded',souvenir:false,achievementOptIn:false,consentVersion:'antarctic-visa-v2',campaign:'first33-20261114',adultConfirmed:true};
 const makeError=(message,status)=>Object.assign(new Error(message),{status});
 
 test('only an attested Para wallet can claim the founding campaign through the signup route',async()=>{
@@ -15,6 +15,7 @@ test('only an attested Para wallet can claim the founding campaign through the s
  const req={};const ctx=()=>({path:'/passport',method:'POST',req,body:async()=>base,authenticated:async(_,fn)=>fn(actor),error:makeError,now:()=>now});
  const v=await routes.route(ctx());assert.equal(registered.campaign,'first33-20261114');assert.equal(registered.walletProvider,'para');assert.equal(v.passport.eggSerial,1);assert.equal(v.passport.deliveries.find(d=>d.kind==='egg').status,'awaiting_setup');
  actor.gameWallet={provider:'legacy',address:wallet,chainId:46630};await routes.route(ctx());assert.equal(registered.campaign,null);
+ await assert.rejects(routes.route({...ctx(),body:async()=>({...base,adultConfirmed:false})}),/at least 18/);
 });
 
 test('sealed egg metadata declares one of 33 and excludes personally identifying data',async()=>{

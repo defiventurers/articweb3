@@ -10,6 +10,7 @@ Source baseline: main `d281c329505ad17606fff2678c195e27e8aecc18`. The isolated /
 - Instagram follow-up: https://www.instagram.com/antarcticgamingco/
 - No claim of live provider readiness: a BETA Para account can show its real provider warning. Production requires the official PRODUCTION credentials, origin allowlisting, actual verified sign-in and explicit operator approval.
 - No paid gameplay, shop purchases, reward promises or games are enabled.
+- Robinhood Chain testnet terms require participants to be at least 18 and allow experimentation/testing only. The landing and server enforce an explicit self-attestation for the promotion, but independent age assurance and jurisdictional/legal review are not yet established. The Children's Day creative must not invite children to register.
 
 ## Exactly 33
 
