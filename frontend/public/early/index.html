@@ -1,1 +1,76 @@
-<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://articweb3.onrender.com wss://articweb3.onrender.com https://raw.githubusercontent.com https://rpc.testnet.chain.robinhood.com https://rpc.mainnet.chain.robinhood.com https://api.testnet.abs.xyz https://api.mainnet.abs.xyz https://arb1.arbitrum.io/rpc https://sepolia-rollup.arbitrum.io/rpc https://robinhoodchain.blockscout.com https://explorer.testnet.chain.robinhood.com; worker-src 'self'; font-src 'self'; base-uri 'none'; object-src 'none'"><meta name="theme-color" content="#061a32"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="manifest.webmanifest"><title>Antarctic Kingdoms</title><script src="theme-init.js"></script><link rel="stylesheet" href="app.css?v=ch-screen2"><link rel="stylesheet" href="fair-play.css"><link rel="stylesheet" href="pwa-tools.css"></head><body><section id="startup-panel" class="startup-panel" data-startup-state="loading" role="status" aria-live="polite"><h1 id="startup-title">Opening Antarctic Kingdoms…</h1><p id="startup-message">Your saved games are on this phone.</p><button id="startup-retry" type="button" hidden>Try again</button></section><div id="root"></div><script src="startup.js"></script><script src="app.js?v=ch-screen2"></script><script src="pwa-tools.js" data-version="5.10.2" data-apk-download-page="downloads/"></script><script src="launch-visit.js"></script></body></html>
+<!doctype html>
+<html lang="en" data-theme="dark"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071936">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://articweb3.onrender.com; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'">
+<meta name="description" content="Enter Lantern Harbor. Register for your free Antarctic Passport and discover the first 33 Mystery Golden Eggs.">
+<title>Antarctic Passport • Lantern Harbor</title>
+<link rel="stylesheet" href="./passport-launch.css?v=20261114-1">
+<script src="./passport-launch.js?v=20261114-1" defer></script>
+</head><body>
+<div class="app">
+<header class="brand-header">
+<img class="brand-logo" src="./art/home-v1/brand-logo.webp" width="240" height="82" alt="Antarctic Gaming Co.">
+<span class="eyebrow">LANTERN HARBOR • FOUNDING DAY</span>
+</header>
+<main id="main">
+<section id="home-view" class="view">
+<div class="hero"><div class="hero-backdrop"></div><div class="hero-content">
+<span class="overline">A NEW ADVENTURE BEGINS</span>
+<h1>Welcome to<br><em>Antarctic Kingdoms</em></h1>
+<p>Discover the world today. Your Antarctic Passport is the first step.</p>
+<img class="hero-passport" src="./art/passport-book-v2/company-passport-cover.webp" width="320" height="320" alt="Blue and gold Antarctic Passport">
+</div></div>
+<div class="founding-promo">
+<div class="promo-icon"><img src="./mystery-golden-egg.svg" width="128" height="148" alt="Mystery Golden Egg"></div>
+<div><span class="overline">NOVEMBER 14 • CHILDREN'S DAY</span><h2>The first 33 explorers</h2><p>Receive a limited Mystery Golden Egg alongside their free Antarctic Passport. Eligibility is reserved in registration order; NFT delivery must be confirmed.</p></div>
+</div>
+<button type="button" class="primary main-cta" data-open-passport>Get your Antarctic Passport <span aria-hidden="true">→</span></button>
+<div class="tile-grid">
+<button type="button" class="feature-tile" data-soon><span class="tile-icon">♟</span><strong>Explore the Halls</strong><small>Our heritage games await</small></button>
+<button type="button" class="feature-tile" data-soon><span class="tile-icon">✦</span><strong>Play with Friends</strong><small>Gather your kingdom</small></button>
+</div>
+<p class="footer-note">Stay curious. Keep playing. Keep discovering.</p>
+</section>
+<section id="passport-view" class="view" hidden>
+<div class="passport-hero"><span class="overline">YOUR JOURNEY STARTS HERE</span><h1>Antarctic<br><em>Passport</em></h1><p>One sign-in. Your own wallet. Your place in the Kingdom.</p></div>
+<div id="connect-card" class="panel">
+<h2>Join the founding explorers</h2><p>Choose any available sign-in method from Para. An Antarctic wallet is created and linked to your account.</p>
+<div id="connection-status" role="status" aria-live="polite">Contacting Lantern Harbor…</div>
+<button id="sign-in" class="primary" type="button" disabled>Sign in to claim your Passport</button>
+<p id="provider-note" class="fine">No wallet extension is needed. Supported sign-in methods depend on Para availability.</p>
+</div>
+<div id="registration-card" class="panel" hidden>
+<span class="eyebrow">WALLET CREATED</span><h2>Confirm your Passport</h2>
+<p>Your wallet is ready. Confirm its destination before requesting your free digital collectibles.</p>
+<div class="wallet-display"><small>Your Para wallet address</small><code id="new-wallet"></code><button type="button" data-copy>Copy address</button></div>
+<label class="field">Explorer name <input id="player-name" type="text" autocomplete="nickname" minlength="2" maxlength="24" maxlength="24" value="Explorer"></label>
+<label class="checkline"><input id="consent" type="checkbox"><span>I confirm this wallet for my free Passport NFT and understand that it will be publicly visible on the selected blockchain. I understand the limited egg offer is subject to eligibility and mint confirmation.</span></label>
+<button id="register" type="button" class="primary">Complete free registration</button>
+</div>
+<div id="collection-card" class="panel" hidden>
+<span class="eyebrow">YOUR ANTARCTIC PASSPORT</span><h2 id="welcome-name">Welcome, explorer!</h2>
+<p id="collection-status" role="status" aria-live="polite"></p>
+<div class="wallet-display"><small>Your personal Para wallet</small><code id="created-wallet"></code><button type="button" data-copy>Copy address</button></div>
+<div class="nft-grid">
+<div class="nft-tile"><img src="./art/passport-book-v2/company-passport-cover.webp" alt="Antarctic Passport" width="260" height="260"><strong>Antarctic Passport</strong><span id="visa-state">Checking mint…</span><a id="visa-tx" hidden target="_blank" rel="noreferrer">View verified transaction</a></div>
+<div class="nft-tile"><img src="./mystery-golden-egg.svg" alt="Mystery Golden Egg" width="260" height="260"><strong>Mystery Golden Egg</strong><span id="egg-state">Checking eligibility…</span><a id="egg-tx" hidden target="_blank" rel="noreferrer">View verified transaction</a></div>
+</div>
+<button id="refresh" type="button" class="secondary">Refresh NFT delivery</button>
+<p class="fine">A registered Passport or reserved egg is not the same as a minted NFT. Each will show “Confirmed” only after chain checks. No purchase is required.</p>
+<a class="instagram" href="https://www.instagram.com/antarcticgamingco/" target="_blank" rel="noreferrer">Follow @antarcticgamingco for the mystery reveal and launch updates <span aria-hidden="true">↗</span></a>
+<button id="sign-out" type="button" class="text-button">Sign out</button>
+</div>
+<div id="passport-error" role="alert" class="error" hidden></div>
+</section>
+</main>
+<nav class="bottom-nav" aria-label="Main navigation">
+<button type="button" class="nav-item selected" data-tab="home" aria-current="page"><span aria-hidden="true">⌂</span><small>Home</small></button>
+<button type="button" class="nav-item" data-soon><span aria-hidden="true">♟</span><small>Games</small></button>
+<button type="button" class="nav-item" data-soon><span aria-hidden="true">◇</span><small>Shop</small></button>
+<button type="button" class="nav-item" data-soon><span aria-hidden="true">♧</span><small>Chats</small></button>
+<button type="button" class="nav-item" data-tab="passport"><span aria-hidden="true">▣</span><small>Passport</small></button>
+</nav>
+<dialog id="soon-dialog"><div class="soon-body"><span class="overline">ANTARCTIC KINGDOMS</span><h2>Coming Soon</h2><p>Our halls are getting ready. Today is dedicated to Antarctic Passport signups and the first 33 Mystery Golden Eggs.</p><button type="button" id="close-soon" class="primary">Back to Lantern Harbor</button></div></dialog>
+</div>
+</body></html>
