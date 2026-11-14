@@ -41,24 +41,24 @@ async function scan(){
   const raw=await call(address,PLAN.calls.name).catch(()=>null);
   if(raw&&new TextDecoder().decode(Uint8Array.from(raw.slice(2).match(/../g)||[],x=>parseInt(x,16))).includes('Antarctic Mystery Golden Egg')){found=true;throw Error('An existing Egg with different configuration exists at '+address+'. Report it; do not deploy a duplicate.');}
  }
- if(pending!==nonce)throw Error('The owner has a pending transaction. Resolve it in Rabby, then Check / resume.');
- if(record.pendingNonce!==undefined)throw Error('An earlier wallet request may exist at nonce '+record.pendingNonce+'. Inspect Rabby activity and provide its hash; deployment stays blocked.');
+ if(pending!==nonce)throw Error('The owner has a pending transaction. Resolve it in Zerion, then Check / resume.');
+ if(record.pendingNonce!==undefined)throw Error('An earlier wallet request may exist at nonce '+record.pendingNonce+'. Inspect Zerion activity and provide its hash; deployment stays blocked.');
  return false;
 }
 async function connect(){
- const providers=[];window.addEventListener('eip6963:announceProvider',e=>providers.push(e.detail));window.dispatchEvent(new Event('eip6963:requestProvider'));await new Promise(r=>setTimeout(r,300));
- wallet=providers.find(p=>/rabby/i.test(p.info.name+' '+p.info.rdns))?.provider||window.ethereum?.providers?.find(p=>p.isRabby)||(window.ethereum?.isRabby?window.ethereum:null);
- if(!wallet)throw Error('Enable Rabby in this desktop browser and reload this page.');
- const accounts=await wallet.request({method:'eth_requestAccounts'});if(accounts[0]?.toLowerCase()!==PLAN.admin.toLowerCase())throw Error('Select owner '+PLAN.admin+' in Rabby, then connect again.');
+ const providers=[],announce=e=>providers.push(e.detail);window.addEventListener('eip6963:announceProvider',announce);window.dispatchEvent(new Event('eip6963:requestProvider'));await new Promise(r=>setTimeout(r,300));window.removeEventListener('eip6963:announceProvider',announce);
+ wallet=providers.find(p=>p.info?.rdns==='io.zerion.wallet')?.provider||window.ethereum?.providers?.find(p=>p.isZerion)||(window.ethereum?.isZerion?window.ethereum:null);
+ if(!wallet)throw Error('Enable Zerion in this desktop browser and reload this page.');
+ const accounts=await wallet.request({method:'eth_requestAccounts'});if(accounts[0]?.toLowerCase()!==PLAN.admin.toLowerCase())throw Error('Select owner '+PLAN.admin+' in Zerion, then connect again.');
  try{await wallet.request({method:'wallet_switchEthereumChain',params:[{chainId:PLAN.chainId}]});}catch(e){if(e.code!==4902)throw e;await wallet.request({method:'wallet_addEthereumChain',params:[{chainId:PLAN.chainId,chainName:'Robinhood Chain Testnet',nativeCurrency:{name:'Test Ether',symbol:'ETH',decimals:18},rpcUrls:[PLAN.rpc],blockExplorerUrls:[PLAN.explorer]}]});}
- if(await wallet.request({method:'eth_chainId'})!==PLAN.chainId)throw Error('Switch Rabby to Robinhood Testnet 46630.');
+ if(await wallet.request({method:'eth_chainId'})!==PLAN.chainId)throw Error('Switch Zerion to Robinhood Testnet 46630.');
  connected=true;if(!await scan())status('Owner connected. No existing Egg found. Review & deploy requests one contract-creation signature with 0 ETH value.');
 }
 $('connect').onclick=()=>run(connect);
 $('deploy').onclick=()=>run(async()=>{
- if(!connected)throw Error('Connect Rabby first.');if(await scan())return;
- if(await wallet.request({method:'eth_chainId'})!==PLAN.chainId)throw Error('Rabby changed networks. Reconnect.');
- const accounts=await wallet.request({method:'eth_accounts'});if(accounts[0]?.toLowerCase()!==PLAN.admin.toLowerCase())throw Error('Rabby changed accounts. Reconnect.');
+ if(!connected)throw Error('Connect Zerion first.');if(await scan())return;
+ if(await wallet.request({method:'eth_chainId'})!==PLAN.chainId)throw Error('Zerion changed networks. Reconnect.');
+ const accounts=await wallet.request({method:'eth_accounts'});if(accounts[0]?.toLowerCase()!==PLAN.admin.toLowerCase())throw Error('Zerion changed accounts. Reconnect.');
  const nonce=await rpc('eth_getTransactionCount',[PLAN.admin,'pending']);
  const gas='0x'+(BigInt(await rpc('eth_estimateGas',[{from:PLAN.admin,data:PLAN.data,value:'0x0'}]))*12n/10n).toString(16);
  record.pendingNonce=Number(BigInt(nonce));record.predictedAddress=PLAN.candidates[record.pendingNonce];save();
@@ -67,7 +67,7 @@ $('deploy').onclick=()=>run(async()=>{
   record.transactionHash=hash;save();await inspectReceipt(hash);
  }catch(e){if(e.code===4001){delete record.pendingNonce;delete record.predictedAddress;save();}throw e;}
 });
-$('refresh').onclick=()=>run(async()=>{if(!await scan())status('No existing Egg or pending deployment found. Connect Rabby to deploy.');});
+$('refresh').onclick=()=>run(async()=>{if(!await scan())status('No existing Egg or pending deployment found. Connect Zerion to deploy.');});
 $('recover').onclick=()=>run(async()=>{await inspectReceipt($('hash').value.trim());});
 $('export').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(record,null,2)],{type:'application/json'}));a.download='Antarctic-Egg-46630-Receipt.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
 save();

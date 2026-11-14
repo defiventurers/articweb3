@@ -26,7 +26,7 @@ Official deployment source checked November 11, 2026: https://docs.robinhood.com
 
 A testnet token does not automatically become a mainnet token. Separate contracts, explicit account/achievement mapping and a reviewed backend storage migration are needed. The baseline storage currently prevents silently issuing a second-chain passport for an existing account.
 
-### Egg deployment with Rabby (no private key)
+### Egg deployment with Zerion (no private key)
 
 Use the existing deployment entry point with `--wallet`:
 

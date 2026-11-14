@@ -7,7 +7,7 @@ import ganache from 'ganache';
 import {BrowserProvider,ContractFactory,Interface,ZeroHash,id,getCreateAddress} from 'ethers';
 import {compile} from './compile.mjs';
 
-test('Rabby deployment, exact immutable runtime, lost-response recovery and duplicate blocking',async()=>{
+test('Zerion deployment, exact immutable runtime, lost-response recovery and duplicate blocking',async()=>{
  const chain=ganache.provider({logging:{quiet:true},chain:{chainId:46630}}),provider=new BrowserProvider(chain,undefined,{cacheTimeout:0});
  try{
  const owner=await (await provider.getSigner(0)).getAddress(),minter=await (await provider.getSigner(1)).getAddress(),passport='0xF059141A4e21eF5786e66e96F1c4357858a0De11',a=compile().AntarcticMysteryEgg;
@@ -16,20 +16,25 @@ test('Rabby deployment, exact immutable runtime, lost-response recovery and dupl
  const iface=new Interface(a.abi),plan={chainId:'0xb626',rpc:'https://example.test/rpc',admin:owner,minter,passport,data,runtimeSha256:createHash('sha256').update(Buffer.from(runtime.slice(2),'hex')).digest('hex'),calls:Object.fromEntries([['admin','hasRole',[ZeroHash,owner]],['minter','hasRole',[id('MINTER_ROLE'),minter]],['passport','passport',[]],['cap','MAX_EDITION',[]],['count','mintedCount',[]],['name','name',[]]].map(([key,fn,args])=>[key,iface.encodeFunctionData(fn,args)])),candidates:Array.from({length:32},(_,nonce)=>getCreateAddress({from:owner,nonce}))};
  const app=await fs.readFile(new URL('./operator/egg-app.js',import.meta.url),'utf8');
  let sentHash,loseResponse=true;
- const wallet={isRabby:true,async request({method,params}){
+ const wallet={isZerion:true,async request({method,params}){
   if(method==='eth_requestAccounts'||method==='eth_accounts')return [owner];
   if(method==='wallet_switchEthereumChain')return null;
   const result=await chain.request({method,params:params||[]});
   if(method==='eth_sendTransaction'){sentHash=result;if(loseResponse)throw Error('Wallet response lost after broadcast');}
   return result;
  }};
- function page(storage=new Map()){
+ function page(storage=new Map(),mode='eip6963'){
   const elements=new Map();const document={getElementById:id=>{if(!elements.has(id))elements.set(id,{textContent:'',value:'',disabled:false});return elements.get(id);}};
-  const context={document,window:{ethereum:wallet,addEventListener(){},dispatchEvent(){}},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},Event:class{},setTimeout,AbortSignal,crypto:webcrypto,TextDecoder,Uint8Array,URL,Blob,fetch:async(_url,options)=>{const r=JSON.parse(options.body);return {ok:true,json:async()=>({result:await chain.request({method:r.method,params:r.params})})};}};
+  const listeners=new Map(),otherWallet={isRabby:true,request(){throw Error('Wrong wallet selected');}};
+  const injected=mode==='direct'?wallet:mode==='providers'?{providers:[otherWallet,wallet]}:otherWallet;
+  const window={ethereum:injected,addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name),dispatchEvent(){if(mode==='eip6963')listeners.get('eip6963:announceProvider')?.({detail:{info:{name:'Zerion',rdns:'io.zerion.wallet'},provider:wallet}});}};
+  const context={document,window,localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},Event:class{},setTimeout,AbortSignal,crypto:webcrypto,TextDecoder,Uint8Array,URL,Blob,fetch:async(_url,options)=>{const r=JSON.parse(options.body);return {ok:true,json:async()=>({result:await chain.request({method:r.method,params:r.params})})};}};
   vm.createContext(context);vm.runInContext('const PLAN='+JSON.stringify(plan)+';\n'+app,context);
   return {elements,storage,click:async id=>{await elements.get(id).onclick();return elements.get('status').textContent;},record:()=>JSON.parse(storage.get('ak.egg-deployment.46630.v1'))};
  }
  const first=page();assert.match(await first.click('connect'),/No existing Egg/);
+ for(const mode of ['providers','direct'])assert.match(await page(new Map(),mode).click('connect'),/No existing Egg/);
+ const absent=page(new Map(),'absent');assert.match(await absent.click('connect'),/Enable Zerion/);assert.equal(absent.elements.get('deploy').disabled,true);
  assert.match(await first.click('deploy'),/response lost/);assert.ok(sentHash);assert.equal(first.record().pendingNonce,0);
  await first.click('refresh');assert.equal(first.record().eggAddress.toLowerCase(),plan.candidates[0].toLowerCase());assert.equal(first.record().runtimeVerified,true);assert.equal(first.elements.get('deploy').disabled,true);
  // A fresh tab without storage discovers the existing Egg by owner creation nonce.
