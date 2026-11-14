@@ -11,6 +11,11 @@ if(!Array.isArray(temporary))temporary=[];
 temporary=temporary.slice(0,3).filter(v=>v&&/^[a-f0-9-]{36}$/.test(v.id)&&/^[a-f0-9]{64}$/.test(v.hash)&&Number.isFinite(v.expiresAt));
 const SESSION_AGE=90*86400000;
 function createCompanyService({store=createCompanyStore(),now=Date.now,extraRoute,commerceOptions,accessCommerceOptions,authOptions,playAccessOptions,passportOptions,launchOptions,privyOptions,allowLegacyEnrollment=false,temporaryAccounts=temporary}={}){
+  if(process.env.AK_LAUNCH_RESET_PAUSED==='true'){
+    // Log only the host for reset targeting; never log credentials or the connection URL.
+    let databaseHost='unconfigured';try{databaseHost=new URL(process.env.DATABASE_URL).hostname;}catch{}
+    console.info('[launch-reset] registration paused; database host: '+databaseHost);
+  }
   const launch=require('./launchMetrics').createLaunchMetrics({now,...launchOptions});
   let proofService;
   const rates=new Map(),challenges=require('./companyChallenges').createChallengeRoutes(),commerce=require('./companyCommerce').createCommerce(commerceOptions);
