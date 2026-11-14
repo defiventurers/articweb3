@@ -1,6 +1,7 @@
 /* Passport-only release: faithful HomeLanding markup and the pre-existing app.css.
  * Only supplemental Passport and modal styling lives here. Do not restyle Home. */
 html.home-v2-active .app[data-screen="lobby"][data-tab="home"] {background:var(--heritage-page)}
+html.home-v2-active .app[data-screen="lobby"][data-tab="profile"] {background:var(--heritage-page)}
 html.home-v2-active body{background:var(--heritage-page)}
 .app[data-screen="lobby"]{display:flex;flex-direction:column;min-height:100dvh;position:relative}
 .app[data-screen="lobby"] .lobby-header.discovery-header{position:relative;flex-shrink:0}
