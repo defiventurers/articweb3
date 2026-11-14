@@ -33,6 +33,9 @@ test('Zerion deployment, exact immutable runtime, lost-response recovery and dup
   return {elements,storage,click:async id=>{await elements.get(id).onclick();return elements.get('status').textContent;},record:()=>JSON.parse(storage.get('ak.egg-deployment.46630.v1'))};
  }
  const first=page();assert.match(await first.click('connect'),/No existing Egg/);
+ const stale=new Map([['ak.egg-deployment.46630.v1',JSON.stringify({pendingNonce:0,predictedAddress:plan.candidates[0]})]]),cancelled=page(stale);
+ assert.match(await cancelled.click('cancelled'),/Cancelled request cleared/);assert.equal(cancelled.record().pendingNonce,undefined);
+ const used=page(new Map([['ak.egg-deployment.46630.v1',JSON.stringify({pendingNonce:1})]]));assert.match(await used.click('cancelled'),/pending or already used/);assert.equal(used.record().pendingNonce,1);
  for(const mode of ['providers','direct'])assert.match(await page(new Map(),mode).click('connect'),/No existing Egg/);
  const absent=page(new Map(),'absent');assert.match(await absent.click('connect'),/Enable Zerion/);assert.equal(absent.elements.get('deploy').disabled,true);
  assert.match(await first.click('deploy'),/response lost/);assert.ok(sentHash);assert.equal(first.record().pendingNonce,0);
@@ -42,6 +45,7 @@ test('Zerion deployment, exact immutable runtime, lost-response recovery and dup
  // Recover the exact submitted transaction and canonical receipt; never send again.
  first.elements.get('hash').value=sentHash;await chain.request({method:'evm_mine',params:[]});
  assert.match(await first.click('recover'),/Egg confirmed/);assert.equal(first.record().confirmedL2,true);assert.equal(first.record().rolesVerified,true);assert.equal(await provider.getTransactionCount(owner),1);
+ assert.match(await first.click('cancelled'),/transaction hash is saved/);
  const forged=page();forged.elements.get('hash').value='0x'+'0'.repeat(64);assert.match(await forged.click('recover'),/not visible/);
  }finally{provider.destroy();await chain.disconnect();}
 });

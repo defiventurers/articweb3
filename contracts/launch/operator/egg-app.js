@@ -69,5 +69,16 @@ $('deploy').onclick=()=>run(async()=>{
 });
 $('refresh').onclick=()=>run(async()=>{if(!await scan())status('No existing Egg or pending deployment found. Connect Zerion to deploy.');});
 $('recover').onclick=()=>run(async()=>{await inspectReceipt($('hash').value.trim());});
+$('cancelled').onclick=()=>run(async()=>{
+ if(record.transactionHash)throw Error('A transaction hash is saved. Use Check / resume.');
+ const nonce=record.pendingNonce;
+ if(!Number.isInteger(nonce)||!PLAN.candidates[nonce])throw Error('No cancelled wallet request needs clearing.');
+ if(await rpc('eth_chainId')!==PLAN.chainId)throw Error('RPC network mismatch.');
+ const latest=Number(BigInt(await rpc('eth_getTransactionCount',[PLAN.admin,'latest']))),pending=Number(BigInt(await rpc('eth_getTransactionCount',[PLAN.admin,'pending'])));
+ if(latest!==nonce||pending!==nonce)throw Error('The nonce is pending or already used. Inspect Zerion activity and resume its transaction hash.');
+ if(await rpc('eth_getCode',[PLAN.candidates[nonce],'latest'])!=='0x')throw Error('A contract exists at this nonce. Use Check / resume.');
+ delete record.pendingNonce;delete record.predictedAddress;save();
+ status('Cancelled request cleared after chain checks. Connect Zerion, then Review & deploy Egg.');
+});
 $('export').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(record,null,2)],{type:'application/json'}));a.download='Antarctic-Egg-46630-Receipt.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
 save();
