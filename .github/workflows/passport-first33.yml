@@ -57,6 +57,8 @@ jobs:
       - name: Install contract compilation and local EVM test tools
         run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: contracts/launch
+      - name: Verify screenshot-matched heritage Home and Passport-only navigation
+        run: node --test frontend/public/early/heritage-launch.test.mjs
       - name: Run real PostgreSQL first-33 allocation race and Para acceptance
         run: node --test tests/passport-first33.test.js tests/passport-delivery-phase4.test.js tests/para-game-wallet.test.js
         working-directory: server

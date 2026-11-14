@@ -39,6 +39,10 @@ html.home-v2-active body{background:var(--heritage-page)}
 #passport-view .nft-tile a{color:#efd096}
 #passport-view .instagram{display:block;color:#f5d98e;text-decoration:none;font-weight:700;border-top:1px solid #44617b;padding-top:15px;font-size:.9rem}
 #passport-view .error{border-radius:12px;background:#6f222f;color:#ffeced;margin:12px 0;padding:13px;font-size:.86rem}
+/* The approved screenshot retains the download icon in the header. */
+html.home-v2-active .app[data-screen="lobby"] .discovery-header .header-update{display:grid!important;min-width:40px;min-height:44px}
+#passport-view .founding-offer{padding:12px;background:#1b3b53;border-left:3px solid #d9b874;border-radius:8px}
+#passport-view .founding-offer strong{color:#ffdfa0}
 #soon-dialog{position:fixed;inset:auto 16px 22%;width:min(430px,calc(100% - 32px));max-width:none;border:1px solid #d4b675;background:linear-gradient(#153751,#071c32);color:#f5f0e5;border-radius:20px;padding:0;box-shadow:0 22px 80px #000b;z-index:70}
 #soon-dialog::backdrop{background:#021327c7}
 #soon-dialog .soon-body{padding:24px}
