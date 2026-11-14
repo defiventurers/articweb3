@@ -51,6 +51,12 @@ function createCompanyService({store=createCompanyStore(),now=Date.now,extraRout
     const origin=req.headers.origin,allowed=publicRead||origin==='https://appassets.androidplatform.net'||origin==='https://articweb3.onrender.com'||origin==='https://arcticdominion.xyz'||origin==='https://www.arcticdominion.xyz'||/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin||'');
     const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...(allowed?{'Access-Control-Allow-Origin':publicRead?'*':origin,'Vary':'Origin','Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'GET,POST,DELETE,OPTIONS'}:{})};
     if(req.method==='OPTIONS'){res.writeHead(204,headers);res.end();return true;}
+    // Reversible reset hold: block account/session/registration writes before routing.
+    // Keep the sender status readable so operations can verify that minting stopped.
+    if(process.env.AK_LAUNCH_RESET_PAUSED==='true'&&url.pathname!=='/arctic-play/v3/passport/delivery/config'){
+      res.writeHead(503,{...headers,'Retry-After':'300'});
+      res.end(JSON.stringify({error:'Passport registration is temporarily paused while we prepare the launch. Please try again shortly.',code:'LAUNCH_RESET_PAUSED',paused:true}));return true;
+    }
     Promise.resolve().then(()=>{if(origin&&!allowed)throw error('Origin not allowed.',403);rate(req);return route(req,url);}).then(value=>{if(value?.redirect){res.writeHead(302,{'Location':value.redirect,'Cache-Control':'no-store','Referrer-Policy':'no-referrer'});res.end();return;}res.writeHead(200,headers);res.end(JSON.stringify(value));}).catch(e=>{res.writeHead(e.status||503,headers);res.end(JSON.stringify({error:e.status?e.message:'Connect to the account service to continue. Your saved game is preserved.'}));});return true;
   }
   return{handleHttp,store,attachProofService:value=>{proofService=value;},syncPassportAchievements:passports.syncAchievements,withAccountSession:(token,fn)=>authenticated({headers:{authorization:'Bearer '+token}},fn),close:async()=>{challenges.close();await proofService?.close();await launch.close();await passports.close();return store.close();}};
