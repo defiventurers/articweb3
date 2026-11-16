@@ -11,6 +11,15 @@
   ],
   "headers": [
     {
+      "source": "/coming-soon.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/early/game-assets-sw.js",
       "headers": [
         {
@@ -145,8 +154,35 @@
   ],
   "redirects": [
     {
+      "source": "/:path((?!coming-soon\\.html$|early/?$|early/index\\.html$|early/dashboard/?$|early/dashboard/(?:index\\.html|dashboard\\.(?:js|css))$|early/(?:passport-launch\\.(?:js|css)|app\\.css|mystery-golden-egg\\.svg)$|early/art/).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "antarcticgaming.co"
+        }
+      ],
+      "destination": "/coming-soon.html",
+      "permanent": false
+    },
+    {
+      "source": "/:path((?!coming-soon\\.html$|early/?$|early/index\\.html$|early/dashboard/?$|early/dashboard/(?:index\\.html|dashboard\\.(?:js|css))$|early/(?:passport-launch\\.(?:js|css)|app\\.css|mystery-golden-egg\\.svg)$|early/art/).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.antarcticgaming.co"
+        }
+      ],
+      "destination": "/coming-soon.html",
+      "permanent": false
+    },
+    {
       "source": "/early",
       "destination": "/early/",
+      "permanent": false
+    },
+    {
+      "source": "/early/dashboard",
+      "destination": "/early/dashboard/",
       "permanent": false
     }
   ]
