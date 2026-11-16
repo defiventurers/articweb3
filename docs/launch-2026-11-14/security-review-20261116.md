@@ -14,7 +14,7 @@ Scope: `https://antarcticgaming.co/early/`, its Para sign-in portal, the shared 
 | Abuse | Apply independent IP and credential budgets, tighter sign-in/recovery/registration/expensive-action limits, Retry-After responses, bounded limiter maps and JWKS-refresh cooldowns. A fabricated bearer no longer substitutes for an IP budget. Cross-site socket upgrades are rejected; connection counts and payloads are bounded. Trust only Render-appended forwarding information in Render; ignore supplied forwarding headers elsewhere. |
 | Deployment / logging | Enforce certificate validation on all database pools with a shared configuration that cannot be weakened by URL sslmode flags. Add HSTS, response CSP for /early, anti-framing, MIME protection, no-referrer and bounded HTTP timeouts. Stop accepting operator secrets in query strings; use Authorization headers. Public diagnostics omit raw database/RPC errors. Structured authentication/error/denial logs omit bodies, tokens, emails, raw IPs and query strings. |
 
-The backend entry point is `server/scripts/start-with-runtime-status.js`, preloaded by `allGamesBackendBootstrap.js`. The existing prize/multigame source transformations were traced before adding shared HTTP ingress and WebSocket guards. Game geometry, catalogue IDs, contracts, launch allocation and approved artwork are unchanged.
+The backend entry point is `server/scripts/start-with-runtime-status.js`, preloaded by `allGamesBackendBootstrap.js`. The existing prize/multigame source transformations were traced before adding shared HTTP ingress and WebSocket guards. Game geometry, catalogue IDs, rule sources, contracts, launch allocation and approved artwork are unchanged. The generated Sanguo server bundle is regenerated for the patched compiler; its 178 rules tests and socket integration pass.
 
 ## Local verification
 
@@ -22,7 +22,7 @@ The backend entry point is `server/scripts/start-with-runtime-status.js`, preloa
 - 14 frontend entry/Passport checks pass.
 - Three real socket integration tests pass for Sanguo, Shogi and Xiangqi: create, invite, play, reconnect and bot actions.
 - Broader launch suite: 53 pass; three PostgreSQL integration checks require the CI-provided test database and are skipped locally.
-- The updated Vite frontend and Para wallet portal both build successfully. Generated engine artifacts from the frontend build were restored; this change does not update game rules or the approved /early bundle.
+- The updated Vite frontend and Para wallet portal both build successfully. Generated unrelated engine artifacts from the frontend build were restored. The Sanguo compiler output is refreshed because CI compares it byte for byte with the patched build tool output; its 178 rules tests pass. No game rule source or approved /early game bundle changes.
 - Backend production dependency audit: zero reported vulnerabilities. Backend direct dependencies are pinned to the reviewed lockfile versions.
 - Frontend and wallet dependency updates apply compatible fixes, including patched build tools, Axios and ws 8.x. The generated portal is built from reviewed sources by server installation and is excluded from Git.
 
@@ -45,3 +45,7 @@ Vercel project `articweb3`: an active, validated deny rule blocks environment fi
 - Neon IP Allow availability and scope: https://neon.com/docs/introduction/ip-allow
 - Vercel firewall rule configuration: https://vercel.com/docs/vercel-firewall/vercel-waf/rule-configuration
 - Remaining high-severity upstream advisories: https://github.com/advisories/GHSA-qr28-fpjm-wq7f and https://github.com/advisories/GHSA-mrhx-c7xc-m3w5
+
+## CI review
+
+The dedicated security regression/secret-scan/backend-audit job, Passport first-33 PostgreSQL/contract checks, frontend builds, backend checks and browser smoke job passed on the candidate. Broader mobile launch checks still contain two **reproduced baseline failures**: the Chaturanga test expects an older board-art filename, and the heritage-story test requires historicalNote properties missing from the baseline JSON. Both failures reproduce with baseline test/story sources from `596f6f6b`, and mobile sources are unchanged by this release. They are not silently waived as successful tests or repaired by altering approved artwork or inventing history. They remain a separate mobile-release maintenance issue.
