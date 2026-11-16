@@ -46,6 +46,7 @@ http.createServer = function createServerWithIndexerControls(listener) {
     }
 
     if (req.method === "GET" && path === "/mainnet/preflight") {
+      if (!operatorAuthorized(req)) return writeJson(res, 403, { ok: false, error: "Operator access required." });
       try {
         const result = await getMainnetPreflight();
         res.writeHead(200, { ...CORS_HEADERS, "Content-Type": "application/json" });
@@ -58,7 +59,7 @@ http.createServer = function createServerWithIndexerControls(listener) {
     }
 
     if (req.method === "GET" && path === "/ops/settlement/rooms") {
-      if (!operatorAuthorized(fullUrl)) return writeJson(res, 403, { ok: false, error: "Invalid settlement operator key." });
+      if (!operatorAuthorized(req)) return writeJson(res, 403, { ok: false, error: "Invalid settlement operator key." });
       try {
         const result = await listSettlementRooms({ limit: fullUrl.searchParams.get("limit"), includeAll: fullUrl.searchParams.get("includeAll") });
         return writeJson(res, 200, result);
@@ -68,7 +69,7 @@ http.createServer = function createServerWithIndexerControls(listener) {
     }
 
     if (req.method === "GET" && path === "/ops/settlement/debug") {
-      if (!operatorAuthorized(fullUrl)) return writeJson(res, 403, { ok: false, error: "Invalid settlement operator key." });
+      if (!operatorAuthorized(req)) return writeJson(res, 403, { ok: false, error: "Invalid settlement operator key." });
       try {
         const result = await getSettlementDebugPacket({ roomCode: fullUrl.searchParams.get("roomCode"), contractMatchId: fullUrl.searchParams.get("contractMatchId") || fullUrl.searchParams.get("matchId") });
         return writeJson(res, result.ok ? 200 : 404, result);
@@ -79,7 +80,7 @@ http.createServer = function createServerWithIndexerControls(listener) {
 
     if (req.method === "GET" && path === "/indexer/health") {
       res.writeHead(200, { ...CORS_HEADERS, "Content-Type": "application/json" });
-      res.end(JSON.stringify(getVaultIndexerHealth()));
+      res.end(JSON.stringify(require("../requestSecurity").safeDiagnostics(getVaultIndexerHealth())));
       return;
     }
 
@@ -108,7 +109,7 @@ http.createServer = function createServerWithIndexerControls(listener) {
         res.end(JSON.stringify({ ok: false, error: "ETH_INDEXER_RUN_KEY is not configured." }));
         return;
       }
-      if (fullUrl.searchParams.get("key") !== RUN_KEY) {
+      if (!require("../operatorAuth").operatorAuthorized(req, RUN_KEY)) {
         res.writeHead(403, { ...CORS_HEADERS, "Content-Type": "application/json" });
         res.end(JSON.stringify({ ok: false, error: "Invalid indexer key." }));
         return;
@@ -200,9 +201,7 @@ function writeJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
-function operatorAuthorized(url) {
-  return Boolean(SETTLEMENT_OPERATOR_KEY && url.searchParams.get("key") === SETTLEMENT_OPERATOR_KEY);
-}
+function operatorAuthorized(req) { return require("../operatorAuth").operatorAuthorized(req, SETTLEMENT_OPERATOR_KEY); }
 
 async function listSettlementRooms(options = {}) {
   const limit = Math.min(100, Math.max(1, Number(options.limit || 50)));

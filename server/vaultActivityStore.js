@@ -12,7 +12,7 @@ let initError = null;
 function getPool() {
   if (!DATABASE_URL) return null;
   if (!pool) {
-    pool = new Pool({ connectionString: DATABASE_URL, ssl: DATABASE_SSL ? { rejectUnauthorized: false } : undefined });
+    pool = new Pool(require('./databaseSecurity').databaseOptions(DATABASE_URL));
   }
   return pool;
 }
@@ -79,7 +79,7 @@ async function getVaultActivityForWallet(wallet, limit = 100) {
 }
 
 function vaultActivityStoreStatus() {
-  return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError };
+  return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError ? "Database check pending." : "" };
 }
 
 function saveMemory(entry) {

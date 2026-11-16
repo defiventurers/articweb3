@@ -4,7 +4,7 @@ const {Pool}=require('pg');
 // Passport registration and its two optional delivery jobs commit together.
 // No plaintext Google identity or player name is ever used in a mint argument.
 function createPassportStore({databaseUrl=process.env.DATABASE_URL,pool,eggsEnabled=process.env.AK_GOLDEN_EGG_PROMOTION_ENABLED==='true'}={}){
- const db=pool|| (databaseUrl?new Pool({connectionString:databaseUrl,ssl:process.env.DATABASE_SSL==='true'||/sslmode=require/.test(databaseUrl)?{rejectUnauthorized:false}:undefined}):null);
+ const db=pool|| (databaseUrl?new Pool(require('./databaseSecurity').databaseOptions(databaseUrl)):null);
  let ready;
  db?.on?.('error',()=>{});
  function init(){if(!db)throw Object.assign(Error('Passport registration is awaiting database setup.'),{status:503});return ready||(ready=(async()=>{const c=await db.connect();try{await c.query('BEGIN');await c.query("SELECT pg_advisory_xact_lock(hashtextextended('ak-passport-schema-v1',0))");await c.query(`

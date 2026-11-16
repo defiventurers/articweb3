@@ -11,10 +11,7 @@ let initError = null;
 function getPool() {
   if (!DATABASE_URL) return null;
   if (!pool) {
-    pool = new Pool({
-      connectionString: DATABASE_URL,
-      ssl: DATABASE_SSL ? { rejectUnauthorized: false } : undefined
-    });
+    pool = new Pool(require('./databaseSecurity').databaseOptions(DATABASE_URL));
   }
   return pool;
 }
@@ -104,7 +101,7 @@ async function getLeaderboard(limit = 100) {
 }
 
 function profileStoreStatus() {
-  return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError };
+  return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError ? "Database check pending." : "" };
 }
 
 function rowToProfile(row) {

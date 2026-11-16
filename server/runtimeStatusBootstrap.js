@@ -47,7 +47,7 @@ function installRuntimeStatusEndpoints() {
 function writeJson(res, status, body) {
   res.writeHead(status, { ...CORS_HEADERS, "Content-Type": "application/json", "Cache-Control": "no-store" });
   if (status === 204 || body === null) return res.end();
-  res.end(JSON.stringify(body));
+  res.end(JSON.stringify(require("./requestSecurity").safeDiagnostics(body)));
 }
 
 module.exports = { installRuntimeStatusEndpoints };
