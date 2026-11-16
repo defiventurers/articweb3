@@ -25,7 +25,7 @@ test('Game actions are gated while the Home Passport shortcut is functional',()=
  assert.ok(!html.includes('src="./app.js"'),'game runtime must not launch');
 });
 test('Passport signup elements, accessible feedback, QR-free wallet and egg receipts retained',()=>{
- for(const id of ['passport-view','adult-confirm','sign-in','connection-status','registration-card','new-wallet','consent','register','collection-card','created-wallet','visa-state','egg-state','visa-tx','egg-tx','refresh','passport-error','soon-dialog'])assert.ok(html.includes('id="'+id+'"'),id);
+ for(const id of ['passport-view','adult-confirm','sign-in','connection-status','wallet-card','collection-card','created-wallet','visa-state','egg-state','visa-tx','egg-tx','refresh','passport-error','soon-dialog'])assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(client,/\/auth\/para\/start/);assert.match(client,/\/passport\/egg\/acceptance/);
- assert.match(html,/instagram\.com\/antarcticgamingco/);assert.match(theme,/header-update\{display:grid!important/);
+ assert.ok(!html.includes('id="register"'));assert.match(html,/free <strong>Antarctic Passport NFT/);assert.match(theme,/header-update\{display:grid!important/);
 });

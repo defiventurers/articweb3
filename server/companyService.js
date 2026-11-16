@@ -11,7 +11,7 @@ if(!Array.isArray(temporary))temporary=[];
 temporary=temporary.slice(0,3).filter(v=>v&&/^[a-f0-9-]{36}$/.test(v.id)&&/^[a-f0-9]{64}$/.test(v.hash)&&Number.isFinite(v.expiresAt));
 const SESSION_AGE=7*86400000,SESSION_IDLE=86400000;
 const {createRequestSecurity,validateJson,securityHeaders,originAllowed}=require('./requestSecurity');
-function createCompanyService({store=createCompanyStore(),now=Date.now,extraRoute,commerceOptions,accessCommerceOptions,authOptions,playAccessOptions,passportOptions,launchOptions,privyOptions,allowLegacyEnrollment=false,temporaryAccounts=temporary}={}){
+function createCompanyService({store=createCompanyStore(),now=Date.now,extraRoute,commerceOptions,accessCommerceOptions,authOptions,playAccessOptions,passportOptions,launchOptions,earlyOptions,privyOptions,allowLegacyEnrollment=false,temporaryAccounts=temporary}={}){
   if(process.env.AK_LAUNCH_RESET_PAUSED==='true'){
     // Log only the host for reset targeting; never log credentials or the connection URL.
     let databaseHost='unconfigured';try{databaseHost=new URL(process.env.DATABASE_URL).hostname;}catch{}
@@ -23,6 +23,7 @@ function createCompanyService({store=createCompanyStore(),now=Date.now,extraRout
   const playAccess=require('./companyPlayAccess').createPlayAccess(playAccessOptions);
   const auth=require('./companyAuth').createCompanyAuth(authOptions);
   const passports=require('./antarcticPassport').createPassportRoutes({...passportOptions,accountStore:store});
+  const early=require('./earlySignup').createEarlySignup({store,passports,now,...earlyOptions});
   const accessCommerce=require('./accessCommerce').createAccessCommerce({...accessCommerceOptions,offlineReady:playAccess.ready});
   function credentials(raw){const match=/^([a-f0-9-]{36})\.([A-Za-z0-9_-]{43})$/.exec(String(raw||''));if(!match)throw error('Use your saved recovery code or sign in again.',401);return{id:match[1],key:match[2]};}
   function session(account){const key=secret();account.sessions=(account.sessions||[]).filter(s=>s.expires>now()).slice(-9);account.sessions.push({hash:hash(key),issuedAt:now(),lastSeen:now(),expires:Math.min(now()+SESSION_AGE,account.temporaryExpiresAt||Infinity)});return account.id+'.'+key;}
@@ -37,6 +38,7 @@ function createCompanyService({store=createCompanyStore(),now=Date.now,extraRout
   async function body(req){const chunks=[];let bytes=0;for await(const b of req){bytes+=b.length;if(bytes>150000)throw error('That request is too large.',413);chunks.push(b);}try{const value=JSON.parse(Buffer.concat(chunks).toString()||'{}');if(!value||typeof value!=='object'||Array.isArray(value))throw Error();validateJson(value);return value;}catch(e){throw e.status?e:error('Invalid request.');}}
   async function route(req,url){
     const p=url.pathname.replace('/arctic-play/v3',''),method=req.method;
+    if(p==='/early/signup'&&method==='POST')return early.enroll({req,authenticated},await body(req));
     const launchResult=await launch.route({req,url,path:p,method,body,authenticated,store,error,now});if(launchResult!==undefined)return launchResult;
     if(proofService){const proofResult=await proofService.route({req,url,path:p,method,body,authenticated,store,error,now});if(proofResult!==undefined)return proofResult;}
     if(p==='/capabilities'&&method==='GET'){let cloud=false;try{await store.init();cloud=true;}catch{}return{cloud,commerce:cloud&&commerce.enabled(),version:2,accountPlay:cloud,temporaryAccounts:true,offlineLicenses:playAccess.ready};}
@@ -49,8 +51,8 @@ function createCompanyService({store=createCompanyStore(),now=Date.now,extraRout
     if(p==='/progress'&&method==='GET')return authenticated(req,a=>({progress:a.progress,revision:a.revision}));
     if(p==='/progress'&&method==='POST'){const b=await body(req);return authenticated(req,a=>{const progress=mergeProgress(a.progress,b.progress);if(Buffer.byteLength(JSON.stringify(progress))>150000)throw error('Your saved collection is too large to merge. Contact support.',413);a.progress=progress;a.revision++;return{progress:a.progress,revision:a.revision};});}
     if(p==='/metrics'&&method==='POST'){const b=await body(req);return authenticated(req,a=>{if(b.clear){a.metrics=[];return{ok:true};}if(b.consent!==true)throw error('Usage sharing is off.',403);const seen=new Set(a.metrics.map(e=>e.id));for(const e of (Array.isArray(b.events)?b.events:[]).slice(0,40))if(e&&/^[a-f0-9-]{36}$/.test(e.id)&&METRICS.has(e.name)&&!seen.has(e.id)){a.metrics.push({id:e.id,name:e.name,at:now(),game:['shogi','sannin','sanguo','sanyou','yanyi','xiangqi','dominion'].includes(e.game)?e.game:null});seen.add(e.id);}a.metrics=a.metrics.slice(-2000);return{ok:true};});}
-    const authResult=await auth.route({req,url,path:p,method,body,authenticated,store,error,now,session,walletInventory:passports.walletInventory});if(authResult!==undefined)return authResult;
-    const passportResult=await passports.route({req,url,path:p,method,body,authenticated,store,error,now});if(passportResult!==undefined)return passportResult;
+    const authResult=await auth.route({req,url,path:p,method,body,authenticated,store,error,now,session,walletInventory:passports.walletInventory,earlySignup:early});if(authResult!==undefined)return authResult;
+    const passportResult=await passports.route({req,url,path:p,method,body,authenticated,store,error,now,earlySignup:early});if(passportResult!==undefined)return passportResult;
     const playResult=await playAccess.route({req,url,path:p,method,body,authenticated,store,error,now});if(playResult!==undefined)return playResult;
     const accessResult=await accessCommerce.route({req,url,path:p,method,body,authenticated,store,error,now});if(accessResult!==undefined)return accessResult;
     const commerceResult=await commerce.route({req,url,path:p,method,body,authenticated,store,error,now});if(commerceResult!==undefined)return commerceResult;
@@ -59,7 +61,7 @@ function createCompanyService({store=createCompanyStore(),now=Date.now,extraRout
     throw error('This feature is not available on this server yet.',404);
   }
   function handleHttp(req,res){const url=new URL(req.url,'https://articweb3.onrender.com');if(url.pathname==='/arctic-play/payment-return'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"});res.end('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Back to Camp</title><style>body{font:18px system-ui;background:#0d1422;color:white;max-width:400px;margin:60px auto;padding:24px;line-height:1.6}a{color:#9bd4ff}</style><h1>Back to Camp</h1><p>Return to Antarctic Kingdoms and tap Restore purchases to check your collection.</p><p><a href="arcticplay://camp/restore">Open Camp</a></p><p>Purchase confirmation comes from the payment service. This page does not grant items.</p></html>');return true;}const invitation=/^\/arctic-play\/challenge\/([A-Za-z0-9_-]{24})$/.exec(url.pathname);if(invitation&&req.method==='GET'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'",'Cache-Control':'no-store'});res.end(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>A discovery together</title><style>body{background:#0d1422;color:#f5f9ff;font:18px system-ui;max-width:400px;margin:60px auto;padding:24px;line-height:1.6}a{display:block;background:#2788cf;color:white;padding:16px;border-radius:16px;text-decoration:none;text-align:center}</style><h1>A little discovery together</h1><p>A friend invited you to try a strategy-game position in Antarctic Kingdoms.</p><a href="arcticplay://challenge/${invitation[1]}">Open the discovery</a><p>Need the app? Ask your friend to share the APK from Profile.</p></html>`);return true;}if(!url.pathname.startsWith('/arctic-play/v3/'))return false;
-    const publicRead=req.method==='GET'&&/^\/arctic-play\/v3\/(launch\/(public|activity)|passport\/(metadata|achievement-metadata|egg-metadata)\/|passport\/delivery\/config$)/.test(url.pathname);
+    const publicRead=req.method==='GET'&&/^\/arctic-play\/v3\/(launch\/(public|activity|early)|passport\/(metadata|achievement-metadata|egg-metadata)\/|passport\/delivery\/config$)/.test(url.pathname);
     const origin=req.headers.origin,allowed=publicRead||originAllowed(origin);
     const headers={...securityHeaders,'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...(allowed&&(origin||publicRead)?{'Access-Control-Allow-Origin':publicRead?'*':origin,'Vary':'Origin','Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'GET,POST,DELETE,OPTIONS'}:{})};
     if(req.method==='OPTIONS'){res.writeHead(204,headers);res.end();return true;}
@@ -68,7 +70,9 @@ function createCompanyService({store=createCompanyStore(),now=Date.now,extraRout
     // Metadata and sender status remain readable during the registration hold.
     const pauseRead=req.method==='GET'&&(url.pathname==='/arctic-play/v3/passport/delivery/config'||/^\/arctic-play\/v3\/passport\/(metadata|achievement-metadata|egg-metadata)\//.test(url.pathname));
     const pauseSignIn=(req.method==='GET'&&['/arctic-play/v3/auth/para/config','/arctic-play/v3/passport'].includes(url.pathname))||(req.method==='POST'&&['/arctic-play/v3/auth/para/start','/arctic-play/v3/auth/para/attempt','/arctic-play/v3/auth/para/complete','/arctic-play/v3/auth/exchange','/arctic-play/v3/logout'].includes(url.pathname));
-    if(process.env.AK_LAUNCH_RESET_PAUSED==='true'&&!pauseRead&&!pauseSignIn){
+    const earlyRead=early.enabled&&req.method==='GET'&&['/arctic-play/v3/passport/acceptance','/arctic-play/v3/passport/egg/acceptance','/arctic-play/v3/launch/early'].includes(url.pathname);
+    const earlyWrite=early.enabled&&req.method==='POST'&&url.pathname==='/arctic-play/v3/early/signup';
+    if(process.env.AK_LAUNCH_RESET_PAUSED==='true'&&!pauseRead&&!pauseSignIn&&!earlyRead&&!earlyWrite){
       res.writeHead(503,{...headers,'Retry-After':'300'});
       res.end(JSON.stringify({error:'Passport registration is temporarily paused while we prepare the launch. Please try again shortly.',code:'LAUNCH_RESET_PAUSED',paused:true}));return true;
     }

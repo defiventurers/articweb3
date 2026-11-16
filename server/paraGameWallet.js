@@ -33,15 +33,16 @@ function createParaGameWallet({enabled=process.env.AK_PARA_ENABLED!=='false',api
  }
  const message=(attempt,expires)=>'Antarctic Kingdoms\nConnect my Para game wallet\nOrigin: https://articweb3.onrender.com\nRequest: '+attempt+'\nExpires: '+expires;
  async function route(ctx){const {path,method,body,store,now,error,authenticated,req}=ctx;
-  if(path==='/auth/para/config'&&method==='GET')return {...config(),enabled:ready&&store.configured};
+  if(path==='/auth/para/config'&&method==='GET')return {...config(),enabled:ready&&store.configured,earlySignup:{enabled:ctx.earlySignup?.enabled===true,consentVersion:require('./earlySignup').CONSENT}};
   if(path==='/auth/para/start'&&method==='POST'){
    if(!ready||!store.configured)throw error(config().reason||'Para sign-in is awaiting activation.',503);
    const b=await body(req);if(!valid(b.challenge))throw error('Start sign-in again.');
+   let earlyEnrollment;if(b.earlySignup!==undefined){if(!ctx.earlySignup?.enabled)throw error('Automatic signup is being prepared.',503);if(b.returnPath!=='/early/'||b.platform!=='web'||b.purpose&&b.purpose!=='login')throw error('Use the website signup flow.');earlyEnrollment=require('./earlySignup').enrollment(b.earlySignup,req.headers.origin,now());}
    const purpose=['manage','link'].includes(b.purpose)?b.purpose:'login';
    const actor=purpose!=='login'?await authenticated(req,(a,c)=>({accountId:a.id,sessionHash:hash(c.key)})):{};
    const allowedWebOrigin=['https://antarcticgaming.co','https://www.antarcticgaming.co','https://arcticdominion.xyz','https://www.arcticdominion.xyz'].includes(req.headers.origin)?req.headers.origin:null;
    const browserReturn=allowedWebOrigin&&['/play/','/early/'].includes(b.returnPath)?allowedWebOrigin+b.returnPath:req.headers.origin==='https://articweb3.onrender.com'&&b.returnPath==='/arctic-play/passport-check/'?'https://articweb3.onrender.com/arctic-play/passport-check/':null;
-   const attempt=secret(),expires=now()+600000;await store.transact('para-wallet-attempt',hash(attempt),()=>({challenge:b.challenge,platform:['android','website'].includes(b.platform)?b.platform:'web',browserReturn,purpose,...actor,expires}));
+   const attempt=secret(),expires=now()+600000;await store.transact('para-wallet-attempt',hash(attempt),()=>({challenge:b.challenge,platform:['android','website'].includes(b.platform)?b.platform:'web',browserReturn,purpose,...actor,...(earlyEnrollment?{earlyEnrollment}:{}),expires}));
    return {url:'https://articweb3.onrender.com/arctic-play/wallet/?attempt='+attempt+'&provider=para'};
   }
   if(path==='/auth/para/attempt'&&method==='POST'){
@@ -60,7 +61,7 @@ function createParaGameWallet({enabled=process.env.AK_PARA_ENABLED!=='false',api
    await store.transact('para-wallet-attempt',hash(b.attempt),old=>{if(!old||old.used||old.expires<=now())throw error('This sign-in was already completed.',401);return {...old,used:true};});
    const wallet={provider:'para',address:v.address,identity:v.key,walletId:v.walletId,network:environment,chainId};
    if(a.purpose==='manage')return {managed:true,wallet,collectibles:ctx.walletInventory?await ctx.walletInventory(a.accountId):[]};
-   const ticket=secret();await store.transact('auth-ticket',hash(ticket),()=>({provider:'para-wallet',key:v.key,email:v.email,displayName:v.name,wallet,challenge:a.challenge,...(a.accountId?{accountId:a.accountId,linkSessionHash:a.sessionHash}:{}),expires:now()+120000}));
+   const ticket=secret();await store.transact('auth-ticket',hash(ticket),()=>({provider:'para-wallet',key:v.key,email:v.email,displayName:v.name,wallet,challenge:a.challenge,...(a.earlyEnrollment?{earlyEnrollment:a.earlyEnrollment}:{}),...(a.accountId?{accountId:a.accountId,linkSessionHash:a.sessionHash}:{}),expires:now()+120000}));
    return {returnTo:a.platform==='android'?'arcticplay://auth?ticket='+ticket:a.platform==='website'?web.href+'?auth_ticket='+ticket:(a.browserReturn||'/arctic-play/app/')+'?auth_ticket='+ticket};
   }
  }

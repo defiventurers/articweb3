@@ -62,6 +62,10 @@ test('wallet mismatch and unavailable verification cannot claim successful deliv
  const q=accountPage({verify:()=>{throw Error('RPC unavailable');}});try{await settle();assert.match(q.$('egg-state').textContent,/verification pending/);assert.doesNotMatch(q.$('egg-state').textContent,/Received/);}finally{q.dom.window.close();}
 });
 test('no Egg allocation and registration remain clear after sign-in',async()=>{
- const record=registered();record.eggSerial=null;record.deliveries=record.deliveries.filter(d=>d.kind!=='egg');const p=accountPage({record});try{await settle();assert.match(p.$('egg-state').textContent,/Not allocated/);assert.equal(p.$('egg-tx').hidden,true);}finally{p.dom.window.close();}
- const q=accountPage({record:null});try{await settle();assert.equal(q.$('wallet-card').hidden,false);assert.equal(q.$('registration-card').hidden,false);assert.equal(q.$('collection-card').hidden,true);}finally{q.dom.window.close();}
+ const record=registered();record.eggSerial=null;record.deliveries=record.deliveries.filter(d=>d.kind!=='egg');const p=accountPage({record});try{await settle();assert.match(p.$('egg-state').textContent,/No Egg/);assert.equal(p.$('egg-tx').hidden,true);}finally{p.dom.window.close();}
+ const q=accountPage({record:null});try{await settle();assert.equal(q.$('wallet-card').hidden,false);assert.equal(q.$('registration-card'),null);assert.equal(q.$('collection-card').hidden,false);assert.match(q.$('visa-state').textContent,/Preparing/);}finally{q.dom.window.close();}
+});
+
+test('existing signed-in explorers consent once on the signup page and receive automatic setup without a Passport form',async()=>{
+ let enrolled=false;const p=page({session:'existing',fetcher:async(url,opts)=>({ok:true,json:async()=>url.endsWith('/auth/para/config')?{enabled:true,earlySignup:{enabled:true}}:url.endsWith('/early/signup')?(enrolled=true,{status:'registered'}):{identity:{wallet,needsEarlySignup:!enrolled},passport:enrolled?registered():null}})});try{await settle();assert.equal(p.$('entry-gate').hidden,false);assert.equal(p.$('harbor-app').hidden,true);p.$('adult-confirm').checked=true;p.$('sign-in').click();await settle();assert.equal(p.$('harbor-app').hidden,false);assert.equal(p.$('passport-view').hidden,false);assert.equal(p.$('register'),null);const call=p.calls.find(c=>c.url.endsWith('/early/signup'));assert.deepEqual(JSON.parse(call.opts.body),{consentVersion:'early-signup-v1',adultConfirmed:true});assert.equal(p.calls.some(c=>c.url.endsWith('/auth/para/start')),false);}finally{p.dom.window.close();}
 });
