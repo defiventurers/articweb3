@@ -9,7 +9,7 @@ let initError = null;
 
 function getPool() {
   if (!DATABASE_URL) return null;
-  if (!pool) pool = new Pool({ connectionString: DATABASE_URL, ssl: DATABASE_SSL ? { rejectUnauthorized: false } : undefined });
+  if (!pool) pool = new Pool(require('./databaseSecurity').databaseOptions(DATABASE_URL));
   return pool;
 }
 
@@ -120,7 +120,7 @@ function sanitizeRoom(room) {
 }
 
 function roomStoreStatus() {
-  return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError };
+  return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError ? "Database check pending." : "" };
 }
 
 module.exports = { initRoomStore, saveRoom, loadRooms, loadSavedRoom, roomStoreStatus };

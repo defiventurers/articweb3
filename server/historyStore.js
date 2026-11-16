@@ -12,7 +12,7 @@ let initError = null;
 
 function getPool() {
   if (!DATABASE_URL) return null;
-  if (!pool) pool = new Pool({ connectionString: DATABASE_URL, ssl: DATABASE_SSL ? { rejectUnauthorized: false } : undefined });
+  if (!pool) pool = new Pool(require('./databaseSecurity').databaseOptions(DATABASE_URL));
   return pool;
 }
 
@@ -103,7 +103,7 @@ async function getHistoryForWallet(wallet, gameId = null) {
   return ids.map((id) => memoryEntries.get(id)).filter(Boolean).filter((entry) => !normalizedGameId || entry.gameId === normalizedGameId);
 }
 
-function historyStoreStatus() { return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError }; }
+function historyStoreStatus() { return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError ? "Database check pending." : "" }; }
 function saveMemory(entry) { const key = normalizeWallet(entry.wallet); const normalized = { gameId: "arctic-dominion", ...entry, wallet: key }; memoryEntries.set(normalized.id, normalized); const ids = memoryByWallet.get(key) || []; memoryByWallet.set(key, [normalized.id, ...ids.filter((id) => id !== normalized.id)].slice(0, MAX_HISTORY_PER_WALLET)); }
 function updateMemoryWithdrawal(id, txHash) { const existing = memoryEntries.get(id); if (existing) memoryEntries.set(id, { ...existing, withdrawalTxHash: txHash || existing.withdrawalTxHash || null, withdrawalStatus: "indexed" }); }
 function linkMemoryWithdrawal(wallet, amountWei, txHash) { const ids = memoryByWallet.get(wallet) || []; const matches = ids.map((id) => memoryEntries.get(id)).filter(Boolean).filter((entry) => entry.roomMode === "high_stakes").filter((entry) => entry.contractMatchId).filter((entry) => ["submitted", "settlement_pending", "settled"].includes(entry.settlementStatus || "")).filter((entry) => String(entry.payoutWei || "0") === amountWei).filter((entry) => !entry.withdrawalTxHash || entry.withdrawalTxHash === txHash).slice(0, 1); if (matches.length !== 1) return null; const match = matches[0]; updateMemoryWithdrawal(match.id, txHash); return { id: match.id, roomCode: match.roomCode, matchId: match.matchId, contractMatchId: match.contractMatchId, payoutWei: match.payoutWei, withdrawalTxHash: txHash, attributionSource: "latest_unmatched_high_stakes_memory" }; }

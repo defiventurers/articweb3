@@ -5,7 +5,7 @@ const LIVE_HALLS={subcontinent:['dominion'],china:['xiangqi','sanguo','sanyou','
 const PENDING=new Set(['queued','sending','submitted','retry']);
 function createLaunchMetrics({databaseUrl=process.env.DATABASE_URL,pool,now=Date.now,launchAt=Date.parse(process.env.AK_LAUNCH_AT||'2026-11-14T00:00:00+05:30'),ownerKey=process.env.AK_LAUNCH_OWNER_KEY,serviceKey=process.env.AK_LAUNCH_SERVICE_KEY,operationsOptions={},chainId=Number(process.env.AK_VISA_CHAIN_ID||46630),rooms,deliveryEnabled=process.env.AK_VISA_DELIVERY_ENABLED==='true'}={}){
  const ownerCredential=ownerKey||serviceKey;let launchOperations;
- const db=pool||(databaseUrl?new Pool({connectionString:databaseUrl,ssl:process.env.DATABASE_SSL==='true'||/sslmode=require/.test(databaseUrl)?{rejectUnauthorized:false}:undefined}):null);let ready;
+ const db=pool||(databaseUrl?new Pool(require('./databaseSecurity').databaseOptions(databaseUrl)):null);let ready;
  if(!Number.isFinite(launchAt)||!chains[chainId])throw Error('Invalid launch configuration.');
  const init=()=>{if(!db)throw Object.assign(Error('Launch statistics are awaiting durable storage.'),{status:503});return ready||(ready=db.query('CREATE TABLE IF NOT EXISTS ak_launch_visits (day DATE NOT NULL, session_hash TEXT NOT NULL, first_at BIGINT NOT NULL, PRIMARY KEY(day,session_hash))').catch(e=>{ready=null;throw e;}));};
  const cohort=()=>now()<launchAt?{since:Date.parse('2026-11-01T00:00:00+05:30'),phase:'prelaunch'}:{since:launchAt,phase:'launch'};

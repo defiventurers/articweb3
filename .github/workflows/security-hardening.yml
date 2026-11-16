@@ -1,0 +1,41 @@
+name: Security regression checks
+on:
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'frontend/public/early/**'
+      - 'frontend/vercel.json'
+      - 'scripts/security-scan.mjs'
+      - '.github/workflows/security-hardening.yml'
+permissions:
+  contents: read
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Scan tracked text for credentials without printing values
+        run: node scripts/security-scan.mjs
+      - name: Install reviewed server dependencies without install scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: server
+      - name: Install public proof dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: shared/fair-play
+      - name: Install DOM test dependency
+        run: npm install --prefix "$RUNNER_TEMP/ak-security-tests" --ignore-scripts --no-audit --no-fund jsdom@26.1.0
+      - name: Verify authentication, ownership, abuse protection and Passport navigation
+        run: >-
+          NODE_PATH="$RUNNER_TEMP/ak-security-tests/node_modules" node --test
+          server/tests/security-hardening.test.js server/tests/company-service.test.js
+          server/tests/company-account-play.test.js server/tests/para-game-wallet.test.js
+          server/tests/antarctic-passport.test.js server/tests/company-commerce.test.js
+          server/tests/company-challenges.test.js frontend/tests/early-entry.test.cjs
+          frontend/public/early/heritage-launch.test.mjs
+      - name: Audit production backend dependencies
+        run: npm audit --omit=dev --audit-level=high
+        working-directory: server

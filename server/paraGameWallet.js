@@ -11,7 +11,7 @@ function createParaGameWallet({enabled=process.env.AK_PARA_ENABLED!=='false',api
  const base=environment==='BETA'?'https://api.beta.getpara.com':'https://api.getpara.com';
  const ready=!!(enabled&&apiKey&&audience&&((environment==='BETA'&&/^beta_/i.test(apiKey))||(environment==='PRODUCTION'&&/^prod_/i.test(apiKey)))&&((environment==='BETA'&&chains[chainId].testnet)||(environment==='PRODUCTION'&&productionApproved)));
  const web=new URL(websiteReturnUri);if(web.protocol!=='https:'||web.username||web.password||web.search||web.hash)throw Error('Invalid website return URI.');
- let keys,keysAt=0;
+ let keys,keysAt=0,keysPending;
  function config(){return {enabled:ready,provider:'para',apiKey:ready?apiKey:null,environment,chainId,chain:chains[chainId],loginMethods:'dashboard',walletCreation:'automatic',...(ready?{}:{reason:'Para sign-in needs its server configuration. Your saved games are preserved.'})};}
  async function claimsOf(token,address,ctx){
   try{
@@ -19,7 +19,7 @@ function createParaGameWallet({enabled=process.env.AK_PARA_ENABLED!=='false',api
    const h=JSON.parse(Buffer.from(p[0],'base64url')),c=JSON.parse(Buffer.from(p[1],'base64url'));
    if(h.alg!=='RS256'||typeof h.kid!=='string'||h.kid.length>200||c.aud!==audience||!Number.isFinite(c.exp)||c.exp*1000<=ctx.now()||!Number.isFinite(c.iat)||c.iat*1000>ctx.now()+60000||c.exp<=c.iat||typeof c.sub!=='string'||!c.sub||c.sub.length>256)throw Error();
    if(c.nbf!==undefined&&(!Number.isFinite(c.nbf)||c.nbf*1000>ctx.now()+60000))throw Error();
-   if(!keys||ctx.now()-keysAt>3600000||!keys.some(k=>k.kid===h.kid)){const r=await fetcher(base+'/.well-known/jwks.json',{signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error();const j=await r.json();if(!Array.isArray(j.keys)||j.keys.length>50)throw Error();keys=j.keys;keysAt=ctx.now();}
+   if(!keys||ctx.now()-keysAt>3600000||!keys.some(k=>k.kid===h.kid)){if(keys&&ctx.now()-keysAt<30000&&!keys.some(k=>k.kid===h.kid))throw Error();if(!keysPending)keysPending=(async()=>{const r=await fetcher(base+'/.well-known/jwks.json',{signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error();const j=await r.json();if(!Array.isArray(j.keys)||j.keys.length>50)throw Error();keys=j.keys;keysAt=ctx.now();})().finally(()=>{keysPending=null;});await keysPending;}
    const k=keys.find(k=>k.kid===h.kid&&k.kty==='RSA'&&(!k.alg||k.alg==='RS256')&&(!k.use||k.use==='sig'));
    if(!k||!verify('RSA-SHA256',Buffer.from(p[0]+'.'+p[1]),createPublicKey({key:k,format:'jwk'}),Buffer.from(p[2],'base64url')))throw Error();
    const d=c.data;if(!d||d.userId!==c.sub||!['email','phone','farcaster','telegram','externalWallet'].includes(d.authType)||d.isGuestMode===true||!Array.isArray(d.wallets))throw Error();

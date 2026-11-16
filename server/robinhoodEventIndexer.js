@@ -24,7 +24,7 @@ function createRobinhoodEventIndexer({env=process.env,provider,pool,record,store
   const rpc=env.AK_RH_EVENT_RPC_URL||'https://rpc.testnet.chain.robinhood.com',url=new URL(rpc);
   if(url.protocol!=='https:'||url.username||url.password||url.hash)throw Error('HTTPS testnet RPC required.');
   if(!provider){provider=new JsonRpcProvider(rpc,undefined,{cacheTimeout:0});ownsProvider=true;}
-  if(!store){if(!pool){if(!env.DATABASE_URL)throw Error('Durable index database required.');pool=new Pool({connectionString:env.DATABASE_URL,ssl:env.DATABASE_SSL==='true'?{rejectUnauthorized:true}:undefined});ownsPool=true;}store=createChainEventStore({pool});await store.init();}
+  if(!store){if(!pool){if(!env.DATABASE_URL)throw Error('Durable index database required.');pool=new Pool(require('./databaseSecurity').databaseOptions(env.DATABASE_URL,env));ownsPool=true;}store=createChainEventStore({pool});await store.init();}
  }
  async function runOnce(){
   if(running||stopped)return status;running=true;

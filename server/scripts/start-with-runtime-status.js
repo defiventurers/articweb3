@@ -1,5 +1,7 @@
 require("dotenv").config();
 
+require("../requestSecurity").installHttpSecurity();
+
 const { installRuntimeStatusEndpoints } = require("../runtimeStatusBootstrap.js");
 
 installRuntimeStatusEndpoints();

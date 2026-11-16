@@ -32,3 +32,6 @@ mobile/arctic-play/runtime-assets/art/
 /contracts/launch/artifacts/
 /contracts/launch/deployments/
 /contracts/launch/operator-dist/
+
+# The Para portal is rebuilt from reviewed sources during server installation.
+server/gameWalletWeb/
