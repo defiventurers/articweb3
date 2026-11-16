@@ -31,7 +31,7 @@ jobs:
       - name: Verify authentication, ownership, abuse protection and Passport navigation
         run: >-
           NODE_PATH="$RUNNER_TEMP/ak-security-tests/node_modules" node --test
-          server/tests/security-hardening.test.js server/tests/company-service.test.js
+          server/tests/security-hardening.test.js server/tests/early-signup.test.js server/tests/company-service.test.js
           server/tests/company-account-play.test.js server/tests/para-game-wallet.test.js
           server/tests/antarctic-passport.test.js server/tests/company-commerce.test.js
           server/tests/company-challenges.test.js frontend/tests/early-entry.test.cjs

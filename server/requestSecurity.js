@@ -45,7 +45,7 @@ function createRequestSecurity({now=Date.now,env=process.env,logger=entry=>conso
   if((req.url||'').length>4096)throw fail('Request URL is too long.',414);
   const ip=clientIp(req,env),path=url.pathname;
   if(!['GET','HEAD','POST','DELETE','OPTIONS'].includes(req.method))throw fail('Method not allowed.',405);
-  const publicRead=req.method==='GET'&&/^\/arctic-play\/v3\/(launch\/(public|activity)$|passport\/(metadata|achievement-metadata|egg-metadata)\/|passport\/delivery\/config$)/.test(path);
+  const publicRead=req.method==='GET'&&/^\/arctic-play\/v3\/(launch\/(public|activity|early)$|passport\/(metadata|achievement-metadata|egg-metadata)\/|passport\/delivery\/config$)/.test(path);
   if(!publicRead&&req.headers?.origin&&!originAllowed(req.headers.origin,env))throw fail('Origin not allowed.',403);
   if(env.RENDER&&req.headers?.['x-forwarded-proto']&&req.headers['x-forwarded-proto'].split(',').at(-1).trim()!=='https')throw fail('Use HTTPS to connect.',400);
   consume('ip:'+ip,600,60000);
@@ -57,7 +57,7 @@ function createRequestSecurity({now=Date.now,env=process.env,logger=entry=>conso
    if(/\/auth\/.*\/start$/.test(path))consume('auth-start:'+ip,path.includes('/email/')?6:20,600000);
    if(/\/(recover|auth\/exchange|auth\/.*\/(complete|verify|attempt))$/.test(path))consume('auth-check:'+ip,60,600000);
    if(path.endsWith('/recover'))consume('recover:'+ip,10,600000);
-   if(req.method==='POST'&&/\/(accounts|passport)$/.test(path))consume('register:'+ip,10,600000);
+   if(req.method==='POST'&&/\/(accounts|passport|early\/signup)$/.test(path))consume('register:'+ip,10,600000);
    if(req.method==='POST'&&/\/(challenges|checkout|purchases\/restore)(\/|$)/.test(path))consume('expensive:'+ip,12,60000);
    const auth=req.headers.authorization;if(typeof auth==='string'&&auth.length<256)consume('credential:'+createHash('sha256').update(auth).digest('hex'),120,60000);
   }

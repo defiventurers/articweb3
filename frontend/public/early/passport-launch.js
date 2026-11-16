@@ -4,7 +4,7 @@ let session=sessionStorage.getItem(sessionKey),account=null,passport=null,loadin
 function setStatus(message){$('connection-status').textContent=message;}
 function error(message){const box=$($('harbor-app').hidden?'entry-error':'passport-error');box.textContent=String(message||'Please try again.');box.hidden=false;}
 function clearError(){for(const id of ['passport-error','entry-error']){$(id).hidden=true;$(id).textContent='';}}
-function setBusy(value){loading=value;for(const id of ['sign-in','register','refresh'])$(id).disabled=value||id==='sign-in'&&!ready;}
+function setBusy(value){loading=value;for(const id of ['sign-in','refresh'])$(id).disabled=value||id==='sign-in'&&!ready;}
 const ageKey='ak.first33.adult.v1';
 if('serviceWorker' in navigator)navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.filter(r=>new URL(r.scope).pathname==='/early/').map(r=>r.unregister()))).catch(()=>{});
 const base64=bytes=>btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replaceAll('=','');
@@ -25,7 +25,7 @@ const networks={46630:{name:'Robinhood Chain Testnet',explorer:'https://explorer
 const sameAddress=(a,b)=>!!a&&!!b&&a.toLowerCase()===b.toLowerCase();
 const delivery=kind=>passport?.deliveries?.find(d=>d.kind===kind);
 function walletMatches(){return sameAddress(passport?.wallet,account?.wallet?.address)&&Number(passport?.chainId)===Number(account?.wallet?.chainId);}
-function rewardStatus(kind){const d=delivery(kind);if(!d)return kind==='egg'?(passport?.eggSerial?'Egg reserved · Checking delivery':'Not allocated · First 33 eligible registrations only'):'Registration pending';
+function rewardStatus(kind){const d=delivery(kind);if(!d)return !passport?'Preparing your collectibles…':kind==='egg'?(passport?.eggSerial?'Egg reserved · Checking delivery':'No Egg · First 33 eligible signups only'):'Preparing your Passport…';
  if(!walletMatches())return 'Delivery wallet needs checking';
  if(d.status==='confirmed')return 'Checking blockchain receipt…';
  if(d.status==='awaiting_setup')return 'Reserved · Waiting for minting';
@@ -41,12 +41,12 @@ function updateTile(kind){const d=delivery(kind),state=$(kind+'-state');state.te
  transactionLink(kind,walletMatches()?d?.transactionHash:null,'View transaction ↗');
 }
 function showAccount(result){account=result.identity;passport=result.passport;const wallet=account?.wallet;
- if(!verifiedWallet()){account=null;session=null;sessionStorage.removeItem(sessionKey);error('Your verified Para wallet is not ready. Sign in again to finish setup.');$('connect-card').hidden=false;$('wallet-card').hidden=true;$('registration-card').hidden=true;$('collection-card').hidden=true;return false;}
- $('connect-card').hidden=true;$('wallet-card').hidden=false;$('new-wallet').textContent=wallet.address;$('created-wallet').textContent=wallet.address;
+ if(!verifiedWallet()){account=null;session=null;sessionStorage.removeItem(sessionKey);error('Your verified Para wallet is not ready. Sign in again to finish setup.');$('connect-card').hidden=false;$('wallet-card').hidden=true;$('collection-card').hidden=true;return false;}
+ $('connect-card').hidden=true;$('wallet-card').hidden=false;$('created-wallet').textContent=wallet.address;
  const network=networks[wallet.chainId],link=$('wallet-explorer');$('wallet-network').textContent=network?.name||'Network '+wallet.chainId;link.hidden=!network;link.removeAttribute('href');if(network)link.href=network.explorer+'/address/'+wallet.address;
  $('wallet-match').hidden=!passport||walletMatches();$('wallet-match').textContent='Your registered delivery wallet differs from this sign-in. Delivery must be checked before confirming receipt.';
- $('registration-card').hidden=!!passport;$('collection-card').hidden=!passport;
- if(passport){$('welcome-name').textContent='Welcome, '+passport.playerName+'!';$('collection-status').textContent='Your wallet is ready. Check below to see which collectibles have arrived.';$('collection-network').textContent=networks[passport.chainId]?.name||passport.network||'Network '+passport.chainId;updateTile('visa');updateTile('egg');}return true;
+ $('collection-card').hidden=false;
+ $('collection-status').textContent=passport?'Delivery updates automatically.':'Preparing your collectibles automatically…';updateTile('visa');updateTile('egg');return true;
 }
 async function verifyDelivery(kind,expectedSession){const d=delivery(kind),currentPassport=passport;if(d?.status!=='confirmed'||!walletMatches())return;
  const state=$(kind+'-state');try{const evidence=await api(kind==='visa'?'/passport/acceptance':'/passport/egg/acceptance');
@@ -68,29 +68,33 @@ function entrySignIn(){$('entry-loading').hidden=true;$('connect-card').hidden=f
 async function wake(){
  ready=false;setBusy(false);
  for(let attempt=0;attempt<2;attempt++){
-  try{const config=await api('/auth/para/config',undefined,false,25000);ready=!!config.enabled;entrySignIn();setStatus(ready?'Welcome to Lantern Harbor. Continue with Para to sign in.':'Sign-in is not available yet. Please try again shortly.');$('provider-note').textContent=config.environment==='BETA'?'Robinhood Chain testnet · experimental collectibles with no monetary value.':'Your wallet is created automatically through Para.';setBusy(false);$('entry-retry').hidden=ready;return;}
+  try{const config=await api('/auth/para/config',undefined,false,25000);ready=!!config.enabled&&config.earlySignup?.enabled!==false;entrySignIn();setStatus(ready?'Welcome to Lantern Harbor. Continue with Para to sign in.':'Sign-in is not available yet. Please try again shortly.');$('provider-note').textContent=config.environment==='BETA'?'Robinhood Chain testnet · experimental collectibles with no monetary value.':'Your wallet is created automatically through Para.';setBusy(false);$('entry-retry').hidden=ready;return;}
   catch(e){if(attempt===0){$('entry-status').textContent='Waking the harbor server… Please stay on this page.';continue;}entrySignIn();setStatus('The harbor server is taking longer than expected.');error(e.message);$('entry-retry').hidden=false;setBusy(false);}
  }
 }
 let booting=false;
 async function boot(){if(booting)return;booting=true;clearError();entryLoading('Preparing your arrival…');try{
  await exchangeTicket();
- if(session){$('entry-status').textContent='Checking your signed-in wallet…';if(await refresh()){$('entry-gate').hidden=true;$('harbor-app').hidden=false;$('harbor-app').removeAttribute('inert');tab('passport',false);return;}if(session){entrySignIn();$('entry-retry').hidden=false;setStatus('We could not check your session. Try connecting again.');return;}}
+ if(session){$('entry-status').textContent='Checking your signed-in wallet…';if(await refresh()){if(account.needsEarlySignup){await wake();return;}$('entry-gate').hidden=true;$('harbor-app').hidden=false;$('harbor-app').removeAttribute('inert');tab('passport',false);return;}if(session){entrySignIn();$('entry-retry').hidden=false;setStatus('We could not check your session. Try connecting again.');return;}}
  await wake();
  }catch(e){entrySignIn();error(e.message);$('entry-retry').hidden=false;}finally{booting=false;}}
-async function signIn(){if(loading)return;clearError();if(!$('adult-confirm').checked)return error('Participants must be at least 18 to use Robinhood Chain testnet.');sessionStorage.setItem(ageKey,'yes');setBusy(true);try{const verifier=base64(crypto.getRandomValues(new Uint8Array(32))),challenge=base64(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))));sessionStorage.setItem(pkceKey,verifier);const result=await api('/auth/para/start',{challenge,platform:'web',returnPath:'/early/'},false,35000);const url=new URL(result.url);if(url.origin!=='https://articweb3.onrender.com'||url.pathname!=='/arctic-play/wallet/')throw Error('Unexpected sign-in destination.');location.assign(url.href);}catch(e){error(e.message);setBusy(false);}}
-async function register(){if(loading)return;clearError();const name=$('player-name').value.trim();if([...name].length<2||[...name].length>24)return error('Your explorer name must have 2–24 characters.');if(!$('consent').checked)return error('Confirm your wallet and NFT delivery consent before registering.');setBusy(true);try{await api('/passport',{playerName:name,walletMode:'embedded',consentVersion:'antarctic-visa-v2',souvenir:false,achievementOptIn:false,campaign:'first33-20261114',adultConfirmed:sessionStorage.getItem(ageKey)==='yes'});await refresh();}catch(e){error(e.message);}finally{setBusy(false);}}
+async function signIn(){if(loading)return;clearError();if(!$('adult-confirm').checked)return error('Confirm that you are at least 18 and accept the signup terms.');sessionStorage.setItem(ageKey,'yes');setBusy(true);const consent={consentVersion:'early-signup-v1',adultConfirmed:true};try{
+ if(session&&verifiedWallet()){
+  await api('/early/signup',consent);await refresh();if(account?.needsEarlySignup)throw Error('Your signup is still being saved. Please try again.');$('entry-gate').hidden=true;$('harbor-app').hidden=false;$('harbor-app').removeAttribute('inert');tab('passport',false);return;
+ }
+ const verifier=base64(crypto.getRandomValues(new Uint8Array(32))),challenge=base64(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))));sessionStorage.setItem(pkceKey,verifier);const result=await api('/auth/para/start',{challenge,platform:'web',returnPath:'/early/',earlySignup:consent},false,35000);const url=new URL(result.url);if(url.origin!=='https://articweb3.onrender.com'||url.pathname!=='/arctic-play/wallet/')throw Error('Unexpected sign-in destination.');location.assign(url.href);
+ }catch(e){error(e.message);}finally{setBusy(false);}}
 async function exchangeTicket(){const u=new URL(location.href),ticket=u.searchParams.get('auth_ticket');if(!ticket)return;history.replaceState(null,'',u.pathname);const verifier=sessionStorage.getItem(pkceKey);if(!verifier)throw Error('Please start sign-in again in this tab.');try{setBusy(true);const result=await api('/auth/exchange',{ticket,verifier},false,60000);if(!result.session)throw Error('Your sign-in did not complete.');session=result.session;sessionStorage.setItem(sessionKey,session);sessionStorage.removeItem(pkceKey);}catch(e){session=null;account=null;sessionStorage.removeItem(sessionKey);throw e;}finally{setBusy(false);}}
 for(const b of document.querySelectorAll('[data-open-passport]'))b.addEventListener('click',()=>tab('passport'));
 for(const b of document.querySelectorAll('button[data-tab]'))b.addEventListener('click',()=>tab(b.dataset.tab));
 for(const b of document.querySelectorAll('[data-soon]'))b.addEventListener('click',comingSoon);
 $('close-soon').addEventListener('click',()=>$('soon-dialog').close());
-$('sign-in').addEventListener('click',signIn);$('register').addEventListener('click',register);
+$('sign-in').addEventListener('click',signIn);
 $('refresh').addEventListener('click',()=>{setBusy(true);refresh().finally(()=>setBusy(false));});
 $('sign-out').addEventListener('click',async()=>{const old=session;session=null;passport=null;account=null;sessionStorage.removeItem(sessionKey);sessionStorage.removeItem(pkceKey);sessionStorage.removeItem(ageKey);clearError();boot();if(old)fetch(root+'/logout',{method:'POST',headers:{Authorization:'Bearer '+old,'Content-Type':'application/json'},body:'{}'}).catch(()=>{});});
 for(const b of document.querySelectorAll('[data-copy]'))b.addEventListener('click',async()=>{const address=account?.wallet?.address;if(!address)return;try{await navigator.clipboard.writeText(address);b.textContent='Copied!';setTimeout(()=>{b.textContent='Copy address';},2000);}catch{b.textContent='Select address to copy';}});
 $('entry-retry').addEventListener('click',boot);
 boot();
-poll=setInterval(()=>{if(session&&passport&&!document.hidden&&!loading)refresh(true).catch(()=>{});},10000);
+poll=setInterval(()=>{if(session&&account&&!document.hidden&&!loading)refresh(true).catch(()=>{});},10000);
 window.addEventListener('pageshow',()=>{if(session&&document.visibilityState==='visible')refresh(true).catch(()=>{});});
 })();

@@ -33,14 +33,15 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Run smoke tests
-        run: npm run test:e2e:smoke -- --project=chromium
+        run: npx playwright test tests/closed-beta-smoke.spec.js tests/early-passport.spec.js --project=chromium
       - name: Upload Playwright diagnostics
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-diagnostics
           path: |
-            frontend/test-results
-            frontend/playwright-report
+            frontend/test-results/**/*.png
+            frontend/test-results/**/error-context.md
+            frontend/playwright-report/index.html
           if-no-files-found: ignore
           retention-days: 7

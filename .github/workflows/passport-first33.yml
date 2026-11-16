@@ -68,7 +68,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/ak-entry-tests" --ignore-scripts --no-audit --no-fund jsdom@26.1.0
           NODE_PATH="$RUNNER_TEMP/ak-entry-tests/node_modules" node --test frontend/tests/early-entry.test.cjs
       - name: Run real PostgreSQL first-33 allocation race and Para acceptance
-        run: node --test tests/passport-first33.test.js tests/passport-delivery-phase4.test.js tests/para-game-wallet.test.js tests/egg-metadata-paused.test.js
+        run: node --test tests/early-signup.test.js tests/passport-first33.test.js tests/passport-delivery-phase4.test.js tests/para-game-wallet.test.js tests/egg-metadata-paused.test.js
         working-directory: server
       - name: Compile egg + passport contracts and test local onchain minting
         run: npm test

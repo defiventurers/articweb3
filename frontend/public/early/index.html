@@ -10,17 +10,17 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://articweb3.onrender.com; font-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'">
 <title>Antarctic Kingdoms • Lantern Harbor</title>
 <link rel="stylesheet" href="./app.css?v=ch-screen2">
-<link rel="stylesheet" href="./passport-launch.css?v=wallet-20261116">
-<script src="./passport-launch.js?v=wallet-20261116" defer></script>
+<link rel="stylesheet" href="./passport-launch.css?v=auto-signup-20261116">
+<script src="./passport-launch.js?v=auto-signup-20261116" defer></script>
 </head>
 <body>
 <section id="entry-gate" aria-label="Enter Lantern Harbor">
 <div class="entry-shell"><img class="entry-brand" src="./art/home-v1/brand-logo.webp" width="190" height="56" alt="Antarctic Gaming Co.">
 <div id="entry-loading" role="status" aria-live="polite"><p class="entry-eyebrow">ANTARCTIC KINGDOMS</p><h1>On the way to<br>Lantern Harbor</h1><progress aria-label="Connecting to Lantern Harbor"></progress><p id="entry-status">Preparing your arrival…</p></div>
 <div id="connect-card" class="panel" hidden>
-<h2>Join the founding explorers</h2><p>Choose any available sign-in method from Para. An Antarctic wallet is created and linked to your account.</p>
+<h2>Your journey starts here</h2><p>Sign in with Para. Your wallet is created automatically, and your free <strong>Antarctic Passport NFT</strong> is sent to it.</p><p class="signup-offer">The first <strong>33 eligible signups</strong> also receive a free <strong>Mystery Golden Egg NFT</strong>. Delivery continues automatically after sign-in.</p>
 <div id="connection-status" role="status" aria-live="polite">Contacting Lantern Harbor…</div>
-<label class="checkline"><input id="adult-confirm" type="checkbox"><span>I confirm I am at least 18 and understand this is an experimental Robinhood Chain testnet collectible with no monetary value.</span></label>
+<label class="checkline"><input id="adult-confirm" type="checkbox"><span>I am at least 18. By continuing, I agree to create or link my Para wallet and receive my free Passport NFT and, if eligible, a Golden Egg. My wallet and NFT records are public on Robinhood Chain testnet. These experimental collectibles have no monetary value.</span></label>
 <button id="sign-in" class="primary" type="button" disabled>Continue with Para</button>
 <p id="provider-note" class="fine">No wallet extension is needed. Supported sign-in methods depend on Para availability.</p>
 </div>
@@ -56,37 +56,23 @@
   <button type="button" data-open-passport class="home-v2-journey" aria-label="Open your Antarctic Passport and collectibles"><img src="./art/home-v1/passport-journey.webp" width="1200" height="600" alt="" decoding="async"><span><em>COLLECT YOUR DISCOVERIES</em><strong>Your Antarctic Passport</strong><small>A new hall. A new chapter.</small></span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
   <button type="button" data-soon class="home-v2-shop" aria-label="Bring the game home — coming soon"><span><strong>Bring the game home</strong><small>Physical boards · Concept preview</small></span><img src="./art/home-v1/physical-board-preview.webp" width="1200" height="800" alt="" decoding="async"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
 </section>
-<section id="passport-view" class="view" hidden>
-<div class="passport-hero"><span class="overline">YOUR JOURNEY STARTS HERE</span><h1>Antarctic<br><em>Passport</em></h1><p>One sign-in. Your own wallet. Your place in the Kingdom.</p></div>
+<section id="passport-view" class="view" hidden aria-label="Your Antarctic Passport">
+<div class="passport-hero"><span class="overline">LANTERN HARBOR</span><h1>Antarctic <em>Passport</em></h1></div>
 <div id="wallet-card" class="panel" hidden>
-<div class="wallet-heading"><span class="eyebrow">YOUR PERSONAL WALLET</span><span id="wallet-status" class="status-badge" data-state="confirmed">Wallet ready ✓</span></div>
-<h2>You're connected</h2><p>Your Para wallet is created and linked to this sign-in. Your collectibles are delivered here.</p>
+<div class="wallet-heading"><span class="eyebrow">YOUR PARA WALLET</span><span id="wallet-status" class="status-badge" data-state="confirmed">Wallet ready ✓</span></div>
 <div class="wallet-display"><small id="wallet-network">Checking network…</small><code id="created-wallet"></code><div class="wallet-actions"><button type="button" data-copy>Copy address</button><a id="wallet-explorer" hidden target="_blank" rel="noopener noreferrer">View wallet ↗</a></div></div>
 <p id="wallet-match" class="fine" hidden></p>
 </div>
-<div id="registration-card" class="panel" hidden>
-<span class="eyebrow">WALLET CREATED</span><h2>Confirm your Passport</h2>
-<p>Your wallet is ready. Confirm its destination before requesting your free digital collectibles.</p>
-<p class="founding-offer"><strong>Founding explorers:</strong> The first 33 eligible adults to complete registration reserve a free Mystery Golden Egg, pending successful testnet minting. All registrations receive an Antarctic Passport.</p>
-<div class="wallet-display"><small>Your Para wallet address</small><code id="new-wallet"></code><button type="button" data-copy>Copy address</button></div>
-<label class="field">Explorer name <input id="player-name" type="text" autocomplete="nickname" minlength="2" maxlength="24" value="Explorer"></label>
-<label class="checkline"><input id="consent" type="checkbox"><span>I confirm this wallet for my free Passport NFT and understand that it will be publicly visible on the selected blockchain. I understand the limited egg offer is subject to eligibility and mint confirmation.</span></label>
-<button id="register" type="button" class="primary">Complete free registration</button>
-</div>
 <div id="collection-card" class="panel" hidden>
-<span class="eyebrow">YOUR ANTARCTIC PASSPORT</span><h2 id="welcome-name">Welcome, explorer!</h2>
+<div class="collection-heading"><h2>Your collectibles</h2><span class="network-label">Free testnet NFTs</span></div>
 <p id="collection-status" role="status" aria-live="polite"></p>
-<p id="collection-network" class="network-label"></p>
 <div class="nft-grid">
-<div id="visa-tile" class="nft-tile"><img src="./art/passport-book-v2/company-passport-cover.webp" alt="Antarctic Passport" width="260" height="260"><strong id="visa-title">Antarctic Passport</strong><span id="visa-state" class="status-badge" role="status" aria-live="polite">Checking mint…</span><a id="visa-tx" hidden target="_blank" rel="noopener noreferrer">View transaction ↗</a></div>
-<div id="egg-tile" class="nft-tile"><img src="./mystery-golden-egg.svg" alt="Mystery Golden Egg" width="260" height="260"><strong id="egg-title">Mystery Golden Egg</strong><span id="egg-state" class="status-badge" role="status" aria-live="polite">Checking eligibility…</span><a id="egg-tx" hidden target="_blank" rel="noopener noreferrer">View transaction ↗</a></div>
+<div id="visa-tile" class="nft-tile"><img src="./art/passport-book-v2/company-passport-cover.webp" alt="Antarctic Passport" width="260" height="260"><strong id="visa-title">Antarctic Passport</strong><span id="visa-state" class="status-badge" role="status" aria-live="polite">Preparing your Passport…</span><a id="visa-tx" hidden target="_blank" rel="noopener noreferrer">View transaction ↗</a></div>
+<div id="egg-tile" class="nft-tile"><img src="./mystery-golden-egg.svg" alt="Mystery Golden Egg" width="260" height="260"><strong id="egg-title">Mystery Golden Egg</strong><span id="egg-state" class="status-badge" role="status" aria-live="polite">Checking your Egg…</span><a id="egg-tx" hidden target="_blank" rel="noopener noreferrer">View transaction ↗</a></div>
 </div>
 <p id="delivery-updated" class="fine" role="status"></p>
-<button id="refresh" type="button" class="secondary">Refresh NFT delivery</button>
-<p class="fine">A registered Passport or reserved egg is not the same as a minted NFT. Each will show “Confirmed” only after chain checks. No purchase is required.</p>
-<a class="instagram" href="https://www.instagram.com/antarcticgamingco/" target="_blank" rel="noreferrer">Follow @antarcticgamingco for the mystery reveal and launch updates <span aria-hidden="true">↗</span></a>
-<button id="sign-out" type="button" class="text-button">Sign out</button>
 </div>
+<div class="passport-footer"><button id="refresh" type="button" class="secondary">Refresh delivery</button><button id="sign-out" type="button" class="text-button">Sign out</button></div>
 <div id="passport-error" role="alert" class="error" hidden></div>
 </section>
 

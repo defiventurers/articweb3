@@ -43,11 +43,19 @@ test('PostgreSQL: 40 simultaneous signup requests allocate exactly 33 distinct e
  const pool=new Pool({connectionString:url,options:'-c search_path='+schema,max:12}),store=createPassportStore({pool,eggsEnabled:true});
  t.after(async()=>{await store.close();await admin.query('DROP SCHEMA '+schema+' CASCADE');await admin.end();});
  const ids=Array.from({length:40},()=>randomUUID());
- const all=await Promise.all(ids.map((id,i)=>store.register(id,{playerName:'Explorer',wallet:'0x'+String(i+1).padStart(40,'0'),chainId:46630,souvenir:false,consentVersion:'antarctic-visa-v2',walletProvider:'para',achievementOptIn:false,campaign:'first33-20261114'},now)));
+ const auto=createPassportRoutes({store,accountStore:null});
+ const all=await Promise.all(ids.map((id,i)=>auto.autoRegister({id,identity:{displayName:'Explorer'},gameWallet:{provider:'para',address:'0x'+String(i+1).padStart(40,'0'),chainId:46630}},now)));
  const winners=all.filter(p=>p.eggSerial!==null);assert.equal(winners.length,33);
  assert.deepEqual(winners.map(p=>p.eggSerial).sort((a,b)=>a-b),Array.from({length:33},(_,i)=>i+1));
  assert.ok(winners.every(p=>p.deliveries.filter(d=>d.kind==='egg').length===1));
  assert.ok(all.filter(p=>p.eggSerial===null).every(p=>p.deliveries.every(d=>d.kind!=='egg')));
  const repeated=await store.register(ids[0],{playerName:'Explorer',wallet:'0x'+String(1).padStart(40,'0'),chainId:46630,souvenir:false,consentVersion:'antarctic-visa-v2',walletProvider:'para',campaign:'first33-20261114'},now);
  assert.equal(repeated.eggSerial,all[0].eggSerial);assert.equal((await store.get(ids[0])).deliveries.filter(d=>d.kind==='egg').length,all[0].eggSerial?1:0);
+ // The dashboard has its own source scope and counts identities, not logins or NFT jobs.
+ await pool.query('CREATE TABLE ak_documents(kind text,id text,body jsonb,PRIMARY KEY(kind,id))');
+ for(let i=0;i<ids.length;i++)await pool.query('INSERT INTO ak_documents VALUES($1,$2,$3)',['account',ids[i],JSON.stringify({gameWallet:{provider:'para',address:all[i].wallet,chainId:46630},...(i<35?{earlySignup:{source:'antarcticgaming.co/early',firstAt:i<30?now:now-2*86400000}}:{})})]);
+ const metrics=require('../launchMetrics').createLaunchMetrics({pool,now:()=>now});
+ const stats=await metrics.route({path:'/launch/early',method:'GET'});
+ assert.equal(stats.signups,35);assert.equal(stats.today,30);assert.equal(stats.passportsRegistered,35);assert.equal(stats.passportsReceived,0);assert.equal(stats.passportsPending,35);assert.equal(stats.eggsReserved,all.slice(0,35).filter(p=>p.eggSerial).length);assert.equal(stats.eggsReceived,0);assert.equal(stats.eggsRemaining,0);assert.equal(stats.olderUnattributedAccounts,5);assert.equal(stats.source,'antarcticgaming.co/early');assert.equal((await metrics.route({path:'/launch/early',method:'GET'})).signups,35);
+
 });
