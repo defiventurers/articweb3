@@ -12,10 +12,10 @@ test('Home uses existing approved heritage layout and compiled original styleshe
  assert.match(html,/href="\.\/app.css\?v=ch-screen2"/);
  assert.match(baseline,/home-heritage \.home-v2-hero/);
 });
-test('All Home action buttons are gated while Home and Passport remain navigable',()=>{
+test('Game actions are gated while the Home Passport shortcut is functional',()=>{
  assert.equal((home.match(/<button\b/g)||[]).length,5);
- assert.equal((home.match(/data-soon/g)||[]).length,5);
- assert.ok(!home.includes('data-open-passport'));
+ assert.equal((home.match(/data-soon/g)||[]).length,4);
+ assert.ok(home.includes('data-open-passport'));
  const nav=html.slice(html.indexOf('<nav class="bottom-nav"'),html.indexOf('</nav>'));
  assert.equal((nav.match(/<button\b/g)||[]).length,5);
  assert.equal((nav.match(/data-tab=/g)||[]).length,2);

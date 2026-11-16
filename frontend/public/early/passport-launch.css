@@ -72,3 +72,26 @@ html.home-v2-active .app[data-screen="lobby"] .discovery-header .header-update{d
 #entry-gate .fine{font-size:.76rem;color:#b8cbd5}
 .entry-error{background:#6f222f;color:#ffeced;padding:14px;border-radius:12px;margin-top:14px;font:.9rem/1.5 system-ui}
 #entry-gate :focus-visible{outline:3px solid #fff1bd;outline-offset:4px}
+
+/* Passport owns its scroll area; the shipped Home layout remains intact. */
+#harbor-app[data-tab="profile"]{height:100dvh;min-height:0;overflow:hidden}
+#harbor-app[data-tab="profile"] #main{display:block;flex:1 1 auto;min-height:0;overflow-y:auto;padding:10px 16px 24px}
+#harbor-app[data-tab="profile"] .bottom-nav{position:relative;inset:auto;transform:none;flex-shrink:0}
+#passport-view{display:block;width:100%;min-width:0}
+#passport-view .passport-hero{padding:12px 8px 4px}
+#passport-view h1{font-size:clamp(2rem,8vw,2.8rem)}
+#passport-view .wallet-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+#passport-view .status-badge{display:inline-block;font:650 .73rem/1.5 system-ui,sans-serif;color:#e9d7b1;padding:5px 8px;background:#273e4a;border:1px solid #9b88645c;border-radius:8px}
+#passport-view [data-state="confirmed"]{background:#153f3b;border-color:#77c9ac66;color:#b8f2da}
+#passport-view [data-state="blocked"]{background:#4e3035;border-color:#d6a498;color:#ffe0d5}
+#passport-view .wallet-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#passport-view .wallet-actions a,#passport-view .nft-tile a{display:inline-flex;align-items:center;min-height:44px;font-size:.8rem;line-height:1.4;color:#f6d591;text-underline-offset:4px}
+#passport-view .wallet-actions button{min-height:44px;font-size:.8rem}
+#passport-view .wallet-display{margin-bottom:0}
+#passport-view .network-label{font-size:.8rem;color:#e5c68e;margin-top:12px}
+#passport-view .nft-tile{min-width:0;padding:10px;gap:10px}
+#passport-view .nft-tile img{object-fit:contain;background:#0b2940}
+#passport-view .nft-tile .status-badge{align-self:flex-start}
+#passport-view .nft-tile a{margin-top:auto}
+#passport-view :focus-visible{outline:3px solid #fff1bd;outline-offset:4px}
+@media(max-width:359px){#passport-view .nft-grid{grid-template-columns:1fr}#passport-view .nft-tile img{max-height:220px}}
