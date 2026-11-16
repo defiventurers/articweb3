@@ -5,7 +5,7 @@ const pair=generateKeyPairSync('rsa',{modulusLength:2048}),jwk={...pair.publicKe
 const digest=x=>createHash('sha256').update(x).digest('hex');
 test('Para portal accepts the passport check, Android and existing web login destinations',async()=>{
  const {isAllowedWalletReturn:allowed}=await import('../wallet-build/auth-return.mjs'),origin='https://articweb3.onrender.com';
- for(const url of ['/arctic-play/passport-check/?auth_ticket=qa','https://articweb3.onrender.com/arctic-play/passport-check/?auth_ticket=qa','/arctic-play/app/?auth_ticket=qa','arcticplay://auth?ticket=qa','https://arcticdominion.xyz/?auth_ticket=qa','https://arcticdominion.xyz/play/?auth_ticket=qa','https://arcticdominion.xyz/early/?auth_ticket=qa','https://www.arcticdominion.xyz/play/?auth_ticket=qa'])assert.equal(allowed(url,origin),true,url);
+ for(const url of ['https://antarcticgaming.co/early/?auth_ticket=qa','https://www.antarcticgaming.co/early/?auth_ticket=qa','/arctic-play/passport-check/?auth_ticket=qa','https://articweb3.onrender.com/arctic-play/passport-check/?auth_ticket=qa','/arctic-play/app/?auth_ticket=qa','arcticplay://auth?ticket=qa','https://arcticdominion.xyz/?auth_ticket=qa','https://arcticdominion.xyz/play/?auth_ticket=qa','https://arcticdominion.xyz/early/?auth_ticket=qa','https://www.arcticdominion.xyz/play/?auth_ticket=qa'])assert.equal(allowed(url,origin),true,url);
 });
 test('Para portal rejects external, credential-bearing and unexpected login return destinations',async()=>{
  const {isAllowedWalletReturn:allowed}=await import('../wallet-build/auth-return.mjs'),origin='https://articweb3.onrender.com';
@@ -13,7 +13,7 @@ test('Para portal rejects external, credential-bearing and unexpected login retu
 });
 function token(extra={},data={},header={}){const h=Buffer.from(JSON.stringify({alg:'RS256',kid:'para-qa',...header})).toString('base64url'),b=Buffer.from(JSON.stringify({aud:'qa-app-key',sub:'para-user-1',iat:Math.floor(Date.now()/1000),exp:Math.floor(Date.now()/1000)+600,data:{userId:'para-user-1',authType:'email',email:'player@example.test',wallets:[{id:'wallet-1',type:'EVM',address:wallet.address}],...data},...extra})).toString('base64url');return h+'.'+b+'.'+sign('RSA-SHA256',Buffer.from(h+'.'+b),pair.privateKey).toString('base64url');}
 async function setup(t,options={}){const dir=await fs.mkdtemp(path.join(os.tmpdir(),'para-wallet-')),store=createCompanyStore({file:path.join(dir,'state.json'),development:true}),service=createCompanyService({store,passportOptions:{store:{configured:true,get:async()=>null,close:async()=>{}}},authOptions:{walletOptions:{enabled:false},paraOptions:{enabled:true,apiKey:'beta_qa-key',audience:'qa-app-key',fetcher:async url=>{assert.equal(url,'https://api.beta.getpara.com/.well-known/jwks.json');return {ok:true,json:async()=>({keys:[jwk]})};},...options}}}),server=http.createServer(service.handleHttp);await new Promise(r=>server.listen(0,'127.0.0.1',r));
-const call=async(p,data,bearer)=>{const r=await fetch('http://127.0.0.1:'+server.address().port+'/arctic-play/v3'+p,{method:data?'POST':'GET',headers:{'Content-Type':'application/json',...(bearer?{Authorization:'Bearer '+bearer}:{})},body:data?JSON.stringify(data):undefined});return {status:r.status,...await r.json()};};
+const call=async(p,data,bearer,origin)=>{const r=await fetch('http://127.0.0.1:'+server.address().port+'/arctic-play/v3'+p,{method:data?'POST':'GET',headers:{'Content-Type':'application/json',...(bearer?{Authorization:'Bearer '+bearer}:{}),...(origin?{Origin:origin}:{})},body:data?JSON.stringify(data):undefined});return {status:r.status,...await r.json()};};
 t.after(async()=>{await new Promise(r=>server.close(r));await service.close();await fs.rm(dir,{recursive:true,force:true});});
 const begin=async(purpose='login',bearer)=>{const verifier=randomBytes(32).toString('base64url'),challenge=createHash('sha256').update(verifier).digest('base64url'),s=await call('/auth/para/start',{purpose,challenge,platform:'android'},bearer);assert.equal(s.status,200);const attempt=new URL(s.url).searchParams.get('attempt'),c=await call('/auth/para/attempt',{attempt});assert.equal(c.loginMethods,'dashboard');assert.equal(c.chain.id,46630);return {attempt,verifier,message:c.message,signature:await wallet.signMessage(c.message)};};
 const complete=(b,idToken=token(),address=wallet.address,signature=b.signature)=>call('/auth/para/complete',{attempt:b.attempt,idToken,address,signature});
@@ -30,3 +30,17 @@ test('management requires the linked account and issues no login ticket',async t
 test('disabled, mixed environments and unapproved mainnet fail closed',async t=>{for(const opts of [{enabled:false},{apiKey:'prod_qa'},{environment:'PRODUCTION',chainId:4663,apiKey:'prod_qa',productionApproved:false}]){const f=await setup(t,opts);assert.equal((await f.call('/auth/para/config')).enabled,false);assert.equal((await f.call('/auth/para/start',{challenge:'a'.repeat(43)})).status,503);}});
 
 test('Robinhood and Arbitrum adapters preserve chain IDs and gate production',()=>{const {createParaGameWallet}=require('../paraGameWallet');for(const [chainId,environment,apiKey]of [[46630,'BETA','beta_qa'],[421614,'BETA','beta_qa'],[4663,'PRODUCTION','prod_qa'],[42161,'PRODUCTION','prod_qa']]){const a=createParaGameWallet({apiKey,audience:'qa',environment,chainId,enabled:true,productionApproved:true}).config();assert.equal(a.enabled,true);assert.equal(a.chain.id,chainId);assert.match(a.chain.name,/Robinhood|Arbitrum/);}});
+
+test('Para sign-in completes on the new domain during the registration hold, without registering NFTs',async t=>{
+ const prior=process.env.AK_LAUNCH_RESET_PAUSED;process.env.AK_LAUNCH_RESET_PAUSED='true';t.after(()=>{if(prior===undefined)delete process.env.AK_LAUNCH_RESET_PAUSED;else process.env.AK_LAUNCH_RESET_PAUSED=prior;});
+ const f=await setup(t);
+ for(const origin of ['https://antarcticgaming.co','https://www.antarcticgaming.co']){
+  const verifier=randomBytes(32).toString('base64url'),challenge=createHash('sha256').update(verifier).digest('base64url');
+  const start=await f.call('/auth/para/start',{challenge,platform:'web',returnPath:'/early/'},undefined,origin);assert.equal(start.status,200);
+  const attempt=new URL(start.url).searchParams.get('attempt'),proof=await f.call('/auth/para/attempt',{attempt});assert.equal(proof.status,200);
+  const result=await f.call('/auth/para/complete',{attempt,idToken:token(),address:wallet.address,signature:await wallet.signMessage(proof.message)});assert.equal(result.status,200);assert.equal(new URL(result.returnTo).origin,origin);assert.equal(new URL(result.returnTo).pathname,'/early/');
+  const session=await f.call('/auth/exchange',{ticket:new URL(result.returnTo).searchParams.get('auth_ticket'),verifier},undefined,origin);assert.equal(session.status,200);assert.equal(session.wallet.provider,'para');
+  const profile=await f.call('/passport',undefined,session.session,origin);assert.equal(profile.status,200);assert.equal(profile.identity.wallet.provider,'para');assert.equal(profile.passport,null);
+  assert.equal((await f.call('/passport',{playerName:'Explorer'},session.session,origin)).status,503);
+ }
+});

@@ -51,3 +51,24 @@ html.home-v2-active .app[data-screen="lobby"] .discovery-header .header-update{d
 #soon-dialog p{font-size:.91rem;line-height:1.6;color:#d7e5ec;margin:0 0 14px}
 #soon-dialog button{margin-top:13px}
 @media(max-width:359px){#passport-view .nft-grid{gap:8px}#passport-view .panel{padding:14px 12px}}
+
+/* Arrival gate: the Home screen is revealed only after server-verified sign-in. */
+#entry-gate{position:fixed;inset:0;z-index:1000;overflow-y:auto;background:radial-gradient(ellipse at top,#153c55,#061a32 75%);color:#eff5f8;display:grid;place-items:center;padding:28px 20px;min-height:100svh}
+.entry-shell{width:min(100%,440px);margin:auto;padding:18px 0;text-align:center}
+.entry-brand{display:block;width:190px;height:auto;object-fit:contain;margin:0 auto 38px}
+#entry-loading h1{font:600 clamp(2rem,8vw,3rem)/1.15 Georgia,serif;color:#f3dfaa;margin:18px 0 26px}
+.entry-eyebrow{letter-spacing:.18em;font:700 .72rem system-ui;color:#e3c282}
+#entry-loading progress{display:block;width:100%;height:8px;accent-color:#e4c079;margin:24px auto}
+#entry-status,#connection-status{font:400 .94rem/1.6 system-ui;color:#c8dce6;min-height:3em;margin:18px 0}
+#entry-gate .panel{padding:24px 20px;border:1px solid #b49862;border-radius:20px;background:#0c2a42}
+#entry-gate h2{font:600 1.8rem/1.2 Georgia,serif;color:#f3dfaa;margin:0 0 14px}
+#entry-gate p{line-height:1.6}
+#entry-gate .checkline{display:flex;gap:12px;text-align:left;font:400 .84rem/1.6 system-ui;color:#d9e4ea;margin:18px 0}
+#entry-gate input[type=checkbox]{width:22px;height:22px;flex:0 0 22px;accent-color:#e4c079;margin-top:3px}
+#entry-gate .primary,#entry-gate .secondary{width:100%;min-height:52px;border-radius:13px;padding:14px;font-weight:750;border:1px solid #c89f55}
+#entry-gate .primary{background:linear-gradient(110deg,#ddb66d,#f4df9f,#cba460);color:#173446}
+#entry-gate .secondary{background:#143b52;color:#f3dfaa;margin-top:16px}
+#entry-gate button:disabled{opacity:.5}
+#entry-gate .fine{font-size:.76rem;color:#b8cbd5}
+.entry-error{background:#6f222f;color:#ffeced;padding:14px;border-radius:12px;margin-top:14px;font:.9rem/1.5 system-ui}
+#entry-gate :focus-visible{outline:3px solid #fff1bd;outline-offset:4px}

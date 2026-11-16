@@ -5,6 +5,9 @@ on:
       - '.github/workflows/passport-first33.yml'
       - 'server/antarcticPassport*.js'
       - 'server/passportDeliveryRuntime.js'
+      - 'server/companyService.js'
+      - 'server/wallet-build/auth-return.mjs'
+      - 'frontend/tests/early-entry.test.cjs'
       - 'server/launchMetrics.js'
       - 'server/paraGameWallet.js'
       - 'server/wallet-build/auth-return.mjs'
@@ -60,6 +63,10 @@ jobs:
         working-directory: contracts/launch
       - name: Verify screenshot-matched heritage Home and Passport-only navigation
         run: node --test frontend/public/early/heritage-launch.test.mjs
+      - name: Verify loading, Para sign-in and authenticated Home entry
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ak-entry-tests" --ignore-scripts --no-audit --no-fund jsdom@26.1.0
+          NODE_PATH="$RUNNER_TEMP/ak-entry-tests/node_modules" node --test frontend/tests/early-entry.test.cjs
       - name: Run real PostgreSQL first-33 allocation race and Para acceptance
         run: node --test tests/passport-first33.test.js tests/passport-delivery-phase4.test.js tests/para-game-wallet.test.js tests/egg-metadata-paused.test.js
         working-directory: server
