@@ -1,0 +1,66 @@
+{
+  "chainId": 46630,
+  "address": "0x7a07d2Afe038B3537984685BC509EBC132D7eF48",
+  "transactionHash": "0xc03c5165ac780e285448a240aa7679d89ec12612aba602e5645e6b3793e194a9",
+  "blockNumber": 154055178,
+  "blockHash": "0x7115b9b0f14a06ea0ccb6f44ecada3e7d2cdfcea85ba6ce85b9605c741cdbb83",
+  "confirmations": 1080,
+  "admin": "0xaE139be36A9AaF91af8F719740cE3a2F7102E66e",
+  "minter": "0x4378fDEfE1BB9d3D3B3b1B6433A6C29c560aEcCc",
+  "passport": "0xF059141A4e21eF5786e66e96F1c4357858a0De11",
+  "maxSupply": 33,
+  "mintedCount": 0,
+  "metadataBase": "https://articweb3.onrender.com/arctic-play/v3/passport/egg-metadata/46630/",
+  "runtimeSha256": "1021a9fa71d5534cd1da7097a9ac4f686d195594836dfd137051b03f1a0ee76e",
+  "compiledCreationMatches": true,
+  "canonicalReceipt": true,
+  "rolesVerified": true,
+  "sourceCommit": "479dbbe803d9fd143c87ae9a4ecd3a29360c6714",
+  "checkedAt": "2026-11-16T11:30:57.140Z",
+  "backend": {
+    "serviceId": "srv-d8knkism0tmc73ct2t3g",
+    "deployId": "dep-dbtej3rm8hqs73ams5e0",
+    "deploymentStatus": "live",
+    "environmentVariable": "AK_EGG_CONTRACT_46630",
+    "status": {
+      "version": 1,
+      "enabled": true,
+      "ready": true,
+      "status": "ready",
+      "chainId": 46630,
+      "confirmationPolicy": "2 canonical L2 blocks; Ethereum finality not established",
+      "contract": "0xF059141A4e21eF5786e66e96F1c4357858a0De11",
+      "signer": "0x4378fDEfE1BB9d3D3B3b1B6433A6C29c560aEcCc",
+      "kinds": [
+        "visa",
+        "egg"
+      ],
+      "eggReady": true,
+      "minter": true,
+      "funded": true,
+      "balance": "0.15",
+      "minimumBalance": "0.000007",
+      "checkedAt": "2026-11-16T11:35:13.138Z",
+      "checkStage": null
+    }
+  },
+  "metadataChecks": {
+    "editions": [
+      1,
+      33
+    ],
+    "responses": "HTTP 200; correct chain and edition attributes",
+    "image": "https://arcticdominion.xyz/early/mystery-golden-egg.svg",
+    "imageReachable": true
+  },
+  "registrationPaused": true,
+  "sourcePublication": {
+    "status": "blocked_awaiting_explicit_publication_approval",
+    "explorerVerified": false,
+    "independentCompiledBytecodeAndCreationVerification": true
+  },
+  "tests": {
+    "contractAndWalletTestsPassed": 3,
+    "failed": 0
+  }
+}
