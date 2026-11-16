@@ -97,9 +97,10 @@ html.home-v2-active .app[data-screen="lobby"] .discovery-header .header-update{d
 @media(max-width:359px){#passport-view .nft-grid{grid-template-columns:1fr}#passport-view .nft-tile img{max-height:220px}}
 
 /* One-screen Passport: artwork and receipts share the available height. */
+#harbor-app[data-tab="profile"]{height:100dvh;min-height:0;overflow:hidden}
 #harbor-app[data-tab="profile"] .discovery-header{height:64px;min-height:64px;flex:0 0 64px;padding:8px 14px}
 #harbor-app[data-tab="profile"] #main{padding:8px 12px;overflow:hidden}
-#harbor-app[data-tab="profile"] .bottom-nav{flex:0 0 calc(70px + env(safe-area-inset-bottom,0px));height:calc(70px + env(safe-area-inset-bottom,0px))}
+#harbor-app[data-tab="profile"] .bottom-nav{position:relative;inset:auto;transform:none;flex:0 0 calc(70px + env(safe-area-inset-bottom,0px));height:calc(70px + env(safe-area-inset-bottom,0px))}
 #passport-view{height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:7px;padding:0;margin:0 auto;position:relative}
 #passport-view .passport-hero{padding:0;text-align:left}
 #passport-view .passport-hero .overline{font-size:.6rem;line-height:1.2}
