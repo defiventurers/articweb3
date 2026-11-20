@@ -8,7 +8,7 @@ Run the existing frontend's `npm run dev:testnet` and open `/harbor.html`, or se
 
 | Asset | Source and rights record | Review status and use |
 | --- | --- | --- |
-| Four penguin portraits | Existing project-supplied WebP files in frontend/public/assets/launch-v1/hosts. Their README records the four user reference files. No separate third-party commercial grant is recorded. | Approved identity references for selection. Use the full portraits. |
+| Four penguin portraits | Existing project-supplied WebP files in frontend/public/assets/launch-v1/hosts. Their README records the four user reference files. No separate third-party commercial grant is recorded. | Approved identity references for selection. The selection screen uses full-frame 324 × 432 WebP thumbnails from these approved originals. |
 | Walking figures | Original procedural Three.js volumes in renderer.js, keyed by existing stable IDs. | DRAFT movement proxies for Nova, Rocco, Piko and Ziggy. No approved rigs found. |
 | Harbor, ship, castle, temple, pavilion, palace, council hall, board display, trees, mountains, signs and sky | Original procedural geometry, shader and lettering in scenery.js. Three.js uses the existing MIT-licensed package. | DRAFT fantasy architecture. The two supplied images guide atmosphere. The display table is scenery. |
 | Heritage text | National Museums Scotland, “Chess and Ludo: Board games with South Asian origins” (linked at the temple), repository catalogue and game implementations. | Arctic Dominion is a modern dice adaptation. Heritage Arcade’s Chaturaji is a separate modern team variant. |

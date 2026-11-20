@@ -12,8 +12,10 @@ function workshop(scene) {
     hip: new T.CylinderGeometry(.23,.72,1,4).rotateY(Math.PI/4),
     gem: new T.OctahedronGeometry(.5), ball: new T.SphereGeometry(.5,12,8),
   };
+  const glows = [];
   const buckets = new Map(), pose = new T.Object3D();
   function part(kind,color,x,y,z,w,h,d,ry=0,rz=0,unlit=false) {
+    if (unlit && kind==="round") glows.push(x,y,z);
     const key = kind + (unlit ? "-lamp" : "");
     if (!buckets.has(key)) buckets.set(key,{kind,unlit,entries:[]});
     pose.position.set(x,y,z); pose.scale.set(w,h,d); pose.rotation.set(0,ry,rz);
@@ -26,6 +28,17 @@ function workshop(scene) {
       const mesh=new T.InstancedMesh(shapes[kind],material,entries.length);
       entries.forEach(([matrix,color],i)=>{mesh.setMatrixAt(i,matrix);mesh.setColorAt(i,color);});
       scene.add(mesh);
+    }
+    if(glows.length){
+      const c=document.createElement("canvas");c.width=c.height=64;
+      const ctx=c.getContext("2d"),gradient=ctx.createRadialGradient(32,32,0,32,32,32);
+      gradient.addColorStop(0,"rgba(255,237,172,.92)");
+      gradient.addColorStop(.28,"rgba(255,197,93,.42)");
+      gradient.addColorStop(1,"rgba(255,164,61,0)");
+      ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);
+      const geometry=new T.BufferGeometry();
+      geometry.setAttribute("position",new T.Float32BufferAttribute(glows,3));
+      scene.add(new T.Points(geometry,new T.PointsMaterial({size:2.2,map:new T.CanvasTexture(c),transparent:true,depthWrite:false,blending:T.AdditiveBlending})));
     }
     for (const [key,geo] of Object.entries(shapes)) if (!buckets.has(key)&&!buckets.has(key+"-lamp")) geo.dispose();
   }
@@ -79,7 +92,13 @@ function facade(scene,p,hall) {
       p("hip",0x738faf,x,y+.33,z,w*s,1.05,d*s);
       p("box",gold,x,y+.05,z,w*s,.17,d*s);
       p("box",snow,x,y+.17,z,w*s+.12,.14,d*s+.12);
-      for(let j=-1;j<=1;j++)p("gem",ice,x+j*w*s*.29,y+.52,z+d*s*.38,.46,.62,.33);
+      for(let j=-2;j<=2;j++){
+        const tx=x+j*w*s*.17, tz=z+d*s*.40;
+        p("box",navy,tx,y+.48,tz,.41*s,.58,.21);
+        p("hip",gold,tx,y+.84,tz,.72*s,.25,.49);
+        p("round",ice,tx-.24*s,y+.49,tz,.1,.48,.1);
+        p("round",ice,tx+.24*s,y+.49,tz,.1,.48,.1);
+      }
     }
     for(const offset of [-.85,0,.85])p("round",gold,x+offset,7.65,z,.46,.27,.46);
     p("gem",gold,x,8.1,z,.72,1.1,.72);
@@ -141,11 +160,18 @@ function landscape(scene,p){
   for(let i=0;i<43;i++){
     const a=i*2.39996,r=47+(i%4)*7,h=8+((i*13)%16),x=Math.cos(a)*r,z=Math.sin(a)*r;
     p("peak",i%2?0x668aaa:0x729cb8,x,h/2-2,z,19,h,17,a);
-    p("peak",snow,x,h*.77-2,z,19*.46,h*.46,17*.46,a);
+    p("peak",snow,x,h*.77-1.94,z,19*.48,h*.46,17*.48,a);
   }
   for(const {x,z} of TREES){
     p("round",cedar,x,.7,z,.5,1.4,.5);
     for(let j=0;j<3;j++){p("cone",0x3c777e,x,1.5+j*.81,z,2.7-j*.62,1.9,2.7-j*.62);p("cone",snow,x,1.78+j*.81,z,2.13-j*.49,1.45,2.13-j*.49);}
+  }
+  // Fine brass seams and inset facets break up the ice at walking scale.
+  for(let z=-21;z<=20;z+=3){
+    for(const side of [-1,1]){
+      p("box",0xbce4ee,side*2.62,.096,z,.05,.014,1.25,side*.38);
+      p("gem",gold,side*3.14,.115,z,.16,.035,.36);
+    }
   }
   for(const {x,z} of LAMPS)lantern(p,x,z);
   // The castle gate sits beyond the northern walkable boundary.
@@ -158,6 +184,7 @@ function landscape(scene,p){
   p("box",snow,sx,4.13,sz,10,.24,4.15);
   for(let i=-4;i<=4;i++)p("box",light,sx+i,3.53,sz-1.87,.54,.46,.08,0,0,true);
   for(const dx of [-2,1]){p("round",cedar,sx+dx,5.05,sz,1,1.7,1);p("round",gold,sx+dx,5.89,sz,1.06,.22,1.06);}
+  sign(scene,"Antarctic Gaming Co.",sx,2.18,sz+2.12,7.5);
   HALLS.forEach(h=>facade(scene,p,h));
 }
 
@@ -169,6 +196,11 @@ function interior(scene,p) {
   for(const x of [-5,0,5]){p("box",navy,x,2.85,-7.77,3.4,4.7,.08);p("gem",gold,x,3,-7.66,1.2,2.2,.12);}
   for(const x of [-6.64,6.64])for(const z of [-6,0,6]){
     p("round",gold,x,2.2,z,.50,4.4,.50);p("hip",ice,x,4.47,z,1.16,.43,1.16);
+  }
+  p("box",gold,0,4.72,-7.62,13.65,.14,.3);
+  for(const x of [-6.6,6.6]){
+    p("box",ice,x,4.72,0,.65,.42,15.7);
+    for(const z of [-6,0,6])p("hip",gold,x,4.41,z,.95,.28,.95);
   }
   sign(scene,"Chaturanga",0,5.1,-7.68,5.6);
   for(const x of [-5,5])lantern(p,x,-7,3.5);
@@ -190,8 +222,8 @@ function interior(scene,p) {
 export function buildScenery(scene,room) {
   scene.background=new T.Color(room?0x31475b:0xb5bdcf);
   scene.fog=new T.FogExp2(room?0x31475b:0xb5c9db,room ? .022 : .015);
-  const hemi=new T.HemisphereLight(0xfff4e7,0x86a7cb,1.85);scene.add(hemi);
-  const sun=new T.DirectionalLight(0xffddba,2.05);sun.position.set(-18,29,17);scene.add(sun);
+  const hemi=new T.HemisphereLight(0xe6f2ff,0x779ac6,1.9);scene.add(hemi);
+  const sun=new T.DirectionalLight(0xffe6ce,1.85);sun.position.set(-18,29,17);scene.add(sun);
   const shop=workshop(scene);
   if(room)interior(scene,shop.part);else landscape(scene,shop.part);
   shop.finish();

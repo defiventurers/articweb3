@@ -13,7 +13,7 @@ test('new display names retain saved guide IDs, roles and asset references',()=>
   for(const[id,name]of Object.entries(names)){
     assert.equal(GUIDES[id].name,name);
     assert.equal(companionPreferences({guide:id,mode:'quiet',motion:false}).guide,id);
-    assert.match(GUIDES[id].image,new RegExp('/'+id+'/listening\\.webp$'));
+    assert.equal(GUIDES[id].image, `art/launch-v1/hosts/${id}.webp`);
   }
   assert.match(companionLine('hello',{},0,'pengu'),/I’m Piko/);
   assert.match(companionLine('hello',{},0,'abster'),/I’m Ziggy/);

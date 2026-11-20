@@ -10,7 +10,7 @@ export function VisaLandingView({accountId,busy,error,progress,onSignIn,onRecove
  const base='art/onboarding-v2/',warming=connection.phase==='warming',failed=['error','offline','cancelled'].includes(connection.phase),voyage=warming||failed;
  const retry=()=>harborConnection.ensureReady({force:true}).catch(()=>{});
  return <main className={'passport-entry harbor-entry '+(voyage?'harbor-voyage':'')} data-testid="antarctic-visa" data-connection={connection.phase} data-visa-error={error?'true':undefined}>
-  <header className="passport-heading"><img src={base+'brand-logo.webp'} width="2048" height="700" alt="Antarctic Gaming Co." fetchPriority="high"/><p>WELCOME TO LANTERN HARBOR</p><h1>{voyage?<>On the way to<br/>Lantern Harbor</>:<>Get your Antarctic<br/>Passport</>}</h1><span>{voyage?'A warm welcome awaits beyond the ice.':'Timeless games. New friends. Step inside.'}</span></header>
+  <header className="passport-heading"><img src={base+'brand-logo.webp'} width="2048" height="700" alt="Antarctic Gaming Co." fetchPriority="high"/><p>WELCOME TO LANTERN HARBOR</p><h1>{voyage?<>On the way to<br/>Lantern Harbor</>:<>Get your Antarctic<br/>Passport</>}</h1><span>{voyage?'A warm welcome awaits beyond the ice.':'Timeless games. New friends. Step inside.'}</span><BrowserHarborLinks/></header>
   <div className="passport-entry-hero" aria-hidden="true">{!voyage&&<><img className="harbor-friends" src={base+'friends-at-arch.webp'} width="1536" height="1024" alt=""/><img className="harbor-nova" src={base+(error?'nova-reassure.webp':accountId?'nova-passport-stamp.webp':'nova-welcome.webp')} width="1254" height="1254" alt=""/><span className="harbor-greeting">Welcome ashore!<br/>I’m Nova.</span></>}</div>
   <section className="passport-entry-card" aria-label={voyage?'Connection status':accountId?'Passport setup':'Sign in'}>
    <h2>{warming?'Getting the harbor ready…':failed?'Let’s get you there.':accountId?'Preparing your passport…':'Take your seat.'}</h2>
@@ -20,7 +20,6 @@ export function VisaLandingView({accountId,busy,error,progress,onSignIn,onRecove
    {warming&&<button className="passport-secondary" type="button" onClick={()=>harborConnection.cancel()}>Cancel connection check</button>}
    {failed&&!accountId&&<button className="passport-secondary" type="button" disabled={busy} onClick={onRecover}>Use a recovery code</button>}
    {error&&!warming&&<p className="passport-entry-error" role="alert">{error}</p>}
-  <BrowserHarborLinks/>
    {!window.Android&&onPreview&&<><button type="button" className="harbor-guest-preview" onClick={onPreview}>✦ Explore Story Adventure without signing in →</button><p className="harbor-guest-preview-note">Browse nine stories and try two local games while the account service connects.</p></>}
   </section>
   <footer className="passport-entry-footer"><p role="status" aria-live="polite" aria-atomic="true">{progress}</p><small>Your game-world passport · No real travel document.</small></footer>

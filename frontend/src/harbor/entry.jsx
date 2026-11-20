@@ -4,7 +4,7 @@ import {HOST_META} from "../components/PenguinHosts.jsx";
 import {ARRIVAL, HALLS, ROOM_ENTRY, door} from "./world.js";
 import "./harbor.css";
 
-const ART="/assets/launch-v1/hosts";
+const portraits=import.meta.glob("./portraits/*.webp",{eager:true,import:"default"});
 const CATALOG="/?collection=strategy";
 const returnHall=HALLS.find(h=>h.key===new URLSearchParams(location.search).get("return"));
 function read(key, fallback){try{return localStorage.getItem("ak.harbor."+key)??fallback;}catch{return fallback;}}
@@ -101,7 +101,7 @@ function World(){
     <section className="boarding"><p className="place">Lantern Harbor</p><h1>Choose your penguin</h1>
       <div className="roster" role="group" aria-label="Penguin avatars">{Object.entries(HOST_META).map(([id,host])=>
         <button key={id} aria-pressed={avatar===id} onClick={()=>setAvatar(id)}>
-          <img src={ART+"/"+id+".webp"} width="150" height="200" alt=""/><strong>{host.short}</strong>
+          <img src={portraits["./portraits/"+id+".webp"]} width="150" height="200" alt=""/><strong>{host.short}</strong>
         </button>)}</div>
       <p className="note">Approved portraits · Prototype walking models</p>
       <button className="gold" onClick={enter}>Enter Lantern Harbor <Icon type="enter"/></button>

@@ -75,3 +75,30 @@ test("portrait browser admits a guest and keeps both entry choices in reach", as
   await expect(page.getByRole("button",{name:"Halls",exact:true})).toBeInViewport();
   await page.screenshot({path:info.outputPath("portrait.png")});
 });
+
+test("the guest directory reaches the flagship and all three other game setups", async ({page}) => {
+  test.setTimeout(100000);
+  await page.addInitScript(() => {
+    const native = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function(type, ...rest) {
+      if (type.startsWith("webgl")) return null;
+      return native.call(this, type, ...rest);
+    };
+  });
+  await page.goto("/harbor.html?return=temple");
+  const options = [
+    ["Chaturanga Temple","Play Arctic Dominion",page.getByLabel("Cover screen")],
+    ["Xiangqi Pavilion","Open Xiangqi table",page.getByRole("heading",{name:/Xiangqi.*Polar Command/i})],
+    ["Shogi Palace","Open Frozen Shogunate",page.getByRole("heading",{name:"Frozen Shogunate"})],
+    ["San You Qi Council Hall","Open Three Friends Chess",page.getByRole("heading",{name:/San You Qi/i})]
+  ];
+  for (const [hall,action,setup] of options) {
+    await page.getByRole("dialog").getByRole("button",{name:hall}).click();
+    await page.getByRole("link",{name:action,exact:true}).click();
+    await expect(setup).toBeVisible({timeout:30000});
+    await page.getByRole("link",{name:/← Lantern Harbor/}).click();
+  }
+  await page.goto("/?game=shogi-frozen-shogunate&skipLoader=1");
+  await expect(page.getByRole("heading",{name:"Frozen Shogunate"})).toBeVisible();
+  await expect(page.getByRole("link",{name:/← Lantern Harbor/})).toHaveCount(0);
+});

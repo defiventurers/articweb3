@@ -46,3 +46,11 @@
 .browser-harbor-links { display:flex; gap:6px; flex-wrap:wrap; justify-content:center }
 .browser-harbor-links a { display:grid; place-items:center; flex:1; min-height:44px; padding:4px 8px; border:1px solid #c4a469; border-radius:9px; background:#16354e; color:#ffe5ac; text-decoration:none; font:600 .88rem/1.2 system-ui; text-align:center }
 .browser-harbor-links a:focus-visible { outline:3px solid #efad37 }
+
+.harbor-entry:has(.browser-harbor-links) {
+  grid-template-rows: max-content minmax(90px,1fr) max-content max-content;
+  grid-auto-rows: max-content; overflow-y:auto;
+}
+.passport-heading .browser-harbor-links { max-width:400px; margin:12px auto 0; }
+.harbor-entry:has(.browser-harbor-links) .passport-entry-card { min-height:max-content; }
+@media(max-height:510px){.harbor-entry:has(.browser-harbor-links){grid-template-rows:repeat(3,max-content);}}

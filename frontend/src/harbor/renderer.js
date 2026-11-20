@@ -41,7 +41,7 @@ function walkingProxy(id) {
 
 const KEYS={KeyW:"up",ArrowUp:"up",KeyA:"left",ArrowLeft:"left",KeyS:"down",ArrowDown:"down",KeyD:"right",ArrowRight:"right"};
 function cameraBlocked(x,z,room) {
-  if(room)return Math.abs(x)>6.4 || Math.abs(z)>7.35;
+  if(room)return Math.abs(x)>6.4 || z < -7.35 || z > 12;
   return HALLS.some(h=>Math.abs(x-h.x)<h.width/2+1 && Math.abs(z-h.z)<h.depth/2+1);
 }
 
@@ -116,11 +116,11 @@ export function mountWorld(canvas,{room,avatar,position,input,preferences,onNear
       const sx=Math.sin(yaw),sz=Math.cos(yaw),distance=room?4.9:7.3;
       let reach=.45;
       for(let t=.55;t<=distance;t+=.18){if(cameraBlocked(p.x+sx*t,p.z+sz*t,room))break;reach=t;}
-      goal.set(p.x+sx*reach,room?2.4+reach*.34:2.25+reach*.32,p.z+sz*reach);
+      goal.set(p.x+sx*reach,room?2.2+reach*.24:2.25+reach*.22,p.z+sz*reach);
       // Snap inward around a wall and damp only clear paths.
       if(reduced || !dt || reach<distance-.4 || cameraBlocked(camera.position.x,camera.position.z,room))camera.position.copy(goal);
       else camera.position.lerp(goal,1-Math.exp(-dt*12));
-      look.set(p.x-sx*1.1,1.18,p.z-sz*1.1);camera.lookAt(look);
+      look.set(p.x-sx*2.1,room?1.4:2.7,p.z-sz*2.1);camera.lookAt(look);
       renderer.render(scene,camera);
     }
     render(performance.now());
