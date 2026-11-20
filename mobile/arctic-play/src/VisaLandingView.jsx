@@ -1,3 +1,4 @@
+import {BrowserHarborLinks} from "./BrowserHarborLinks.jsx";
 import {InstallWebApp} from './LaunchExperience.jsx';
 import React,{useEffect,useState} from 'react';
 import {harborConnection} from './harborConnection.js';
@@ -19,6 +20,7 @@ export function VisaLandingView({accountId,busy,error,progress,onSignIn,onRecove
    {warming&&<button className="passport-secondary" type="button" onClick={()=>harborConnection.cancel()}>Cancel connection check</button>}
    {failed&&!accountId&&<button className="passport-secondary" type="button" disabled={busy} onClick={onRecover}>Use a recovery code</button>}
    {error&&!warming&&<p className="passport-entry-error" role="alert">{error}</p>}
+  <BrowserHarborLinks/>
    {!window.Android&&onPreview&&<><button type="button" className="harbor-guest-preview" onClick={onPreview}>✦ Explore Story Adventure without signing in →</button><p className="harbor-guest-preview-note">Browse nine stories and try two local games while the account service connects.</p></>}
   </section>
   <footer className="passport-entry-footer"><p role="status" aria-live="polite" aria-atomic="true">{progress}</p><small>Your game-world passport · No real travel document.</small></footer>

@@ -42,3 +42,7 @@
 .entry-browser-preview{min-height:44px;width:100%;margin:10px 0 0;border-radius:12px;border:1px solid #c6a66b;background:#e2cc98;color:#173a50;font-size:13px;font-weight:800}
 @media(prefers-reduced-motion:reduce){.kingdom-preview *{scroll-behavior:auto;animation:none!important}}
 @media(max-width:390px){.kingdom-preview{padding-left:10px;padding-right:10px}.kingdom-preview-header{gap:5px}.kingdom-preview-signin{padding:7px}.kingdom-preview-brand{gap:5px}.kingdom-preview-crown{flex-basis:32px;width:32px;height:32px}}
+
+.browser-harbor-links { display:flex; gap:6px; flex-wrap:wrap; justify-content:center }
+.browser-harbor-links a { display:grid; place-items:center; flex:1; min-height:44px; padding:4px 8px; border:1px solid #c4a469; border-radius:9px; background:#16354e; color:#ffe5ac; text-decoration:none; font:600 .88rem/1.2 system-ui; text-align:center }
+.browser-harbor-links a:focus-visible { outline:3px solid #efad37 }

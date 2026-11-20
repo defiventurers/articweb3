@@ -109,6 +109,7 @@ export function GameLibraryScreen({ onSelectGame }) {
           <strong>{archiveTitle}</strong>
         </a>
         <div className="arctic-game-world__masthead-meta">
+          <a className="harbor-discover" href="/harbor.html">Explore the Kingdoms</a>
           <span>{games.length} {archiveCountLabel}</span>
           <a
             href={archiveHref}
