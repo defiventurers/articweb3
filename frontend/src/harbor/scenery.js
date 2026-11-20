@@ -32,7 +32,7 @@ function workshop(scene) {
   return {part,finish};
 }
 
-function sign(scene,text,x,y,z,width) {
+function sign(scene,text,x,y,z,width,angle=0) {
   const c=document.createElement("canvas"); c.width=512; c.height=96;
   const g=c.getContext("2d");
   g.fillStyle="#172c45";g.fillRect(0,0,512,96);
@@ -41,7 +41,7 @@ function sign(scene,text,x,y,z,width) {
   g.fillText(text,256,49,485);
   const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;
   const plaque=new T.Mesh(new T.PlaneGeometry(width,width*96/512),new T.MeshBasicMaterial({map}));
-  plaque.position.set(x,y,z);scene.add(plaque);
+  plaque.position.set(x,y,z);plaque.rotation.y=angle;scene.add(plaque);
 }
 
 function lantern(p,x,z,height=2.9,base=0) {
@@ -184,7 +184,7 @@ function interior(scene,p) {
   p("box",navy,LECTERN.x,.66,LECTERN.z,1,1.32,1);
   p("box",gold,LECTERN.x,1.35,LECTERN.z,1.2,.14,1.1);
   sign(scene,"Heritage",LECTERN.x,1.06,LECTERN.z+.515,.97);
-  sign(scene,"Harbor",0,2.45,7.7,2.55);
+  sign(scene,"Harbor",0,2.45,7.7,2.55,Math.PI);
 }
 
 export function buildScenery(scene,room) {

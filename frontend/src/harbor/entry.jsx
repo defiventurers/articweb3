@@ -67,7 +67,9 @@ function World(){
     chime();
     if(fallback){menu(h.key);return;}
     if(h.key==="temple"){arrive(true,ROOM_ENTRY);return;}
-    position.current=door(h);menu(h.key);
+    if(room)arrive(false,door(h));
+    else Object.assign(position.current,door(h));
+    menu(h.key);
   }
   function interact(id){
     if(!id)return;

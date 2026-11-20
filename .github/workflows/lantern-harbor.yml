@@ -1,0 +1,43 @@
+name: Lantern Harbor browser acceptance
+on:
+  pull_request:
+    paths:
+      - frontend/harbor.html
+      - frontend/src/harbor/**
+      - frontend/tests/lantern-harbor.spec.js
+      - frontend/unit/lantern-harbor.node.test.js
+      - mobile/arctic-play/src/BrowserHarborLinks.jsx
+      - .github/workflows/lantern-harbor.yml
+permissions:
+  contents: read
+jobs:
+  walk-and-play:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - run: node --test unit/lantern-harbor.node.test.js
+      - run: npm run build:testnet
+      - run: npx playwright install --with-deps chromium
+      - name: Walk through the production build
+        run: |
+          npx vite preview --host 127.0.0.1 --port 5173 > /tmp/harbor-preview.log 2>&1 &
+          curl --retry 20 --retry-connrefused --retry-delay 1 -fsS http://127.0.0.1:5173/harbor.html -o /dev/null
+          PLAYWRIGHT_BASE_URL=http://127.0.0.1:5173 npx playwright test tests/lantern-harbor.spec.js --project=chromium --reporter=list
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lantern-harbor-walkthrough
+          path: |
+            frontend/test-results/**/*.png
+            frontend/test-results/**/*.webm
+            frontend/test-results/**/error-context.md
+          if-no-files-found: ignore
+          retention-days: 7
