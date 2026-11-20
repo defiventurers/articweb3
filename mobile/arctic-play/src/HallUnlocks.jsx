@@ -17,31 +17,68 @@ export function JourneyBar({access,onFormations,onPass,onJourney}){
 }
 
 export function LockedHall({id,access,pendingInvite,onPrerequisite,onFormations,onKey,onPay,onPass,onRules}){
-  const [busy,setBusy]=useState(false),[error,setError]=useState(''),keys=model.balance(access.progress),definition=game(id),entry=model.CATALOG[id];
+  const [busy,setBusy]=useState(false),[error,setError]=useState(''),keys=model.balance(access.progress),region=model.regionForHall(id),regionalKeys=region?model.regionBalance(access.progress,region):0,definition=game(id),entry=model.CATALOG[id];
   async function spend(){if(busy)return;setBusy(true);setError('');try{await access.spend(id);onKey(id);}catch(e){setError(e.message);}finally{setBusy(false);}}
   return <article className="locked-hall" data-locked-hall={id}><div className="unlock-cover"><CoverArt id={id} celebration/><span><LockKeyhole size={18}/> Your next destination</span></div><p className="world-eyebrow">{HALLS[id].name}</p><h2>{definition.name}</h2><p className="unlock-intro">{discovery.TEASERS[id].detail} Earn your invitation, or open the hall permanently.</p><HallTeaser key={id} id={id}/>
     {pendingInvite&&<p className="unlock-invitation"><Users size={18}/> Your invitation is saved: <strong>{pendingInvite.code.split('').join('-')}</strong></p>}
     <section className="unlock-route"><p className="world-eyebrow">PLAY TO UNLOCK</p><h3>One victory. A new door.</h3><p>{model.requirement(id)}</p><div className="unlock-prerequisites">{entry.wins?.map(p=><button className="primary full" key={p} onClick={()=>onPrerequisite(access.allowed(p).open?p:discovery.nextMatch(p,access.state()))}><Play size={17}/>{access.allowed(p).open?'Play ':'Begin with '}{game(access.allowed(p).open?p:discovery.nextMatch(p,access.state())).name}<ArrowRight size={17}/></button>)}</div><small>Win a fresh bot game or a completed friend game. Undo makes a bot game practice-only; hints and retries in formations are always welcome.</small></section>
-    <section className="unlock-route formation-option"><KeyRound size={23}/><div><h3>A gentler route</h3><p>Three different formation puzzles earn one Lantern Key. No timer. Hints and retries welcome.</p><button className="secondary full" onClick={()=>onFormations(id)}>Try formations <ArrowRight size={17}/></button>{keys>0&&<button className="primary full" disabled={busy} onClick={spend}>{busy?'Opening hall…':`Use 1 Lantern Key · ${keys} available`}</button>}</div></section>
+    <section className="unlock-route formation-option"><KeyRound size={23}/><div><h3>A gentler route</h3><p>Three different formation puzzles earn one Lantern Key. No timer. Hints and retries welcome.</p><button className="secondary full" onClick={()=>onFormations(id)}>Try formations <ArrowRight size={17}/></button>{(keys>0||regionalKeys>0)&&<button className="primary full" disabled={busy} onClick={spend}>{busy?'Opening hall…':regionalKeys>0?`Use 1 ${model.REGIONAL_ORIGINS[region].label} · ${regionalKeys} ready`:`Use 1 Lantern Key · ${keys} available`}</button>}</div></section>
     <section className="unlock-route"><p className="world-eyebrow">PAY TO UNLOCK</p><button className="secondary full" onClick={()=>onPay('hall-'+id+'-v1')}><LockKeyhole size={17}/> Buy permanent hall access</button><button className="text-button" onClick={onPass}><Ticket size={17}/> Explore the All Access Pass</button><small>Purchases open a hall. Passport stamps are earned through play.</small></section>
     <button className="text-button" onClick={()=>onRules(id)}><BookOpen size={17}/> Read the basic rules</button>{error&&<p role="alert">{error}</p>}
   </article>;
 }
 
+export function RegionalPuzzleRoute({access,onReturn,onChoose}) {
+  const [region,setRegion]=useState('china'),[selected,setSelected]=useState(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
+  const origins=model.REGIONAL_ORIGINS,items=model.REGIONAL_CHALLENGES.filter(p=>p.region===region);
+  const challenge=items.find(p=>p.id===selected)||items.find(p=>access.progress.solutions[p.id]===undefined)||items[0];
+  const completed=items.filter(p=>access.progress.solutions[p.id]!==undefined).length;
+  const credits=model.regionBalance(access.progress,region);
+  async function answer(index){
+    if(busy||access.progress.solutions[challenge.id]!==undefined)return;
+    if(index!==challenge.answer){setMessage('Not quite. Review the rule and try another choice.');return;}
+    setBusy(true);try{await access.complete(challenge.id,index);setMessage(challenge.explanation+' Discovery saved.');}
+    catch(e){setMessage(e.message);}finally{setBusy(false);}
+  }
+  const done=access.progress.solutions[challenge.id]!==undefined;
+  return <section className="formation-route regional-puzzles" aria-label="Heritage Lantern puzzles">
+    <p className="world-eyebrow">HERITAGE LANTERN KEYS · MODERN LEARNING PUZZLES</p><h2>Follow a game tradition</h2>
+    <p>Learn an authentic rule, solve three different challenges and earn a key for games of the same tradition. These are modern educational puzzles, not historical puzzle editions.</p>
+    <div className="formation-picker" role="group" aria-label="Choose a tradition">
+      {Object.entries(origins).map(([id,origin])=><button key={id} className={region===id?'chosen':''} aria-pressed={region===id} onClick={()=>{setRegion(id);setSelected(null);setMessage('');}}>{origin.country} · {origin.tradition}</button>)}
+    </div>
+    <p><strong>{origins[region].label}</strong> · {completed}/{items.length} challenges solved · {credits} available</p>
+    <progress aria-label={region+' puzzle completion'} value={completed} max={items.length}/>
+    <p className="world-eyebrow">{origins[region].country} · {origins[region].tradition}</p>
+    <h3>{challenge.title}</h3><p>{challenge.question}</p>
+    <div className="formation-controls" role="group" aria-label="Choose your answer">
+      {challenge.choices.map((choice,index)=><button key={index} className="secondary full" disabled={busy||done} onClick={()=>answer(index)}>{choice}{done&&challenge.answer===index?' ✓':''}</button>)}
+    </div>
+    {done&&<p role="status">{challenge.explanation}</p>}
+    {message&&<p role="status">{message}</p>}
+    <div className="formation-picker" aria-label="Select another challenge">{items.map((p,index)=><button key={p.id} aria-pressed={challenge.id===p.id} onClick={()=>{setSelected(p.id);setMessage('');}}>{access.progress.solutions[p.id]!==undefined?'✓':index+1}</button>)}</div>
+    <h3>Matching halls</h3><div className="key-destinations">{origins[region].halls.map(id=><button key={id} className="secondary full" onClick={()=>onChoose(id)}>{game(id).name} · {access.allowed(id).open?'Open':'View unlock'} <ArrowRight size={16}/></button>)}</div>
+    <details className="world-detail"><summary>Origin and rules sources</summary><p>The original board-game tradition comes from {origins[region].country}; these specific quiz questions are new educational activities.</p>{origins[region].sources.map(url=><p key={url}><a href={url} rel="noreferrer" target="_blank">Rules reference</a></p>)}</details>
+    <button className="text-button" onClick={onReturn}>Back to Lantern Formations</button>
+  </section>;
+}
+
 export function FormationRoute({access,target,onChoose,onReturn,onFoundation}){
   useEffect(()=>{access.refresh();},[]);
+  const [regional,setRegional]=useState(false);
   const [selected,setSelected]=useState(()=>model.CHALLENGES.find(p=>access.progress.solutions[p.id]===undefined)?.id||model.CHALLENGES[0].id),[hint,setHint]=useState(false),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
   const puzzle=model.CHALLENGES.find(p=>p.id===selected),done=access.progress.solutions[selected]!==undefined,count=Object.keys(access.progress.solutions).length,keys=model.balance(access.progress),answer=model.POINTS.find(p=>model.solved(selected,p.id))?.id;
   const chosen=access.progress.solutions[selected];
   function choose(id){setSelected(id);setHint(false);setMessage('');}
   async function place(point){if(done||busy)return;setMessage('');if(!model.solved(selected,point)){setMessage('Try another empty point. Make one straight line of three blue lanterns.');return;}setBusy(true);try{const before=model.balance(access.progress);await access.complete(selected,point);setMessage(model.balance(access.state().progress)>before?'A Lantern Key is ready. Choose a hall to open.':'A formation found. Keep your lanterns glowing.');}catch(e){setMessage(e.message);}finally{setBusy(false);}}
   const next=model.CHALLENGES.find(p=>access.progress.solutions[p.id]===undefined&&p.id!==selected);
-  return <section className="formation-route"><div className="formation-welcome"><img src="art/launch-v1/hosts/abster.webp" alt="Ziggy guides your formation challenge"/><div><p className="world-eyebrow">A LITTLE DISCOVERY WITH ZIGGY</p><h2>Lantern Formations</h2><p>Three new formations earn one key. Hints and retries are free.</p></div></div><div className="formation-progress"><strong>{count} / 12 formations</strong><span><KeyRound size={17}/>{keys} {keys===1?'key':'keys'} ready</span></div><progress value={count} max={12} aria-label={`${count} of 12 different formations completed`}/>
+  if(regional)return <RegionalPuzzleRoute access={access} onReturn={()=>setRegional(false)} onChoose={onChoose}/>;
+  return <section className="formation-route"><button className="primary full" onClick={()=>setRegional(true)}><Sparkles size={17}/> Explore regional Lantern Keys · China & Japan <ArrowRight size={16}/></button><div className="formation-welcome"><img src="art/launch-v1/hosts/abster.webp" alt="Ziggy guides your formation challenge"/><div><p className="world-eyebrow">A LITTLE DISCOVERY WITH ZIGGY</p><h2>Lantern Formations</h2><p>Three new formations earn one key. Hints and retries are free.</p></div></div><div className="formation-progress"><strong>{count} / 12 formations</strong><span><KeyRound size={17}/>{keys} {keys===1?'key':'keys'} ready</span></div><progress value={count} max={12} aria-label={`${count} of 12 different formations completed`}/>
     <p className="formation-task"><strong>{puzzle.title}</strong><br/>Make a straight line of three blue lanterns. Tap an empty point.</p>
     <div className="formation-board"><svg viewBox="0 0 100 100" role="group" aria-label="Formation board"><title>{puzzle.title} · Complete a line of three</title>{[10,25,40].map(n=><rect key={n} x={n} y={n} width={100-2*n} height={100-2*n} rx=".5" className="formation-line"/>)}<path className="formation-line" d="M50 10V40M90 50H60M50 90V60M10 50H40"/>{model.POINTS.map(p=>{const mine=puzzle.own.includes(p.id)||done&&chosen===p.id,other=puzzle.other.includes(p.id),empty=!mine&&!other;return <g key={p.id} role={empty&&!done?'button':undefined} tabIndex={empty&&!done?0:undefined} aria-label={empty?`Place lantern at point ${p.id+1}`:undefined} aria-disabled={busy||undefined} className={`formation-point ${mine?'mine':other?'other':'empty'} ${hint&&p.id===answer?'hint':''}`} onClick={()=>empty&&place(p.id)} onKeyDown={e=>{if(empty&&(e.key==='Enter'||e.key===' ')){e.preventDefault();place(p.id);}}}><circle cx={p.x} cy={p.y} r="4.1"/>{mine&&<path d={`M${p.x} ${p.y-2.3}Q${p.x-3} ${p.y+1.5} ${p.x} ${p.y+2.2}Q${p.x+3} ${p.y+1.5} ${p.x} ${p.y-2.3}`} className="formation-flame"/>}</g>;})}</svg></div>
     <div className="formation-controls">{!done&&<button className="secondary" onClick={()=>setHint(true)}>Show a hint</button>}{done&&next&&<button className="primary full" onClick={()=>choose(next.id)}>Next formation <ArrowRight size={17}/></button>}{done&&!next&&<p className="owned-note"><Check size={18}/> All twelve formations discovered.</p>}</div><p role="status" className="formation-feedback">{message|| (done?'Discovered · Replaying this formation does not award another key.':hint?'The glowing empty point completes your line.':'Hints and retries are free. Every three different formations earn a key.')}</p>
     <button className="secondary full foundation-entry" onClick={onFoundation}>Play Nine Ice Forts <small>Nine Men’s Morris · Win 1 key</small><ArrowRight size={17}/></button>
-    {keys>0&&<div className="key-destinations"><h3>Your next door is waiting.</h3>{target&&!access.allowed(target).open?<button className="primary full" onClick={()=>onChoose(target)}>Use a key for {game(target).name} <ArrowRight size={17}/></button>:model.GAME_IDS.filter(id=>!access.allowed(id).open).map(id=><button className="secondary full" key={id} onClick={()=>onChoose(id)}>Open {game(id).name} <ArrowRight size={16}/></button>)}</div>}
+    {(keys>0||Object.values(model.regionalBalances(access.progress)).some(n=>n>0))&&<div className="key-destinations"><h3>Your next door is waiting.</h3>{target&&!access.allowed(target).open?<button className="primary full" onClick={()=>onChoose(target)}>Use a key for {game(target).name} <ArrowRight size={17}/></button>:model.GAME_IDS.filter(id=>!access.allowed(id).open).map(id=><button className="secondary full" key={id} onClick={()=>onChoose(id)}>Open {game(id).name} <ArrowRight size={16}/></button>)}</div>}
     <details className="world-detail"><summary>Choose a formation · {count} found</summary><div className="formation-picker">{model.CHALLENGES.map((p,i)=><button key={p.id} aria-label={`Formation ${i+1}: ${p.title}`} aria-pressed={selected===p.id} onClick={()=>choose(p.id)}>{access.progress.solutions[p.id]!==undefined?<Check size={17}/>:i+1}</button>)}</div></details><button className="text-button" onClick={onReturn}>Back to the halls</button><small className="unlock-footnote">Lantern Keys open games. Passport stamps and the Eighth Lantern remain achievements you earn at the tables.</small>
   </section>;
 }
