@@ -10,8 +10,23 @@ Run the existing frontend's `npm run dev:testnet` and open `/harbor.html`, or se
 | --- | --- | --- |
 | Four penguin portraits | Existing project-supplied WebP files in frontend/public/assets/launch-v1/hosts. Their README records the four user reference files. No separate third-party commercial grant is recorded. | Approved identity references for selection. The selection screen uses full-frame 324 × 432 WebP thumbnails from these approved originals. |
 | Walking figures | Original procedural Three.js volumes in renderer.js, keyed by existing stable IDs. | DRAFT movement proxies for Nova, Rocco, Piko and Ziggy. No approved rigs found. |
-| Harbor, ship, castle, temple, pavilion, palace, council hall, board display, trees, mountains, signs and sky | Original procedural geometry, shader and lettering in scenery.js. Three.js uses the existing MIT-licensed package. | DRAFT fantasy architecture. The two supplied images guide atmosphere. The display table is scenery. |
+| Harbor, ship, castle, temple, pavilion, palace, council hall, board display, trees, mountains, signs and sky | Six project-supplied procedural Three.js builders in frontend/src/harbor/assets. The archive manifests describe original geometry, lettering and materials. Three.js uses the existing MIT-licensed package. | DRAFT fantasy architecture. The two supplied images guide atmosphere. The display table is scenery. |
 | Heritage text | National Museums Scotland, “Chess and Ludo: Board games with South Asian origins” (linked at the temple), repository catalogue and game implementations. | Arctic Dominion is a modern dice adaptation. Heritage Arcade’s Chaturaji is a separate modern team variant. |
+
+## Assembled district
+
+The outdoor loader places the four buildings on the environment’s named sockets. The finished floors are elevated 0.29 m (temple), 0.55 m (pavilion), 0 m (palace), and 0.34 m (council) so the approach treads meet the quay. The camera can orbit horizontally and tilt vertically. Player collisions use the supplied structural boxes and the waterfront outline. Inside a hall footprint, a short downward ray locates the rendered tread under the player. Low graphics freezes the aurora and caps pixel ratio. The temple interior loads on entry and its two pedestals and central table use the supplied semantic markers.
+
+| DRAFT source archive | Integrated module |
+| --- | --- |
+| lantern-harbor-environment-DRAFT-v0.1.zip | lantern-harbor-environment.mjs |
+| chaturanga-temple-draft.zip | chaturanga-temple.mjs |
+| chaturanga-temple-interior-DRAFT.zip | chaturanga-interior.mjs |
+| xiangqi-pavilion-DRAFT.zip | xiangqi-pavilion.mjs |
+| shogi-palace-draft.zip | shogi-palace.mjs |
+| san-you-qi-council-DRAFT.zip | san-you-qi-council.mjs |
+
+The host uses the builders directly. The archive preview binaries and standalone viewers are excluded from the browser package.
 
 ## Destinations
 

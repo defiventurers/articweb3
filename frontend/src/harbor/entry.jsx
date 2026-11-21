@@ -46,7 +46,7 @@ function World(){
   const fallback=status==="fallback";
   const hall=HALLS.find(h=>h.key===panel);
   const activeHall=HALLS.find(h=>h.key===near);
-  const interactLabel=activeHall?"Enter "+activeHall.name:({table:"Visit game table",heritage:"Read heritage plaque",exit:"Exit to harbor"}[near]);
+  const interactLabel=activeHall?"Enter "+activeHall.name:({table:"Visit game table",heritage:"Read heritage plaque",tutorial:"Learn piece movement",exit:"Exit to harbor"}[near]);
   function chime(){
     if(!sound)return;
     try{
@@ -76,6 +76,7 @@ function World(){
     const h=HALLS.find(item=>item.key===id);
     if(h){visitHall(h);return;}
     if(id==="exit"){chime();arrive(false,door(HALLS[0]));return;}
+    if(id==="tutorial"){location.assign("/?game=arctic-dominion&movement=1&fromHarbor=temple");return;}
     chime();menu("temple");
   }
   action.current={interact,menu};
@@ -84,9 +85,9 @@ function World(){
     let alive=true,dispose;
     const element=canvas.current;
     const fail=()=>{if(alive){input.current.release?.();setStatus("fallback");setPanel("halls");}};
-    import("./renderer.js").then(({mountWorld})=>{
+    Promise.all([import("./renderer.js"),room?import("./interior.js"):import("./exterior.js")]).then(([{mountWorld},{buildScene}])=>{
       if(!alive)return;
-      dispose=mountWorld(element,{room,avatar,position,input,preferences,onNear:setNear,
+      dispose=mountWorld(element,{buildScene,room,avatar,position,input,preferences,onNear:setNear,
         onInteract:id=>action.current.interact(id),onMenu:()=>action.current.menu("menu"),onFailure:fail});
       if(alive)setStatus("ready");
     }).catch(fail);

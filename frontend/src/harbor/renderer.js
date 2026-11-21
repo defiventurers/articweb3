@@ -1,6 +1,5 @@
 import * as T from "three";
-import { buildScenery } from "./scenery.js";
-import { HALLS, nearby, walk } from "./world.js";
+import { cameraBlocked, nearby, walk } from "./navigation.js";
 
 const PALETTE = {
   polly: [0xf292b0,0xe76b97], retsba: [0xbc3835,0xefa447],
@@ -40,13 +39,8 @@ function walkingProxy(id) {
 }
 
 const KEYS={KeyW:"up",ArrowUp:"up",KeyA:"left",ArrowLeft:"left",KeyS:"down",ArrowDown:"down",KeyD:"right",ArrowRight:"right"};
-function cameraBlocked(x,z,room) {
-  if(room)return Math.abs(x)>6.4 || z < -7.35 || z > 12;
-  return HALLS.some(h=>Math.abs(x-h.x)<h.width/2+1 && Math.abs(z-h.z)<h.depth/2+1);
-}
-
-export function mountWorld(canvas,{room,avatar,position,input,preferences,onNear,onInteract,onMenu,onFailure}) {
-  const renderer=new T.WebGLRenderer({canvas,antialias:false,powerPreference:"low-power"});
+export function mountWorld(canvas,{buildScene,room,avatar,position,input,preferences,onNear,onInteract,onMenu,onFailure}) {
+  const renderer=new T.WebGLRenderer({canvas,antialias:!preferences.current.low,powerPreference:"low-power"});
   const scene=new T.Scene(), camera=new T.PerspectiveCamera(55,1,.08,240);
   const events=new AbortController(), options={signal:events.signal};
   let frame=0,resize,terminated=false;
@@ -62,17 +56,23 @@ export function mountWorld(canvas,{room,avatar,position,input,preferences,onNear
     resources.forEach(r=>r.dispose());renderer.dispose();renderer.forceContextLoss();
   }
   try{
-    buildScenery(scene,room);
+    renderer.toneMapping=T.ACESFilmicToneMapping;
+    renderer.toneMappingExposure=1.24;
+    scene.add(new T.HemisphereLight(0xe1efff,0x435572,2.0));
+    const key=new T.DirectionalLight(0xffe2b9,2.5), rim=new T.DirectionalLight(0x8fd8ff,.9);
+    key.position.set(-12,20,15);rim.position.set(15,10,-18);scene.add(key,rim);
+    const layout=buildScene(scene);
     const avatarMesh=walkingProxy(avatar);scene.add(avatarMesh.group);
     const keys=new Set(),look=new T.Vector3(),goal=new T.Vector3();
     const p=position.current, controller=input.current;
-    let yaw=0, facing=Math.PI, phase=0,weight=0,drag=null,previous=null,lastNear,wasPaused=false,lastDpr=0;
+    let pitch=.24, yaw=0, facing=Math.PI, phase=0,weight=0,drag=null,previous=null,lastNear,wasPaused=false,lastDpr=0;
+    let floor=layout.ground(p.x,p.z), lastX=p.x, lastZ=p.z;
     const release=()=>{keys.clear();controller.touch.clear();drag=null;};
     controller.release=release;
     const keydown=e=>{
       if(controller.paused || document.hidden || e.ctrlKey || e.metaKey || e.altKey)return;
       if(KEYS[e.code]){e.preventDefault();keys.add(KEYS[e.code]);}
-      if(e.code==="KeyE"&&!e.repeat){e.preventDefault();onInteract(nearby(p,room));}
+      if(e.code==="KeyE"&&!e.repeat){e.preventDefault();onInteract(nearby(layout,p));}
       if(e.code==="Escape"&&!e.repeat){e.preventDefault();release();onMenu();}
     };
     window.addEventListener("keydown",keydown,options);
@@ -80,8 +80,8 @@ export function mountWorld(canvas,{room,avatar,position,input,preferences,onNear
     window.addEventListener("blur",release,options);
     document.addEventListener("visibilitychange",release,options);
     canvas.addEventListener("webglcontextlost",e=>{e.preventDefault();dispose();onFailure();},options);
-    canvas.addEventListener("pointerdown",e=>{if(!controller.paused){drag={id:e.pointerId,x:e.clientX};canvas.setPointerCapture(e.pointerId);}},options);
-    canvas.addEventListener("pointermove",e=>{if(drag?.id===e.pointerId&&!controller.paused){yaw-=(e.clientX-drag.x)*.006;drag.x=e.clientX;}},options);
+    canvas.addEventListener("pointerdown",e=>{if(!controller.paused){drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);}},options);
+    canvas.addEventListener("pointermove",e=>{if(drag?.id===e.pointerId&&!controller.paused){yaw-=(e.clientX-drag.x)*.006;pitch=T.MathUtils.clamp(pitch+(e.clientY-drag.y)*.004,-.05,room?.55:.85);drag.x=e.clientX;drag.y=e.clientY;}},options);
     canvas.addEventListener("lostpointercapture",()=>{drag=null;},options);
     function size(){
       const {width,height}=canvas.getBoundingClientRect();
@@ -104,23 +104,32 @@ export function mountWorld(canvas,{room,avatar,position,input,preferences,onNear
       const dx=active("right")-active("left"), dz=active("down")-active("up"),len=Math.hypot(dx,dz);
       const vx=dx*Math.cos(yaw)+dz*Math.sin(yaw),vz=dz*Math.cos(yaw)-dx*Math.sin(yaw);
       const beforeX=p.x,beforeZ=p.z;
-      if(len && !controller.paused){walk(p,vx/len*dt*5.8,vz/len*dt*5.8,room);facing=Math.atan2(vx,vz);}
+      if(len && !controller.paused){walk(layout,p,vx/len*dt*5.8,vz/len*dt*5.8);facing=Math.atan2(vx,vz);}
       const moving=Math.hypot(p.x-beforeX,p.z-beforeZ)>.0001;
       weight=T.MathUtils.damp(weight,Number(moving),12,dt);phase+=dt*10;
-      avatarMesh.group.position.set(p.x,room ? .07 : .23,p.z);
+      if(p.x!==lastX || p.z!==lastZ){
+        floor=layout.ground(p.x,p.z);lastX=p.x;lastZ=p.z;
+      }
+      avatarMesh.group.position.set(p.x,floor,p.z);
       const turn=Math.atan2(Math.sin(facing-avatarMesh.group.rotation.y),Math.cos(facing-avatarMesh.group.rotation.y));
       avatarMesh.group.rotation.y+=turn*(reduced||!dt?1:1-Math.exp(-dt*17));
       avatarMesh.animate(phase,weight,reduced);
-      const near=nearby(p,room);
+      const near=nearby(layout,p);
       if(near!==lastNear){lastNear=near;onNear(near);}
       const sx=Math.sin(yaw),sz=Math.cos(yaw),distance=room?4.9:7.3;
-      let reach=.45;
-      for(let t=.55;t<=distance;t+=.18){if(cameraBlocked(p.x+sx*t,p.z+sz*t,room))break;reach=t;}
-      goal.set(p.x+sx*reach,room?2.2+reach*.24:2.25+reach*.22,p.z+sz*reach);
-      // Snap inward around a wall and damp only clear paths.
-      if(reduced || !dt || reach<distance-.4 || cameraBlocked(camera.position.x,camera.position.z,room))camera.position.copy(goal);
-      else camera.position.lerp(goal,1-Math.exp(-dt*12));
-      look.set(p.x-sx*2.1,room?1.4:2.7,p.z-sz*2.1);camera.lookAt(look);
+      const shoulder=floor+1.47, slope=Math.tan(pitch);
+      let reach=.27;
+      for(let t=.34;t<=distance;t+=.14){
+        if(cameraBlocked(layout,p.x+sx*t,shoulder+slope*t,p.z+sz*t))break;
+        reach=t;
+      }
+      goal.set(p.x+sx*reach,shoulder+slope*reach,p.z+sz*reach);
+      if(reduced || !dt || reach<distance-.35 || camera.position.distanceTo(goal)>2 ||
+        cameraBlocked(layout,camera.position.x,camera.position.y,camera.position.z))camera.position.copy(goal);
+      else camera.position.lerp(goal,1-Math.exp(-dt*14));
+      look.set(p.x-sx*2.15,shoulder+(room?.02:.58),p.z-sz*2.15);
+      camera.lookAt(look);
+      layout.update(dt,reduced||low,camera);
       renderer.render(scene,camera);
     }
     render(performance.now());

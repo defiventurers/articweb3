@@ -102,3 +102,30 @@ test("the guest directory reaches the flagship and all three other game setups",
   await expect(page.getByRole("heading",{name:"Frozen Shogunate"})).toBeVisible();
   await expect(page.getByRole("link",{name:/← Lantern Harbor/})).toHaveCount(0);
 });
+
+test("orbit the assembled waterfront and inspect each hall at walking height", async ({page}, info) => {
+  test.setTimeout(150000);
+  await page.setViewportSize({width:1200,height:750});
+  await page.goto("/harbor.html");
+  await page.getByRole("button",{name:"Enter Lantern Harbor"}).click();
+  const canvas=page.locator("canvas");
+  await expect(page.getByRole("button",{name:"Walk forward"})).toBeVisible();
+  async function turn(dx,dy) {
+    await page.mouse.move(200,320);
+    await page.mouse.down();
+    await page.mouse.move(200+dx,320+dy,{steps:12});
+    await page.mouse.up();
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  }
+  await turn(490,-25);
+  await canvas.screenshot({path:info.outputPath("waterfront.png")});
+  for (const [key,name] of [["temple","Chaturanga Temple"],["pavilion","Xiangqi Pavilion"],["palace","Shogi Palace"],["council","San You Qi Council Hall"]]) {
+    await page.goto("/harbor.html?return="+key);
+    await expect(page.getByRole("button",{name:"Enter "+name,exact:true})).toBeVisible();
+    await turn(75,-23);
+    await canvas.screenshot({path:info.outputPath(key+"-exterior.png")});
+    await page.keyboard.press("e");
+    if (key==="temple") await expect(page.getByRole("button",{name:"Exit to harbor"})).toBeVisible();
+    else await expect(page.getByRole("dialog",{name})).toBeVisible();
+  }
+});
