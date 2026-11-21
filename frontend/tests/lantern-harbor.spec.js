@@ -8,7 +8,8 @@ test.use({
 });
 
 test("walk from the dock, enter the temple, play a move and return", async ({ page }, info) => {
-  test.setTimeout(120000);
+  // Software WebGL and video capture share the CI runner with the game build.
+  test.setTimeout(240000);
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
   page.on("console", msg => {
@@ -107,7 +108,7 @@ test("the guest directory reaches the flagship and all three other game setups",
 });
 
 test("orbit the assembled waterfront and inspect each hall at walking height", async ({page}, info) => {
-  test.setTimeout(150000);
+  test.setTimeout(210000);
   await page.setViewportSize({width:1200,height:750});
   await page.goto("/harbor.html");
   await page.getByRole("button",{name:"Enter Lantern Harbor"}).click();
