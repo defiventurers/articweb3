@@ -50,6 +50,7 @@ function publicAssetManifestPlugin() {
 
 export default defineConfig({
   plugins: [publicAssetManifestPlugin(), react()],
+  build: { rolldownOptions: { input: { app: path.join(CONFIG_DIR, "index.html"), harbor: path.join(CONFIG_DIR, "harbor.html") } } },
   server: {
     allowedHosts: true
   },

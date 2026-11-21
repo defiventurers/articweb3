@@ -1,3 +1,4 @@
+import {BrowserHarborLinks} from "./BrowserHarborLinks.jsx";
 import React,{useLayoutEffect} from 'react';
 
 // Presentation only. Routes, saved-game authority and unlocks stay owned by App.
@@ -23,6 +24,7 @@ export function HomeLanding({onBrowse,onChaturanga,onLearn,onShop,onSearch,onJoi
     <Arrow/>
    </button>
   </div>
+  <BrowserHarborLinks/>
   <div className="home-v2-secondary" aria-label="Learn and play together">
    <button type="button" className="home-v2-tile" onClick={onLearn||onBrowse}><em>THE ACADEMY</em><strong>Learn a game</strong><small>One piece at a time</small><img src={base+'learn-pengu.webp'} width="822" height="900" alt="" decoding="async"/><span className="home-tile-arrow" aria-hidden="true">↗</span></button>
    <button type="button" className="home-v2-tile home-v2-friends" onClick={onJoin}><em>THE GATHERING</em><strong>Join friends</strong><small>Play with a room code</small><img src={base+'join-friends.webp'} width="985" height="900" alt="" decoding="async"/><span className="home-tile-arrow" aria-hidden="true">↗</span></button>

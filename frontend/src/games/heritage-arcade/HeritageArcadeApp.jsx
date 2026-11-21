@@ -23,7 +23,7 @@ const compassMark = "/assets/heritage-arcade/board/ppba-compass-mark.png";
 const visualReference = "/assets/heritage-arcade/board/ppba-arcade-reference.png";
 const auditedTables = new Set([5, 19, 23, 24, 25, 26, 27]);
 const originalComplete = new Set([6, 7, 8, 10, 11, 13, 16, 20, 22]);
-const TABLE_QUERY_BY_ID = new Map([[25, "xiangqi"], [1, "sanguo"], [24, "sannin-shogi"], [26, "shogi"], [27, "san-you-qi"]]);
+const TABLE_QUERY_BY_ID = new Map([[5, "chaturaji"], [25, "xiangqi"], [1, "sanguo"], [24, "sannin-shogi"], [26, "shogi"], [27, "san-you-qi"]]);
 const TABLE_ID_BY_QUERY = new Map([...TABLE_QUERY_BY_ID].map(([id, query]) => [query, id]));
 
 // Tables intentionally separated from the primary Heritage strategy collection.
