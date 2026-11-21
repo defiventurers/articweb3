@@ -20,10 +20,14 @@ function twilight(scene) {
     fragmentShader: `varying vec3 direction;
       void main(){
         vec3 d=normalize(direction);
-        float up=smoothstep(-.035,.58,d.y);
+        float up=smoothstep(-.06,.37,d.y);
         float lastLight=pow(max(dot(d,normalize(vec3(-.72,.06,-.69))),0.),12.);
-        vec3 horizon=mix(vec3(.25,.40,.58),vec3(.78,.45,.34),lastLight);
-        gl_FragColor=vec4(mix(horizon,vec3(.009,.035,.11),up),1.);
+        vec3 horizon=mix(vec3(.17,.24,.41),vec3(.66,.33,.30),lastLight);
+        vec3 color=mix(horizon,vec3(.006,.016,.065),up);
+        vec3 cell=floor(d*430.);
+        float stars=fract(sin(dot(cell,vec3(12.7,31.2,67.3)))*43758.54);
+        color+=step(.9986,stars)*smoothstep(.06,.48,d.y)*.45;
+        gl_FragColor=vec4(color,1.);
         #include <colorspace_fragment>
       }`
   });
@@ -32,11 +36,50 @@ function twilight(scene) {
   scene.add(sky);
 }
 
+function streetLighting(scene, environment) {
+  const lanterns=environment.colliders.obstacles.filter(b=>b.name.startsWith("lantern_"));
+  const points=[], plane=new T.PlaneGeometry(2.9,2.9);
+  const pool=new T.ShaderMaterial({
+    transparent:true,depthWrite:false,
+    vertexShader:`varying vec2 st; void main(){st=uv;gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.);}`,
+    fragmentShader:`varying vec2 st;void main(){float r=length(2.*st-1.);
+      gl_FragColor=vec4(1.,.65,.27,.33*pow(max(0.,1.-r),2.));}`
+  });
+  const pools=new T.InstancedMesh(plane,pool,lanterns.length), matrix=new T.Matrix4();
+  lanterns.forEach(({center:[x,,z]},i)=>{
+    points.push(x,2.0,z);
+    matrix.makeRotationX(-Math.PI/2);matrix.setPosition(x,.098,z);pools.setMatrixAt(i,matrix);
+  });
+  scene.add(pools);
+  const positions=new T.BufferGeometry();
+  positions.setAttribute("position",new T.Float32BufferAttribute(points,3));
+  const glow=new T.ShaderMaterial({
+    transparent:true,depthWrite:false,blending:T.AdditiveBlending,
+    uniforms:{height:{value:500}},
+    vertexShader:`uniform float height;void main(){
+      vec4 eye=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*eye;
+      gl_PointSize=clamp(height*.9/max(.1,-eye.z),1.,96.);}`,
+    fragmentShader:`void main(){float r=length(gl_PointCoord*2.-1.);
+      gl_FragColor=vec4(1.,.65,.24,.40*pow(max(0.,1.-r),2.5));}`
+  });
+  const lights=new T.Points(positions,glow);
+  lights.onBeforeRender=renderer=>{glow.uniforms.height.value=renderer.domElement.height;};
+  scene.add(lights);
+  environment.root.getObjectByName("lanterns_lightPool").visible=false;
+}
+
 export function buildScene(scene) {
   const environment = buildLanternHarborEnvironment(T);
   scene.add(environment.root);
   twilight(scene);
-  scene.fog = new T.FogExp2(0x849fbb, .009);
+  streetLighting(scene, environment);
+  for(const key of ["terrain","plaza","paths","sockets","dock","vegetation","ship","lanterns"]){
+    const casts=["dock","vegetation","ship","lanterns"].includes(key);
+    environment.root.getObjectByName(key).traverse(o=>{
+      if(o.isMesh&&!o.material.transparent){o.castShadow=casts;o.receiveShadow=true;}
+    });
+  }
+  scene.fog = new T.FogExp2(0x737fa5, .0115);
   const { obstacles, boundaries } = environment.colliders;
   const solids = worldBoxes([...obstacles, ...boundaries], environment.root.position);
   const sites = [], roofs = [], floors = [];
@@ -57,6 +100,7 @@ export function buildScene(scene) {
     const meshes = [];
     asset.root.traverse(object => {
       if (!object.isMesh) return;
+      object.castShadow=true;object.receiveShadow=true;
       const bounds = new T.Box3().setFromObject(object);
       if (bounds.min.y <= .82 && bounds.max.y >= 0) meshes.push(object);
     });

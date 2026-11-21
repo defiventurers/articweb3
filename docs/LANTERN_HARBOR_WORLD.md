@@ -15,7 +15,7 @@ Run the existing frontend's `npm run dev:testnet` and open `/harbor.html`, or se
 
 ## Assembled district
 
-The outdoor loader places the four buildings on the environment’s named sockets. The finished floors are elevated 0.29 m (temple), 0.55 m (pavilion), 0 m (palace), and 0.34 m (council) so the approach treads meet the quay. The camera can orbit horizontally and tilt vertically. Player collisions use the supplied structural boxes and the waterfront outline. Inside a hall footprint, a short downward ray locates the rendered tread under the player. Low graphics freezes the aurora and caps pixel ratio. The temple interior loads on entry and its two pedestals and central table use the supplied semantic markers.
+The outdoor loader places the four buildings on the environment’s named sockets. The finished floors are elevated 0.29 m (temple), 0.55 m (pavilion), 0 m (palace), and 0.34 m (council) so the approach treads meet the quay. The camera can orbit horizontally and tilt vertically. Player collisions use the supplied structural boxes and the waterfront outline. Inside a hall footprint, a short downward ray locates the rendered tread under the player. The harbor integration adds a continuous faceted mountain range, a castle landmark, feathered aurora curtains and warm lantern pools. Standard graphics caches a shadow map of the static architecture. Low graphics disables that map, freezes the aurora and caps pixel ratio. The temple interior loads on entry and its two pedestals and central table use the supplied semantic markers.
 
 | DRAFT source archive | Integrated module |
 | --- | --- |

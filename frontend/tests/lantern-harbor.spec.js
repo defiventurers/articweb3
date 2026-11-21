@@ -11,6 +11,9 @@ test("walk from the dock, enter the temple, play a move and return", async ({ pa
   test.setTimeout(120000);
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
+  page.on("console", msg => {
+    if (msg.type()==="error" && /shader|THREE.WebGLProgram/i.test(msg.text())) errors.push(msg.text());
+  });
   await page.clock.install();
   await page.goto("/harbor.html");
   await page.getByRole("button", { name: "Rocco" }).click();
@@ -122,6 +125,10 @@ test("orbit the assembled waterfront and inspect each hall at walking height", a
   for (const [key,name] of [["temple","Chaturanga Temple"],["pavilion","Xiangqi Pavilion"],["palace","Shogi Palace"],["council","San You Qi Council Hall"]]) {
     await page.goto("/harbor.html?return="+key);
     await expect(page.getByRole("button",{name:"Enter "+name,exact:true})).toBeVisible();
+    if(key==="temple"){
+      await page.mouse.move(480,320);
+      for(let i=0;i<6;i++)await page.mouse.wheel(0,100);
+    }
     await turn(75,-23);
     await canvas.screenshot({path:info.outputPath(key+"-exterior.png")});
     await page.keyboard.press("e");

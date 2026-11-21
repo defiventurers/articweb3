@@ -34,8 +34,23 @@ export function buildLanternHarborEnvironment(THREE) {
   }
   mat.waterSheen = new THREE.MeshBasicMaterial({color:'#91d3dc', transparent:true, opacity:.32, depthWrite:false, side:THREE.DoubleSide});
   mat.lightPool = new THREE.MeshBasicMaterial({color:'#ffc177', transparent:true,opacity:.10,depthWrite:false,side:THREE.DoubleSide});
-  mat.auroraA = new THREE.MeshBasicMaterial({color:'#54debc',transparent:true,opacity:.16,depthWrite:false,side:THREE.DoubleSide, blending:THREE.AdditiveBlending});
-  mat.auroraB = new THREE.MeshBasicMaterial({color:'#6cb2ff',transparent:true,opacity:.10,depthWrite:false,side:THREE.DoubleSide, blending:THREE.AdditiveBlending});
+  function curtain(tint) {
+    return new THREE.ShaderMaterial({
+      uniforms:{tint:{value:new THREE.Color(tint)}},
+      transparent:true, depthWrite:false, side:THREE.DoubleSide, blending:THREE.AdditiveBlending,
+      vertexShader:`varying vec2 st; void main(){st=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+      fragmentShader:`uniform vec3 tint; varying vec2 st;
+        void main(){
+          float folds=.55+.23*sin(st.x*88.+sin(st.x*22.)*3.)+.13*sin(st.x*267.+st.y*1.7);
+          float foot=.18+.065*sin(st.x*19.);
+          float band=exp(-abs(st.y-foot)*6.)*smoothstep(0.,foot,st.y);
+          float veil=band*folds*smoothstep(0.,.14,st.x)*(1.-smoothstep(.86,1.,st.x));
+          gl_FragColor=vec4(mix(tint,vec3(.37,.25,.88),st.y*.7),veil*.83);
+          #include <colorspace_fragment>
+        }`
+    });
+  }
+  mat.auroraA=curtain('#51ecb8');mat.auroraB=curtain('#78beff');
   const UNIT = new THREE.BoxGeometry(1,1,1);
   const cylind = new Map();
   const cylinder = (n=8) => { if (!cylind.has(n)) cylind.set(n,new THREE.CylinderGeometry(.5,.5,1,n)); return cylind.get(n); };
@@ -421,77 +436,71 @@ export function buildLanternHarborEnvironment(THREE) {
   boundary('dock_east_edge',3.55,.5,27.0,.65,1.2,5.5);
   // ---- Distant continuous alpine ridges, selective snowfields; castle silhouette ----
   const mountains=new Batch(groups.mountains);
-  function ridge(z,base,lo,hi,seedOffset,which){
-    // Continuous terrain strips; irregular correlated heights. Unlike isolated
-    // cone stacks, every ridge segment connects seamlessly to its neighbours.
-    const n=52, arr=[], dx=230/(n-1);
-    const peakCenters=[-.73,-.37,.06,.33,.65].map((p,i)=>
-      ({x:p*112+Math.sin(seedOffset*2+i*3)*8,
-        strength:.26+.35*Math.abs(Math.sin(i*1.7+seedOffset)),
-        spread:7+rand()*16}));
-    for(let i=0;i<n;i++){
-      const x=-115+i*dx;
-      let broad=.14+.1*Math.sin((x+seedOffset*19)*.058)
-        +.08*Math.sin(x*.11+seedOffset*.4)
-        +.04*Math.sin(x*.32+seedOffset*2.9);
-      for(const peak of peakCenters){
-        broad+=peak.strength*Math.exp(-Math.pow((x-peak.x)/peak.spread,2));
-      }
-      const central=1-Math.min(1,Math.abs(x)/116);
-      const h=lo+(hi-lo)*Math.max(.02,Math.min(.95,broad+.15*central));
-      arr.push([x,h]);
+  // Shared vertices on a sloping alpine grid give each snow crest a continuous
+  // front face, foothills and a far slope as the camera turns along the quay.
+  function range(centerZ, height, phase, near) {
+    const rows = [], triangles = {ridge:[], ridgeBlue:[], snowBlue:[], snow:[]};
+    const bands = [-1,-.66,-.32,0,.26,.54,.79,1];
+    for (let i=0;i<=68;i++) {
+      const x=(i-34)*3.5;
+      const crest=.26+.33*Math.abs(Math.sin(x*.079+phase))+
+        .27*Math.abs(Math.sin(x*.133+phase*.7))+.12*Math.cos(x*.24+phase);
+      const valley=near ? .3+.7*Math.min(1,Math.abs(x)/25) : 1;
+      rows.push(bands.map((u,j)=>{
+        const flank=Math.max(0,1-Math.abs(u));
+        return [x+Math.sin(i*4.3+j*2.7)*.85,
+          -2 + height*valley*crest*flank + Math.sin(i*1.6+j*.76)*flank*1.3,
+          centerZ+u*13+Math.sin(i*.83+phase)*2+Math.cos(i*.25)*2.8];
+      }));
     }
-    for(let i=0;i<n-1;i++){
-      const [x0,h0]=arr[i],[x1,h1]=arr[i+1];
-      const mid=(x0+x1)*.5, fracture=.10*Math.sin(i*2.79+seedOffset);
-      const frontZ=z+(i%2?.28:-.13);
-      const geo=new THREE.BufferGeometry();
-      // Face triangles of a continuous jagged ribbon; faceted mountain flanks.
-      const p=[x0,base,z,x1,base,z,x0,h0,frontZ,
-        x0,h0,frontZ,x1,base,z,x1,h1,frontZ];
-      geo.setAttribute('position',new THREE.Float32BufferAttribute(p,3));geo.computeVertexNormals();
-      mountains.add(geo,which==='back'?'ridge':'ridgeBlue');
-      if((i+Math.floor(seedOffset))%6!==0){
-        const rise0=h0-base,rise1=h1-base;
-        const snowA=base+rise0*(.74+fracture),
-          snowB=base+rise1*(.77-fracture);
-        // Interlocking irregular snowfields follow the upper ridge line.
-        const cap=new THREE.BufferGeometry();
-        const snowVerts=[x0,h0,frontZ+.085,x0,snowA,frontZ+.090,x1,h1,frontZ+.085,
-          x1,h1,frontZ+.085,x0,snowA,frontZ+.090,x1,snowB,frontZ+.090];
-        cap.setAttribute('position',new THREE.Float32BufferAttribute(snowVerts,3));cap.computeVertexNormals();
-        mountains.add(cap,'snow');
-      }
+    const normal=new THREE.Vector3(), ab=new THREE.Vector3(), ac=new THREE.Vector3();
+    function face(a,b,c) {
+      ab.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]);ac.set(c[0]-a[0],c[1]-a[1],c[2]-a[2]);
+      normal.crossVectors(ab,ac).normalize();
+      const snow=normal.y>.56+.11*Math.sin((a[0]+c[2])*.65) && (a[1]+b[1]+c[1])/3>height*.21;
+      const key=snow ? (normal.x<.14?'snow':'snowBlue') : (normal.x>.08?'ridge':'ridgeBlue');
+      triangles[key].push(...a,...b,...c);
+    }
+    for(let i=0;i<rows.length-1;i++)for(let j=0;j<bands.length-1;j++){
+      const a=rows[i][j],b=rows[i+1][j],c=rows[i][j+1],d=rows[i+1][j+1];
+      if((i+j)%2){face(a,c,b);face(b,c,d);}else{face(a,d,b);face(a,c,d);}
+    }
+    for(const [material,positions] of Object.entries(triangles)){
+      if(!positions.length)continue;
+      const g=new THREE.BufferGeometry();
+      g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+      g.computeVertexNormals();mountains.add(g,material);g.dispose();
     }
   }
-  ridge(-91,-3,18,44,1.1,'back');ridge(-70,-3,10,31,2.6,'mid');
-  ridge(-47,-3,3,14,4.6,'front');
-  // Sparse foreground glacial spurs, jagged and not repeated cones.
-  for(let side of [-1,1])for(let i=0;i<7;i++){
-    let x=side*(27+i*7),z=-24-i*5,h=4+rand()*9;
-    mountains.add(new THREE.IcosahedronGeometry(1,0),i%2?'iceShade':'ridgeBlue',[x,h*.30,z],[rand()*.13,rand()*TAU,rand()*.09],[4+rand()*4,h*.65,3+rand()*3]);
-    mountains.add(new THREE.ConeGeometry(2+rand()*2,h*.45,5),'snow',[x,h*.73,z]);
+  range(-88,34,.9,false);range(-63,26,2.8,false);range(-43,14,4.6,true);
+
+  // The gateway sits on rock in a gap between the near ridges. Its roof and
+  // lanterns stay recognizable at the small screen size of the arrival view.
+  const cz=-49;
+  mountains.add(new THREE.IcosahedronGeometry(1,1),'ridgeBlue',[0,.1,cz],[0,.25,0],[12,3.3,5.5]);
+  mountains.box('iceShade',0,5.2,cz,13,6.8,4);
+  mountains.box('iceRim',0,8.65,cz,13.5,.36,4.35);
+  mountains.box('goldDeep',0,4.9,cz+2.07,3.3,5.1,.2);
+  mountains.box('glass',0,4.6,cz+2.2,2.7,4.6,.1);
+  function turret(x,z,height,radius){
+    mountains.col('iceShade',x,height/2+1,z,radius,radius*.94,height,8);
+    for(const y of [height*.36,height*.68,height+.86])
+      mountains.col('iceRim',x,y,z,radius*1.08,radius*1.1,.26,8);
+    const roof=radius*2.6, base=height+1;
+    mountains.add(new THREE.ConeGeometry(radius*1.24,roof,8),'ice',[x,base+roof*.5,z]);
+    mountains.add(new THREE.ConeGeometry(radius*.30,roof*.24,8),'snow',[x,base+roof*.88,z]);
+    mountains.col('gold',x,base+roof+.35,z,.07,.05,.7,6);
+    mountains.orb('flame',x,base+roof+.75,z,.16);
+    for(const y of [height*.54,height*.83])for(const dx of [-.36,.36])
+      mountains.box('glass',x+dx*radius,y,z+radius*.94,.16*radius,height*.115,.12);
   }
-  // Distant Aurora Castle: recognizable skyline, explicitly NOT the finished hall.
-  const cx=0,cz=-50,castleY=3.2;
-  mountains.box('midnight',cx,castleY+4.3,cz,16.2,8.5,4.9);
-  mountains.box('ridgeBlue',cx,castleY+9.0,cz,18.3,.8,5.4);
-  for(const x of [-10.8,10.8]){
-    mountains.col('midnight',x,castleY+7.5,cz,2.45,2.65,15,8);
-    mountains.add(new THREE.ConeGeometry(3.35,6.6,8),'iceShade',[x,castleY+18.2,cz]);
-    mountains.add(new THREE.ConeGeometry(2.1,.85,8),'snow',[x,castleY+21.6,cz]);
-    for(let z of [-1.5,1.5])mountains.box('glass',x,castleY+9.2,cz+z,1.0,1.5,.055);
-  }
-  mountains.box('midnight',cx,castleY+12,cz,5.2,15.3,5.0);
-  mountains.add(new THREE.ConeGeometry(4.3,7.5,8),'iceShade',[cx,castleY+23.2,cz]);
-  mountains.add(new THREE.ConeGeometry(2.6,.65,8),'snow',[cx,castleY+27.15,cz]);
-  mountains.box('goldDeep',cx,castleY+6.1,cz+2.48,3.4,6.2,.19);
-  mountains.box('glass',cx,castleY+13.6,cz+2.55,1.3,2.3,.08);
+  turret(-6.5,cz+.6,8.1,1.5);turret(6.5,cz+.6,8.1,1.5);
+  turret(-3.6,cz-1.9,10.2,1.6);turret(3.6,cz-1.9,10.2,1.6);turret(0,cz-.5,12.4,2.0);
   mountains.finish();
   // ---- Aurora curtains: update() is opt-in, no internal timing or event loop ----
   const skyMeshes=[];
   for(let band=0;band<3;band++){
-    let verts=[],uv=[];const N=48,low=24+band*2.3,high=39+band*4.3,z=-82-band*3;
+    let verts=[],uv=[];const N=48,low=18+band*3.2,high=34+band*6.1,z=-82-band*3;
     for(let j=0;j<N;j++){
       const t=j/(N-1),x=-61+t*122,und=Math.sin(t*18+band)*1.8;
       verts.push(x,low+und,z+Math.sin(t*8+band)*6);
@@ -502,6 +511,7 @@ export function buildLanternHarborEnvironment(THREE) {
       const a=j*2;indexes.push(a,a+1,a+2,a+1,a+3,a+2);
     }
     const geom=new THREE.BufferGeometry();geom.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+    geom.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
     geom.setIndex(indexes);geom.computeVertexNormals();
     const mesh=new THREE.Mesh(geom,mat[band===1?'auroraB':'auroraA']);mesh.name=`aurora_curtain_${band}`;
     mesh.frustumCulled=false;groups.sky.add(mesh);skyMeshes.push({mesh,base:new Float32Array(verts),band});

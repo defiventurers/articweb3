@@ -53,19 +53,27 @@ export function mountWorld(canvas,{buildScene,room,avatar,position,input,prefere
       if(obj.geometry)resources.add(obj.geometry);
       for(const m of [].concat(obj.material||[])){if(m.map)resources.add(m.map);resources.add(m);}
     });
-    resources.forEach(r=>r.dispose());renderer.dispose();renderer.forceContextLoss();
+    resources.forEach(r=>r.dispose());scene.traverse(o=>o.shadow?.dispose());renderer.dispose();renderer.forceContextLoss();
   }
   try{
     renderer.toneMapping=T.ACESFilmicToneMapping;
-    renderer.toneMappingExposure=1.24;
-    scene.add(new T.HemisphereLight(0xe1efff,0x435572,2.0));
-    const key=new T.DirectionalLight(0xffe2b9,2.5), rim=new T.DirectionalLight(0x8fd8ff,.9);
-    key.position.set(-12,20,15);rim.position.set(15,10,-18);scene.add(key,rim);
+    renderer.toneMappingExposure=room?1.18:1.12;
+    renderer.shadowMap.enabled=!preferences.current.low;
+    renderer.shadowMap.type=T.PCFShadowMap;
+    // Architecture is static. Render the daylight shadow atlas once per scene or quality change.
+    renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
+    scene.add(new T.HemisphereLight(room?0xe1efff:0xc6d8ff,0x393d66,room?1.9:1.24));
+    const key=new T.DirectionalLight(0xffdfb3,room?2.5:2.05), rim=new T.DirectionalLight(0x89b6ff,.68);
+    key.position.set(-19,24,13);key.castShadow=!room;
+    key.shadow.mapSize.set(1536,1536);key.shadow.bias=-.00025;key.shadow.normalBias=.025;
+    Object.assign(key.shadow.camera,{left:-31,right:31,top:33,bottom:-33,near:.5,far:90});
+    key.shadow.camera.updateProjectionMatrix();
+    rim.position.set(15,10,-18);scene.add(key,rim);
     const layout=buildScene(scene);
     const avatarMesh=walkingProxy(avatar);scene.add(avatarMesh.group);
     const keys=new Set(),look=new T.Vector3(),goal=new T.Vector3();
     const p=position.current, controller=input.current;
-    let pitch=.24, yaw=0, facing=Math.PI, phase=0,weight=0,drag=null,previous=null,lastNear,wasPaused=false,lastDpr=0;
+    let distance=room?4.9:7.3, pitch=.24, yaw=0, facing=Math.PI, phase=0,weight=0,drag=null,previous=null,lastNear,wasPaused=false,lastDpr=0;
     let floor=layout.ground(p.x,p.z), lastX=p.x, lastZ=p.z;
     const release=()=>{keys.clear();controller.touch.clear();drag=null;};
     controller.release=release;
@@ -82,6 +90,11 @@ export function mountWorld(canvas,{buildScene,room,avatar,position,input,prefere
     canvas.addEventListener("webglcontextlost",e=>{e.preventDefault();dispose();onFailure();},options);
     canvas.addEventListener("pointerdown",e=>{if(!controller.paused){drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);}},options);
     canvas.addEventListener("pointermove",e=>{if(drag?.id===e.pointerId&&!controller.paused){yaw-=(e.clientX-drag.x)*.006;pitch=T.MathUtils.clamp(pitch+(e.clientY-drag.y)*.004,-.05,room?.55:.85);drag.x=e.clientX;drag.y=e.clientY;}},options);
+    canvas.addEventListener("wheel",e=>{
+      if(controller.paused)return;
+      e.preventDefault();
+      distance=T.MathUtils.clamp(distance+Math.sign(e.deltaY)*.85,room?2.5:3.3,room?6.4:14);
+    },{...options,passive:false});
     canvas.addEventListener("lostpointercapture",()=>{drag=null;},options);
     function size(){
       const {width,height}=canvas.getBoundingClientRect();
@@ -99,6 +112,9 @@ export function mountWorld(canvas,{buildScene,room,avatar,position,input,prefere
       if(controller.paused)release();
       wasPaused=controller.paused;
       const {low,reduced}=preferences.current;
+      if(renderer.shadowMap.enabled===low){
+        renderer.shadowMap.enabled=!low;renderer.shadowMap.needsUpdate=!low;
+      }
       if(lastDpr!==Math.min(window.devicePixelRatio||1,low?1:1.5))size();
       const active=k=>Number(keys.has(k)||controller.touch.has(k));
       const dx=active("right")-active("left"), dz=active("down")-active("up"),len=Math.hypot(dx,dz);
@@ -116,7 +132,7 @@ export function mountWorld(canvas,{buildScene,room,avatar,position,input,prefere
       avatarMesh.animate(phase,weight,reduced);
       const near=nearby(layout,p);
       if(near!==lastNear){lastNear=near;onNear(near);}
-      const sx=Math.sin(yaw),sz=Math.cos(yaw),distance=room?4.9:7.3;
+      const sx=Math.sin(yaw),sz=Math.cos(yaw);
       const shoulder=floor+1.47, slope=Math.tan(pitch);
       let reach=.27;
       for(let t=.34;t<=distance;t+=.14){

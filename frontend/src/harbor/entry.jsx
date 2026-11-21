@@ -126,7 +126,7 @@ function World(){
         <div className="hall-list">{hall.actions.map(([label,query])=><a key={query} href={"/?"+query+"&fromHarbor="+hall.key}>{label}<Icon type="enter"/></a>)}</div>
         <button className="subtle" onClick={()=>fallback?menu("halls"):arrive(false,door(hall))}><Icon type="back"/>Return to harbor</button>
       </>:panel==="halls"?<>{fallback&&<p>The 3D view is unavailable. Choose a hall to open its games.</p>}{hallList}<a className="subtle" href={CATALOG}>Quick Play · Game catalogue</a></>:<>
-        <p>Walk with the arrows or WASD. Drag the scene to turn the camera. At a doorway or table, tap its name or press E.</p>
+        <p>Walk with the arrows or WASD. Drag the scene to turn or tilt the camera. Scroll to adjust its distance. At a doorway or table, tap its name or press E.</p>
         <div className="settings">
           <label><input type="checkbox" checked={low} onChange={e=>{setLow(e.target.checked);write("quality",e.target.checked?"low":"standard");}}/>Low graphics</label>
           <label><input type="checkbox" checked={reduced} onChange={e=>{setReduced(e.target.checked);write("motion",e.target.checked?"reduce":"full");}}/>Reduced motion</label>
