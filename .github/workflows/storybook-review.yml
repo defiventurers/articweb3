@@ -17,7 +17,7 @@ jobs:
         working-directory: mobile/arctic-play/build-deps
       - run: python3 mobile/arctic-play/scripts/prepare-storybook-review.py
       - run: node mobile/arctic-play/tests/storybook-runtime.mjs storybook-review/after/app.js
-      - run: npm install --prefix "$RUNNER_TEMP/browser-review" --no-audit --no-fund playwright@1.58.2
+      - run: npm install --prefix "$RUNNER_TEMP/browser-review" --no-audit --no-fund playwright@1.58.2 pngjs@7.0.0
       - run: |
           command -v google-chrome || "$RUNNER_TEMP/browser-review/node_modules/.bin/playwright" install chromium
       - run: CHROME_BIN="$(command -v google-chrome || true)" PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/browser-review/package.json" node mobile/arctic-play/tests/storybook-browser.mjs
