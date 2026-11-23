@@ -4,6 +4,7 @@ on:
     paths:
       - 'frontend/src/games/shanshui-xiangqi/**'
       - 'frontend/scripts/build-shanshui*'
+      - 'frontend/scripts/shanshui-bundle-parity*'
       - 'server/arcticPlay*'
       - 'server/shanshui*'
       - 'server/tests/shanshui*'
@@ -26,7 +27,7 @@ jobs:
         working-directory: server
       - run: npm ci --ignore-scripts --no-audit
         working-directory: shared/fair-play
-      - run: npm run test:shanshui && npm run check:shanshui-engine
+      - run: node --test scripts/shanshui-bundle-parity.test.mjs && npm run test:shanshui && npm run check:shanshui-engine
         working-directory: frontend
       - run: npx vitest run --config vitest.shanshui.config.ts && npm run test:xiangqi
         working-directory: frontend
