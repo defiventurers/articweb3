@@ -65,11 +65,12 @@ function createCompanyService({store=createCompanyStore(),now=Date.now,extraRout
     const origin=req.headers.origin,allowed=publicRead||originAllowed(origin);
     const headers={...securityHeaders,'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...(allowed&&(origin||publicRead)?{'Access-Control-Allow-Origin':publicRead?'*':origin,'Vary':'Origin','Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'GET,POST,DELETE,OPTIONS'}:{})};
     if(req.method==='OPTIONS'){res.writeHead(204,headers);res.end();return true;}
-    // Registration hold: permit Para sign-in, while NFT registration and
-    // unrelated account writes remain blocked until launch approval.
+    // Registration hold: permit Para sign-in, APK readiness, authenticated
+    // play access and saved progress.
+    // NFT registration, purchases and unrelated writes stay blocked.
     // Metadata and sender status remain readable during the registration hold.
     const pauseRead=req.method==='GET'&&(url.pathname==='/arctic-play/v3/passport/delivery/config'||/^\/arctic-play\/v3\/passport\/(metadata|achievement-metadata|egg-metadata)\//.test(url.pathname));
-    const pauseSignIn=(req.method==='GET'&&['/arctic-play/v3/auth/para/config','/arctic-play/v3/passport'].includes(url.pathname))||(req.method==='POST'&&['/arctic-play/v3/auth/para/start','/arctic-play/v3/auth/para/attempt','/arctic-play/v3/auth/para/complete','/arctic-play/v3/auth/exchange','/arctic-play/v3/logout'].includes(url.pathname));
+    const pauseSignIn=(req.method==='GET'&&['/arctic-play/v3/auth/para/config','/arctic-play/v3/passport','/arctic-play/v3/capabilities','/arctic-play/v3/auth/providers','/arctic-play/v3/account','/arctic-play/v3/progress','/arctic-play/v3/communication-preferences'].includes(url.pathname))||(req.method==='POST'&&['/arctic-play/v3/auth/para/start','/arctic-play/v3/auth/para/attempt','/arctic-play/v3/auth/para/complete','/arctic-play/v3/auth/exchange','/arctic-play/v3/logout','/arctic-play/v3/play-access','/arctic-play/v3/progress','/arctic-play/v3/communication-preferences'].includes(url.pathname));
     const earlyRead=early.enabled&&req.method==='GET'&&['/arctic-play/v3/passport/acceptance','/arctic-play/v3/passport/egg/acceptance','/arctic-play/v3/launch/early'].includes(url.pathname);
     const earlyWrite=early.enabled&&req.method==='POST'&&url.pathname==='/arctic-play/v3/early/signup';
     if(process.env.AK_LAUNCH_RESET_PAUSED==='true'&&!pauseRead&&!pauseSignIn&&!earlyRead&&!earlyWrite){
