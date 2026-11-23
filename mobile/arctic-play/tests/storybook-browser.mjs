@@ -23,6 +23,7 @@ if(version==='after'){
  await page.getByRole('button',{name:'3 players',exact:true}).click();assert.equal(await page.locator('.sb-card').count(),4);await page.getByRole('button',{name:'All',exact:true}).click();
  await page.getByRole('button',{name:'Favorite Chaturanga',exact:true}).click();await page.getByRole('button',{name:'Favorites',exact:true}).click();assert.equal(await page.locator('.sb-card').count(),1);await page.reload();await page.locator('.bottom-nav button').filter({hasText:/^Games$/}).click();await page.locator('.sb-card').first().waitFor();assert.ok(await page.getByRole('button',{name:'Favorite Chaturanga',exact:true}).getAttribute('aria-pressed')==='true');
  checks.push({size,theme,nineStories:true,nineGamesReachable:true,searchAndFilters:true,favoritesPersist:true});
+ await page.evaluate(()=>document.documentElement.style.fontSize='24px');await page.getByRole('button',{name:'✧ Adventure',exact:true}).click();await page.locator('.sb-large-text').waitFor();await page.getByRole('button',{name:'Setup Chaturanga',exact:true}).scrollIntoViewIfNeeded();assert.ok(await page.getByRole('button',{name:'Setup Chaturanga',exact:true}).isVisible());await page.screenshot({animations:'disabled',path:`${evidence}/after-large-text-${size.join('x')}-${theme}.png`});checks.push({size,theme,largeTextActionsReachable:true});
 }
 }
 const b=fs.readFileSync(`${evidence}/before-home-${size.join('x')}-${theme}.png`),a=fs.readFileSync(`${evidence}/after-home-${size.join('x')}-${theme}.png`);assert.ok(b.equals(a),'Home pixels changed');await page.close();}
