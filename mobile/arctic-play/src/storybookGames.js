@@ -2,14 +2,15 @@
 export function createStorybookGames({h,useState,useEffect,useRef,read,write,order,chapters,stampsFor,readConquests,Heritage,Crown}) {
  return function StorybookGames({catalogue=[],scope='device',accessState={},isOpen,onPlay,onLearn,query='',onQuery,filter='All',onFilter,favorites=[],onFavorite,intent,focusSearch,onFocusHandled}) {
   const storage='expedition-page.v1.'+scope;
-  const [selected,setSelected]=useState(()=>read(storage,'dominion')),[view,setView]=useState(()=>read('storybook-view.v1','adventure')),[page,setPage]=useState(0),[story,setStory]=useState(null),[revision,setRevision]=useState(0);
-  const touch=useRef(null),search=useRef(null),panel=useRef(null);
+  const [selected,setSelected]=useState(()=>read(storage,'dominion')),[view,setView]=useState(()=>read('storybook-view.v1','adventure')),[page,setPage]=useState(()=>read('storybook-page.v1.'+scope,0)),[story,setStory]=useState(null),[revision,setRevision]=useState(0);
+  const touch=useRef(null),search=useRef(null),panel=useRef(null),selection=useRef([query,filter]);
   const entries=order.map(id=>catalogue.find(g=>g.id===id)).filter(Boolean),game=entries.find(g=>g.id===selected)||entries[0],index=entries.indexOf(game);
   const open=id=>typeof isOpen==='function'?isOpen(id):catalogue.find(g=>g.id===id)?.legacy===false||!!accessState.allowed?.(id)?.open;
   const crowns=stampsFor(readConquests(scope),accessState.progress),crown=crowns[game.id],meta=chapters[game.id];
   useEffect(()=>{const fn=()=>setRevision(v=>v+1);window.addEventListener('arctic-storage',fn);window.addEventListener('storage',fn);return()=>{window.removeEventListener('arctic-storage',fn);window.removeEventListener('storage',fn);};},[scope]);
   useEffect(()=>{if(focusSearch||intent==='learn'||query){switchView('grid');if(focusSearch){setTimeout(()=>search.current?.focus(),0);onFocusHandled?.();}}},[focusSearch,intent]);
-  useEffect(()=>setPage(0),[query,filter]);
+  useEffect(()=>{if(selection.current[0]!==query||selection.current[1]!==filter)setPage(0);selection.current=[query,filter];},[query,filter]);
+  useEffect(()=>{write('storybook-page.v1.'+scope,page);},[page,scope]);
   function switchView(v){setView(v);write('storybook-view.v1',v);}
   function choose(id){setSelected(id);write(storage,id);}
   function move(delta){if(view==='grid')setPage(p=>Math.max(0,Math.min(pages-1,p+delta)));else choose(entries[Math.max(0,Math.min(entries.length-1,index+delta))].id);}
@@ -20,7 +21,7 @@ export function createStorybookGames({h,useState,useEffect,useRef,read,write,ord
   const btn=(label,action,cls='',props={})=>h('button',{type:'button',className:cls,onClick:action,...props},label);
   const storyFor=g=>Heritage.storyFor(g.id);
   const pager=h('nav',{className:'sb-pager','aria-label':view==='grid'?'Catalogue pages':'Expedition navigation'},btn('←',()=>move(-1),'',{'aria-label':view==='grid'?'Previous page':'Previous game',disabled:view==='grid'?safe===0:index===0}),h('span',{'aria-live':'polite'},view==='grid'?(ids.length?`${safe*4+1}–${Math.min((safe+1)*4,ids.length)} of ${ids.length}`:'0 games'):`${index+1} / ${entries.length}`),btn('→',()=>move(1),'',{'aria-label':view==='grid'?'Next page':'Next game',disabled:view==='grid'?safe===pages-1:index===entries.length-1}));
-  return h('section',{ref:panel,className:'sb-games '+(view==='grid'?'sb-catalogue':'sb-adventure'),tabIndex:0,'aria-label':'Games expedition',onKeyDown:e=>{if(e.target.closest('input,button'))return;if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();move(e.key==='ArrowRight'?1:-1);}},onTouchStart:e=>touch.current={x:e.touches[0].clientX,y:e.touches[0].clientY},onTouchEnd:e=>{const t=touch.current;touch.current=null;if(!t)return;const dx=e.changedTouches[0].clientX-t.x,dy=e.changedTouches[0].clientY-t.y;if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.5)move(dx<0?1:-1);}},
+  return h('section',{ref:panel,className:'sb-games '+(parseFloat(getComputedStyle(document.documentElement).fontSize)>20?'sb-large-text ':'')+(view==='grid'?'sb-catalogue':'sb-adventure'),tabIndex:0,'aria-label':'Games expedition',onKeyDown:e=>{if(e.target.closest('input,button'))return;if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();move(e.key==='ArrowRight'?1:-1);}},onTouchStart:e=>touch.current={x:e.touches[0].clientX,y:e.touches[0].clientY},onTouchEnd:e=>{const t=touch.current;touch.current=null;if(!t)return;const dx=e.changedTouches[0].clientX-t.x,dy=e.changedTouches[0].clientY-t.y;if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.5)move(dx<0?1:-1);}},
    h('div',{className:'sb-switch'},h('nav',{'aria-label':'Games views'},btn('✧ Adventure',()=>switchView('adventure'),'',{'aria-pressed':view==='adventure'}),btn('♧ All Games',()=>switchView('grid'),'',{'aria-pressed':view==='grid'})),h('div',{className:'sb-progress'},h('span',null,`Expedition ${String(index+1).padStart(2,'0')} / 09`),h('div',{'aria-label':'Choose chapter'},entries.map((g,i)=>btn('',()=>choose(g.id),'',{'aria-label':'Chapter '+(i+1)+': '+g.name,'aria-current':index===i?'step':undefined,key:g.id}))))),
    view==='adventure'?h('div',{className:'sb-adventure-body','data-expedition-id':game.id},
     h('article',{className:'sb-hero'},h('img',{className:'sb-scene',src:game.image,alt:game.name+' illustrated game hall'}),h('div',{className:'sb-hero-copy'},h('small',null,meta.region+' · '+meta.edition),h('h2',null,game.name),h('p',null,game.id==='dominion'?'The game that traveled the world':meta.title)),btn('▶ Enter the Story',()=>setStory(game.id),'sb-gold sb-enter')),

@@ -17,3 +17,5 @@ html[data-theme=light] .app[data-tab=games]{--sb-ink:#14314a;--sb-panel:#eff6f6;
 @media(prefers-reduced-motion:reduce){.sb-games *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 /* At large text or landscape heights use a contained scroll region, never crop actions. */
 @media(max-height:650px){.app[data-tab=games] .lobby-content{overflow:auto}.sb-games{flex:none}.sb-adventure-body{min-height:550px}.sb-grid{min-height:530px}}
+.sb-card-copy>small{font-size:10px}.sb-hero-copy small{font-size:11px}.sb-crown small{font-size:10px}
+.sb-games.sb-large-text{overflow:auto;display:block}.sb-large-text .sb-switch{margin-bottom:10px}.sb-large-text .sb-adventure-body{min-height:620px}.sb-large-text .sb-grid{min-height:650px}.sb-large-text p{font-size:1rem}.sb-large-text button{font-size:1rem}

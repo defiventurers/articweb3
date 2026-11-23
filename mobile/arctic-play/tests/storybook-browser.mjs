@@ -21,7 +21,7 @@ if(version==='after'){
  await page.getByRole('searchbox',{name:'Search games',exact:true}).fill('Vietnam');assert.equal(await page.locator('.sb-card').count(),1);assert.equal(await page.locator('.sb-card').getAttribute('data-game-id'),'co-tu-lenh');
  await page.getByRole('searchbox',{name:'Search games',exact:true}).fill('no-such-game');await page.getByRole('button',{name:'Show all games',exact:true}).click();assert.equal(await page.locator('.sb-card').count(),4);
  await page.getByRole('button',{name:'3 players',exact:true}).click();assert.equal(await page.locator('.sb-card').count(),4);await page.getByRole('button',{name:'All',exact:true}).click();
- await page.getByRole('button',{name:'Favorite Chaturanga',exact:true}).click();await page.getByRole('button',{name:'Favorites',exact:true}).click();assert.equal(await page.locator('.sb-card').count(),1);await page.reload();await page.locator('.bottom-nav button').filter({hasText:/^Games$/}).click();await page.locator('.sb-card').waitFor();assert.ok(await page.getByRole('button',{name:'Favorite Chaturanga',exact:true}).getAttribute('aria-pressed')==='true');
+ await page.getByRole('button',{name:'Favorite Chaturanga',exact:true}).click();await page.getByRole('button',{name:'Favorites',exact:true}).click();assert.equal(await page.locator('.sb-card').count(),1);await page.reload();await page.locator('.bottom-nav button').filter({hasText:/^Games$/}).click();await page.locator('.sb-card').first().waitFor();assert.ok(await page.getByRole('button',{name:'Favorite Chaturanga',exact:true}).getAttribute('aria-pressed')==='true');
  checks.push({size,theme,nineStories:true,nineGamesReachable:true,searchAndFilters:true,favoritesPersist:true});
 }
 }
