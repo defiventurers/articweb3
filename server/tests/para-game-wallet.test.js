@@ -44,3 +44,25 @@ test('Para sign-in completes on the new domain during the registration hold, wit
   assert.equal((await f.call('/passport',{playerName:'Explorer'},session.session,origin)).status,503);
  }
 });
+
+test('v5.10.2 Android readiness, sign-in, access and progress work during the registration hold',async t=>{
+ const prior=process.env.AK_LAUNCH_RESET_PAUSED;process.env.AK_LAUNCH_RESET_PAUSED='true';t.after(()=>{if(prior===undefined)delete process.env.AK_LAUNCH_RESET_PAUSED;else process.env.AK_LAUNCH_RESET_PAUSED=prior;});
+ const f=await setup(t);
+ const ready=await f.call('/capabilities');assert.equal(ready.status,200);assert.equal(ready.cloud,true);assert.equal(ready.accountPlay,true);
+ assert.equal((await f.call('/auth/providers')).paraWallet,true);
+ const b=await f.begin(),result=await f.complete(b);assert.match(result.returnTo,/^arcticplay:\/\/auth\?ticket=/);
+ const a=await f.exchange(result,b);assert.equal(a.status,200);
+ const installation='11111111-1111-4111-8111-111111111111';
+ assert.equal((await f.call('/play-access',{installation})).status,401);
+ const access=await f.call('/play-access',{installation},a.session);assert.equal(access.status,200);assert.equal(access.accountId,a.accountId);assert.equal(access.online,true);assert.ok(access.leaseSeconds>0&&access.leaseSeconds<=60);
+ assert.equal((await f.call('/account',undefined,a.session)).accountId,a.accountId);
+ assert.equal((await f.call('/communication-preferences',{enabled:false},a.session)).status,200);
+ assert.equal((await f.call('/communication-preferences',undefined,a.session)).choiceSet,true);
+ assert.equal((await f.call('/progress',{progress:{}},a.session)).status,200);
+ assert.equal((await f.call('/progress',undefined,a.session)).status,200);
+ for(const [path,data]of [['/passport',{playerName:'Explorer'}],['/accounts',{}],['/rotate',{}],['/metrics',{}],['/recover',{code:'invalid'}],['/checkout',{}]]){
+  const r=await f.call(path,data,a.session);assert.equal(r.status,503,path);assert.equal(r.code,'LAUNCH_RESET_PAUSED',path);
+ }
+ assert.equal((await f.call('/logout',{},a.session)).status,200);
+ assert.equal((await f.call('/play-access',{installation},a.session)).status,401);
+});

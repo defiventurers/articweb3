@@ -1,0 +1,27 @@
+{
+  "version": "5.11.0",
+  "versionCode": 110,
+  "baselineVersion": "5.10.2",
+  "baselineSha256": "275cf9bf69aadfa4f4d844ff412e0885d8a5a656539f4bb583af27bfc95e8ecd",
+  "sha256": "2e598ac3e54b9ecb667207044e6399e1b6c9101829aebe4141c79a4841c16962",
+  "sizeBytes": 52201720,
+  "package": "xyz.arcticdominion.play",
+  "certificateSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+  "signaturesV2V3": true,
+  "zipalign": true,
+  "zipCRC": true,
+  "resourcesUncompressed": true,
+  "changedEntries": [
+    "AndroidManifest.xml",
+    "assets/app-version.json",
+    "assets/app.js",
+    "assets/game-assets-sw.js",
+    "assets/game-assets.json"
+  ],
+  "unchangedEntries": 439,
+  "appCodeChange": "release version literal only",
+  "assetsNativeRulesAndAppearancePreserved": true,
+  "sourceReviewed": "191d816a5abb1bdd1357cdd57d4a05dfb8747b6c",
+  "physicalDeviceInstallTested": false,
+  "realParaLoginTested": false
+}

@@ -30,7 +30,7 @@ test('consent, age, origin and authentication are required before automatic allo
  assert.equal((await f.call('/early/signup',{consentVersion:CONSENT,adultConfirmed:true})).status,401);assert.equal((await f.call('/auth/para/start',{challenge,platform:'web',returnPath:'/early/',earlySignup:{consentVersion:CONSENT,adultConfirmed:true}},null,'https://arcticdominion.xyz')).status,403);assert.equal(f.passports.size,0);
 });
 test('early signup works through its explicit flag during the shared launch hold, without unpausing unrelated writes',async t=>{
- const f=await setup(t,{pause:true}),a=await f.login();assert.equal(a.status,200);assert.equal(a.earlySignup.status,'registered');assert.equal((await f.call('/progress',{progress:{}},a.session)).status,503);const egg=await f.call('/passport/egg/acceptance',null,a.session);assert.notEqual(egg.status,503);
+ const f=await setup(t,{pause:true}),a=await f.login();assert.equal(a.status,200);assert.equal(a.earlySignup.status,'registered');assert.equal((await f.call('/checkout',{},a.session)).status,503);assert.equal((await f.call('/progress',{progress:{}},a.session)).status,200);const egg=await f.call('/passport/egg/acceptance',null,a.session);assert.notEqual(egg.status,503);
 });
 test('disabled feature cannot enqueue an early signup and non-Para or other-chain wallets cannot opt in',async t=>{
  const f=await setup(t,{enabled:false});assert.equal((await f.login()).status,503);for(const gameWallet of [{provider:'external',chainId:46630},{provider:'para',chainId:2741}])assert.throws(()=>recordEnrollment({gameWallet},{source:SOURCE,consentVersion:CONSENT,adultConfirmed:true},Date.now()),/verified Para/);
