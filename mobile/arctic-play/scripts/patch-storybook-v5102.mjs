@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {createRequire} from 'node:module';
+import {createStorybookGames} from '../src/storybookGames.js';
+const require=createRequire(new URL('../build-deps/package.json',import.meta.url)),{parse}=require('acorn');
+const [input,output]=process.argv.slice(2);if(!output)throw Error('Supply extracted v5.10.2 assets directory and output directory');
+const source=fs.readFileSync(path.join(input,'app.js'),'utf8');
+const hash=s=>createHash('sha256').update(s).digest('hex');
+if(hash(source)!=='d54a6d6e9d10fccf9b15736d80c2950c4174e75cd8722595ee2b186f94eea826')throw Error('Expected exact approved v5.10.2 app.js');
+let found=[];function visit(n){if(!n||typeof n!=='object')return;if(n.type==='FunctionDeclaration'&&n.id?.name==='GamesAdventure')found.push(n);for(const v of Object.values(n))if(Array.isArray(v))v.forEach(visit);else if(v&&typeof v==='object')visit(v);}visit(parse(source,{ecmaVersion:'latest'}));if(found.length!==1)throw Error('Ambiguous GamesAdventure');
+const n=found[0];let result=source.slice(0,n.start)+'var StorybookGamesV1=('+createStorybookGames.toString()+')({h:__AKVisaH,useState,useEffect,useRef,read,write,order:EXPEDITION_ORDER,chapters:EXPEDITION_CHAPTERS,stampsFor:conquestStamps,readConquests,Heritage:AKHeritageUI,Crown});\nfunction GamesAdventure(props){return __AKVisaH(StorybookGamesV1,props);}\n'+source.slice(n.end);
+parse(result,{ecmaVersion:'latest'});fs.mkdirSync(output,{recursive:true});fs.writeFileSync(path.join(output,'app.js'),result);
+fs.writeFileSync(path.join(output,'app.css'),fs.readFileSync(path.join(input,'app.css'),'utf8')+'\n'+fs.readFileSync(new URL('../src/storybook-games.css',import.meta.url),'utf8'));
+fs.writeFileSync(path.join(output,'storybook-patch.json'),JSON.stringify({baselineAppSha256:hash(source),modifiedDeclarations:['GamesAdventure'],patchedAppSha256:hash(result),homeAndOtherDeclarationsUnchanged:true,artworkAdded:false},null,2));
