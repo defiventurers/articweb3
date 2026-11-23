@@ -9,6 +9,7 @@ await page.addInitScript(()=>{const id='11111111-1111-4111-8111-111111111111';co
 await page.addInitScript(theme=>localStorage.setItem('arctic-play.v1.theme',JSON.stringify(theme)),theme);
 for(const version of ['before','after']){
 await page.goto('http://127.0.0.1:8766/'+version+'/');await page.locator('.home-chaturanga').waitFor();await page.waitForLoadState('networkidle');await page.waitForTimeout(1200);await page.locator('img').evaluateAll(xs=>Promise.all(xs.map(i=>i.decode().catch(()=>{}))));await page.screenshot({animations:'disabled',path:`${evidence}/${version}-home-${size.join('x')}-${theme}.png`});await page.locator('.bottom-nav button').filter({hasText:/^Games$/}).click();await page.locator(version==='before'?'.exp-hero':'.sb-hero').waitFor();await page.locator('img').evaluateAll(xs=>Promise.all(xs.map(i=>i.decode().catch(()=>{}))));await page.screenshot({animations:'disabled',path:`${evidence}/${version}-adventure-${size.join('x')}-${theme}.png`});
+if(version==='before'){await page.locator('.exp-mode-bar button').filter({hasText:/All games/i}).click();await page.locator('.game-discovery').waitFor();await page.locator('img').evaluateAll(xs=>Promise.all(xs.map(i=>i.decode().catch(()=>{}))));await page.screenshot({animations:'disabled',path:`${evidence}/before-catalogue-${size.join('x')}-${theme}.png`});}
 if(version==='after'){
  for(let i=0;i<9;i++){
   assert.equal(await page.locator('.sb-adventure-body').getAttribute('data-expedition-id'),['dominion','xiangqi','shogi','sanguo','sanyou','sannin','yanyi','co-tu-lenh','shanshui'][i]);
