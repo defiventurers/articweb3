@@ -1,0 +1,31 @@
+{
+  "version": "5.11.1",
+  "versionCode": 111,
+  "baselineVersion": "5.10.2",
+  "baselineSha256": "275cf9bf69aadfa4f4d844ff412e0885d8a5a656539f4bb583af27bfc95e8ecd",
+  "sha256": "91fbc8cd0578462511356888e8fab5e6008f9008e555571dbf93473783488f3e",
+  "sizeBytes": 52201720,
+  "package": "xyz.arcticdominion.play",
+  "certificateSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+  "signaturesV2V3": true,
+  "zipalign": true,
+  "zipCRC": true,
+  "resourcesUncompressed": true,
+  "changedEntries": [
+    "AndroidManifest.xml",
+    "assets/app-version.json",
+    "assets/app.css",
+    "assets/app.js",
+    "assets/game-assets-sw.js",
+    "assets/game-assets.json"
+  ],
+  "unchangedEntries": 438,
+  "appCodeChange": "GamesAdventure presentation and release literal only",
+  "nativeRulesAndHomePreserved": true,
+  "sourceReviewed": "8324ff30f355f0e2b7b08d1d776b502ea8e822b2",
+  "physicalDeviceInstallTested": false,
+  "realParaLoginTested": false,
+  "reviewOnly": true,
+  "productionChanged": false,
+  "pullRequest": "https://github.com/defiventurers/articweb3/pull/118"
+}

@@ -1,0 +1,54 @@
+// Whole compiled app navigation check. Images, auth and network are fixtures.
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+import {verifiedAccount} from './account-fixture.mjs';
+const mobile=fileURLToPath(new URL('../',import.meta.url));
+const require=createRequire(mobile+'/build-deps/package.json'),{JSDOM,VirtualConsole}=require('jsdom');
+const appFile=process.argv[2];if(!appFile)throw Error('Supply patched actual app.js');
+const errors=[],vc=new VirtualConsole();vc.on('jsdomError',error=>errors.push(error.message));
+const dom=new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>',{url:'https://appassets.androidplatform.net/assets/index.html',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
+  w.WebSocket=undefined;w.Android={setDarkTheme(){},appReady(){}};
+  w.HTMLElement.prototype.scrollIntoView=function(){};w.HTMLElement.prototype.scrollTo=function(){};
+  w.Image=class{constructor(){this.complete=true;this.naturalWidth=1200;this.naturalHeight=800;}set src(value){this._src=value;queueMicrotask(()=>this.onload?.());}get src(){return this._src;}decode(){return Promise.resolve();}};
+  w.Worker=class{postMessage(){}terminate(){}};
+  w.localStorage.setItem('arctic-play.v1.profile',JSON.stringify({id:'heritage-runtime',name:'Explorer',avatar:'red'}));
+}});
+const w=dom.window,d=w.document;verifiedAccount(w);w.eval(fs.readFileSync(appFile,'utf8'));
+const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function wait(predicate,label){for(let i=0;i<700;i++){if(predicate())return;await delay(8);}throw Error('Timed out: '+label);}
+const button=text=>[...d.querySelectorAll('button')].find(item=>item.textContent.trim()===text);
+try{
+  await wait(()=>d.querySelector('.home-chaturanga'),'approved Home');
+  const home=d.querySelector('.home-chaturanga img').getAttribute('src');
+  [...d.querySelectorAll('.bottom-nav button')].find(item=>item.textContent.trim()==='Games').click();
+  await wait(()=>d.querySelector('.sb-enter'),'approved expedition');
+  const seen=[];
+  for(let i=0;i<9;i++){
+    const chapter=d.querySelector('.sb-adventure-body'),id=chapter.dataset.expeditionId;seen.push(id);
+    d.querySelector('.sb-enter').click();await wait(()=>d.querySelector('.heritage-introduction'),id+' introduction');
+    assert.match(d.querySelector('.heritage-introduction header').textContent,/1 \/ 3/);
+    button('Continue →').click();await wait(()=>/2 \/ 3/.test(d.querySelector('.heritage-introduction header').textContent),id+' history');
+    button('Continue →').click();await wait(()=>button('Proceed to game →'),id+' edition');
+    button('← Back to games').click();await wait(()=>d.querySelector('.sb-crown'),id+' crown preserved');
+    if(i<8){d.querySelector('[aria-label="Next game"]').click();await wait(()=>d.querySelector('.sb-adventure-body')?.dataset.expeditionId!==id,'next chapter');}
+  }
+  assert.deepEqual(seen,['dominion','xiangqi','shogi','sanguo','sanyou','sannin','yanyi','co-tu-lenh','shanshui']);
+  d.querySelector('[aria-label="Chapter 1: Chaturanga"]').click();await wait(()=>d.querySelector('.sb-adventure-body')?.dataset.expeditionId==='dominion','first chapter');
+  assert.match(d.querySelector('.sb-crown').textContent,/Earn Your Crown/);
+  const crownKey='arctic-play.v1.conquest-stamps.v1.11111111-1111-4111-8111-111111111111';
+  w.localStorage.setItem(crownKey,JSON.stringify({dominion:{matchId:'fixture-recorded-result',at:1,source:'unverified'}}));w.dispatchEvent(new w.CustomEvent('arctic-storage',{detail:{key:crownKey}}));await delay(30);assert.match(d.querySelector('.sb-crown').textContent,/Earn Your Crown/);
+  w.localStorage.setItem(crownKey,JSON.stringify({dominion:{matchId:'fixture-recorded-result',at:1,source:'canonical-result'}}));w.dispatchEvent(new w.CustomEvent('arctic-storage',{detail:{key:crownKey}}));await wait(()=>/Your Crown Is Earned/.test(d.querySelector('.sb-crown')?.textContent),'recorded crown fixture');
+  d.querySelector('[aria-label="Setup Chaturanga"]').click();await wait(()=>d.querySelector('.sheet')?.textContent.includes('On this phone'),'existing setup chooser');assert.match(d.querySelector('.sheet').textContent,/2v2|2 vs 2|Four-way/);d.querySelector('.sheet [aria-label="Close"]').click();
+  await wait(()=>d.querySelector('.sb-enter'),'return from setup');
+  button('♧ All Games').click();await wait(()=>d.querySelectorAll('.sb-card').length===4,'catalogue');assert.ok(d.querySelector('[aria-label="View unlock for Sanguo Qi"]'),'locked game uses unlock path');
+  function swipe(target){for(const [type,points]of [['touchstart',{touches:[{clientX:300,clientY:300}]}],['touchend',{changedTouches:[{clientX:100,clientY:300}]}]]){const e=new w.Event(type,{bubbles:true});Object.assign(e,points);target.dispatchEvent(e);}}
+  swipe(d.querySelector('.sb-filters'));await delay(30);assert.equal(d.querySelector('.sb-card').dataset.gameId,'dominion','filter swipe must not change catalogue page');
+  swipe(d.querySelector('.sb-grid'));await wait(()=>d.querySelector('.sb-card')?.dataset.gameId==='sanyou','catalogue swipe');
+  button('✧ Adventure').click();await wait(()=>d.querySelector('.sb-hero'),'adventure');d.querySelector('.sb-games').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));await wait(()=>d.querySelector('.sb-adventure-body')?.dataset.expeditionId==='xiangqi','keyboard chapter');
+  [...d.querySelectorAll('.bottom-nav button')].find(item=>item.textContent.trim()==='Home').click();
+  await wait(()=>d.querySelector('.home-chaturanga'),'return to approved Home');assert.equal(d.querySelector('.home-chaturanga img').getAttribute('src'),home);
+  assert.deepEqual(errors,[]);
+  console.log(JSON.stringify({passed:9,checks:['Full app opens approved Home and expedition','All nine story flows open and advance three screens before returning to original crowns','Original Home art and bottom navigation remain available','Invalid crown rejected; recorded qualifying crown displayed','Existing team/setup chooser opens and closes','Locked Sanguo retains unlock action','All nine catalogue stories remain reachable','Filter gestures do not change pages; catalogue swipe does','Keyboard chapter navigation works'],deviceTested:false,imagesDecoded:false,liveLoginTested:false},null,2));
+}finally{dom.window.close();}

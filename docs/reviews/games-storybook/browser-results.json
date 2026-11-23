@@ -1,0 +1,253 @@
+{
+  "checks": [
+    {
+      "size": [
+        360,
+        800
+      ],
+      "theme": "dark",
+      "adventure": {
+        "overflow": false,
+        "scroll": false,
+        "actionsVisible": true
+      }
+    },
+    {
+      "size": [
+        360,
+        800
+      ],
+      "theme": "dark",
+      "nineStories": true,
+      "nineGamesReachable": true,
+      "searchAndFilters": true,
+      "favoritesPersist": true
+    },
+    {
+      "size": [
+        360,
+        800
+      ],
+      "theme": "dark",
+      "largeTextActionsReachable": true
+    },
+    {
+      "size": [
+        360,
+        800
+      ],
+      "theme": "dark",
+      "homePreserved": true,
+      "maxChannelDelta": 0,
+      "changedChannels": 0
+    },
+    {
+      "size": [
+        360,
+        800
+      ],
+      "theme": "light",
+      "adventure": {
+        "overflow": false,
+        "scroll": false,
+        "actionsVisible": true
+      }
+    },
+    {
+      "size": [
+        360,
+        800
+      ],
+      "theme": "light",
+      "nineStories": true,
+      "nineGamesReachable": true,
+      "searchAndFilters": true,
+      "favoritesPersist": true
+    },
+    {
+      "size": [
+        360,
+        800
+      ],
+      "theme": "light",
+      "largeTextActionsReachable": true
+    },
+    {
+      "size": [
+        360,
+        800
+      ],
+      "theme": "light",
+      "homePreserved": true,
+      "maxChannelDelta": 1,
+      "changedChannels": 22
+    },
+    {
+      "size": [
+        393,
+        852
+      ],
+      "theme": "dark",
+      "adventure": {
+        "overflow": false,
+        "scroll": false,
+        "actionsVisible": true
+      }
+    },
+    {
+      "size": [
+        393,
+        852
+      ],
+      "theme": "dark",
+      "nineStories": true,
+      "nineGamesReachable": true,
+      "searchAndFilters": true,
+      "favoritesPersist": true
+    },
+    {
+      "size": [
+        393,
+        852
+      ],
+      "theme": "dark",
+      "largeTextActionsReachable": true
+    },
+    {
+      "size": [
+        393,
+        852
+      ],
+      "theme": "dark",
+      "homePreserved": true,
+      "maxChannelDelta": 0,
+      "changedChannels": 0
+    },
+    {
+      "size": [
+        393,
+        852
+      ],
+      "theme": "light",
+      "adventure": {
+        "overflow": false,
+        "scroll": false,
+        "actionsVisible": true
+      }
+    },
+    {
+      "size": [
+        393,
+        852
+      ],
+      "theme": "light",
+      "nineStories": true,
+      "nineGamesReachable": true,
+      "searchAndFilters": true,
+      "favoritesPersist": true
+    },
+    {
+      "size": [
+        393,
+        852
+      ],
+      "theme": "light",
+      "largeTextActionsReachable": true
+    },
+    {
+      "size": [
+        393,
+        852
+      ],
+      "theme": "light",
+      "homePreserved": true,
+      "maxChannelDelta": 0,
+      "changedChannels": 0
+    },
+    {
+      "size": [
+        393,
+        960
+      ],
+      "theme": "dark",
+      "adventure": {
+        "overflow": false,
+        "scroll": false,
+        "actionsVisible": true
+      }
+    },
+    {
+      "size": [
+        393,
+        960
+      ],
+      "theme": "dark",
+      "nineStories": true,
+      "nineGamesReachable": true,
+      "searchAndFilters": true,
+      "favoritesPersist": true
+    },
+    {
+      "size": [
+        393,
+        960
+      ],
+      "theme": "dark",
+      "largeTextActionsReachable": true
+    },
+    {
+      "size": [
+        393,
+        960
+      ],
+      "theme": "dark",
+      "homePreserved": true,
+      "maxChannelDelta": 0,
+      "changedChannels": 0
+    },
+    {
+      "size": [
+        393,
+        960
+      ],
+      "theme": "light",
+      "adventure": {
+        "overflow": false,
+        "scroll": false,
+        "actionsVisible": true
+      }
+    },
+    {
+      "size": [
+        393,
+        960
+      ],
+      "theme": "light",
+      "nineStories": true,
+      "nineGamesReachable": true,
+      "searchAndFilters": true,
+      "favoritesPersist": true
+    },
+    {
+      "size": [
+        393,
+        960
+      ],
+      "theme": "light",
+      "largeTextActionsReachable": true
+    },
+    {
+      "size": [
+        393,
+        960
+      ],
+      "theme": "light",
+      "homePreserved": true,
+      "maxChannelDelta": 0,
+      "changedChannels": 0
+    }
+  ],
+  "errors": [],
+  "realDevice": false,
+  "liveAuth": false
+}

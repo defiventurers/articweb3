@@ -1,0 +1,28 @@
+name: Retained APK Games visual review
+on:
+  pull_request:
+    paths: ['mobile/arctic-play/src/storybook*','mobile/arctic-play/scripts/*storybook*','mobile/arctic-play/tests/storybook*','.github/workflows/storybook-review.yml']
+permissions:
+  contents: read
+jobs:
+  retained-runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: mobile/arctic-play/build-deps
+      - run: python3 mobile/arctic-play/scripts/prepare-storybook-review.py
+      - run: node mobile/arctic-play/tests/storybook-runtime.mjs storybook-review/after/app.js
+      - run: npm install --prefix "$RUNNER_TEMP/browser-review" --no-audit --no-fund playwright@1.58.2 pngjs@7.0.0
+      - run: |
+          command -v google-chrome || "$RUNNER_TEMP/browser-review/node_modules/.bin/playwright" install chromium
+      - run: CHROME_BIN="$(command -v google-chrome || true)" PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/browser-review/package.json" node mobile/arctic-play/tests/storybook-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: games-storybook-rendered-evidence
+          path: storybook-review/evidence
