@@ -49,9 +49,13 @@ test('All nine stories have sourced heritage chapters and positive museum tone',
  for(const [id,story] of Object.entries(stories.games)){
   assert.equal(story.screens.length,3,id);
   assert.ok(story.screens.every(screen=>screen.title&&screen.text),id);
-  assert.ok(story.screens.some(screen=>screen.historicalNote),id);
+  assert.ok(story.origin&&story.edition,id+' must distinguish origin from the chosen edition');
+  assert.ok(story.screens.every(screen=>screen.label),id+' must classify each narrative screen');
   for(const screen of story.screens)for(const sourceId of screen.sourceIds)assert.ok(stories.sources[sourceId],id+' missing '+sourceId);
  }
+ assert.match(stories.games.dominion.screens[1].text,/1030/);
+ assert.match(stories.games.dominion.screens[1].text,/does not date these rules to 574/);
+ assert.match(stories.games.dominion.edition,/Modern four-player dice/);
  const component=read('../src/LaunchExperience.jsx');
  assert.match(component,/screen\.historicalNote/);
  assert.match(component,/PenguinAudience/);

@@ -47,7 +47,8 @@ test('Chaturanga v2 keeps canonical coordinates through all four player perspect
     const g=view.boardGeometry('dominion',seat);
     assert.deepEqual(g.cells.map(c=>c.id).sort(),ids,seat+' must not change engine cell identifiers');
     assert.equal(g.cells.length,64);
-    assert.match(g.image,/chaturanga-match\/grid-v2\.webp$/);
+    assert.equal(g.image,'art/launch-v1/chaturanga-match/approved-151658.jpg','Use the approved board retained by boardView');
+    assert.ok(fs.existsSync(new URL(g.image,assets)),'Approved texture is packaged');
     const [x,y,w,h]=g.viewBox.split(' ').map(Number);
     assert.ok(Math.abs(w-h)<1e-7,'8×8 board must stay square (allow floating-point rotation rounding)');
     assert.ok(g.cells.every(c=>Number.isFinite(c.x)&&Number.isFinite(c.y)));
