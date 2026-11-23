@@ -42,3 +42,11 @@ Real Android safe-area/gesture behavior, TalkBack, live Para callback, physical 
 Run `python3 mobile/arctic-play/scripts/prepare-storybook-review.py` after installing mobile/arctic-play/build-deps. This produces the actual before/after retained-runtime asset trees. Use build-storybook-apk.py with --baseline, --sdk, --output, --keystore and --password-file for the signed review; no key is checked in or included in deliverables.
 
 Install the signed v5.11.1 review over v5.11.0/v5.10.2, without uninstalling. Use an existing registered account. Inspect both Games views, visit all pages and stories, try a locked game and setup, then resume an existing saved game. Confirm Home matches before upgrading further. Production and its registration hold are unchanged by this task.
+
+## Final rendered result
+
+All 6 viewport/theme cases passed (24 recorded check groups), with zero browser errors, at 360×800, 393×852 and 393×960 in dark and light modes. All Adventure actions stay visible without page scrolling; catalogue action bounds pass on every page. The 24px root-text case retains reachable setup controls in its contained scrolling fallback. All nine stories, catalogue pagination, search/empty recovery, player filters and favorite persistence pass. Home is pixel-identical in five cases; the remaining light 360×800 case differs in 22 color channels by at most 1/255. The comparison allows at most 2/255 for border antialiasing. The source and original CSS prefix remain byte-identical.
+
+42 real Chrome PNG captures and results.json are provided in Games-Rendered-Evidence.zip. Evidence workflow: the green Retained APK Games visual review check on PR #118. Artifact ID: 14872869119. No generated mockups are presented as test screenshots.
+
+The separately triggered source rules-and-rooms job fails with `Shanshui server engine is stale. Run npm run build:shanshui-engine.` Engine/source files are untouched and no game-engine regeneration was performed. This remains a repository-wide blocker outside this presentation review, alongside the later-source launch assertions described above.
