@@ -35,8 +35,16 @@ try{
     if(i<8){d.querySelector('[aria-label="Next game"]').click();await wait(()=>d.querySelector('.sb-adventure-body')?.dataset.expeditionId!==id,'next chapter');}
   }
   assert.deepEqual(seen,['dominion','xiangqi','shogi','sanguo','sanyou','sannin','yanyi','co-tu-lenh','shanshui']);
+  d.querySelector('[aria-label="Chapter 1: Chaturanga"]').click();await wait(()=>d.querySelector('.sb-adventure-body')?.dataset.expeditionId==='dominion','first chapter');
+  assert.match(d.querySelector('.sb-crown').textContent,/Earn Your Crown/);
+  const crownKey='arctic-play.v1.conquest-stamps.v1.11111111-1111-4111-8111-111111111111';
+  w.localStorage.setItem(crownKey,JSON.stringify({dominion:{matchId:'fixture-recorded-result',at:1,source:'unverified'}}));w.dispatchEvent(new w.CustomEvent('arctic-storage',{detail:{key:crownKey}}));await delay(30);assert.match(d.querySelector('.sb-crown').textContent,/Earn Your Crown/);
+  w.localStorage.setItem(crownKey,JSON.stringify({dominion:{matchId:'fixture-recorded-result',at:1,source:'canonical-result'}}));w.dispatchEvent(new w.CustomEvent('arctic-storage',{detail:{key:crownKey}}));await wait(()=>/Your Crown Is Earned/.test(d.querySelector('.sb-crown')?.textContent),'recorded crown fixture');
+  d.querySelector('[aria-label="Setup Chaturanga"]').click();await wait(()=>d.querySelector('.sheet')?.textContent.includes('On this phone'),'existing setup chooser');assert.match(d.querySelector('.sheet').textContent,/2v2|2 vs 2|Four-way/);d.querySelector('.sheet [aria-label="Close"]').click();
+  await wait(()=>d.querySelector('.sb-enter'),'return from setup');
+  button('♧ All Games').click();await wait(()=>d.querySelectorAll('.sb-card').length===4,'catalogue');assert.ok(d.querySelector('[aria-label="View unlock for Sanguo Qi"]'),'locked game uses unlock path');
   [...d.querySelectorAll('.bottom-nav button')].find(item=>item.textContent.trim()==='Home').click();
   await wait(()=>d.querySelector('.home-chaturanga'),'return to approved Home');assert.equal(d.querySelector('.home-chaturanga img').getAttribute('src'),home);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({passed:3,checks:['Full app opens approved Home and expedition','All nine story flows open and advance three screens before returning to original crowns','Original Home art and bottom navigation remain available'],deviceTested:false,imagesDecoded:false,liveLoginTested:false},null,2));
+  console.log(JSON.stringify({passed:7,checks:['Full app opens approved Home and expedition','All nine story flows open and advance three screens before returning to original crowns','Original Home art and bottom navigation remain available','Invalid crown rejected; recorded qualifying crown displayed','Existing team/setup chooser opens and closes','Locked Sanguo retains unlock action','All nine catalogue stories remain reachable'],deviceTested:false,imagesDecoded:false,liveLoginTested:false},null,2));
 }finally{dom.window.close();}
