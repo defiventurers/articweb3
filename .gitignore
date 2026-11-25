@@ -27,6 +27,7 @@ frontend/public/play/
 mobile/arctic-play/runtime-assets/art/
 
 *-failure.html
+storybook-review/
 
 **/node_modules
 /contracts/launch/artifacts/

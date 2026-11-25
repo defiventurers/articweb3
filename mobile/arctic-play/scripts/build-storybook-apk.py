@@ -84,7 +84,10 @@ with tempfile.TemporaryDirectory(prefix='ak-storybook-') as tmp:
     for n in ['app.js','app.css']:(extracted/n).write_bytes(original['assets/'+n])
     run('node',Path(__file__).with_name('patch-storybook-v5102.mjs'),extracted,patched)
     overlay={n:(patched/n).read_bytes() for n in ['app.js','app.css']}
+    added_art={'assets/'+str(f.relative_to(patched)):f.read_bytes() for f in (patched/'art').rglob('*.webp')}
 for n,data in overlay.items():files['assets/'+n]=data
+assert not set(added_art).intersection(original), 'New Games art must not overwrite baseline assets'
+files.update(added_art)
 files['AndroidManifest.xml']=version_manifest(files['AndroidManifest.xml'])
 old=b'versionName:`5.10.2`,versionCode:106'
 assert files['assets/app.js'].count(old)==1
@@ -92,18 +95,19 @@ files['assets/app.js']=files['assets/app.js'].replace(old,b'versionName:`5.11.1`
 metadata=json.loads(files['assets/app-version.json']);metadata.update(version='5.11.1',versionCode=111)
 files['assets/app-version.json']=json.dumps(metadata).encode()
 warm=json.loads(files['assets/game-assets.json']);warm['version']='5.11.1'
+warm['assets'].extend({'url':name[len('assets/'):],'bytes':len(data)} for name,data in added_art.items())
 for item in warm['assets']:item['bytes']=len(files['assets/'+item['url']])
 files['assets/game-assets.json']=json.dumps(warm).encode()
 oldcache=b'ak-public-game-art-bundled-5.10.2'
 assert files['assets/game-assets-sw.js'].count(oldcache)==1
 files['assets/game-assets-sw.js']=files['assets/game-assets-sw.js'].replace(oldcache,b'ak-public-game-art-bundled-5.11.1')
-changed=[n for n in files if files[n]!=original[n]]
+changed=[n for n in original if files[n]!=original[n]]
 assert set(changed)=={'AndroidManifest.xml','assets/app.js','assets/app-version.json','assets/game-assets.json','assets/game-assets-sw.js','assets/app.css'}
 assert files['assets/app.js'].replace(b'versionName:`5.11.1`,versionCode:111',old)==overlay['app.js']
 raw=OUT/'raw.apk';aligned=OUT/'aligned.apk';apk=OUT/'AntarcticKingdoms-v5.11.1.apk'
 with zipfile.ZipFile(raw,'w') as z:
     for n,data in files.items():
-        prior=infos[n];info=zipfile.ZipInfo(n,prior.date_time)
+        prior=infos.get(n,zipfile.ZipInfo(n));info=zipfile.ZipInfo(n,prior.date_time)
         info.external_attr=prior.external_attr;info.create_system=prior.create_system
         info.compress_type=zipfile.ZIP_STORED if n=='resources.arsc' else prior.compress_type
         z.writestr(info,data)
@@ -119,7 +123,7 @@ with zipfile.ZipFile(apk) as z:
     assert z.getinfo('resources.arsc').compress_type==zipfile.ZIP_STORED
     assert {n for n in z.namelist() if not n.startswith('META-INF/')}==set(files)
     for n,data in files.items():assert z.read(n)==data,n
-report={'version':'5.11.1','versionCode':111,'baselineVersion':'5.10.2','baselineSha256':EXPECTED,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'sizeBytes':apk.stat().st_size,'package':'xyz.arcticdominion.play','certificateSha256':CERT,'signaturesV2V3':True,'zipalign':True,'zipCRC':True,'resourcesUncompressed':True,'changedEntries':changed,'unchangedEntries':len(files)-len(changed),'appCodeChange':'GamesAdventure presentation and release literal only','nativeRulesAndHomePreserved':True,'sourceReviewed':'8324ff30f355f0e2b7b08d1d776b502ea8e822b2','physicalDeviceInstallTested':False,'realParaLoginTested':False}
+report={'version':'5.11.1','versionCode':111,'baselineVersion':'5.10.2','baselineSha256':EXPECTED,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'sizeBytes':apk.stat().st_size,'package':'xyz.arcticdominion.play','certificateSha256':CERT,'signaturesV2V3':True,'zipalign':True,'zipCRC':True,'resourcesUncompressed':True,'changedEntries':changed,'addedEntries':list(added_art),'unchangedEntries':len(original)-len(changed),'appCodeChange':'GamesAdventure presentation and release literal only','nativeRulesAndHomePreserved':True,'sourceReviewed':'f696f57637ec8a1433bcaeafcd0ebc494fcba96b','physicalDeviceInstallTested':False,'realParaLoginTested':False}
 (OUT/'AntarcticKingdoms-v5.11.1-verification.json').write_text(json.dumps(report,indent=2)+'\n')
 raw.unlink();aligned.unlink()
 print(json.dumps(report,indent=2))
