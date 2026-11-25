@@ -791,3 +791,11 @@
     transition: none;
   }
 }
+
+.harbor-return-link, .arctic-game-world .harbor-discover {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px;
+  background: #112a42; color: #ffe4a3; border: 1px solid #b29461; border-radius: 8px;
+  text-decoration: none; font: 600 14px/1.2 system-ui;
+}
+.harbor-return-link { position: fixed; z-index: 9999; bottom: max(8px,env(safe-area-inset-bottom)); left: max(8px,env(safe-area-inset-left)); }
+.harbor-return-link:focus-visible, .harbor-discover:focus-visible { outline: 3px solid #ffe1a2; }

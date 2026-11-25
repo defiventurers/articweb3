@@ -140,15 +140,18 @@ export default function App() {
   function roomLobbyScreen(targetRoom = room) { return targetRoom?.roomMode === "high_stakes" ? "high-stakes" : "open-ice-menu"; }
   function goTo(nextScreen, options = {}) { window.clearTimeout(transitionTimerRef.current); if (options.tapSound !== false) soundManager.play("uiTap", { cooldownMs: 80 }); if (nextScreen === "how-to-play") warmHowToPlayAssets(); if (nextScreen === "game" || nextScreen === "team-select" || nextScreen === "waiting") warmGameAssets(); setScreen(nextScreen); }
   function playTrackThenGo(trackName, nextScreen, delayMs) { window.clearTimeout(transitionTimerRef.current); soundManager.unlock(); unlockUiAudio(); soundManager.playTrack(trackName, { restart: true }); transitionTimerRef.current = window.setTimeout(() => goTo(nextScreen, { tapSound: false }), delayMs); }
+  const harborOrigin = params.get("fromHarbor");
+  const harborReturn = ["temple", "pavilion", "palace", "council"].includes(harborOrigin) ? "/harbor.html?return=" + harborOrigin : null;
   function withAppChrome(node, heritageGameId = null) {
     return <>
       <AudioToggle />
+      {harborReturn && <a className="harbor-return-link" href={harborReturn}>← Lantern Harbor</a>}
       {heritageGameId ? <HeritageExperienceFrame gameId={heritageGameId}>{node}</HeritageExperienceFrame> : node}
       <ExperienceCompanion gameId={heritageGameId} />
     </>;
   }
   function selectCatalogGame(gameId) { const game = getCatalogGame(gameId); if (!game) return; setSelectedGameId(game.id); syncGameQuery(game.id); if (PLAYABLE_GAME_IDS.has(game.id)) return goTo(game.id); goTo(game.available ? "cover" : "game-preview"); }
-  function exitToLibrary() { setSelectedGameId(null); syncGameQuery(null); goTo("library"); }
+  function exitToLibrary() { if (harborReturn) { window.location.assign(harborReturn); return; } setSelectedGameId(null); syncGameQuery(null); goTo("library"); }
   function resumeRoom(nextRoom) { setRoom(nextRoom); if (nextRoom.status === "finished") return goTo("results"); if (nextRoom.status === "playing") return goTo("game"); if (nextRoom.status === "waiting" && nextRoom.players?.find((player) => player.wallet === profile?.wallet)?.team) return goTo("waiting"); return goTo("team-select"); }
 
   if (screen === "kingdoms") return withAppChrome(<GameLibraryScreen onSelectGame={selectCatalogGame} />);
