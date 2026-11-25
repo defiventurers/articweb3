@@ -24,6 +24,14 @@ try{
   const home=d.querySelector('.home-chaturanga img').getAttribute('src');
   [...d.querySelectorAll('.bottom-nav button')].find(item=>item.textContent.trim()==='Games').click();
   await wait(()=>d.querySelector('.sb-enter'),'approved expedition');
+  assert.equal(d.querySelector('.sb-scene').getAttribute('src'),'art/launch-v1/chaturanga-games/table.webp');
+  assert.equal(d.querySelector('.sb-guide-roster img').getAttribute('src'),'art/launch-v1/chaturanga-games/mascots.webp');
+  for(const [id,name] of [['polly','Polly'],['retsba','Retsba'],['pengu','Pengu'],['abster','Abster']]){
+    d.querySelector('[data-host="'+id+'"]').click();
+    await wait(()=>d.querySelector('[data-host="'+id+'"]').getAttribute('aria-pressed')==='true','guide '+name);
+    assert.ok(d.querySelector('.sb-guide-tip').textContent.startsWith(name+': '));
+    assert.equal(d.querySelector('.sb-adventure-body').dataset.expeditionId,'dominion','Guide selection must keep the current game');
+  }
   const seen=[];
   for(let i=0;i<9;i++){
     const chapter=d.querySelector('.sb-adventure-body'),id=chapter.dataset.expeditionId;seen.push(id);
@@ -50,5 +58,5 @@ try{
   [...d.querySelectorAll('.bottom-nav button')].find(item=>item.textContent.trim()==='Home').click();
   await wait(()=>d.querySelector('.home-chaturanga'),'return to approved Home');assert.equal(d.querySelector('.home-chaturanga img').getAttribute('src'),home);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({passed:9,checks:['Full app opens approved Home and expedition','All nine story flows open and advance three screens before returning to original crowns','Original Home art and bottom navigation remain available','Invalid crown rejected; recorded qualifying crown displayed','Existing team/setup chooser opens and closes','Locked Sanguo retains unlock action','All nine catalogue stories remain reachable','Filter gestures do not change pages; catalogue swipe does','Keyboard chapter navigation works'],deviceTested:false,imagesDecoded:false,liveLoginTested:false},null,2));
+  console.log(JSON.stringify({passed:10,checks:['Supplied table and mascot art; all four host tips stay on Chaturanga','Full app opens approved Home and expedition','All nine story flows open and advance three screens before returning to original crowns','Original Home art and bottom navigation remain available','Invalid crown rejected; recorded qualifying crown displayed','Existing team/setup chooser opens and closes','Locked Sanguo retains unlock action','All nine catalogue stories remain reachable','Filter gestures do not change pages; catalogue swipe does','Keyboard chapter navigation works'],deviceTested:false,imagesDecoded:false,liveLoginTested:false},null,2));
 }finally{dom.window.close();}

@@ -1,0 +1,27 @@
+{
+  "approvedFor": "Chaturanga Games layout, user instruction 2026-11-25",
+  "optimization": "WebP quality 90, full original dimensions; no redraw, recoloring or composition changes",
+  "assets": [
+    {
+      "file": "table.webp",
+      "sourceName": "image(20261125-140548).png",
+      "sourceSha256": "160422da9419c199f7830c8b72744a89e3b442aa1583e02552159f4d3c9290cf",
+      "sha256": "d4bff27ac53d108caacb48c68898407941e99c6401aa70becb708d8a4695b1e1",
+      "bytes": 533256
+    },
+    {
+      "file": "garden.webp",
+      "sourceName": "image(20261125-140123).png",
+      "sourceSha256": "6ae188a273c813c74114549b00a94c0d8fef1a867755a13eca53c99719ccc45f",
+      "sha256": "2cdfdc6e0d14a4745e5c596b2f1bbf23fc94a11eed52a3d03977628130db350e",
+      "bytes": 198920
+    },
+    {
+      "file": "mascots.webp",
+      "sourceName": "MASCOTS.webp",
+      "sourceSha256": "bfddbda9b0d2c1be4826ff18e05cc4370b097efe6a2f220e4f81bcc00cb46c3e",
+      "sha256": "15196dfccd1e2ab9bda36dfee00b03da65fafd91939d2353317e9f6b87dc3f80",
+      "bytes": 64900
+    }
+  ]
+}

@@ -12,4 +12,9 @@ let found=[];function visit(n){if(!n||typeof n!=='object')return;if(n.type==='Fu
 const n=found[0];let result=source.slice(0,n.start)+'var StorybookGamesV1=('+createStorybookGames.toString()+')({h:__AKVisaH,useState,useEffect,useRef,read,write,order:EXPEDITION_ORDER,chapters:EXPEDITION_CHAPTERS,stampsFor:conquestStamps,readConquests,Heritage:AKHeritageUI,Crown});\nfunction GamesAdventure(props){return __AKVisaH(StorybookGamesV1,props);}\n'+source.slice(n.end);
 parse(result,{ecmaVersion:'latest'});fs.mkdirSync(output,{recursive:true});fs.writeFileSync(path.join(output,'app.js'),result);
 fs.writeFileSync(path.join(output,'app.css'),fs.readFileSync(path.join(input,'app.css'),'utf8')+'\n'+fs.readFileSync(new URL('../src/storybook-games.css',import.meta.url),'utf8'));
-fs.writeFileSync(path.join(output,'storybook-patch.json'),JSON.stringify({baselineAppSha256:hash(source),modifiedDeclarations:['GamesAdventure'],patchedAppSha256:hash(result),homeAndOtherDeclarationsUnchanged:true,artworkAdded:false},null,2));
+const artworkDir=new URL('../../../frontend/public/assets/launch-v1/chaturanga-games/',import.meta.url);
+const artworkFiles=['table.webp','garden.webp','mascots.webp'];
+const approvedArt=JSON.parse(fs.readFileSync(new URL('artwork.json',artworkDir),'utf8'));
+const artwork=artworkFiles.map(name=>{const bytes=fs.readFileSync(new URL(name,artworkDir));if(hash(bytes)!==approvedArt.assets.find(item=>item.file===name)?.sha256)throw Error('Approved Chaturanga Games artwork checksum mismatch: '+name);return {url:'art/launch-v1/chaturanga-games/'+name,bytes};});
+for(const item of artwork){const target=path.join(output,item.url);fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,item.bytes);}
+fs.writeFileSync(path.join(output,'storybook-patch.json'),JSON.stringify({baselineAppSha256:hash(source),modifiedDeclarations:['GamesAdventure'],patchedAppSha256:hash(result),homeAndOtherDeclarationsUnchanged:true,artworkAdded:artwork.map(({url,bytes})=>({url,bytes:bytes.length,sha256:hash(bytes)}))},null,2));

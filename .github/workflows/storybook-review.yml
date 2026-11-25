@@ -1,7 +1,7 @@
 name: Retained APK Games visual review
 on:
   pull_request:
-    paths: ['mobile/arctic-play/src/storybook*','mobile/arctic-play/scripts/*storybook*','mobile/arctic-play/tests/storybook*','.github/workflows/storybook-review.yml']
+    paths: ['mobile/arctic-play/src/storybook*','mobile/arctic-play/scripts/*storybook*','mobile/arctic-play/tests/storybook*','frontend/public/assets/launch-v1/chaturanga-games/**','.github/workflows/storybook-review.yml']
 permissions:
   contents: read
 jobs:

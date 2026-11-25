@@ -22,3 +22,41 @@ html[data-theme=light] .app[data-tab=games]{--sb-ink:#14314a;--sb-panel:#eff6f6;
 .sb-collection{gap:5px}.sb-collection-title{padding:2px 0}.sb-card .sb-card-art{min-height:35px}.sb-card h3{margin:2px 0}.sb-card p{margin:2px 0;line-height:1.25}.sb-card-copy>small{line-height:1.1;display:block}.sb-card-actions{margin-top:4px}.sb-card-copy{line-height:1.15}.sb-card .sb-card-actions button{min-height:44px}
 
 .sb-filters{touch-action:pan-x}
+
+/* Owner-supplied Chaturanga scene. Keep the entire four-host composition visible. */
+.sb-crown{display:flex;flex-direction:column;justify-content:center;align-items:stretch}
+.sb-crown-summary{display:flex;align-items:center;gap:12px}
+.sb-adventure-body[data-expedition-id=dominion]{grid-template-rows:minmax(280px,1fr) 56px 190px 44px;gap:8px}
+.sb-adventure-body[data-expedition-id=dominion] .sb-hero{background:#0a253d;border-radius:18px}
+.sb-adventure-body[data-expedition-id=dominion] .sb-scene{height:calc(100% - 124px);object-fit:contain;object-position:center}
+.sb-adventure-body[data-expedition-id=dominion] .sb-hero:after{top:auto;height:124px;background:linear-gradient(#0a253d,#06192d)}
+.sb-adventure-body[data-expedition-id=dominion] .sb-hero-copy{bottom:62px}
+.sb-adventure-body[data-expedition-id=dominion] .sb-hero-copy small{font:10px/1.3 system-ui,sans-serif;letter-spacing:.6px}
+.sb-adventure-body[data-expedition-id=dominion] .sb-hero h2{font-size:30px;line-height:1.1;margin:3px 0}
+.sb-adventure-body[data-expedition-id=dominion] .sb-hero p{font-size:10px;letter-spacing:.8px}
+.sb-adventure-body[data-expedition-id=dominion] .sb-enter{bottom:10px;font-size:17px!important}
+.sb-adventure-body[data-expedition-id=dominion] .sb-crown{padding:8px 10px;gap:6px;background:linear-gradient(100deg,#05182bf2 15%,#05182bd9 60%,#05182b77),url('art/launch-v1/chaturanga-games/garden.webp') center/cover}
+.sb-guides{flex-shrink:0}
+.sb-guide-roster{display:flex;align-items:center;gap:7px}
+.sb-guide-roster>img{width:54px;height:54px;object-fit:cover;border-radius:12px;border:1px solid #c5a664}
+.sb-guide-choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;flex:1;min-width:0}
+.sb-games .sb-guide{min-width:0;padding:5px 1px;min-height:44px;border-radius:9px;background:#0a233be8;border-color:#bca06480;box-shadow:inset 0 2px var(--guide-color);color:#f2ead3}
+.sb-guide[data-host=polly]{--guide-color:#f88898}.sb-guide[data-host=retsba]{--guide-color:#ef6868}.sb-guide[data-host=pengu]{--guide-color:#75b8ff}.sb-guide[data-host=abster]{--guide-color:#6fc78f}
+.sb-guide strong,.sb-guide small{display:block;font:600 11px/1.4 system-ui,sans-serif}
+.sb-guide small{font-size:9px;font-weight:400;color:inherit}
+.sb-games .sb-guide[aria-pressed=true]{background:#f5dda5;color:#102439;border-color:#ffe9b4;box-shadow:inset 0 3px var(--guide-color)}
+.sb-games .sb-guide-tip{font:11px/1.4 system-ui,sans-serif;margin:4px 0 0;min-height:31px;color:#f3ecdf;text-align:left}
+.sb-adventure-body[data-expedition-id=dominion] .sb-crown-summary{border-top:1px solid #d8bd7b66;padding-top:5px;gap:8px}
+.sb-adventure-body[data-expedition-id=dominion] .sb-crown-art,.sb-adventure-body[data-expedition-id=dominion] .sb-crown-art svg{width:44px;height:44px}
+.sb-adventure-body[data-expedition-id=dominion] .sb-crown h3{font-size:21px;margin:2px 0}
+.sb-adventure-body[data-expedition-id=dominion] .sb-crown-summary p{font-size:11px;margin:3px 0}
+.sb-adventure-body[data-expedition-id=dominion] .sb-crown-summary small{font-size:9px}
+.sb-adventure-body[data-expedition-id=dominion] .sb-discover{font-size:12px;min-height:28px}
+.sb-card[data-game-id=dominion] .sb-card-art img{object-fit:contain;background:#0a253d}
+@media(max-height:740px){.sb-adventure-body[data-expedition-id=dominion]{grid-template-rows:minmax(245px,1fr) 52px 190px 44px;gap:6px}}
+@media(max-height:740px) and (min-height:651px){.app[data-tab=games] .lobby-content:has(.sb-adventure-body[data-expedition-id=dominion]){overflow:auto}.sb-adventure:has([data-expedition-id=dominion]){flex:none}}
+.sb-large-text .sb-adventure-body[data-expedition-id=dominion]{min-height:760px;grid-template-rows:minmax(300px,1fr) 72px auto 44px}
+.sb-large-text .sb-guide strong,.sb-large-text .sb-guide small{font-size:.65rem}
+.sb-large-text .sb-guide-tip{font-size:1rem;min-height:0}
+.sb-large-text .sb-guides{padding-bottom:6px}
+@media(min-width:700px) and (min-height:741px){.sb-games{max-width:820px;width:100%;margin-inline:auto}.sb-adventure-body[data-expedition-id=dominion]{grid-template-columns:minmax(0,1fr) 280px;grid-template-rows:minmax(280px,1fr) 64px 44px;gap:12px}.sb-adventure-body[data-expedition-id=dominion] .sb-hero{grid-column:1;grid-row:1 / span 2}.sb-adventure-body[data-expedition-id=dominion] .sb-crown{grid-column:2;grid-row:1;gap:14px;justify-content:center}.sb-adventure-body[data-expedition-id=dominion] .sb-actions{grid-column:2;grid-row:2}.sb-adventure-body[data-expedition-id=dominion] .sb-pager{grid-column:1 / -1}.sb-adventure-body[data-expedition-id=dominion] .sb-guide-roster{flex-direction:column}.sb-adventure-body[data-expedition-id=dominion] .sb-guide-roster>img{width:100px;height:100px}.sb-adventure-body[data-expedition-id=dominion] .sb-guide-choices{width:100%}}
