@@ -23,7 +23,9 @@ live Para/free-network acceptance and production deployment remain owner gates.
   and enlarged-text action/Crown overlap in the existing guarded v5.11.1
   presentation. The 24 checks establish reachability, not full contrast/layout
   acceptance. An additive opt-in browser correction and explicit regressions
-  are being prepared; original APKs and original patch reproduction stay intact.
+  are prepared;8/8 input/preservation guards and9 candidate navigation groups
+  pass. Original APKs and original patch reproduction stay intact. Strict
+  negative/positive CI rendering is pending; see `BATCH_D_PRESENTATION.md`.
   Resume this narrow correction/CI task before the release-acceptance handoff.
 - No production deployment, live account, mint, funded match, contract/DNS/billing
   change, production database operation or held private-package publication.

@@ -527,7 +527,8 @@
     "BATCH_D_ACCEPTANCE_EVIDENCE.json",
     "BATCH_D_MULTIPLAYER.md",
     "BATCH_D_MULTIPLAYER_EVIDENCE.json",
-    "BATCH_D_ROLLOUT.md"
+    "BATCH_D_ROLLOUT.md",
+    "BATCH_D_PRESENTATION.md"
   ],
   "changedFiles": [
     ".github/workflows/fonso-batch-d.yml",
@@ -538,12 +539,16 @@
     "docs/technical-stabilization/BATCH_D_EVIDENCE.json",
     "docs/technical-stabilization/BATCH_D_MULTIPLAYER.md",
     "docs/technical-stabilization/BATCH_D_MULTIPLAYER_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_D_PRESENTATION.md",
     "docs/technical-stabilization/BATCH_D_ROLLOUT.md",
     "docs/technical-stabilization/CHECKPOINT.md",
+    "mobile/arctic-play/scripts/prepare-storybook-accessibility-review.py",
     "mobile/arctic-play/scripts/verify-retained-apks.py",
+    "mobile/arctic-play/src/storybook-accessibility-review.css",
     "mobile/arctic-play/tests/retained-apk-acceptance.mjs",
     "mobile/arctic-play/tests/storybook-browser.mjs",
     "mobile/arctic-play/tests/test_retained_apks.py",
+    "mobile/arctic-play/tests/test_storybook_accessibility_review.py",
     "server/legacyWalletAccess.js",
     "server/loadPrizeBackend.js",
     "server/scripts/free-multiplayer-smoke.cjs",
@@ -562,5 +567,43 @@
   },
   "testedCandidate": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3",
   "testedTree": "8c82f5ccf882758e8f96ff448a2913ef55c07aaf",
-  "handoffCommitScope": "74dfcea records the passing backend/retained-reference gates. A newly observed presentation correction is tracked separately and requires its own CI evidence."
+  "handoffCommitScope": "74dfcea records the passing backend/retained-reference gates. A newly observed presentation correction is tracked separately and requires its own CI evidence.",
+  "presentationCorrection": {
+    "phase": "prepared-locally-rendered-ci-pending",
+    "guardTests": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "parentIndependentRerun": true
+    },
+    "candidateNavigationScenarioGroups": 9,
+    "stagingReport": {
+      "kind": "opt-in-browser-review-only",
+      "sourceVariant": "original-guarded-presentation-from-v5.10.2",
+      "sourceTreeSha256": {
+        "before": "d1f045ab3635f3e3e104714b06fc9a4dc2ac84d1c18fbfce7febfb89186fd911",
+        "after": "652313defeb61b0d67ac4a1253176456925ce229b32b383c76ac2d5bae8080d5"
+      },
+      "candidateTreeSha256": {
+        "before": "d1f045ab3635f3e3e104714b06fc9a4dc2ac84d1c18fbfce7febfb89186fd911",
+        "after": "ab3a1331a16093f854df8a515df2fef92782870a7292e243a48cb21264a8537d"
+      },
+      "modifiedFiles": [
+        "after/app.css"
+      ],
+      "appJsSha256": "539af253f2a60c10bc6f05cf93b74e08c0442775a3c9537404753160ba516502",
+      "originalCssSha256": "b50756be7173df93e6d51c058375d7fa29660bafba51666f796b7d05c3a1022f",
+      "correctionCssSha256": "0c8406b13feb9afbfba5855aaf8cca185a7d11b0ef44adb0c5871e5ffb87f0a9",
+      "candidateCssSha256": "19b95ee469b9bc1a1239e4c36336b381d5b5d5d2c1a48e2f0a85f2c2f8a7c078",
+      "apkProduced": false,
+      "physicalDeviceAccepted": false
+    },
+    "originalApksAndOriginalPatchPreserved": true,
+    "strictNegativeMustReproduce": [
+      "low-control-contrast",
+      "Crown-targeted large-text containment or overlap"
+    ],
+    "newApkProduced": false,
+    "report": "BATCH_D_PRESENTATION.md"
+  }
 }

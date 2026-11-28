@@ -87,6 +87,7 @@ jobs:
         run: |
           python3 -m unittest discover -s mobile/arctic-play/tests -p 'test_retained_apks.py'
           python3 -m unittest discover -s mobile/arctic-play/tests -p 'test_apk_layout.py'
+          python3 -m unittest discover -s mobile/arctic-play/tests -p 'test_storybook_accessibility_review.py'
       - name: Install locked retained-runtime test dependencies
         run: npm ci --prefix mobile/arctic-play/build-deps --ignore-scripts --no-audit --no-fund
       - name: Extract SHA-pinned public baseline and reproduce guarded presentation patch
@@ -101,8 +102,51 @@ jobs:
         run: command -v google-chrome || "$RUNNER_TEMP/browser-review/node_modules/.bin/playwright" install chromium
       - name: Render baseline and guarded candidate with external networking blocked
         run: CHROME_BIN="$(command -v google-chrome || true)" PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/browser-review/package.json" node mobile/arctic-play/tests/storybook-browser.mjs
+      - name: Reproduce original review contrast and enlarged-text failures
+        env:
+          STORYBOOK_STRICT_ACCESSIBILITY: '1'
+          STORYBOOK_EVIDENCE_ROOT: storybook-review/accessibility-regression
+        run: |
+          set +e
+          CHROME_BIN="$(command -v google-chrome || true)" PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/browser-review/package.json" node mobile/arctic-play/tests/storybook-browser.mjs
+          regression_exit=$?
+          set -e
+          python3 - "$regression_exit" <<'PY'
+          import json, sys
+          from pathlib import Path
+          report = json.loads(Path('storybook-review/accessibility-regression/results.json').read_text())
+          assert int(sys.argv[1]) != 0, 'Original review unexpectedly passed the stricter regressions'
+          assert report['strictAccessibility'] is True
+          assert report['errors'] == [], 'Failure must not be a page error'
+          categories = {issue['category'] for issue in report['strictIssues']}
+          assert 'low-control-contrast' in categories, categories
+          assert any(issue['category'] in {'large-text-overlap', 'large-text-containment'}
+                     and issue.get('target', '').startswith('.sb-crown')
+                     for issue in report['strictIssues']), 'Original Crown overflow was not reproduced'
+          home = [check for check in report['checks'] if 'homePreserved' in check]
+          assert len(home) == 6 and all(check['homePreserved'] for check in home)
+          print('Reproduced original review contrast and large-text defects; Home preserved.')
+          PY
+      - name: Stage separate CSS-only correction without modifying original artifacts
+        run: |
+          python3 mobile/arctic-play/scripts/prepare-storybook-accessibility-review.py --source storybook-review --output storybook-accessibility-review
+          node mobile/arctic-play/tests/storybook-runtime.mjs storybook-accessibility-review/after/app.js
+      - name: Verify corrected contrast and layout with original Home thresholds
+        env:
+          STORYBOOK_REVIEW_ROOT: storybook-accessibility-review
+          STORYBOOK_EVIDENCE_ROOT: storybook-accessibility-review/evidence
+          STORYBOOK_STRICT_ACCESSIBILITY: '1'
+        run: CHROME_BIN="$(command -v google-chrome || true)" PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/browser-review/package.json" node mobile/arctic-play/tests/storybook-browser.mjs
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: batch-d-guarded-rendered-evidence
           path: storybook-review/evidence
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: batch-d-presentation-correction-evidence
+          path: |
+            storybook-review/accessibility-regression
+            storybook-accessibility-review/evidence
+            storybook-accessibility-review/*.json

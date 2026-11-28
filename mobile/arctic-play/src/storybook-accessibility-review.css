@@ -1,0 +1,57 @@
+/* Opt-in browser review only; appended after the exact original review CSS.
+   Home, game boards, artwork and the retained APK inputs are not changed. */
+html[data-theme="light"] .app[data-tab="games"] .sb-games {
+  /* Unselected controls retain their dark gradients. Gold/selected controls
+     keep their existing explicit dark foreground and disabled opacity. */
+  --sb-ink: #f2ead3;
+}
+
+.app[data-tab="games"] .sb-games.sb-large-text .sb-switch {
+  flex-wrap: wrap;
+}
+.app[data-tab="games"] .sb-games.sb-large-text .sb-switch > nav {
+  flex-basis: 100%;
+  min-width: 0;
+}
+.app[data-tab="games"] .sb-games.sb-large-text .sb-switch > nav button {
+  white-space: normal;
+}
+.app[data-tab="games"] .sb-games.sb-large-text .sb-progress {
+  width: 100%;
+}
+.app[data-tab="games"] .sb-games.sb-large-text .sb-adventure-body {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  min-height: 0;
+  gap: 12px;
+}
+.app[data-tab="games"] .sb-games.sb-large-text .sb-adventure-body > * {
+  flex: none;
+}
+.app[data-tab="games"] .sb-games.sb-large-text .sb-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 12px;
+  min-height: 0;
+  padding: 180px 12px 12px;
+}
+.app[data-tab="games"] .sb-games.sb-large-text .sb-hero-copy {
+  position: relative;
+  inset: auto;
+}
+.app[data-tab="games"] .sb-games.sb-large-text .sb-enter {
+  position: relative;
+  inset: auto;
+  width: 100%;
+}
+.app[data-tab="games"] .sb-games.sb-large-text .sb-actions {
+  grid-template-columns: minmax(0, 1fr);
+}
+.app[data-tab="games"] .sb-games.sb-large-text .sb-crown {
+  align-items: flex-start;
+}
+.app[data-tab="games"] .sb-games.sb-large-text .sb-crown > div:last-child {
+  min-width: 0;
+}
