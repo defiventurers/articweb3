@@ -1,24 +1,106 @@
 # FONSO technical stabilization checkpoint
 
-Updated: **2026-11-28 (Asia/Kolkata)**. **Batch C in progress.**
+Updated: **28 November 2026 (Asia/Kolkata)**. **Batch C code and isolated
+verification complete. Production and live collectible acceptance remain
+pending. Stop after C.**
 
-## Current Batch C checkpoint
+## Current review state
 
-- Founder instruction: “Merged resume from where you left off.” Continue the saved Batch C instruction; do not restart completed A/B audits.
-- Read the attached `MASTER_COMPANY_CONTEXT(1).md`, revision 1.0; retain the approved v5.10.2 runtime/artwork and v5.11.1 review-build distinction.
-- Verified main remains `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`. PR #122 is merged into the A development branch; PR #121 remains open/draft to main at `148e319c129d91421c21466c8567ddcc10ec145e`; documentation PR #123 remains open/draft at this observation. No production deployment is implied by the resume instruction.
-- Branch `codex/fonso-stabilization-batch-c`, based on the final B checkpoint `30ab0a5d346bb6087da13ea0322e08c8b24a1a80`.
-- C1: reproduce Passport #3 metadata failure; recover valid existing-token metadata without minting, reassignment or artwork replacement.
-- C2: recover exact three Robinhood testnet deployment/build artifacts, compare creation/runtime bytecode, prepare correct explorer verification payloads. No verification submission/publication or transaction.
-- C3: trace current Para signup and automatic eligible collectibles; fix reproduced idempotency/ownership/retry defects using isolated fixtures; reconcile dashboard and chain scopes.
-- C1 implementation checkpoint: live Passport #3 metadata 404 reproduced despite canonical successful mint/current ownership. Missing backend receipt association caused the public-route failure. Signer-free metadata recovery, negative verification/resource bounds and Egg evidence chain binding are implemented; route failures were reproduced before fixes. A real local HTTP candidate returned #3=200/#999=404 using read-only official RPC through a test-only workspace transport. Default production transport and live deployment remain unverified. See `BATCH_C_METADATA.md` and `_EVIDENCE.json`.
-- C2 progress: all three existing deployment receipts and creation inputs/current runtimes now match exact reconstructed artifacts. Missing `compileBundle` tooling export reproduced and repaired; no explorer submission or contract write. Contract evidence and reviewable publication payloads are being finalized.
-- C3 progress: reproduced Para-link session revocation race, frontend stale-auth gate exposure, worker confirmation without canonical receipt and stale-lease overwrite. Fixes and negative tests are implemented. Isolated PostgreSQL 18.7/local-EVM checks are passing on Node 20.20.2 and Node 24; peer review and final consolidated evidence are in progress.
-- Private reconciliation: connected-database observations and query evidence are retained in the founder-only appendix. Do not publish them to this public repository without explicit approval. Review the actual pending queue before authorizing any sender resumption.
-- All A/B gates, historical holds, strict health/readiness and database recovery protections remain in force. Runtime Neon binding and production acceptance remain unresolved as previously recorded.
-- No live signup/consent, mint, contract write, production deploy, DNS/billing change or production database write is authorized. Complete safe preparatory work and stop after C with the Batch D continuation.
+- Reviewed main: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`.
+- Resumed the saved Batch C instruction after the founder said “Merged resume from where you left off.” PR #122 is merged into the A development branch, while PR #121 remains open/draft toward main. Documentation PR #123 remains open/draft at the last check. This session did not merge main or deploy production.
+- Branch: `codex/fonso-stabilization-batch-c`, based on final B checkpoint `30ab0a5d346bb6087da13ea0322e08c8b24a1a80`. The C PR is stacked on the B branch to preserve its documentation supplement. Final PR/CI state is recorded in `BATCH_C_EVIDENCE.json`.
+- Approved v5.10.2 APK, artwork, board geometry, catalogue/direct URLs, rules, saved-game formats, Abstract support, A funded authorization and historical holds, and B health/database safeguards are preserved.
 
-If interrupted, resume this branch and current working tree. Finish C1/C2/C3, run relevant regressions, record code/evidence/PRs and owner-only actions, then stop. The Batch B handoff below is preserved historical context.
+## Batch C outcomes
+
+| Item | Status | Evidence / boundary |
+| --- | --- | --- |
+| C1 existing Passport metadata recovery | **FIXED AND TESTED LOCALLY** | Live #3 metadata404 reproduced despite successful canonical mint/current ownership. Verified read-only fallback retains existing art and avoids invented account/date/achievements. |
+| C1 candidate live-read check | **FIXED AND VERIFIED IN TEST ENVIRONMENT** | Local company HTTP service plus fixture association store and read-only official RPC returned #3=200/#999=404. Test-only workspace transport; production default transport remains pending. |
+| C1 intended live URL | **PRODUCTION VERIFICATION PENDING** | No production deployment or tokenURI change. |
+| C2 compiler API | **FIXED AND TESTED LOCALLY** | Restored missing compileBundle export; existing outputs and all Solidity unchanged. |
+| C2 exact provenance / source publication | **OWNER ACTION REQUIRED** | All three creation inputs/current runtimes match. Full source/constructor/transaction/verification package prepared privately; explorer still unverified and publication not approved. |
+| C3 auth, receipt recovery and lease protection | **FIXED AND TESTED LOCALLY** | Current-session link authorization, expiring pending-link protection, failed-refresh gate, strict Passport/Egg receipts, original-mint hash recovery and stale-worker fencing. |
+| C3 live Para consent/delivery | **OWNER ACTION REQUIRED** | Mocked/isolated automated flow passed; no live account, wallet signature or mint performed. |
+| Runtime database binding / historical association | **BLOCKED BY ACCESS** | Prior B runtime-binding gap remains. Private operational reconciliation is retained separately for the founder. |
+| Batch D | **NOT STARTED** | Physical Android and free-match acceptance must not be inferred from these results. |
+
+## Root causes and actual changes
+
+- Metadata relied exclusively on a confirmed backend receipt join and returned404 when the association was missing, despite the existing token. A signer-free reader checks reviewed collection/code, chain, two-block owner/URI and canonical block with bounded RPC/cache behavior. Configured database failures remain503. Existing associated metadata stays intact.
+- The contract verification callers imported a missing compiler export. The additive builder restores that API, using pinned source/dependencies and identical bytecode. Exact review payloads were prepared without submission.
+- An already-minted claim bypassed canonical receipt validation. Crash recovery now proves and saves its original mint hash, with no resend of an existing claim. Job writes match the current attempt and lease.
+- Explicit Para linking checked authorization before a later account-binding transaction. It now rechecks inside that transaction and holds incomplete mappings behind a short reservation. The web page now closes Home on failed/stale session or wallet refresh. Egg acceptance also checks the proof chain.
+
+## Test evidence
+
+All local gates passed on **Node20.20.2** and **Node24.22.3**, with zero skips:
+
+| Gate | Passed per runtime |
+| --- | ---: |
+| Metadata, invalid artifacts, privacy, cache and HTTP/chain acceptance | 32 |
+| Synthetic PostgreSQL18.7 + actual local EVM delivery/lease/first33 tests | 33 |
+| Account service, saved gameplay, Para authorization and signup | 35 |
+| Actual early-page DOM using existing CI jsdom26.1.0 pin | 15 |
+| Existing contract/compiler/local-EVM regressions | 9 |
+| Additional exact-evidence verification tests in private package | 9 |
+
+These gates overlap; do not add them as unique test cases. The private package is
+not published in CI. The initial Node20/jsdom30 harness attempt failed before
+application assertions; the existing CI jsdom26.1.0 pin passed on both runtimes.
+No application dependency change was made. Rules integrity still checks113 inputs
+against the unchanged published authority. The lightweight credential scan found
+zero findings. Independent metadata, auth and delivery reviews found no blocker.
+
+- [Metadata](BATCH_C_METADATA.md) and [local HTTP/live-read evidence](BATCH_C_METADATA_EVIDENCE.json)
+- [Compiler repair / private source-verification gate](BATCH_C_CONTRACTS.md)
+- [Signup/authentication](BATCH_C_SIGNUP.md) and [test evidence](BATCH_C_SIGNUP_EVIDENCE.json)
+- [Delivery recovery](BATCH_C_DELIVERY.md) and [test evidence](BATCH_C_DELIVERY_EVIDENCE.json)
+- [Exact rollout/rollback and live acceptance](BATCH_C_ROLLOUT.md)
+- [Combined evidence and PR/CI state](BATCH_C_EVIDENCE.json)
+
+## Private evidence and publication boundary
+
+Automatic approval review blocked public GitHub upload of connected-database
+observations/internal SQL, and separately of the complete contract source/input/
+transaction/submission package. The private operational appendix and contract
+review ZIP were saved for the founder. The current public candidate contains
+code, tests and sanitized handoff instructions. Publishing those private packages
+requires explicit approval. An earlier C1 commit contained a brief operational
+summary; current documents remove it, but Git history has not been erased. The
+founder has the exact history detail in the private appendix.
+
+## Exact owner actions
+
+1. Review the stacked C PR and A/B dependency. Pin an accepted candidate; do not infer production approval from a development merge.
+2. Establish active database binding privately, review pending collectible jobs, and approve any intended resumption. Deploying an enabled sender can process existing work in addition to a new test signup.
+3. Separately approve a backend-first deployment with sender/funded gates closed unless their actions are explicitly authorized. Validate B health/compatibility and C1 default RPC transport/token metadata before accepting production.
+4. Review and explicitly authorize publication/submission of the exact private contract-verification ZIP. All three explorer sources remain unverified until actual success is checked.
+5. Approve and personally perform the controlled Para consent/wallet test; authorize its eligible mints and any backlog separately. Preserve transaction evidence and repeat sign-in to demonstrate no duplicate issuance.
+6. Use the C rollback runbook. **Pre-C auth does not understand pending-link reservations**; retain the hardened logic or perform separately reviewed reconciliation before such a rollback. No blind database reset, remint or old pre-A runtime rollback.
+
+## Exact next continuation instruction
+
+> Execute Batch D only for FONSO from `codex/fonso-stabilization-batch-c` in
+> `defiventurers/articweb3`. Read `docs/technical-stabilization/CHECKPOINT.md`,
+> `BATCH_C_EVIDENCE.json`, `BATCH_C_ROLLOUT.md`, the C task reports, the linked
+> C PR and dependency PRs #121–#123 first. Verify current main and PR states;
+> do not restart completed A/B/C investigations. Preserve current-authority
+> recovery, funded authorization, historical hold, strict health/readiness,
+> database failure safeguards, pending-link authorization, canonical collectible
+> receipts and the approved v5.10.2 APK baseline. Execute D1: recover and compare
+> the exact retained v5.10.2 and signed v5.11.1 APKs, verify digests/signatures/
+> package/versions/payload changes and guarded patch provenance, run available
+> automated/emulator checks, and prepare a precise physical-device checklist
+> without clearing the founder's existing save. Execute D2: demonstrate a small
+> free match with independent clients, legal move rejection, seat/turn authority,
+> disconnect/reconnect restoration and final-result agreement. Distinguish
+> automated, emulator, live and physical evidence. Reproduce current failures,
+> implement scoped fixes/tests/PRs and save checkpoints incrementally. Do not
+> deploy production, enable paid/funded modes, create live accounts, mint, change
+> contracts/DNS/billing, publish the private operational or contract-verification
+> packages, or perform irreversible database operations without separate founder
+> authorization. Stop after Batch D with evidence and exact remaining owner steps.
 
 ## Preserved Batch B handoff
 

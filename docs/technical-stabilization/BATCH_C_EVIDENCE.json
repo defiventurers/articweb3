@@ -1,0 +1,145 @@
+{
+  "date": "2026-11-28",
+  "timezone": "Asia/Kolkata",
+  "scope": "Batch C only",
+  "reviewedMain": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
+  "implementationBase": "30ab0a5d346bb6087da13ea0322e08c8b24a1a80",
+  "branch": "codex/fonso-stabilization-batch-c",
+  "statuses": {
+    "C1_code": "FIXED AND TESTED LOCALLY",
+    "C1_production": "PRODUCTION VERIFICATION PENDING",
+    "C2_compiler": "FIXED AND TESTED LOCALLY",
+    "C2_source_publication": "OWNER ACTION REQUIRED",
+    "C3_auth_delivery": "FIXED AND TESTED LOCALLY",
+    "C3_live_signup_mint": "OWNER ACTION REQUIRED",
+    "Batch_D": "NOT STARTED"
+  },
+  "testGates": [
+    {
+      "name": "metadata_and_collectible_evidence",
+      "command": "node --test server/tests/passport-metadata-reader.test.js server/tests/passport-metadata-recovery.test.js server/tests/passport-acceptance-network.test.js server/tests/launch-incremental.test.js server/tests/egg-metadata-paused.test.js",
+      "passedEachRuntime": 32,
+      "runtimes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "isolated_postgres_and_local_evm_delivery",
+      "command": "PG_BINDIR=<installed PostgreSQL18/bin> node server/scripts/test-passport-delivery.cjs",
+      "passedEachRuntime": 33,
+      "runtimes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "postgres": "18.7",
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "authentication_saved_accounts_and_signup",
+      "command": "node --test server/tests/company-service.test.js server/tests/company-account-play.test.js server/tests/para-game-wallet.test.js server/tests/early-signup.test.js",
+      "passedEachRuntime": 35,
+      "runtimes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "actual_early_page_dom",
+      "command": "NODE_PATH=<isolated jsdom26.1.0 node_modules> node --test frontend/tests/early-entry.test.cjs",
+      "passedEachRuntime": 15,
+      "runtimes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "public_existing_contract_regressions",
+      "command": "node --test contracts/launch/phase3.test.mjs contracts/launch/launch.test.mjs contracts/launch/egg.test.mjs contracts/launch/egg-wallet.test.mjs",
+      "passedEachRuntime": 9,
+      "runtimes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "private_prepared_verification_package",
+      "command": "node --test contracts/launch/contract-verification.test.mjs (from private review package in isolated reviewed checkout)",
+      "passedEachRuntime": 9,
+      "runtimes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "countNote": "Gates overlap existing tests; counts must not be added as unique test cases. Private verification package is not in public CI.",
+  "reproducedBeforeFix": [
+    "Existing-token metadata route: three failures and one existing-association pass.",
+    "Egg wrong-chain evidence returned confirmed:true; one failing regression.",
+    "Worker missing/wrong receipt and stale lease: four failing regressions before patch.",
+    "Para explicit-link revocation race returned200 instead of401.",
+    "Post-consent failed refresh and invalidated-wallet refresh exposed Home.",
+    "phase3 compiler import failed before test execution because compileBundle was not exported."
+  ],
+  "preserved": {
+    "rulesIntegrityInputs": 113,
+    "publishedRulesHash": "9fa0be4a43f049957ef407ee73361a0b6a3bb24ed59f487a36190165be82c8cb",
+    "publishedEngineHash": "16d08120db2442814631143e6dafbeb88af40bda561f3b00a61c5c0f0cfa4c18",
+    "approvedAPK": "v5.10.2; no APK/visual asset/rules changes",
+    "databaseSchema": "No migration; existing identity documents add temporary pending-link fields. Pre-C auth rollback is unsafe while these may exist."
+  },
+  "publication": {
+    "privateDatabaseAppendix": "Retained privately; automatic review disallowed private connected-account observations/internal SQL in public GitHub.",
+    "privateContractPackage": "Prepared and tested; automatic review disallowed publication of full verification sources/transaction/constructor/submission payloads before explicit founder approval.",
+    "contractPackageFilename": "FONSO_BATCH_C_CONTRACT_VERIFICATION_REVIEW.zip",
+    "contractPackageSha256": "4de5d5adfaff711bbe938ecc67b0b31bdcac74bf40444b43823e7c446b52be73",
+    "earlierCheckpoint": "An earlier C1 commit contained a brief operational aggregate summary. Current documents omit it; Git history was not erased. Founder has the details privately."
+  },
+  "limitations": [
+    "No production deployment/main merge/environment/DNS/billing change.",
+    "No live account, consent, signature, mint, contract change or explorer submission.",
+    "Default ethers HTTPS did not complete in managed workspace; C1 actual local HTTP/live-read proof used a test-only native-fetch provider, with default production transport pending.",
+    "Historical chain state was unavailable from public RPC; current runtime and canonical creation evidence were verified.",
+    "Actual Render database binding and historical account attribution remain unresolved.",
+    "Source rollback must preserve pending-link and receipt safeguards.",
+    "Physical Android and free multiplayer acceptance remain Batch D."
+  ],
+  "reports": [
+    "BATCH_C_METADATA.md",
+    "BATCH_C_METADATA_EVIDENCE.json",
+    "BATCH_C_CONTRACTS.md",
+    "BATCH_C_SIGNUP.md",
+    "BATCH_C_SIGNUP_EVIDENCE.json",
+    "BATCH_C_DELIVERY.md",
+    "BATCH_C_DELIVERY_EVIDENCE.json",
+    "BATCH_C_ROLLOUT.md"
+  ],
+  "ci": {
+    "workflow": ".github/workflows/fonso-batch-c.yml",
+    "state": "PENDING PR RUN"
+  },
+  "pullRequest": {
+    "state": "PREPARING",
+    "base": "codex/fonso-stabilization-batch-b"
+  },
+  "localScan": {
+    "scanned": 1478,
+    "findings": 0
+  },
+  "peerReview": {
+    "metadata": "Independent review;21 reader/route tests passed.",
+    "auth": "Independent transaction-order/reservation/gate review; no blocking issue.",
+    "delivery": "Independent receipt/lease/recovery review; no blocking issue."
+  }
+}

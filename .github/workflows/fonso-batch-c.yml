@@ -1,0 +1,84 @@
+name: FONSO collectible and signup recovery
+on:
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'contracts/launch/**'
+      - 'frontend/public/early/**'
+      - 'frontend/tests/early-entry.test.cjs'
+      - '.github/workflows/fonso-batch-c.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'contracts/launch/**'
+      - 'frontend/public/early/**'
+      - 'frontend/tests/early-entry.test.cjs'
+      - '.github/workflows/fonso-batch-c.yml'
+permissions:
+  contents: read
+jobs:
+  batch-c:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20.20.2', '24']
+    services:
+      postgres:
+        image: postgres:18.7
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fixture"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: ''
+      AK_PASSPORT_TEST_DATABASE_URL: postgresql://fixture@127.0.0.1:5432/postgres
+      AK_PASSPORT_RUNTIME_ENABLED: 'false'
+      AK_VISA_DELIVERY_ENABLED: 'false'
+      AK_VISA_CHAIN_ID: '46630'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install locked server and local contract test tools
+        run: |
+          npm ci --prefix server --ignore-scripts --no-audit --no-fund
+          npm ci --prefix contracts/launch --ignore-scripts --no-audit --no-fund
+          npm ci --prefix shared/fair-play --ignore-scripts --no-audit --no-fund
+          npm install --prefix "$RUNNER_TEMP/ak-entry-tests" --ignore-scripts --no-audit --no-fund jsdom@26.1.0
+      - name: Verify metadata recovery and fail-closed chain evidence
+        run: >-
+          node --test server/tests/passport-metadata-reader.test.js
+          server/tests/passport-metadata-recovery.test.js
+          server/tests/passport-acceptance-network.test.js
+          server/tests/launch-incremental.test.js server/tests/egg-metadata-paused.test.js
+      - name: Verify isolated database and local EVM delivery recovery
+        run: >-
+          node --test server/tests/antarctic-passport.test.js
+          server/tests/passport-delivery-phase4.test.js server/tests/passport-first33.test.js
+          server/tests/passport-recovery.test.js server/tests/passport-recovery-integration.test.js
+          server/tests/early-signup.test.js server/tests/egg-metadata-paused.test.js
+      - name: Preserve account authorization, consent and saved gameplay
+        run: >-
+          node --test server/tests/company-service.test.js server/tests/company-account-play.test.js
+          server/tests/para-game-wallet.test.js server/tests/early-signup.test.js
+      - name: Verify the actual early page with the existing CI DOM harness
+        run: NODE_PATH="$RUNNER_TEMP/ak-entry-tests/node_modules" node --test frontend/tests/early-entry.test.cjs
+      - name: Verify exact existing contract artifacts and local EVM behavior
+        run: >-
+          node --test contracts/launch/phase3.test.mjs contracts/launch/launch.test.mjs
+          contracts/launch/egg.test.mjs contracts/launch/egg-wallet.test.mjs
+      - name: Preserve rules authority and reject credential literals
+        run: |
+          node shared/fair-play/check-rules-integrity.mjs
+          node scripts/security-scan.mjs
