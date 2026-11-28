@@ -163,6 +163,10 @@
     {
       "scope": "B2 health/readiness",
       "sha": "50624ea17201887d7c3045aba801db5cf1024b98"
+    },
+    {
+      "scope": "CI, evidence and final test fixtures",
+      "sha": "6c71981b08c6036a844fa67ed7381f70964a031b"
     }
   ],
   "scannerNote": "The unchanged strict scanner initially rejected two test-only dummy connection URL literals; fixtures were corrected and11 affected tests rerun on each Node version. No genuine credentials were found.",
@@ -231,6 +235,207 @@
       "20.20.2",
       "24"
     ],
-    "status": "PENDING PR RUN"
+    "status": "PASS",
+    "runUrl": "https://github.com/defiventurers/articweb3/actions/runs/46100756791",
+    "commit": "6c71981b08c6036a844fa67ed7381f70964a031b",
+    "jobs": [
+      {
+        "name": "batch-b (20.20.2)",
+        "id": 140842425196,
+        "conclusion": "success",
+        "infrastructureTests": 44,
+        "compatibilityTests": 97,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "name": "batch-b (24)",
+        "id": 140842424979,
+        "conclusion": "success",
+        "infrastructureTests": 44,
+        "compatibilityTests": 97,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "fullCheckoutCredentialScan": {
+      "scanned": 1734,
+      "findings": 0
+    },
+    "otherWorkflows": [
+      {
+        "name": "Prize Policy Evidence Test",
+        "id": 46100756717,
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46100756717"
+      },
+      {
+        "name": "FONSO security and rules authority",
+        "id": 46100756795,
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46100756795"
+      },
+      {
+        "name": "Heritage Games Server",
+        "id": 46100756625,
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46100756625"
+      },
+      {
+        "name": "Frontend Smoke",
+        "id": 46100756666,
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46100756666"
+      },
+      {
+        "name": "Sanguo Qi",
+        "id": 46100756697,
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46100756697"
+      },
+      {
+        "name": "Security regression checks",
+        "id": 46100756589,
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46100756589"
+      },
+      {
+        "name": "Launch And Runtime Evidence Test",
+        "id": 46100756580,
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46100756580"
+      },
+      {
+        "name": "Launch source and proof checks",
+        "id": 46100756584,
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46100756584"
+      },
+      {
+        "name": "Antarctic Passport First-33 Acceptance",
+        "id": 46100756611,
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46100756611"
+      }
+    ],
+    "commitChecks": {
+      "total": 14,
+      "runs": [
+        {
+          "name": "Vercel Preview Comments",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "batch-b (20.20.2)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "batch-a",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "batch-b (24)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "prize-policy",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "gameplay-and-rooms",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "smoke",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "passport-first33",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "authoritative-room-tests",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "security",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "launch-and-runtime",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "launch",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Frontend checks and builds",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Server config checks",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    "vercelPreview": {
+      "state": "success",
+      "statuses": [
+        {
+          "context": "Vercel – articweb3",
+          "state": "success",
+          "description": "Deployment has completed"
+        }
+      ]
+    },
+    "note": "All14 GitHub checks on the tested implementation commit and the Vercel preview status succeeded; later handoff-only commits change documentation, not tested code. A preview is not production acceptance."
+  },
+  "pullRequest": {
+    "url": "https://github.com/defiventurers/articweb3/pull/122",
+    "number": 122,
+    "draft": true,
+    "state": "open",
+    "merged": false,
+    "mergeable": true,
+    "base": "codex/fonso-stabilization-batch-a"
+  },
+  "testedImplementationCommit": "6c71981b08c6036a844fa67ed7381f70964a031b",
+  "finalMainRecheck": {
+    "branch": "main",
+    "commit": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b"
+  },
+  "finalBatchARecheck": {
+    "number": 121,
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "head": "19ceaa6c2d66ce726f9050ef1c674c3d06553e19",
+    "base": "main",
+    "mergeable": true,
+    "url": "https://github.com/defiventurers/articweb3/pull/121"
   }
 }
