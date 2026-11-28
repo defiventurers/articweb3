@@ -32,6 +32,40 @@ test('a session without a verified Para wallet cannot reveal Home',async()=>{
  const p=page({session:'unverified',fetcher:async(url)=>({ok:true,json:async()=>url.endsWith('/passport')?({identity:{wallet:{...wallet,provider:'external'}},passport:null}):({enabled:true})})});try{await settle();assert.equal(p.$('harbor-app').hidden,true);assert.equal(p.$('sign-in').disabled,false);}finally{p.dom.window.close();}
 });
 
+test('expired session during existing-account signup keeps the entry gate closed',async()=>{
+ let passportReads=0;
+ const p=page({session:'old-session',fetcher:async url=>{
+  if(url.endsWith('/passport'))return ++passportReads===1?{ok:true,json:async()=>({identity:{wallet,needsEarlySignup:true},passport:null})}:{ok:false,status:401,json:async()=>({error:'Sign in again.'})};
+  if(url.endsWith('/early/signup'))return {ok:true,json:async()=>({setup:{status:'registered'}})};
+  return {ok:true,json:async()=>({enabled:true,earlySignup:{enabled:true},environment:'BETA'})};
+ }});
+ try{await settle();assert.equal(p.$('harbor-app').hidden,true);p.$('adult-confirm').checked=true;p.$('sign-in').click();await settle();await settle();
+  assert.equal(p.$('harbor-app').hidden,true,'A failed post-consent session check must not reveal Home.');
+  assert.equal(p.$('entry-gate').hidden,false);assert.equal(p.w.sessionStorage.getItem('ak.first33.session.v1'),null);
+ }finally{p.dom.window.close();}
+});
+
+test('a wallet that becomes unverified during refresh closes the already-open app',async()=>{
+ let passportReads=0;
+ const p=page({session:'verified-session',fetcher:async url=>({ok:true,json:async()=>url.endsWith('/passport')?{identity:{wallet:++passportReads===1?wallet:{...wallet,provider:'external'}},passport:null}:{enabled:true,environment:'BETA'}})});
+ try{await settle();assert.equal(p.$('harbor-app').hidden,false);p.$('refresh').click();await settle();
+  assert.equal(p.$('harbor-app').hidden,true,'A stale verified UI must close when account verification fails.');
+  assert.equal(p.$('entry-gate').hidden,false);assert.equal(p.w.sessionStorage.getItem('ak.first33.session.v1'),null);
+ }finally{p.dom.window.close();}
+});
+
+test('signing out during the consent request cannot reopen the old account',async()=>{
+ let resolveConsent;
+ const p=page({session:'old-session',fetcher:async url=>{
+  if(url.endsWith('/passport'))return {ok:true,json:async()=>({identity:{wallet,needsEarlySignup:true},passport:null})};
+  if(url.endsWith('/early/signup'))return new Promise(resolve=>{resolveConsent=resolve;});
+  return {ok:true,json:async()=>({enabled:true,earlySignup:{enabled:true},environment:'BETA'})};
+ }});
+ try{await settle();p.$('adult-confirm').checked=true;p.$('sign-in').click();await settle();assert.ok(resolveConsent);p.$('sign-out').click();await settle();
+  resolveConsent({ok:true,json:async()=>({setup:{status:'registered'}})});await settle();assert.equal(p.$('harbor-app').hidden,true);assert.equal(p.$('entry-gate').hidden,false);
+ }finally{p.dom.window.close();}
+});
+
 const hash='0x'+'a'.repeat(64),otherHash='0x'+'b'.repeat(64);
 const registered=()=>({id:'passport-test',playerName:'Explorer',wallet:wallet.address,chainId:46630,eggSerial:7,deliveries:[{kind:'visa',status:'confirmed',chainId:46630,tokenId:'104',transactionHash:hash},{kind:'egg',status:'confirmed',chainId:46630,tokenId:'7',transactionHash:otherHash}]});
 const receipt=(kind,overrides={})=>({confirmed:true,paraWalletVerified:true,wallet:wallet.address,chainId:46630,tokenId:kind==='egg'?'7':'104',transactionHash:kind==='egg'?otherHash:hash,...overrides});
