@@ -8,7 +8,7 @@ pending. Stop after C.**
 
 - Reviewed main: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`.
 - Resumed the saved Batch C instruction after the founder said “Merged resume from where you left off.” PR #122 is merged into the A development branch, while PR #121 remains open/draft toward main. Documentation PR #123 remains open/draft at the last check. This session did not merge main or deploy production.
-- Branch: `codex/fonso-stabilization-batch-c`, based on final B checkpoint `30ab0a5d346bb6087da13ea0322e08c8b24a1a80`. The C PR is stacked on the B branch to preserve its documentation supplement. Final PR/CI state is recorded in `BATCH_C_EVIDENCE.json`.
+- Branch: `codex/fonso-stabilization-batch-c`, based on final B checkpoint `30ab0a5d346bb6087da13ea0322e08c8b24a1a80`. [C PR #124](https://github.com/defiventurers/articweb3/pull/124) is open/draft and stacked on the B branch to preserve its documentation supplement. Tested implementation: `9a5c65dff6c69b878554bdf0e6eaa00eed11b115`. Final PR/CI state is recorded in `BATCH_C_EVIDENCE.json`.
 - Approved v5.10.2 APK, artwork, board geometry, catalogue/direct URLs, rules, saved-game formats, Abstract support, A funded authorization and historical holds, and B health/database safeguards are preserved.
 
 ## Batch C outcomes
@@ -44,6 +44,8 @@ All local gates passed on **Node20.20.2** and **Node24.22.3**, with zero skips:
 | Actual early-page DOM using existing CI jsdom26.1.0 pin | 15 |
 | Existing contract/compiler/local-EVM regressions | 9 |
 | Additional exact-evidence verification tests in private package | 9 |
+
+[Batch C CI](https://github.com/defiventurers/articweb3/actions/runs/46103075618) passed all five public gates on both runtimes with no failures or skips; the full-checkout credential scan checked 1,753 text files with zero findings. A/B and existing Passport acceptance CI also passed on this implementation. Later handoff commits change documentation only.
 
 These gates overlap; do not add them as unique test cases. The private package is
 not published in CI. The initial Node20/jsdom30 harness attempt failed before
@@ -83,8 +85,7 @@ founder has the exact history detail in the private appendix.
 
 > Execute Batch D only for FONSO from `codex/fonso-stabilization-batch-c` in
 > `defiventurers/articweb3`. Read `docs/technical-stabilization/CHECKPOINT.md`,
-> `BATCH_C_EVIDENCE.json`, `BATCH_C_ROLLOUT.md`, the C task reports, the linked
-> C PR and dependency PRs #121–#123 first. Verify current main and PR states;
+> `BATCH_C_EVIDENCE.json`, `BATCH_C_ROLLOUT.md`, the C task reports, PR #124 and dependency PRs #121–#123 first. Verify current main and PR states;
 > do not restart completed A/B/C investigations. Preserve current-authority
 > recovery, funded authorization, historical hold, strict health/readiness,
 > database failure safeguards, pending-link authorization, canonical collectible

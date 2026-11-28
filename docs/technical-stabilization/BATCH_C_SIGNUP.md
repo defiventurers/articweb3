@@ -12,7 +12,7 @@ Reviewed implementation base: `30ab0a5d346bb6087da13ea0322e08c8b24a1a80`. Branch
 | Wrong-chain Egg acceptance evidence | FIXED AND TESTED LOCALLY | Root's separate route fix requires the proof chain to match the registered chain; direct API regression covers matching and mismatched evidence. |
 | Deployment and actual Para consent-to-delivery acceptance | PRODUCTION VERIFICATION PENDING | No candidate deployment or live account/signature/mint was performed. |
 | One controlled live signup and eligible delivery | OWNER ACTION REQUIRED | Requires explicit approval, founder completion of Para consent, and approval of any already-pending jobs before enabling a sender. |
-| Historical account-to-mint attribution and actual Render database binding | BLOCKED BY ACCESS | Current aggregate counts are recorded below; the historical branch has no reachable endpoint, and the active Render database binding is not established. |
+| Historical account-to-mint attribution and actual Render database binding | BLOCKED BY ACCESS | Private aggregate evidence is retained in the founder handoff; the historical branch has no reachable endpoint, and the active Render database binding is not established. |
 
 No catalogue IDs, direct game URLs, artwork, game rules, paid-mode controls, Para SDK, authentication provider, database schema or signed Android payload were changed by this portion of C3. The public early-page JavaScript is a separate source path from the retained v5.10.2 APK.
 

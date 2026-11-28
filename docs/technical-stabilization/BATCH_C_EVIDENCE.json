@@ -127,11 +127,112 @@
   ],
   "ci": {
     "workflow": ".github/workflows/fonso-batch-c.yml",
-    "state": "PENDING PR RUN"
+    "state": "PASS",
+    "runId": 46103075618,
+    "runUrl": "https://github.com/defiventurers/articweb3/actions/runs/46103075618",
+    "testedCommit": "9a5c65dff6c69b878554bdf0e6eaa00eed11b115",
+    "jobs": [
+      {
+        "id": 140849691168,
+        "node": "24",
+        "conclusion": "success",
+        "testGates": [
+          32,
+          33,
+          35,
+          15,
+          9
+        ],
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "id": 140849691359,
+        "node": "20.20.2",
+        "conclusion": "success",
+        "testGates": [
+          32,
+          33,
+          35,
+          15,
+          9
+        ],
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "fullCheckoutCredentialScan": {
+      "scanned": 1753,
+      "findings": 0
+    },
+    "otherWorkflows": [
+      {
+        "id": 46103075637,
+        "name": "Sanguo Qi",
+        "status": "in_progress",
+        "conclusion": null,
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46103075637"
+      },
+      {
+        "id": 46103075604,
+        "name": "Frontend Smoke",
+        "status": "in_progress",
+        "conclusion": null,
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46103075604"
+      },
+      {
+        "id": 46103075589,
+        "name": "FONSO runtime compatibility and recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46103075589"
+      },
+      {
+        "id": 46103075652,
+        "name": "Security regression checks",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46103075652"
+      },
+      {
+        "id": 46103075570,
+        "name": "FONSO security and rules authority",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46103075570"
+      },
+      {
+        "id": 46103075584,
+        "name": "Antarctic Passport First-33 Acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46103075584"
+      },
+      {
+        "id": 46103075608,
+        "name": "Heritage Games Server",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46103075608"
+      },
+      {
+        "id": 46103075599,
+        "name": "Launch source and proof checks",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46103075599"
+      }
+    ]
   },
   "pullRequest": {
-    "state": "PREPARING",
-    "base": "codex/fonso-stabilization-batch-b"
+    "number": 124,
+    "url": "https://github.com/defiventurers/articweb3/pull/124",
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "mergeable": true,
+    "base": "codex/fonso-stabilization-batch-b",
+    "head": "9a5c65dff6c69b878554bdf0e6eaa00eed11b115"
   },
   "localScan": {
     "scanned": 1478,
@@ -141,5 +242,29 @@
     "metadata": "Independent review;21 reader/route tests passed.",
     "auth": "Independent transaction-order/reservation/gate review; no blocking issue.",
     "delivery": "Independent receipt/lease/recovery review; no blocking issue."
-  }
+  },
+  "commits": [
+    {
+      "scope": "Existing-token metadata and evidence chain",
+      "sha": "5ec42f3e9a0a33269100968b4ea52bd6be65d295"
+    },
+    {
+      "scope": "Canonical delivery receipt and lease protection; private evidence withheld",
+      "sha": "2616f9d2020a918acb2d05735885f66e4adcb416"
+    },
+    {
+      "scope": "Para authorization and frontend gates",
+      "sha": "77cbc233110ee3b385a38c33b658212f701887d0"
+    },
+    {
+      "scope": "Compiler export repair; private verification package held",
+      "sha": "7e818ef00c07013d3a359cadc3194a3e9dca98a5"
+    },
+    {
+      "scope": "CI and release handoff",
+      "sha": "9a5c65dff6c69b878554bdf0e6eaa00eed11b115"
+    }
+  ],
+  "finalMainRecheck": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
+  "finalPublicReview": "No blocking issue; held private payload paths absent from public ancestry; new Markdown links resolve; rollback preserves pending-link guards."
 }
