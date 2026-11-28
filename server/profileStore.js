@@ -1,26 +1,12 @@
 const { Pool } = require("pg");
 
 const DATABASE_URL = process.env.DATABASE_URL || "";
-const DATABASE_SSL = process.env.DATABASE_SSL === "true" || /sslmode=require/i.test(DATABASE_URL);
 const memoryProfiles = new Map();
-let pool = null;
-let ready = false;
-let initPromise = null;
-let initError = null;
-
-function getPool() {
-  if (!DATABASE_URL) return null;
-  if (!pool) {
-    pool = new Pool(require('./databaseSecurity').databaseOptions(DATABASE_URL));
-  }
-  return pool;
-}
+const runtime = require("./databaseRuntime").createStoreRuntime({ databaseUrl: DATABASE_URL, Pool, label: "profile-db" });
+const getPool = runtime.getPool;
 
 async function initProfileStore() {
-  if (!DATABASE_URL) return false;
-  if (initPromise) return initPromise;
-  initPromise = (async () => {
-    try {
+  return runtime.init(async () => {
       await getPool().query(`
         CREATE TABLE IF NOT EXISTS player_profiles (
           wallet TEXT PRIMARY KEY,
@@ -33,17 +19,7 @@ async function initProfileStore() {
         )
       `);
       await getPool().query(`CREATE INDEX IF NOT EXISTS player_profiles_rank_idx ON player_profiles (points DESC, wins DESC, games_played ASC)`);
-      ready = true;
-      initError = null;
-      return true;
-    } catch (err) {
-      ready = false;
-      initError = err.message || "Profile database initialization failed.";
-      console.error(`[profile-db] init failed: ${initError}`);
-      return false;
-    }
-  })();
-  return initPromise;
+  });
 }
 
 async function upsertProfile({ wallet, name }) {
@@ -52,7 +28,7 @@ async function upsertProfile({ wallet, name }) {
   const existing = memoryProfiles.get(key);
   const fallback = { wallet: key, name: cleanName, points: existing?.points || 0, gamesPlayed: existing?.gamesPlayed || 0, wins: existing?.wins || 0, createdAt: existing?.createdAt || Date.now() };
   memoryProfiles.set(key, fallback);
-  if (!(await initProfileStore())) return fallback;
+  if (!(await runtime.requireReady(initProfileStore))) return fallback;
   const result = await getPool().query(
     `INSERT INTO player_profiles (wallet, name) VALUES ($1, $2)
      ON CONFLICT (wallet) DO UPDATE SET name = EXCLUDED.name, updated_at = NOW()
@@ -73,7 +49,7 @@ async function addProfileStats(wallet, points, won) {
     if (won) existing.wins += 1;
     memoryProfiles.set(key, existing);
   }
-  if (!(await initProfileStore())) return existing || null;
+  if (!(await runtime.requireReady(initProfileStore))) return existing || null;
   const result = await getPool().query(
     `UPDATE player_profiles SET points = points + $2, games_played = games_played + 1, wins = wins + $3, updated_at = NOW()
      WHERE wallet = $1 RETURNING wallet, name, points, games_played, wins, created_at`,
@@ -86,7 +62,7 @@ async function addProfileStats(wallet, points, won) {
 }
 
 async function getLeaderboard(limit = 100) {
-  if (await initProfileStore()) {
+  if (await runtime.requireReady(initProfileStore)) {
     const result = await getPool().query(
       `SELECT wallet, name, points, games_played, wins, created_at FROM player_profiles
        ORDER BY points DESC, wins DESC, games_played ASC, updated_at ASC LIMIT $1`,
@@ -101,7 +77,7 @@ async function getLeaderboard(limit = 100) {
 }
 
 function profileStoreStatus() {
-  return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError ? "Database check pending." : "" };
+  return { ...runtime.status() };
 }
 
 function rowToProfile(row) {

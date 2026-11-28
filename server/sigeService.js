@@ -207,7 +207,7 @@ function createSigeService(deps) {
       const won = room.result?.winnerWallet === player.wallet;
       const entry = { id: `${room.matchId}-${player.wallet}`, gameId: GAME_ID, rulesetVersion: room.rulesetVersion, roomCode: room.roomCode, matchId: room.matchId, contractMatchId: null, roomMode: "open_ice", currency: null, entryTier: null, entryWei: "0", wallet: player.wallet, playerName: profileFor(player.wallet)?.name || "Player", team: player.seat, position: won ? 1 : 2, won, draw: false, payoutWei: "0", points: won ? 18 : 4, startedAt: room.startedAt, finishedAt: room.finalizedAt, proofHash: room.proofHash, result: room.result, players: summaries };
       room.historyEntryIds.push(entry.id);
-      saveHistoryEntry(entry);
+      Promise.resolve(saveHistoryEntry(entry)).catch(() => console.error("[history-db] Match history was not persisted; database recovery is required."));
     });
   }
   function restoreRoom(room) {

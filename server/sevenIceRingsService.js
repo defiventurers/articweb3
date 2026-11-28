@@ -115,7 +115,7 @@ function createSevenIceRingsService(deps) {
     ps.forEach((player) => {
       const won = room.result?.winnerWallet === player.wallet; const draw = Boolean(room.result?.draw);
       const entry = { id: `${room.matchId}-${player.wallet}`, gameId: GAME_ID, rulesetVersion: room.rulesetVersion, roomCode: room.roomCode, matchId: room.matchId, contractMatchId: null, roomMode: "open_ice", currency: null, entryTier: null, entryWei: "0", wallet: player.wallet, playerName: profileFor(player.wallet)?.name || "Player", team: player.seat, position: draw ? 1 : won ? 1 : 2, won, draw, payoutWei: "0", points: draw ? 8 : won ? 18 : 4, startedAt: room.startedAt, finishedAt: room.finalizedAt, proofHash: room.proofHash, result: room.result, players: summaries };
-      room.historyEntryIds.push(entry.id); saveHistoryEntry(entry);
+      room.historyEntryIds.push(entry.id); Promise.resolve(saveHistoryEntry(entry)).catch(() => console.error("[history-db] Match history was not persisted; database recovery is required."));
     });
   }
   function restoreRoom(room) {
