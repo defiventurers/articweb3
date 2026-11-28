@@ -1,0 +1,313 @@
+{
+  "observedAt": "2026-11-28T02:50:14.713Z",
+  "origin": "https://articweb3.onrender.com",
+  "expected": {
+    "backendCommit": "8324ff30f355f0e2b7b08d1d776b502ea8e822b2",
+    "gameVersion": "arctic-play-1.0.0",
+    "games": [
+      {
+        "id": "shogi",
+        "players": 2
+      },
+      {
+        "id": "sannin",
+        "players": 3
+      },
+      {
+        "id": "sanguo",
+        "players": 3
+      },
+      {
+        "id": "sanyou",
+        "players": 3
+      },
+      {
+        "id": "yanyi",
+        "players": 3
+      },
+      {
+        "id": "xiangqi",
+        "players": 2
+      },
+      {
+        "id": "dominion",
+        "players": 4
+      },
+      {
+        "id": "shanshui",
+        "players": 2
+      }
+    ],
+    "capabilities": [
+      "chaturanga-long-dice-v1",
+      "dominion-teams-v1",
+      "browser-play-v1",
+      "fair-play-v1",
+      "hall-access-v1",
+      "account-play-v1",
+      "shanshui-antarctic-v1"
+    ],
+    "cloudVersion": 2,
+    "para": {
+      "provider": "para",
+      "environment": "BETA",
+      "chainId": 46630
+    },
+    "fair": {
+      "protocol": "ak-fair-play-v1",
+      "rulesHash": "9fa0be4a43f049957ef407ee73361a0b6a3bb24ed59f487a36190165be82c8cb",
+      "serverKeyIds": [
+        "d24ef69461754a81c745ca1ad45ee4069165f950d3c96c7b002d3b7a04dcb35a"
+      ]
+    }
+  },
+  "responses": {
+    "games": {
+      "path": "/arctic-play/health",
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "ok": true,
+        "version": "arctic-play-1.0.0",
+        "buildCommit": "8324ff30f355f0e2b7b08d1d776b502ea8e822b2",
+        "capabilities": [
+          "chaturanga-long-dice-v1",
+          "dominion-teams-v1",
+          "browser-play-v1",
+          "fair-play-v1",
+          "heritage-intros-v1",
+          "launch-dashboard-v1",
+          "hall-access-v1",
+          "account-play-v1",
+          "shanshui-antarctic-v1"
+        ],
+        "games": [
+          {
+            "id": "shogi",
+            "players": 2
+          },
+          {
+            "id": "sannin",
+            "players": 3
+          },
+          {
+            "id": "sanguo",
+            "players": 3
+          },
+          {
+            "id": "sanyou",
+            "players": 3
+          },
+          {
+            "id": "yanyi",
+            "players": 3
+          },
+          {
+            "id": "xiangqi",
+            "players": 2
+          },
+          {
+            "id": "dominion",
+            "players": 4
+          },
+          {
+            "id": "shanshui",
+            "players": 2
+          }
+        ]
+      },
+      "error": null
+    },
+    "cloud": {
+      "path": "/arctic-play/v3/capabilities",
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "version": 2,
+        "cloud": true,
+        "accountPlay": true,
+        "commerce": false
+      },
+      "error": null
+    },
+    "para": {
+      "path": "/arctic-play/v3/auth/para/config",
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "enabled": true,
+        "provider": "para",
+        "environment": "BETA",
+        "chainId": 46630
+      },
+      "error": null
+    },
+    "fair": {
+      "path": "/arctic-play/v3/fair/config",
+      "status": 503,
+      "contentType": "application/json",
+      "body": {
+        "code": "LAUNCH_RESET_PAUSED",
+        "paused": true
+      },
+      "error": null
+    },
+    "launch": {
+      "path": "/launch/status",
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "ok": true,
+        "mode": "internal",
+        "lockedMatchMode": "internal",
+        "chainId": 2741,
+        "highStakesAllowed": true,
+        "legalPublicMainnetApproved": false
+      },
+      "error": null
+    },
+    "legacy": {
+      "path": "/health",
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "ok": true,
+        "chainId": 2741,
+        "highStakesEnabled": true
+      },
+      "error": null
+    }
+  },
+  "assessment": {
+    "schema": "fonso-deployment-compatibility-v1",
+    "ok": false,
+    "scope": "Read-only backend contract and free-release policy preflight; excludes consent, gameplay, database recovery, physical APK acceptance and deployment approval.",
+    "checks": [
+      {
+        "name": "games.ok",
+        "status": "pass",
+        "reason": "Matches the reviewed client contract."
+      },
+      {
+        "name": "backend.commit",
+        "status": "pass",
+        "reason": "Matches the reviewed backend deployment."
+      },
+      {
+        "name": "games.version",
+        "status": "pass",
+        "reason": "Matches the reviewed client contract."
+      },
+      {
+        "name": "capability.chaturanga-long-dice-v1",
+        "status": "pass",
+        "reason": "Required capability is advertised."
+      },
+      {
+        "name": "capability.dominion-teams-v1",
+        "status": "pass",
+        "reason": "Required capability is advertised."
+      },
+      {
+        "name": "capability.browser-play-v1",
+        "status": "pass",
+        "reason": "Required capability is advertised."
+      },
+      {
+        "name": "capability.fair-play-v1",
+        "status": "pass",
+        "reason": "Required capability is advertised."
+      },
+      {
+        "name": "capability.hall-access-v1",
+        "status": "pass",
+        "reason": "Required capability is advertised."
+      },
+      {
+        "name": "capability.account-play-v1",
+        "status": "pass",
+        "reason": "Required capability is advertised."
+      },
+      {
+        "name": "capability.shanshui-antarctic-v1",
+        "status": "pass",
+        "reason": "Required capability is advertised."
+      },
+      {
+        "name": "games.catalogue",
+        "status": "pass",
+        "reason": "All reviewed game IDs and seat counts are preserved."
+      },
+      {
+        "name": "cloud.version",
+        "status": "pass",
+        "reason": "Matches the reviewed client contract."
+      },
+      {
+        "name": "cloud.cloud",
+        "status": "pass",
+        "reason": "Required account capability is available."
+      },
+      {
+        "name": "cloud.accountPlay",
+        "status": "pass",
+        "reason": "Required account capability is available."
+      },
+      {
+        "name": "cloud.commerceSchema",
+        "status": "pass",
+        "reason": "The existing commerce flag has the expected boolean shape."
+      },
+      {
+        "name": "para.provider",
+        "status": "pass",
+        "reason": "Matches the reviewed client contract."
+      },
+      {
+        "name": "para.environment",
+        "status": "pass",
+        "reason": "Matches the reviewed client contract."
+      },
+      {
+        "name": "para.chainId",
+        "status": "pass",
+        "reason": "Matches the reviewed client contract."
+      },
+      {
+        "name": "para.enabled",
+        "status": "pass",
+        "reason": "Configured sign-in is advertised; consent is not exercised by this probe."
+      },
+      {
+        "name": "fair.response",
+        "status": "unresolved",
+        "reason": "Launch pause hides this interface; do not infer its runtime authority."
+      },
+      {
+        "name": "launch.ok",
+        "status": "pass",
+        "reason": "Matches the reviewed client contract."
+      },
+      {
+        "name": "free.launchGate",
+        "status": "blocked",
+        "reason": "The free-release launch policy requires off mode and public/funded permission disabled."
+      },
+      {
+        "name": "legacy.ok",
+        "status": "pass",
+        "reason": "Matches the reviewed client contract."
+      },
+      {
+        "name": "free.highStakesDisabled",
+        "status": "blocked",
+        "reason": "The legacy funded switch is enabled or unknown."
+      },
+      {
+        "name": "legacy.launchChainAgreement",
+        "status": "pass",
+        "reason": "Matches the reviewed client contract."
+      }
+    ]
+  }
+}

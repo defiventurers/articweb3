@@ -11,7 +11,8 @@ function createFairPlayService({store,engine,privateKey=configuredKey(),trustedK
   const publicKey=privateKey?{kty:'EC',crv:'P-256',x:privateKey.x,y:privateKey.y,ext:true}:null;
   const keyPinned=!!privateKey?.d&&trustedKeys.some(k=>k.x===privateKey.x&&k.y===privateKey.y);
   const engineHash=createHash('sha256').update(fs.readFileSync(path.join(__dirname,'fairPlayEngine.cjs'))).digest('hex');
-  const enabled=()=>keyPinned&&engineHash===manifest.engineHash;
+  const manifestHash=createHash('sha256').update(JSON.stringify(manifest.source)).digest('hex');
+  const enabled=()=>keyPinned&&engineHash===manifest.engineHash&&manifestHash===manifest.rulesHash;
   const pendingArchives=new Map(),beacons=new Map(),fetching=new Map();
   anchor||=require('./fairPlayAnchors').createFairPlayAnchors();
   async function config(){return {protocol:'ak-fair-play-v1',enabled:enabled(),rulesHash:manifest.rulesHash,serverKey:publicKey,chain:anchor.config(),randomness:'drand-quicknet-v1',payouts:false};}
@@ -28,9 +29,18 @@ function createFairPlayService({store,engine,privateKey=configuredKey(),trustedK
     await archive(room);
   }
   function liveActors(bundle){const actors=JSON.parse(JSON.stringify(bundle.header.actors));for(const e of bundle.events)if(e.kind==='resign'){const a=actors.find(a=>a.id===e.signed.intent.actor);if(a){a.kind='bot';a.left=true;a.publicKey=bundle.header.serverPublicKey;}}return actors;}
+  function continuationBlockReason(room){
+    const b=room.fair?.bundle;if(!b)return '';
+    if(!enabled()||b.header?.protocol!==manifest.protocol||b.header.rulesHash!==manifest.rulesHash||b.header.rulesVersion!==engine.VERSION)return 'This match needs its original published rules build. Its saved proof remains available.';
+    if(b.header.serverPublicKey?.x!==publicKey?.x||b.header.serverPublicKey?.y!==publicKey?.y)return 'This match needs its original recording key. Its saved proof remains available.';
+    return '';
+  }
   async function validateIntent(room,signed,actorId,actionId,kind='action') {
     const [core]=await sdk,b=room.fair?.bundle;
     if(!b||b.closure)throw error('This match is not accepting proof records.');
+    // Restoring a saved room must never append today's rules to an older proof.
+    // Its history remains available for export without mutating the original.
+    const blocked=continuationBlockReason(room);if(blocked)throw error(blocked,409);
     if(signed?.intent?.actor!==actorId||signed.intent.actionId!==actionId||signed.intent.kind!==kind)throw error('This signature belongs to another action.');
     const actor=await core.checkIntent({...b,header:{...b.header,actors:liveActors(b)}},signed,room.gameState);
     if(kind==='action'&&actor.seat!==engine.turn(room.gameState))throw error('Wait for your turn.');
@@ -106,6 +116,6 @@ function createFairPlayService({store,engine,privateKey=configuredKey(),trustedK
       return fetching.get(n);
     }
   }
-  return {enabled,config,validateKey,start,apply,botIntent,summary,archive,route,bundle:room=>room.fair?.bundle||null,close:()=>Promise.allSettled([...pendingArchives.values()])};
+  return {enabled,config,validateKey,start,apply,botIntent,summary,archive,route,continuationBlockReason,bundle:room=>room.fair?.bundle||null,close:()=>Promise.allSettled([...pendingArchives.values()])};
 }
 module.exports={createFairPlayService};

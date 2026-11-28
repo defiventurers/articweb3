@@ -10,6 +10,9 @@ const mobile=fileURLToPath(new URL('../',import.meta.url)),root=path.resolve(mob
 const require=createRequire(path.join(mobile,'build-deps/package.json')),{build}=await import(require.resolve('rolldown'));
 const destination=path.join(root,'server/arcticPlayWeb'),release=JSON.parse(await fs.readFile(path.join(mobile,'release-config.json')));
 const hash=b=>createHash('sha256').update(b).digest('hex');
+// Verify the pinned rules authority before changing any build outputs.
+// Published engines/manifests are immutable; artwork is not a rules migration.
+await buildFairRules({build,root,mobile});
 // User-approved Chaturanga artwork is a required, checksum-pinned source asset.
 // Fail closed: a missing file must never silently ship a broken match background.
 const requiredChaturangaArt={
@@ -33,9 +36,7 @@ for(const a of inventory.assets){const bytes=await fs.readFile(path.join(root,a.
 for(const folder of ['launch-v1','chaturanga-final-four']){const from=path.join(root,'frontend/public/assets',folder);try{await fs.cp(from,path.join(destination,'art',folder),{recursive:true,filter:source=>!source.includes('/social')&&!source.endsWith('.md')});}catch(e){if(e.code!=='ENOENT')throw e;}}
 const alias=Object.fromEntries(['react','react-dom','lucide-react'].map(n=>[n,path.join(mobile,'build-deps/node_modules',n)]));
 const plugins=[{name:'explicit-css',load(id){if(id.endsWith('.css'))return {code:'',moduleType:'js'};}}];
-const bundle=(input,output,platform='browser')=>build({input,platform,plugins,resolve:{alias},onwarn(w,d){if(w.code==='MODULE_LEVEL_DIRECTIVE')return;if(['UNRESOLVED_IMPORT','MISSING_GLOBAL_NAME'].includes(w.code))throw Error(w.message);d(w);},transform:{target:'es2020',define:{'process.env.NODE_ENV':'"production"',...(platform==='browser'?{'import.meta.env':'{}','import.meta.url':'globalThis.location.href'}:{})}},output:{file:output,format:platform==='node'?'cjs':'iife',minify:platform!=='node',...(platform==='node'?{banner:'if (!globalThis.crypto) globalThis.crypto = require("node:crypto").webcrypto;'}:{})}});
-// Publish exact rules digests before building the independent verifier.
-await buildFairRules({build,root,mobile});
+const bundle=(input,output,platform='browser')=>build({input,platform,plugins,external:input===path.join(mobile,'src/fair.worker.js')?['node:crypto']:[],resolve:{alias},onwarn(w,d){if(w.code==='MODULE_LEVEL_DIRECTIVE')return;if(['UNRESOLVED_IMPORT','MISSING_GLOBAL_NAME'].includes(w.code))throw Error(w.message);d(w);},transform:{target:'es2020',define:{'process.env.NODE_ENV':'"production"',...(platform==='browser'?{'import.meta.env':'{}','import.meta.url':'globalThis.location.href'}:{})}},output:{file:output,format:platform==='node'?'cjs':'iife',minify:platform!=='node',...(platform==='node'?{banner:'if (!globalThis.crypto) globalThis.crypto = require("node:crypto").webcrypto;'}:{})}});
 await bundle(path.join(mobile,'src/App.jsx'),path.join(destination,'app.js'));
 for(const [source,target] of [['bot.worker.js','bot.js'],['learning.worker.js','learn.js'],['fair.worker.js','fair-worker.js']])await bundle(path.join(mobile,'src',source),path.join(destination,target));
 await bundle(path.join(root,'frontend/src/games/shanshui-xiangqi/bot.worker.js'),path.join(destination,'shanshui-bot.js'));

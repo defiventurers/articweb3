@@ -1,0 +1,242 @@
+{
+  "version": 1,
+  "description": "Required source schema for current stores, checked against actual initializers by the local recovery rehearsal. Additional columns/tables are allowed. This is a read-only compatibility contract, not a migration.",
+  "tables": {
+    "ak_documents": {
+      "scope": "application",
+      "columns": {
+        "kind": {"type": "text","nullable": false},
+        "id": {"type": "text","nullable": false},
+        "body": {"type": "jsonb","nullable": false}
+      },
+      "primary": ["kind", "id"],
+      "unique": []
+    },
+    "ak_launch_passport_checks": {
+      "scope": "application",
+      "columns": {
+        "chain_id": {"type": "int4","nullable": false},
+        "contract": {"type": "text","nullable": false},
+        "delivery_id": {"type": "text","nullable": false},
+        "transaction_hash": {"type": "text","nullable": true},
+        "token_id": {"type": "text","nullable": true},
+        "verified": {"type": "bool","nullable": false},
+        "checked_at": {"type": "int8","nullable": false},
+        "minted_at": {"type": "int8","nullable": true},
+        "block_number": {"type": "int8","nullable": true},
+        "block_hash": {"type": "text","nullable": true},
+        "error_code": {"type": "text","nullable": true}
+      },
+      "primary": ["chain_id", "contract", "delivery_id"],
+      "unique": []
+    },
+    "ak_launch_visits": {
+      "scope": "application",
+      "columns": {
+        "day": {"type": "date","nullable": false},
+        "session_hash": {"type": "text","nullable": false},
+        "first_at": {"type": "int8","nullable": false}
+      },
+      "primary": ["day", "session_hash"],
+      "unique": []
+    },
+    "ak_passport_deliveries": {
+      "scope": "application",
+      "columns": {
+        "id": {"type": "text","nullable": false},
+        "account_id": {"type": "uuid","nullable": false},
+        "kind": {"type": "text","nullable": false},
+        "claim_id": {"type": "text","nullable": false},
+        "wallet": {"type": "text","nullable": false},
+        "chain_id": {"type": "int4","nullable": false},
+        "status": {"type": "text","nullable": false},
+        "tx_hash": {"type": "text","nullable": true},
+        "token_id": {"type": "text","nullable": true},
+        "attempts": {"type": "int4","nullable": false},
+        "run_after": {"type": "int8","nullable": false},
+        "lease_until": {"type": "int8","nullable": false},
+        "error_code": {"type": "text","nullable": true},
+        "achievement_code": {"type": "text","nullable": false},
+        "achievement_token_id": {"type": "int4","nullable": true}
+      },
+      "primary": ["id"],
+      "unique": [{"columns": ["claim_id"], "predicate": null}, {"columns": ["account_id", "kind", "achievement_code"], "predicate": null}]
+    },
+    "ak_passports": {
+      "scope": "application",
+      "columns": {
+        "account_id": {"type": "uuid","nullable": false},
+        "id": {"type": "uuid","nullable": false},
+        "claim_id": {"type": "text","nullable": false},
+        "player_name": {"type": "text","nullable": false},
+        "wallet": {"type": "text","nullable": false},
+        "chain_id": {"type": "int4","nullable": false},
+        "created_at": {"type": "int8","nullable": false},
+        "consent_version": {"type": "text","nullable": false},
+        "souvenir": {"type": "bool","nullable": false},
+        "wallet_provider": {"type": "text","nullable": false},
+        "achievement_opt_in": {"type": "bool","nullable": false},
+        "egg_serial": {"type": "int4","nullable": true}
+      },
+      "primary": ["account_id"],
+      "unique": [{"columns": ["chain_id", "egg_serial"], "predicate": "(egg_serial IS NOT NULL)"}, {"columns": ["claim_id"], "predicate": null}, {"columns": ["id"], "predicate": null}, {"columns": ["wallet"], "predicate": null}]
+    },
+    "match_history": {
+      "scope": "core",
+      "columns": {
+        "id": {"type": "text","nullable": false},
+        "wallet": {"type": "text","nullable": false},
+        "room_code": {"type": "text","nullable": false},
+        "match_id": {"type": "text","nullable": false},
+        "contract_match_id": {"type": "text","nullable": true},
+        "room_mode": {"type": "text","nullable": false},
+        "currency": {"type": "text","nullable": true},
+        "entry_tier": {"type": "text","nullable": true},
+        "entry_wei": {"type": "text","nullable": false},
+        "entry_tx_hash": {"type": "text","nullable": true},
+        "player_name": {"type": "text","nullable": true},
+        "team": {"type": "text","nullable": true},
+        "position": {"type": "int4","nullable": true},
+        "won": {"type": "bool","nullable": false},
+        "payout_wei": {"type": "text","nullable": false},
+        "points": {"type": "int4","nullable": false},
+        "settlement_status": {"type": "text","nullable": true},
+        "settlement_tx_hash": {"type": "text","nullable": true},
+        "settlement_error": {"type": "text","nullable": true},
+        "finished_at": {"type": "timestamptz","nullable": false},
+        "updated_at": {"type": "timestamptz","nullable": false},
+        "players_json": {"type": "text","nullable": true},
+        "final_state_json": {"type": "text","nullable": true},
+        "audit_log_json": {"type": "text","nullable": true},
+        "proof_hash": {"type": "text","nullable": true},
+        "randomness_json": {"type": "text","nullable": true},
+        "withdrawal_tx_hash": {"type": "text","nullable": true},
+        "withdrawal_status": {"type": "text","nullable": true},
+        "game_id": {"type": "text","nullable": false},
+        "ruleset_version": {"type": "text","nullable": true},
+        "result_json": {"type": "text","nullable": true}
+      },
+      "primary": ["id"],
+      "unique": []
+    },
+    "player_profiles": {
+      "scope": "core",
+      "columns": {
+        "wallet": {"type": "text","nullable": false},
+        "name": {"type": "text","nullable": false},
+        "points": {"type": "int4","nullable": false},
+        "games_played": {"type": "int4","nullable": false},
+        "wins": {"type": "int4","nullable": false},
+        "created_at": {"type": "timestamptz","nullable": false},
+        "updated_at": {"type": "timestamptz","nullable": false}
+      },
+      "primary": ["wallet"],
+      "unique": []
+    },
+    "room_players": {
+      "scope": "core",
+      "columns": {
+        "room_code": {"type": "text","nullable": false},
+        "wallet": {"type": "text","nullable": false},
+        "team": {"type": "text","nullable": true},
+        "entry_locked": {"type": "bool","nullable": false},
+        "entry_tx_hash": {"type": "text","nullable": true},
+        "joined_at": {"type": "timestamptz","nullable": false}
+      },
+      "primary": ["room_code", "wallet"],
+      "unique": []
+    },
+    "rooms": {
+      "scope": "core",
+      "columns": {
+        "room_code": {"type": "text","nullable": false},
+        "room_mode": {"type": "text","nullable": false},
+        "status": {"type": "text","nullable": false},
+        "match_id": {"type": "text","nullable": true},
+        "contract_match_id": {"type": "text","nullable": true},
+        "visibility": {"type": "text","nullable": true},
+        "created_at": {"type": "timestamptz","nullable": false},
+        "updated_at": {"type": "timestamptz","nullable": false},
+        "room_json": {"type": "jsonb","nullable": false},
+        "game_id": {"type": "text","nullable": false},
+        "ruleset_version": {"type": "text","nullable": true}
+      },
+      "primary": ["room_code"],
+      "unique": []
+    },
+    "vault_activity": {
+      "scope": "core",
+      "columns": {
+        "id": {"type": "text","nullable": false},
+        "wallet": {"type": "text","nullable": false},
+        "type": {"type": "text","nullable": false},
+        "currency": {"type": "text","nullable": true},
+        "amount_wei": {"type": "text","nullable": false},
+        "room_code": {"type": "text","nullable": true},
+        "match_id": {"type": "text","nullable": true},
+        "contract_match_id": {"type": "text","nullable": true},
+        "tx_hash": {"type": "text","nullable": true},
+        "status": {"type": "text","nullable": true},
+        "note": {"type": "text","nullable": true},
+        "created_at": {"type": "timestamptz","nullable": false}
+      },
+      "primary": ["id"],
+      "unique": []
+    },
+    "vault_indexed_events": {
+      "scope": "application",
+      "columns": {
+        "id": {"type": "text","nullable": false},
+        "contract_address": {"type": "text","nullable": false},
+        "chain_id": {"type": "int4","nullable": false},
+        "block_number": {"type": "int8","nullable": false},
+        "log_index": {"type": "int4","nullable": false},
+        "tx_hash": {"type": "text","nullable": false},
+        "event_name": {"type": "text","nullable": false},
+        "player": {"type": "text","nullable": true},
+        "match_id": {"type": "text","nullable": true},
+        "amount_wei": {"type": "text","nullable": true},
+        "deadline": {"type": "text","nullable": true},
+        "payload_json": {"type": "jsonb","nullable": true},
+        "created_at": {"type": "timestamptz","nullable": false}
+      },
+      "primary": ["id"],
+      "unique": []
+    },
+    "vault_indexer_state": {
+      "scope": "application",
+      "columns": {
+        "state_key": {"type": "text","nullable": false},
+        "state_value": {"type": "text","nullable": false},
+        "updated_at": {"type": "timestamptz","nullable": false}
+      },
+      "primary": ["state_key"],
+      "unique": []
+    },
+    "ak_chain_index_cursors": {
+      "scope": "chain",
+      "columns": {
+        "chain_id": {"type": "int4","nullable": false},
+        "contract": {"type": "text","nullable": false},
+        "state": {"type": "jsonb","nullable": false}
+      },
+      "primary": ["chain_id", "contract"],
+      "unique": []
+    },
+    "ak_chain_index_events": {
+      "scope": "chain",
+      "columns": {
+        "chain_id": {"type": "int4","nullable": false},
+        "contract": {"type": "text","nullable": false},
+        "transaction_hash": {"type": "text","nullable": false},
+        "log_index": {"type": "int4","nullable": false},
+        "block_number": {"type": "int8","nullable": false},
+        "block_hash": {"type": "text","nullable": false},
+        "event_name": {"type": "text","nullable": false},
+        "data": {"type": "jsonb","nullable": false}
+      },
+      "primary": ["chain_id", "contract", "transaction_hash", "log_index"],
+      "unique": []
+    }
+  }
+}

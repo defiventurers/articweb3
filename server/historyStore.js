@@ -2,25 +2,13 @@ const { Pool } = require("pg");
 
 const MAX_HISTORY_PER_WALLET = 50;
 const DATABASE_URL = process.env.DATABASE_URL || "";
-const DATABASE_SSL = process.env.DATABASE_SSL === "true" || /sslmode=require/i.test(DATABASE_URL);
 const memoryEntries = new Map();
 const memoryByWallet = new Map();
-let pool = null;
-let ready = false;
-let initPromise = null;
-let initError = null;
-
-function getPool() {
-  if (!DATABASE_URL) return null;
-  if (!pool) pool = new Pool(require('./databaseSecurity').databaseOptions(DATABASE_URL));
-  return pool;
-}
+const runtime = require("./databaseRuntime").createStoreRuntime({ databaseUrl: DATABASE_URL, Pool, label: "history-db" });
+const getPool = runtime.getPool;
 
 async function initHistoryStore() {
-  if (!DATABASE_URL) return false;
-  if (initPromise) return initPromise;
-  initPromise = (async () => {
-    try {
+  return runtime.init(async () => {
       await getPool().query(`CREATE TABLE IF NOT EXISTS match_history (id TEXT PRIMARY KEY, wallet TEXT NOT NULL, room_code TEXT NOT NULL, match_id TEXT NOT NULL, contract_match_id TEXT, room_mode TEXT NOT NULL, currency TEXT, entry_tier TEXT, entry_wei TEXT NOT NULL DEFAULT '0', entry_tx_hash TEXT, player_name TEXT, team TEXT, position INTEGER, won BOOLEAN NOT NULL DEFAULT false, payout_wei TEXT NOT NULL DEFAULT '0', points INTEGER NOT NULL DEFAULT 0, settlement_status TEXT, settlement_tx_hash TEXT, settlement_error TEXT, finished_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
       await getPool().query(`ALTER TABLE match_history ADD COLUMN IF NOT EXISTS game_id TEXT NOT NULL DEFAULT 'arctic-dominion'`);
       await getPool().query(`ALTER TABLE match_history ADD COLUMN IF NOT EXISTS ruleset_version TEXT`);
@@ -35,22 +23,12 @@ async function initHistoryStore() {
       await getPool().query(`CREATE INDEX IF NOT EXISTS match_history_wallet_finished_idx ON match_history (wallet, finished_at DESC)`);
       await getPool().query(`CREATE INDEX IF NOT EXISTS match_history_wallet_game_finished_idx ON match_history (wallet, game_id, finished_at DESC)`);
       await getPool().query(`CREATE INDEX IF NOT EXISTS match_history_wallet_payout_withdrawal_idx ON match_history (wallet, payout_wei, withdrawal_tx_hash, finished_at DESC)`);
-      ready = true;
-      initError = null;
-      return true;
-    } catch (err) {
-      ready = false;
-      initError = err.message || "Database initialization failed.";
-      console.error(`[history-db] init failed: ${initError}`);
-      return false;
-    }
-  })();
-  return initPromise;
+  });
 }
 
 async function saveHistoryEntry(entry) {
   saveMemory(entry);
-  if (!(await initHistoryStore())) return;
+  if (!(await runtime.requireReady(initHistoryStore))) return;
   await getPool().query(
     `INSERT INTO match_history (id,wallet,room_code,match_id,contract_match_id,room_mode,currency,entry_tier,entry_wei,entry_tx_hash,player_name,team,position,won,payout_wei,points,settlement_status,settlement_tx_hash,settlement_error,game_id,ruleset_version,result_json,players_json,final_state_json,audit_log_json,proof_hash,randomness_json,withdrawal_tx_hash,withdrawal_status,finished_at,updated_at)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,to_timestamp($30 / 1000.0),NOW())
@@ -64,7 +42,7 @@ async function updateHistoryEntries(ids, patch) {
     const existing = memoryEntries.get(id);
     if (existing) memoryEntries.set(id, { ...existing, ...patch });
   });
-  if (!ids.length || !(await initHistoryStore())) return;
+  if (!ids.length || !(await runtime.requireReady(initHistoryStore))) return;
   await getPool().query(
     `UPDATE match_history SET settlement_status=COALESCE($2, settlement_status), settlement_tx_hash=COALESCE($3, settlement_tx_hash), settlement_error=$4, withdrawal_tx_hash=COALESCE($5, withdrawal_tx_hash), withdrawal_status=COALESCE($6, withdrawal_status), updated_at=NOW() WHERE id=ANY($1::text[])`,
     [ids, patch.settlementStatus || null, patch.settlementTxHash || null, patch.settlementError || null, patch.withdrawalTxHash || null, patch.withdrawalStatus || null]
@@ -76,7 +54,7 @@ async function linkWithdrawalToHistory({ wallet, amountWei, txHash }) {
   const amount = String(amountWei || "0");
   const hash = txHash ? String(txHash).toLowerCase() : null;
   if (!key || !amount || amount === "0") return null;
-  if (await initHistoryStore()) {
+  if (await runtime.requireReady(initHistoryStore)) {
     const result = await getPool().query(
       `SELECT id, room_code, match_id, contract_match_id, payout_wei FROM match_history WHERE wallet = $1 AND payout_wei = $2 AND contract_match_id IS NOT NULL AND room_mode = 'high_stakes' AND (withdrawal_tx_hash IS NULL OR withdrawal_tx_hash = $3) AND COALESCE(settlement_status, '') IN ('submitted', 'settlement_pending', 'settled') ORDER BY CASE WHEN withdrawal_tx_hash = $3 THEN 0 ELSE 1 END, finished_at DESC LIMIT 1`,
       [key, amount, hash]
@@ -93,7 +71,7 @@ async function linkWithdrawalToHistory({ wallet, amountWei, txHash }) {
 async function getHistoryForWallet(wallet, gameId = null) {
   const key = normalizeWallet(wallet);
   const normalizedGameId = gameId ? String(gameId) : null;
-  if (await initHistoryStore()) {
+  if (await runtime.requireReady(initHistoryStore)) {
     const result = normalizedGameId
       ? await getPool().query(`SELECT * FROM match_history WHERE wallet=$1 AND game_id=$2 ORDER BY finished_at DESC LIMIT $3`, [key, normalizedGameId, MAX_HISTORY_PER_WALLET])
       : await getPool().query(`SELECT * FROM match_history WHERE wallet=$1 ORDER BY finished_at DESC LIMIT $2`, [key, MAX_HISTORY_PER_WALLET]);
@@ -103,7 +81,7 @@ async function getHistoryForWallet(wallet, gameId = null) {
   return ids.map((id) => memoryEntries.get(id)).filter(Boolean).filter((entry) => !normalizedGameId || entry.gameId === normalizedGameId);
 }
 
-function historyStoreStatus() { return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError ? "Database check pending." : "" }; }
+function historyStoreStatus() { return { ...runtime.status() }; }
 function saveMemory(entry) { const key = normalizeWallet(entry.wallet); const normalized = { gameId: "arctic-dominion", ...entry, wallet: key }; memoryEntries.set(normalized.id, normalized); const ids = memoryByWallet.get(key) || []; memoryByWallet.set(key, [normalized.id, ...ids.filter((id) => id !== normalized.id)].slice(0, MAX_HISTORY_PER_WALLET)); }
 function updateMemoryWithdrawal(id, txHash) { const existing = memoryEntries.get(id); if (existing) memoryEntries.set(id, { ...existing, withdrawalTxHash: txHash || existing.withdrawalTxHash || null, withdrawalStatus: "indexed" }); }
 function linkMemoryWithdrawal(wallet, amountWei, txHash) { const ids = memoryByWallet.get(wallet) || []; const matches = ids.map((id) => memoryEntries.get(id)).filter(Boolean).filter((entry) => entry.roomMode === "high_stakes").filter((entry) => entry.contractMatchId).filter((entry) => ["submitted", "settlement_pending", "settled"].includes(entry.settlementStatus || "")).filter((entry) => String(entry.payoutWei || "0") === amountWei).filter((entry) => !entry.withdrawalTxHash || entry.withdrawalTxHash === txHash).slice(0, 1); if (matches.length !== 1) return null; const match = matches[0]; updateMemoryWithdrawal(match.id, txHash); return { id: match.id, roomCode: match.roomCode, matchId: match.matchId, contractMatchId: match.contractMatchId, payoutWei: match.payoutWei, withdrawalTxHash: txHash, attributionSource: "latest_unmatched_high_stakes_memory" }; }

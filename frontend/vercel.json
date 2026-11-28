@@ -6,10 +6,48 @@
     },
     {
       "source": "/api/health",
-      "destination": "https://articweb3.onrender.com/health"
+      "destination": "https://articweb3.onrender.com/readyz"
+    },
+    {
+      "source": "/api/health/live",
+      "destination": "https://articweb3.onrender.com/healthz"
     }
   ],
   "headers": [
+    {
+      "source": "/api/health/live",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "source": "/api/health",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
+      ]
+    },
     {
       "source": "/coming-soon.html",
       "headers": [
@@ -154,7 +192,7 @@
   ],
   "redirects": [
     {
-      "source": "/:path((?!coming-soon\\.html$|early/?$|early/index\\.html$|early/dashboard/?$|early/dashboard/(?:index\\.html|dashboard\\.(?:js|css))$|early/(?:passport-launch\\.(?:js|css)|app\\.css|mystery-golden-egg\\.svg)$|early/art/).*)",
+      "source": "/:path((?!api/health(?:/live)?$|coming-soon\\.html$|early/?$|early/index\\.html$|early/dashboard/?$|early/dashboard/(?:index\\.html|dashboard\\.(?:js|css))$|early/(?:passport-launch\\.(?:js|css)|app\\.css|mystery-golden-egg\\.svg)$|early/art/).*)",
       "has": [
         {
           "type": "host",
@@ -165,7 +203,7 @@
       "permanent": false
     },
     {
-      "source": "/:path((?!coming-soon\\.html$|early/?$|early/index\\.html$|early/dashboard/?$|early/dashboard/(?:index\\.html|dashboard\\.(?:js|css))$|early/(?:passport-launch\\.(?:js|css)|app\\.css|mystery-golden-egg\\.svg)$|early/art/).*)",
+      "source": "/:path((?!api/health(?:/live)?$|coming-soon\\.html$|early/?$|early/index\\.html$|early/dashboard/?$|early/dashboard/(?:index\\.html|dashboard\\.(?:js|css))$|early/(?:passport-launch\\.(?:js|css)|app\\.css|mystery-golden-egg\\.svg)$|early/art/).*)",
       "has": [
         {
           "type": "host",

@@ -1,0 +1,126 @@
+{
+  "date": "2026-11-28",
+  "timezone": "Asia/Kolkata",
+  "scope": "Batch B, read-only provider and runtime observations",
+  "reviewedMain": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
+  "batchABase": "19ceaa6c2d66ce726f9050ef1c674c3d06553e19",
+  "batchAPullRequest": {
+    "url": "https://github.com/defiventurers/articweb3/pull/121",
+    "state": "open",
+    "draft": true,
+    "merged": false
+  },
+  "branch": "codex/fonso-stabilization-batch-b",
+  "render": {
+    "workspaceId": "tea-d510hcf5r7bs73aulbp0",
+    "serviceId": "srv-d8knkism0tmc73ct2t3g",
+    "name": "articweb3",
+    "repo": "https://github.com/defiventurers/articweb3",
+    "branch": "main",
+    "rootDir": "server",
+    "buildCommand": "npm install",
+    "startCommand": "npm start",
+    "autoDeploy": "yes",
+    "autoDeployTrigger": "commit",
+    "healthCheckPath": "",
+    "plan": "free",
+    "numInstances": 1,
+    "region": "singapore",
+    "url": "https://articweb3.onrender.com",
+    "deploy": {
+      "id": "dep-dc29aevavr4c73f8uorg",
+      "status": "live",
+      "commit": "8324ff30f355f0e2b7b08d1d776b502ea8e822b2",
+      "startedAt": "2026-11-23T19:34:19.60338Z",
+      "finishedAt": "2026-11-23T19:38:09.248135Z"
+    }
+  },
+  "vercel": {
+    "teamId": "team_U21BCnYq1ob0pqlgvCggWFL7",
+    "teamSlug": "evolving",
+    "projectId": "prj_E785gWSkUVUdGkfLQkUxYOcZFSnu",
+    "deployment": {
+      "id": "dpl_5o4Gvv6Fq6qPBQ91w3SsnFZVpNfy",
+      "url": "articweb3-gzj8t3pb2-evolving.vercel.app",
+      "readyState": "READY",
+      "target": "production",
+      "createdAt": 1795478111287,
+      "commit": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
+      "branch": "main",
+      "repo": "defiventurers/articweb3"
+    },
+    "companyAlias": "antarcticgaming.co",
+    "aliasDeploymentId": "dpl_5o4Gvv6Fq6qPBQ91w3SsnFZVpNfy"
+  },
+  "liveHealthObservation": {
+    "method": "Cloud browser navigation and DOM observation",
+    "requestedUrl": "https://antarcticgaming.co/api/health",
+    "finalUrl": "https://antarcticgaming.co/coming-soon.html",
+    "title": "Coming soon",
+    "visibleText": "Coming soon",
+    "documentContentType": "text/html",
+    "httpStatus": "not captured by browser API",
+    "result": "Wrong response type reproduced"
+  },
+  "liveRuntimeObservation": {
+    "url": "https://articweb3.onrender.com/runtime/status",
+    "generatedAt": "2026-11-28T02:47:19.040Z",
+    "nodeVersion": "v20.20.2",
+    "launchMode": "internal",
+    "chainId": 2741,
+    "legalPublicMainnetApproved": false,
+    "highStakesAllowed": true,
+    "databaseConfigured": true,
+    "roomStoreReady": true,
+    "historyStoreReady": true,
+    "indexerStoreReady": true,
+    "note": "Reported cached readiness is not a current SQL probe or provider-binding proof."
+  },
+  "renderStartupObservation": {
+    "timestamp": "2026-11-28T02:46:40.697090584Z",
+    "stores": {
+      "history": "ready",
+      "profiles": "ready",
+      "activity": "ready",
+      "rooms": "ready"
+    },
+    "restoredRooms": 54,
+    "note": "Confirms durable-store initialization path; does not identify the Postgres provider or branch."
+  },
+  "accessLimitations": {
+    "renderEnvironmentRead": "Connected Render tools have no read-environment operation; local Render CLI and API credential are absent. No secret retrieval attempted.",
+    "historicalVercelScope": "Historical defiouzas-projects scope returned403. Current authorized project and company alias were independently found under evolving; no access grant or scope change performed.",
+    "renderShell": "Observed plan is free; official Render docs confirm no dashboard shell, SSH or one-off jobs. Owner-local configured-target inspection is distinct from active-process binding."
+  },
+  "officialReferences": [
+    "https://render.com/docs/deploys",
+    "https://render.com/docs/health-checks",
+    "https://render.com/docs/rollbacks",
+    "https://vercel.com/docs/deployments/promoting-a-deployment",
+    "https://render.com/docs/free",
+    "https://render.com/docs/ssh",
+    "https://render.com/docs/configure-environment-variables"
+  ],
+  "mutationsPerformed": "None against production; no deploy, configuration, DNS, database, account, wallet or contract changes.",
+  "liveHttpCorroboration": {
+    "method": "Bounded unauthenticated GETs with redirects disabled; corroborated independently by browser navigation",
+    "apexHealth": {
+      "url": "https://antarcticgaming.co/api/health",
+      "status": 307,
+      "location": "/coming-soon.html",
+      "contentType": "text/plain"
+    },
+    "wwwHealth": {
+      "url": "https://www.antarcticgaming.co/api/health",
+      "status": 308,
+      "location": "https://antarcticgaming.co/api/health"
+    },
+    "backendUnknownReadyRoute": {
+      "url": "https://articweb3.onrender.com/readyz",
+      "status": 200,
+      "contentType": "text/plain",
+      "body": "Artic Web3 lobby server running."
+    },
+    "meaning": "The HTML redirect and generic200fallback cannot satisfy the new strict monitor."
+  }
+}

@@ -7,6 +7,7 @@ import { SystemCheckPanel } from "../components/SystemCheckPanel.jsx";
 import { abstractChain, appConfig } from "../config/chain.js";
 import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js";
 import { ethVaultAbi } from "../contracts/abis.js";
+import { fetchOperatorJson } from "../network/settlementOperator.js";
 
 const EMPTY_STATE = {
   owner: "",
@@ -160,7 +161,7 @@ export function SettlementAdminScreen({ onBack }) {
       setOpsBusy(true);
       setOpsError("");
       const [preflightPayload, tiersPayload, indexerHealthPayload, indexerStatsPayload, eventsPayload] = await Promise.all([
-        fetchJson(`${baseUrl}/mainnet/preflight`).catch((err) => ({ ok: false, error: err.message })),
+        fetchOperatorJson(`${baseUrl}/mainnet/preflight`, operatorKey).catch((err) => ({ ok: false, error: err.message })),
         fetchJson(`${baseUrl}/high-stakes/tiers`).catch((err) => ({ ok: false, error: err.message, tiers: [] })),
         fetchJson(`${baseUrl}/indexer/health`).catch((err) => ({ ok: false, error: err.message })),
         fetchJson(`${baseUrl}/indexer/stats`).catch((err) => ({ ok: false, error: err.message, stats: null })),
@@ -189,7 +190,7 @@ export function SettlementAdminScreen({ onBack }) {
     try {
       if (manageBusy) setOpsBusy(true);
       setOpsError("");
-      const payload = await fetchJson(`${baseUrl}/ops/settlement/rooms?key=${encodeURIComponent(key)}&includeAll=true&limit=50`);
+      const payload = await fetchOperatorJson(`${baseUrl}/ops/settlement/rooms?includeAll=true&limit=50`, key);
       setSettlementRooms(Array.isArray(payload.rooms) ? payload.rooms : []);
     } catch (err) {
       setSettlementRooms([]);
@@ -212,7 +213,7 @@ export function SettlementAdminScreen({ onBack }) {
     try {
       setOpsBusy(true);
       setOpsError("");
-      const payload = await fetchJson(`${baseUrl}/ops/settlement/debug?key=${encodeURIComponent(operatorKey.trim())}&contractMatchId=${encodeURIComponent(contractMatchId)}`);
+      const payload = await fetchOperatorJson(`${baseUrl}/ops/settlement/debug?contractMatchId=${encodeURIComponent(contractMatchId)}`, operatorKey);
       setSelectedContractMatchId(contractMatchId);
       setDebugPacket(payload.debugPacket || payload);
     } catch (err) {

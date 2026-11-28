@@ -6,6 +6,7 @@ function createCompanyStore({databaseUrl=process.env.DATABASE_URL,file,developme
   if(file&&!development) throw Error('File storage is restricted to tests and local development.');
   const pool=!file&&databaseUrl?new Pool(require('./databaseSecurity').databaseOptions(databaseUrl)):null;
   let ready,chain=Promise.resolve();
+  pool?.on('error',()=>{ready=null;});
   const init=()=>ready||(ready=(async()=>{if(pool)await pool.query('CREATE TABLE IF NOT EXISTS ak_documents (kind TEXT NOT NULL, id TEXT NOT NULL, body JSONB NOT NULL, PRIMARY KEY(kind,id))');else if(file)await fs.mkdir(path.dirname(file),{recursive:true});else throw Object.assign(Error('The account service is not configured yet. Your saved game is preserved.'),{status:503});})().catch(e=>{ready=null;throw e;}));
   async function transact(kind,id,fn){
     await init();

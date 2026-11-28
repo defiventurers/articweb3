@@ -1,0 +1,236 @@
+{
+  "date": "2026-11-28",
+  "timezone": "Asia/Kolkata",
+  "reviewedMain": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
+  "batchABase": "19ceaa6c2d66ce726f9050ef1c674c3d06553e19",
+  "branch": "codex/fonso-stabilization-batch-b",
+  "batchADependency": {
+    "url": "https://github.com/defiventurers/articweb3/pull/121",
+    "state": "open",
+    "draft": true,
+    "merged": false
+  },
+  "statuses": {
+    "B1CommitSkew": "NOT REPRODUCIBLE",
+    "B1CandidateVerifier": "FIXED AND TESTED LOCALLY",
+    "B2HealthMonitoring": "FIXED AND TESTED LOCALLY",
+    "B3DatabaseRecovery": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+    "B3LiveProviderBinding": "BLOCKED BY ACCESS",
+    "productionCandidate": "PRODUCTION VERIFICATION PENDING",
+    "productionApproval": "OWNER ACTION REQUIRED",
+    "batchC": "NOT STARTED",
+    "batchD": "NOT STARTED"
+  },
+  "selectedUniqueTestsPerNode": 141,
+  "testRuns": [
+    {
+      "node": "20.20.2",
+      "command": "node --test server/tests/deployment-compatibility.test.js server/tests/health-status.test.js server/tests/health-monitor.test.js server/tests/health-routing.test.js server/tests/health-endpoints.test.js server/tests/startup-readiness.test.js server/tests/database-privileges.test.js server/tests/database-schema.test.js server/tests/database-recovery.test.js server/tests/runtime-status.test.js server/tests/live-mainnet-smoke.test.js",
+      "tests": 44,
+      "passed": 44,
+      "failed": 0,
+      "skipped": 0,
+      "logSha256": "0091409ab2bb02bb3065a9017284750d8b63ea2ce9d7243b11b7ffcd33250d64",
+      "note": "Isolated fixtures only; external senders/indexers disabled."
+    },
+    {
+      "node": "20.20.2",
+      "command": "node --test server/tests/company-service.test.js server/tests/company-account-play.test.js server/tests/para-game-wallet.test.js server/tests/launch-metrics.test.js server/tests/security-hardening.test.js server/tests/arctic-play-socket.test.js server/tests/funded-access.test.js server/tests/funded-access-socket.test.js server/tests/anti-cheat-transform.test.js server/tests/aurora-ganjifa-online.test.js server/tests/aurora-vulture-online.test.js server/tests/polar-tablan-online.test.js server/tests/seven-ice-rings-online.test.js server/tests/sige-online.test.js server/tests/two-stones-online.test.js",
+      "tests": 97,
+      "passed": 97,
+      "failed": 0,
+      "skipped": 0,
+      "logSha256": "05c21409afc96c37720b03ce47e319f2828ff8f9d807cc7e18cabd81e0227280",
+      "note": "Isolated fixtures only; external senders/indexers disabled."
+    },
+    {
+      "node": "20.20.2",
+      "command": "node --test server/tests/database-privileges.test.js server/tests/health-status.test.js server/tests/health-endpoints.test.js server/tests/startup-readiness.test.js",
+      "tests": 16,
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "logSha256": "c87209f7316a2c89e383bf7c39969d5256f7c670da3b4f53a4effffa1880a43b",
+      "note": "Final subset rerun after schema CREATE privilege tightening; not additional unique tests."
+    },
+    {
+      "node": "24.22.3",
+      "command": "node --test server/tests/deployment-compatibility.test.js server/tests/health-status.test.js server/tests/health-monitor.test.js server/tests/health-routing.test.js server/tests/health-endpoints.test.js server/tests/startup-readiness.test.js server/tests/database-privileges.test.js server/tests/database-schema.test.js server/tests/database-recovery.test.js server/tests/runtime-status.test.js server/tests/live-mainnet-smoke.test.js",
+      "tests": 44,
+      "passed": 44,
+      "failed": 0,
+      "skipped": 0,
+      "logSha256": "731b5bcb4ec847ffdf64c4843a51f32dc5f85026b415dcbf6ab96901233dc6bd",
+      "note": "Isolated fixtures only; external senders/indexers disabled."
+    },
+    {
+      "node": "24.22.3",
+      "command": "node --test server/tests/company-service.test.js server/tests/company-account-play.test.js server/tests/para-game-wallet.test.js server/tests/launch-metrics.test.js server/tests/security-hardening.test.js server/tests/arctic-play-socket.test.js server/tests/funded-access.test.js server/tests/funded-access-socket.test.js server/tests/anti-cheat-transform.test.js server/tests/aurora-ganjifa-online.test.js server/tests/aurora-vulture-online.test.js server/tests/polar-tablan-online.test.js server/tests/seven-ice-rings-online.test.js server/tests/sige-online.test.js server/tests/two-stones-online.test.js",
+      "tests": 97,
+      "passed": 97,
+      "failed": 0,
+      "skipped": 0,
+      "logSha256": "86fe2f9a9af580a8e95a2ff413418e3f21a22ac2a640fcc7083f0f75e1255d80",
+      "note": "Isolated fixtures only; external senders/indexers disabled."
+    },
+    {
+      "node": "24.22.3",
+      "command": "node --test server/tests/database-privileges.test.js server/tests/health-status.test.js server/tests/health-endpoints.test.js server/tests/startup-readiness.test.js",
+      "tests": 16,
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "logSha256": "e26c01e84e3906441602f6f5a5e6367545a33efe3e6c36634bfcbc10b8879f36",
+      "note": "Final subset rerun after schema CREATE privilege tightening; not additional unique tests."
+    },
+    {
+      "node": "20.20.2",
+      "command": "node --test server/tests/database-schema.test.js server/tests/deployment-compatibility.test.js",
+      "tests": 11,
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "logSha256": "21d13c1a46872bc268a526b7ec2ca08f19a43cfea1f288d52bbe30624523b3c3",
+      "note": "Subset rerun after test-only dummy connection fixtures were made scanner-compatible; not additional unique tests."
+    },
+    {
+      "node": "24.22.3",
+      "command": "node --test server/tests/database-schema.test.js server/tests/deployment-compatibility.test.js",
+      "tests": 11,
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "logSha256": "89384b5573cbcb58a82faae030038dee14d2c170f2e6e3426415cf043acb8a99",
+      "note": "Subset rerun after test-only dummy connection fixtures were made scanner-compatible; not additional unique tests."
+    }
+  ],
+  "preservationChecks": [
+    {
+      "command": "node shared/fair-play/check-rules-integrity.mjs",
+      "ok": true,
+      "declaredSources": 113
+    },
+    {
+      "command": "node shared/fair-play/reproduce-rules-authority.mjs",
+      "ok": true,
+      "compiler": "rolldown1.2.15",
+      "loadedModules": 60,
+      "identicalEngineBytes": 299733,
+      "engineSha256": "16d08120db2442814631143e6dafbeb88af40bda561f3b00a61c5c0f0cfa4c18"
+    },
+    {
+      "command": "git diff --check",
+      "ok": true
+    },
+    {
+      "command": "node scripts/security-scan.mjs",
+      "ok": true,
+      "availableTrackedTextFiles": 1460,
+      "findings": 0,
+      "limitation": "Lightweight scanner; unavailable sparse files are not counted locally. CI scans the complete checkout."
+    }
+  ],
+  "evidenceFiles": [
+    "BATCH_B_PROVIDER_EVIDENCE.json",
+    "BATCH_B_COMPATIBILITY_OBSERVATIONS.json",
+    "BATCH_B_DATABASE_EVIDENCE.json"
+  ],
+  "peerReview": [
+    "Compatibility probe checked by health reviewer.",
+    "Health/readiness/monitor/startup transform and routing checked by compatibility reviewer.",
+    "Database retry, room-store failure and health integration checked by health reviewer; schema permissions reproduced on isolated PostgreSQL18.7."
+  ],
+  "limitations": [
+    "No production deployment, main merge or configuration change.",
+    "No exact generated-byte identity of historical runtime inferred solely from commit.",
+    "Live fair authority stays unresolved behind LAUNCH_RESET_PAUSED.",
+    "Current production advertises internal funded settings and predates Batch A.",
+    "Connected Neon schema/retention evidence is not proof of current Render runtime binding.",
+    "Restore rehearsal used only synthetic local data, not production export or restore.",
+    "Failed durable writes are not replayed; initial room-restore failure requires controlled restart.",
+    "Full source browser build and physical Android acceptance remain separate gates; retained APKs untouched."
+  ],
+  "nextBatch": "C only, after review of Batch A and Batch B checkpoints; no live signup, mint, publication of additional source or contract/deployment action without separate authorization.",
+  "implementationCommits": [
+    {
+      "scope": "B1 compatibility",
+      "sha": "ae615f27aa03f8147ea3d1683a025373ac1fe245"
+    },
+    {
+      "scope": "B3 database recovery",
+      "sha": "29494612d66bd3bc3e3670e111b5331d81092a49"
+    },
+    {
+      "scope": "B2 health/readiness",
+      "sha": "50624ea17201887d7c3045aba801db5cf1024b98"
+    }
+  ],
+  "scannerNote": "The unchanged strict scanner initially rejected two test-only dummy connection URL literals; fixtures were corrected and11 affected tests rerun on each Node version. No genuine credentials were found.",
+  "changedFiles": [
+    ".github/workflows/fonso-batch-b.yml",
+    "docs/technical-stabilization/BATCH_B_COMPATIBILITY.md",
+    "docs/technical-stabilization/BATCH_B_COMPATIBILITY_OBSERVATIONS.json",
+    "docs/technical-stabilization/BATCH_B_DATABASE.md",
+    "docs/technical-stabilization/BATCH_B_DATABASE_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_B_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_B_HEALTH.md",
+    "docs/technical-stabilization/BATCH_B_PROVIDER_EVIDENCE.json",
+    "docs/technical-stabilization/CHECKPOINT.md",
+    "frontend/vercel.json",
+    "scripts/check-health.mjs",
+    "server/.env.example",
+    "server/auroraGanjifaService.js",
+    "server/auroraVultureService.js",
+    "server/chainEventStore.js",
+    "server/companyStore.js",
+    "server/databasePrivileges.js",
+    "server/databaseRuntime.js",
+    "server/databaseSchema.js",
+    "server/databaseSchemaContract.json",
+    "server/deploymentCompatibility.js",
+    "server/healthMonitor.js",
+    "server/healthStatus.js",
+    "server/historyStore.js",
+    "server/launchMetrics.js",
+    "server/liveMainnetSmoke.js",
+    "server/loadPrizeBackend.js",
+    "server/polarTablanService.js",
+    "server/profileStore.js",
+    "server/roomStore.js",
+    "server/runtimeStatusBootstrap.js",
+    "server/scripts/check-database-schema.cjs",
+    "server/scripts/check-deployment-compatibility.js",
+    "server/scripts/rehearse-database-recovery.cjs",
+    "server/sevenIceRingsService.js",
+    "server/sigeService.js",
+    "server/startupReadiness.js",
+    "server/tests/database-privileges.test.js",
+    "server/tests/database-recovery.test.js",
+    "server/tests/database-schema.test.js",
+    "server/tests/deployment-compatibility.test.js",
+    "server/tests/health-endpoints.test.js",
+    "server/tests/health-monitor.test.js",
+    "server/tests/health-routing.test.js",
+    "server/tests/health-status.test.js",
+    "server/tests/startup-readiness.test.js",
+    "server/twoStonesService.js",
+    "server/vaultActivityStore.js",
+    "server/vaultEventStore.js"
+  ],
+  "unchangedScopesFromBatchA": [
+    "shared/fair-play",
+    "mobile/arctic-play",
+    "frontend/src",
+    "contracts",
+    "server/gameRules.js",
+    "server/fundedAccess.js"
+  ],
+  "continuousIntegration": {
+    "workflow": ".github/workflows/fonso-batch-b.yml",
+    "matrix": [
+      "20.20.2",
+      "24"
+    ],
+    "status": "PENDING PR RUN"
+  }
+}

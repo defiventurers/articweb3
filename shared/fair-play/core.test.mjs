@@ -4,7 +4,7 @@ import {createRequire} from 'node:module';
 import fs from 'node:fs/promises';
 import * as core from './core.js';
 import {verifyBeacon,verifySignedBeacon,verifyRandomness,diceValues,QUICKNET,roundTime} from './beacon.js';
-const require=createRequire(import.meta.url),engine=require('../../server/arcticPlayEngine.cjs');
+const require=createRequire(import.meta.url),engine=require('../../server/fairPlayEngine.cjs');
 const rules=JSON.parse(await fs.readFile(new URL('./rules-manifest.json',import.meta.url)));
 const server=await core.generateKey();
 async function fixture(id='xiangqi') {
@@ -60,6 +60,20 @@ test('a service-signed substituted initial position still fails the published in
   f.bundle.headerHash=await core.hashObject(f.bundle.header);
   f.bundle.headerSignature=await core.sign(server.privateKey,core.headerMessage(f.bundle.headerHash));
   await assert.rejects(core.verifyBundle(f.bundle,f.opts),/starting board does not match the published rules/);
+});
+test('an unsupported rules identifier or version cannot be relabelled as the published authority',async()=>{
+  const f=await fixture();
+  for(const change of [
+    header=>header.rulesHash='63845f4daef97f9721ccecd9cb3c7ef363842835a2566f8f48c7e515863cd952',
+    header=>header.rulesHash='0'.repeat(64),
+    header=>header.rulesVersion='different-rules-version',
+    header=>delete header.rulesVersion,
+  ]) {
+    const bundle=core.copy(f.bundle);change(bundle.header);
+    bundle.headerHash=await core.hashObject(bundle.header);
+    bundle.headerSignature=await core.sign(server.privateKey,core.headerMessage(bundle.headerHash));
+    await assert.rejects(core.verifyBundle(bundle,f.opts),/original published rules/);
+  }
 });
 test('An empty ongoing match is labelled empty, not verified',async()=>{
   const f=await fixture();assert.equal((await core.verifyBundle(f.bundle,f.opts)).status,'empty');

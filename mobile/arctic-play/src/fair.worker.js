@@ -1,4 +1,7 @@
-import * as engine from './fairEngine.js';
+// Replay the exact published executable, independent of later UI/source changes.
+// Browser build entrypoints reproduce and check its unchanged digest first.
+import engine from '../../../server/fairPlayEngine.cjs';
+import {pieceArt} from './dominion.js';
 import {verifyBundle,copy} from '../../../shared/fair-play/core.js';
 import {verifyRandomness} from '../../../shared/fair-play/beacon.js';
 import {verifyCheckpoint} from '../../../shared/fair-play/chain.js';
@@ -8,10 +11,14 @@ import readiness from '../../../shared/fair-play/release-readiness.json';
 let checkedBundle;
 self.onmessage=async({data})=>{
  const {id,type}=data;
+ let verificationStatus='failed';
  try {
   if(type==='verify') {
    checkedBundle=null;
-   if(readiness.status!=='ready')throw Error(readiness.message);
+   if(data.bundle?.header?.rulesHash!==manifest.rulesHash){
+    verificationStatus='hold';
+    throw Error(data.bundle?.header?.rulesHash===readiness.rulesHash?readiness.message:'This match needs its original published rules build. Keep your proof for verification with that release.');
+   }
    const report=await verifyBundle(data.bundle,{engine,rulesHash:manifest.rulesHash,trustedKeys:trust.keys,verifyRandomness,verifyChain:verifyCheckpoint,onProgress:progress=>self.postMessage({id,type:'progress',progress})});
    checkedBundle=copy(data.bundle);self.postMessage({id,type:'verified',report});
   } else if(type==='replay') {
@@ -24,7 +31,14 @@ self.onmessage=async({data})=>{
     if(e.kind==='resign'){state=['sannin','sanyou','dominion'].includes(header.gameId)?state:engine.forfeit(header.gameId,state,actor.seat);actor.kind='bot';actor.left=true;if(!actors.some(a=>a.kind==='human'&&!a.left)&&!engine.result(state))state={...state,mobileResult:{winner:null,draw:true,reason:'All players left the table.'}};}
     else state=engine.apply(header.gameId,state,e.signed.intent.actionId,e.rng?{roll:{values:e.rng.values}}:{});
    }
-   self.postMessage({id,type:'replay',step,board:engine.board(header.gameId),pieces:engine.pieces(header.gameId,state)});
+   const pieces=engine.pieces(header.gameId,state);
+   // Artwork is presentation, not proof authority. Keep the current approved
+   // sprites while replayed state, positions and geometry stay with the pinned engine.
+   if(header.gameId==='dominion'){
+    const byId=new Map(state.board.flat().filter(Boolean).map(piece=>[piece.id,piece]));
+    for(const piece of pieces){const source=byId.get(piece.id);piece.sprite='art/'+pieceArt(source.team,source.type);}
+   }
+   self.postMessage({id,type:'replay',step,board:engine.board(header.gameId),pieces});
   }
- }catch(e){self.postMessage({id,error:e.message||'This proof could not be verified.',verificationStatus:readiness.status});}
+ }catch(e){self.postMessage({id,error:e.message||'This proof could not be verified.',verificationStatus});}
 };

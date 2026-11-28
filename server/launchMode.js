@@ -53,7 +53,10 @@ function getLaunchStatus() {
 
 function highStakesBlockReasonForStatus(status = getLaunchStatus()) {
   if (status.mode === "off") return "Locked Match Lab is switched off.";
-  if (status.mode === "testnet") return status.isMainnet ? "LOCKED_MATCH_MODE=testnet cannot run on mainnet." : "";
+  if (status.mode === "testnet") {
+    if (status.isMainnet) return "LOCKED_MATCH_MODE=testnet cannot run on mainnet.";
+    return status.chainId === 11124 ? "" : "LOCKED_MATCH_MODE=testnet requires Abstract Testnet (11124).";
+  }
   if (status.mode === "internal") return status.isMainnet ? "" : "LOCKED_MATCH_MODE=internal is only for Abstract Mainnet rehearsal.";
   if (status.mode === "public") {
     if (!status.isMainnet) return "LOCKED_MATCH_MODE=public requires Abstract Mainnet.";

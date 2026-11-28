@@ -6,6 +6,7 @@ import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {walletContentSecurity} from './wallet-content-security.mjs';
+import {buildFairRules} from './build-fair-rules.mjs';
 const mobile=fileURLToPath(new URL('../',import.meta.url)),root=path.resolve(mobile,'../..');
 const flag=process.argv.indexOf('--baseline-apk'),baseline=flag>=0?path.resolve(process.argv[flag+1]||''):process.env.ANTARCTIC_BASELINE_APK;
 process.chdir(root);
@@ -13,6 +14,7 @@ if(!baseline)throw Error('Supply --baseline-apk /path/to/AntarcticKingdoms-v5.6.
 const baselineHash='1f25ab4abd8578b399611e0f1ac66e801443c661235dd57c81a2c2788734ae6e';
 if(createHash('sha256').update(await fs.readFile(baseline)).digest('hex')!==baselineHash)throw Error('Expected the verified v5.6.8 APK.');
 const require=createRequire(path.join(mobile,'build-deps/package.json')),{build}=await import(require.resolve('rolldown'));
+await buildFairRules({build,root,mobile});
 const destination=path.join(mobile,'android/app/src/main/assets'),release=JSON.parse(await fs.readFile(path.join(mobile,'release-config.json')));
 const manifest=await fs.readFile(path.join(mobile,'android/app/src/main/AndroidManifest.xml'),'utf8');
 if(!manifest.includes(`android:versionName="${release.versionName}"`)||!manifest.includes(`android:versionCode="${release.versionCode}"`))throw Error('Release and Android manifest versions differ.');
@@ -27,7 +29,7 @@ with zipfile.ZipFile(sys.argv[1]) as z:
   dest=out/p;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(z.read(name))`,baseline,destination]);
 const alias=Object.fromEntries(['react','react-dom','lucide-react'].map(name=>[name,path.join(mobile,'build-deps/node_modules',name)]));
 const plugins=[{name:'explicit-css',load(id){if(id.endsWith('.css'))return {code:'',moduleType:'js'};}}];
-async function bundle(input,file,platform='browser'){return build({input,plugins,platform,onwarn(warning,defaultHandler){if(['UNRESOLVED_IMPORT','MISSING_GLOBAL_NAME'].includes(warning.code))throw Error(warning.message);defaultHandler(warning);},resolve:{alias},transform:{target:'es2020',define:{'process.env.NODE_ENV':'"production"'}},output:{file,format:platform==='node'?'cjs':'iife',minify:platform!=='node',...(platform==='node'?{banner:'if (!globalThis.crypto) globalThis.crypto = require("node:crypto").webcrypto;'}:{})}});}
+async function bundle(input,file,platform='browser'){return build({input,plugins,platform,external:input===path.join(mobile,'src/fair.worker.js')?['node:crypto']:[],onwarn(warning,defaultHandler){if(['UNRESOLVED_IMPORT','MISSING_GLOBAL_NAME'].includes(warning.code))throw Error(warning.message);defaultHandler(warning);},resolve:{alias},transform:{target:'es2020',define:{'process.env.NODE_ENV':'"production"'}},output:{file,format:platform==='node'?'cjs':'iife',minify:platform!=='node',...(platform==='node'?{banner:'if (!globalThis.crypto) globalThis.crypto = require("node:crypto").webcrypto;'}:{})}});}
 await bundle(path.join(mobile,'src/App.jsx'),path.join(destination,'app.js'));
 for(const [input,output]of [['bot.worker.js','bot.js'],['learning.worker.js','learn.js'],['fair.worker.js','fair-worker.js']])await bundle(path.join(mobile,'src',input),path.join(destination,output));
 await bundle(path.join(root,'frontend/src/games/shanshui-xiangqi/bot.worker.js'),path.join(destination,'shanshui-bot.js'));

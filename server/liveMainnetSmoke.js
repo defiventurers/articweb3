@@ -1,5 +1,6 @@
 const DEFAULT_EXPECTED_MODE = "internal";
 const DEFAULT_EXPECTED_CHAIN_ID = 2741;
+const { probeHealth } = require('./healthMonitor');
 
 async function runLiveMainnetSmoke(options = {}) {
   const backendUrl = normalizeBaseUrl(options.backendUrl || process.env.BACKEND_URL || process.env.RENDER_BACKEND_URL || "");
@@ -9,9 +10,10 @@ async function runLiveMainnetSmoke(options = {}) {
   if (!backendUrl) throw new Error("BACKEND_URL is required.");
 
   const results = [];
-  const health = await fetchJson(`${backendUrl}/healthz`);
-  results.push(check("healthz ok", health.ok === true));
-  results.push(check("service name", health.service === "artic-web3-server", `service=${health.service}`));
+  const health = await probeHealth(`${backendUrl}/healthz`, { check: 'liveness' });
+  results.push(check("healthz schema and liveness", health.ok, health.code));
+  const readiness = await probeHealth(`${backendUrl}/readyz`);
+  results.push(check("readyz schema and required database", readiness.ok, readiness.code));
 
   const runtime = await fetchJson(`${backendUrl}/runtime/status`);
   results.push(check("runtime status ok", runtime.ok === true));
@@ -55,15 +57,16 @@ function check(name, ok, detail = "") {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url, { headers: { Accept: "application/json" } });
+  const response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(5000), headers: { Accept: "application/json" } });
+  if (!/^application\/json(?:\s*;|$)/i.test(response.headers.get('content-type') || '')) throw new Error('Endpoint returned an unexpected content type.');
   const text = await response.text();
   let payload;
   try {
     payload = text ? JSON.parse(text) : {};
   } catch (err) {
-    throw new Error(`${url} returned non-JSON response: ${text.slice(0, 120)}`);
+    throw new Error('Endpoint returned invalid JSON.');
   }
-  if (!response.ok) throw new Error(`${url} returned ${response.status}: ${payload.error || text}`);
+  if (!response.ok) throw new Error(`Endpoint returned HTTP ${response.status}.`);
   return payload;
 }
 

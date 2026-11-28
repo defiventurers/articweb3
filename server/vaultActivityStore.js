@@ -1,27 +1,13 @@
 const { Pool } = require("pg");
 
 const DATABASE_URL = process.env.DATABASE_URL || "";
-const DATABASE_SSL = process.env.DATABASE_SSL === "true" || /sslmode=require/i.test(DATABASE_URL);
 const memoryActivities = new Map();
 const memoryByWallet = new Map();
-let pool = null;
-let ready = false;
-let initPromise = null;
-let initError = null;
-
-function getPool() {
-  if (!DATABASE_URL) return null;
-  if (!pool) {
-    pool = new Pool(require('./databaseSecurity').databaseOptions(DATABASE_URL));
-  }
-  return pool;
-}
+const runtime = require("./databaseRuntime").createStoreRuntime({ databaseUrl: DATABASE_URL, Pool, label: "vault-activity-db" });
+const getPool = runtime.getPool;
 
 async function initVaultActivityStore() {
-  if (!DATABASE_URL) return false;
-  if (initPromise) return initPromise;
-  initPromise = (async () => {
-    try {
+  return runtime.init(async () => {
       await getPool().query(`
         CREATE TABLE IF NOT EXISTS vault_activity (
           id TEXT PRIMARY KEY,
@@ -39,23 +25,13 @@ async function initVaultActivityStore() {
         )
       `);
       await getPool().query(`CREATE INDEX IF NOT EXISTS vault_activity_wallet_time_idx ON vault_activity (wallet, created_at DESC)`);
-      ready = true;
-      initError = null;
-      return true;
-    } catch (err) {
-      ready = false;
-      initError = err.message || "Vault activity database initialization failed.";
-      console.error(`[vault-activity-db] init failed: ${initError}`);
-      return false;
-    }
-  })();
-  return initPromise;
+  });
 }
 
 async function saveVaultActivity(activity) {
   const entry = normalizeActivity(activity);
   saveMemory(entry);
-  if (!(await initVaultActivityStore())) return entry;
+  if (!(await runtime.requireReady(initVaultActivityStore))) return entry;
   await getPool().query(
     `INSERT INTO vault_activity (id, wallet, type, currency, amount_wei, room_code, match_id, contract_match_id, tx_hash, status, note, created_at)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,to_timestamp($12 / 1000.0))
@@ -67,7 +43,7 @@ async function saveVaultActivity(activity) {
 
 async function getVaultActivityForWallet(wallet, limit = 100) {
   const key = normalizeWallet(wallet);
-  if (await initVaultActivityStore()) {
+  if (await runtime.requireReady(initVaultActivityStore)) {
     const result = await getPool().query(
       `SELECT * FROM vault_activity WHERE wallet = $1 ORDER BY created_at DESC LIMIT $2`,
       [key, Math.min(Number(limit) || 100, 100)]
@@ -79,7 +55,7 @@ async function getVaultActivityForWallet(wallet, limit = 100) {
 }
 
 function vaultActivityStoreStatus() {
-  return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError ? "Database check pending." : "" };
+  return { ...runtime.status() };
 }
 
 function saveMemory(entry) {

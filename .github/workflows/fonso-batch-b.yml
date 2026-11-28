@@ -1,0 +1,56 @@
+name: FONSO runtime compatibility and recovery
+on:
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'frontend/vercel.json'
+      - 'scripts/check-health.mjs'
+      - '.github/workflows/fonso-batch-b.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'frontend/vercel.json'
+      - 'scripts/check-health.mjs'
+      - '.github/workflows/fonso-batch-b.yml'
+permissions:
+  contents: read
+jobs:
+  batch-b:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20.20.2', '24']
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install locked dependencies without lifecycle builds
+        run: |
+          npm ci --prefix server --ignore-scripts --no-audit --no-fund
+          npm ci --prefix shared/fair-play --ignore-scripts --no-audit --no-fund
+      - name: Verify compatibility, strict health and database recovery contracts
+        run: >-
+          node --test server/tests/deployment-compatibility.test.js
+          server/tests/health-status.test.js server/tests/health-monitor.test.js
+          server/tests/health-routing.test.js server/tests/health-endpoints.test.js
+          server/tests/startup-readiness.test.js server/tests/database-privileges.test.js
+          server/tests/database-schema.test.js server/tests/database-recovery.test.js
+          server/tests/runtime-status.test.js server/tests/live-mainnet-smoke.test.js
+      - name: Preserve account, free gameplay and funded authorization
+        run: >-
+          node --test server/tests/company-service.test.js
+          server/tests/company-account-play.test.js server/tests/para-game-wallet.test.js
+          server/tests/launch-metrics.test.js server/tests/security-hardening.test.js
+          server/tests/arctic-play-socket.test.js server/tests/funded-access.test.js
+          server/tests/funded-access-socket.test.js server/tests/anti-cheat-transform.test.js
+          server/tests/aurora-ganjifa-online.test.js server/tests/aurora-vulture-online.test.js
+          server/tests/polar-tablan-online.test.js server/tests/seven-ice-rings-online.test.js
+          server/tests/sige-online.test.js server/tests/two-stones-online.test.js
+      - name: Check published rules and accidental credential literals
+        run: |
+          node shared/fair-play/check-rules-integrity.mjs
+          node scripts/security-scan.mjs
