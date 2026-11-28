@@ -6,6 +6,13 @@ const emailOf=v=>typeof v==='string'?v.trim().toLowerCase():'';
 const codeHash=(salt,code)=>new Promise((resolve,reject)=>derive(code,salt,32,(e,key)=>e?reject(e):resolve(key.toString('hex'))));
 const validSecret=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{43}$/.test(v);
 const validEmail=e=>e.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+const LINK_RESERVATION_MS=120000;
+const boundWallet=(account,wallet)=>!!wallet&&account?.gameWallet?.provider===wallet.provider&&account.gameWallet.identity===wallet.identity&&account.gameWallet.address?.toLowerCase()===wallet.address?.toLowerCase();
+function assertLinkSession(account,target,ctx){
+ if(!target?.accountId)return;
+ const at=ctx.now();
+ if(!account||account.temporaryExpiresAt&&account.temporaryExpiresAt<=at||!account.sessions?.some(s=>same(s.hash,target.linkSessionHash)&&s.expires>at&&(s.lastSeen===undefined||at-s.lastSeen<86400000)&&(s.issuedAt===undefined||s.issuedAt+7*86400000>at)))throw ctx.error('Sign in to your game account again before linking.',401);
+}
 function createCompanyAuth({googleClientId=process.env.AK_GOOGLE_CLIENT_ID,googleClientSecret=process.env.AK_GOOGLE_CLIENT_SECRET,websiteReturnUri=process.env.AK_GOOGLE_WEBSITE_RETURN_URI||'https://arcticdominion.xyz/',redirectUri=process.env.AK_GOOGLE_REDIRECT_URI||'https://articweb3.onrender.com/arctic-play/v3/auth/google/callback',mailKey=process.env.AK_MAIL_API_KEY,mailFrom=process.env.AK_MAIL_FROM,fetcher=fetch,sendCode,walletOptions,paraOptions}={}){
  const wallets=require('./googleGameWallet').createGoogleGameWallet({...walletOptions,websiteReturnUri}),para=require('./paraGameWallet').createParaGameWallet({...paraOptions,websiteReturnUri});
  const websiteReturn=new URL(websiteReturnUri);if(websiteReturn.protocol!=='https:'||websiteReturn.username||websiteReturn.password||websiteReturn.hash||websiteReturn.search)throw Error('Google website return URI must be an HTTPS page without query or fragment.');
@@ -20,16 +27,52 @@ function createCompanyAuth({googleClientId=process.env.AK_GOOGLE_CLIENT_ID,googl
    return c;
   }catch{throw error('Google sign-in could not be verified. Please start again.',401);}
  }
- async function identityAccount(provider,key,verifiedEmail,ctx,target){
-  const {store,now,error}=ctx;let accountId,isNew=false;
-  if(target?.accountId){const a=await store.get('account',target.accountId);if(!a||(a.temporaryExpiresAt&&a.temporaryExpiresAt<=now())||!a.sessions?.some(s=>s.hash===target.linkSessionHash&&s.expires>now()))throw error('Sign in to your game account again before linking.',401);}
- const prior=provider==='google-wallet'?await store.get('auth-identity',digest('email:'+verifiedEmail)):null;
-  await store.transact('auth-identity',digest(provider+':'+key),v=>{if(target?.accountId&&v&&v.accountId!==target.accountId)throw error('This Para sign-in already belongs to another game account.',409);accountId=v?.accountId||target?.accountId||prior?.accountId||randomUUID();isNew=!v;return v||{accountId,provider,createdAt:now()};});
-  await store.transact('account',accountId,a=>a||{id:accountId,email:verifiedEmail,recoveryHash:null,sessions:[],progress:{},revision:0,createdAt:now(),metrics:[],entitlements:{},marketing:{enabled:false},marketingChoiceSet:false});
+ async function identityAccount(provider,key,verifiedEmail,ctx,target,wallet){
+  const {store,now,error}=ctx,identityKey=digest(provider+':'+key);let accountId,isNew=false,reservation,expired;
+  if(target?.accountId)assertLinkSession(await store.get('account',target.accountId),target,ctx);
+  const previous=await store.get('auth-identity',identityKey);
+  if(previous?.pendingLink&&Number.isFinite(previous.linkExpiresAt)&&previous.linkExpiresAt<=now()){
+   // Serialize with any already-started binding transaction. Once this expired
+   // reservation is observed, a later binding must fail its own deadline check.
+   let bound=false;
+   await store.transact('account',previous.accountId,a=>{bound=boundWallet(a,wallet);return a;});
+   expired={...previous,bound};
+  }
+  const prior=provider==='google-wallet'?await store.get('auth-identity',digest('email:'+verifiedEmail)):null;
+  await store.transact('auth-identity',identityKey,v=>{
+   if(expired&&v?.pendingLink&&v.accountId===expired.accountId&&v.linkReservation===expired.linkReservation&&v.linkExpiresAt===expired.linkExpiresAt){
+    if(expired.bound){const {pendingLink,linkReservation,linkExpiresAt,...confirmed}=v;v=confirmed;}else v=null;
+   }
+   if(v?.pendingLink&&!target?.accountId)throw error('This account link is still pending. Open linking from your game account again, or retry sign-in after two minutes.',409);
+   if(target?.accountId&&v&&v.accountId!==target.accountId)throw error('This Para sign-in already belongs to another game account.',409);
+   accountId=v?.accountId||target?.accountId||prior?.accountId||randomUUID();isNew=!v;
+   const next=v||{accountId,provider,createdAt:now(),...(target?.accountId?{pendingLink:true,linkReservation:random(),linkExpiresAt:now()+LINK_RESERVATION_MS}:{})};
+   reservation=next.pendingLink?{id:next.linkReservation,expires:next.linkExpiresAt}:null;return next;
+  });
+  await store.transact('account',accountId,a=>{if(target?.accountId){assertLinkSession(a,target,ctx);return a;}return a||{id:accountId,email:verifiedEmail,recoveryHash:null,sessions:[],progress:{},revision:0,createdAt:now(),metrics:[],entitlements:{},marketing:{enabled:false},marketingChoiceSet:false};});
   if(['google','google-wallet'].includes(provider))await store.transact('auth-identity',digest('email:'+verifiedEmail),v=>v||{accountId,provider:'email',createdAt:now()});
-  return {accountId,isNew};
+  return {accountId,isNew,identityKey,reservation};
  }
- async function signIn(provider,key,verifiedEmail,ctx,displayName,wallet,target){const found=await identityAccount(provider,key,verifiedEmail,ctx,target);let out;await ctx.store.transact('account',found.accountId,a=>{if(provider==='privy'&&wallet){if(a.privyWallet&&a.privyWallet.userId!==wallet.userId)throw ctx.error('Use your existing game wallet.',409);a.privyWallet=wallet;}if(['google-wallet','para-wallet'].includes(provider)&&wallet){if(a.gameWallet&&(a.gameWallet.identity!==wallet.identity||a.gameWallet.address.toLowerCase()!==wallet.address.toLowerCase()))throw ctx.error('Your game wallet has changed. Contact support before continuing.',409);a.gameWallet=wallet;if(!a.firstGameWalletVerifiedAt)a.firstGameWalletVerifiedAt=ctx.now();}if(['google','google-wallet','para-wallet'].includes(provider))a.identity={provider,displayName:typeof displayName==='string'?displayName.replace(/[\u0000-\u001f\u007f<>]/g,'').trim().slice(0,100):''};else if(!a.identity)a.identity={provider,displayName:''};if(provider==='para-wallet'&&target?.earlyEnrollment&&ctx.earlySignup?.enabled)require('./earlySignup').recordEnrollment(a,target.earlyEnrollment,ctx.now());out={accountId:a.id,session:ctx.session(a),email:a.email,displayName:a.identity.displayName,provider:a.identity.provider,...(a.gameWallet?{wallet:a.gameWallet}:a.privyWallet?{wallet:a.privyWallet}:{}),marketingChoiceNeeded:!!a.email&&!a.marketingChoiceSet,isNew:found.isNew};return a;});if(provider==='para-wallet'&&ctx.earlySignup?.enabled){try{out.earlySignup=await ctx.earlySignup.fulfill(found.accountId);}catch{out.earlySignup={status:'retrying'};}}return out;}
+ async function signIn(provider,key,verifiedEmail,ctx,displayName,wallet,target){
+  const found=await identityAccount(provider,key,verifiedEmail,ctx,target,wallet);let out;
+  await ctx.store.transact('account',found.accountId,a=>{
+   // This is the authoritative session check: it shares the transaction that
+   // binds the wallet and issues the new game session.
+   assertLinkSession(a,target,ctx);
+   if(found.reservation&&(!Number.isFinite(found.reservation.expires)||found.reservation.expires<=ctx.now()))throw ctx.error('This account link expired. Open linking from your game account again.',401);
+   if(provider==='privy'&&wallet){if(a.privyWallet&&a.privyWallet.userId!==wallet.userId)throw ctx.error('Use your existing game wallet.',409);a.privyWallet=wallet;}
+   if(['google-wallet','para-wallet'].includes(provider)&&wallet){if(a.gameWallet&&(a.gameWallet.identity!==wallet.identity||a.gameWallet.address.toLowerCase()!==wallet.address.toLowerCase()))throw ctx.error('Your game wallet has changed. Contact support before continuing.',409);a.gameWallet=wallet;if(!a.firstGameWalletVerifiedAt)a.firstGameWalletVerifiedAt=ctx.now();}
+   if(['google','google-wallet','para-wallet'].includes(provider))a.identity={provider,displayName:typeof displayName==='string'?displayName.replace(/[\u0000-\u001f\u007f<>]/g,'').trim().slice(0,100):''};else if(!a.identity)a.identity={provider,displayName:''};
+   if(provider==='para-wallet'&&target?.earlyEnrollment&&ctx.earlySignup?.enabled)require('./earlySignup').recordEnrollment(a,target.earlyEnrollment,ctx.now());
+   out={accountId:a.id,session:ctx.session(a),email:a.email,displayName:a.identity.displayName,provider:a.identity.provider,...(a.gameWallet?{wallet:a.gameWallet}:a.privyWallet?{wallet:a.privyWallet}:{}),marketingChoiceNeeded:!!a.email&&!a.marketingChoiceSet,isNew:found.isNew};return a;
+  });
+  if(found.reservation)await ctx.store.transact('auth-identity',found.identityKey,v=>{
+   if(!v||v.accountId!==found.accountId||v.pendingLink&&v.linkReservation!==found.reservation.id)throw ctx.error('Account linking changed. Start sign-in again.',409);
+   const {pendingLink,linkReservation,linkExpiresAt,...confirmed}=v;return confirmed;
+  });
+  if(provider==='para-wallet'&&ctx.earlySignup?.enabled){try{out.earlySignup=await ctx.earlySignup.fulfill(found.accountId);}catch{out.earlySignup={status:'retrying'};}}
+  return out;
+ }
  async function route(ctx){const {req,path,method,body,store,error,now,authenticated}=ctx;
   if(path==='/auth/providers'&&method==='GET')return {google:google&&store.configured,googleWallet:wallets.config().enabled&&store.configured,paraWallet:para.config().enabled&&store.configured,email:email&&store.configured,recovery:true};
   const paraResult=await para.route(ctx);if(paraResult!==undefined)return paraResult;

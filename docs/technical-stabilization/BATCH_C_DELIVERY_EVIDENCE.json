@@ -1,0 +1,80 @@
+{
+  "checkedAt": "2026-11-28 03:14:50 UTC",
+  "reviewedBaseCommit": "30ab0a5d346bb6087da13ea0322e08c8b24a1a80",
+  "reproduction": {
+    "command": "node --test server/tests/passport-recovery.test.js",
+    "beforePatch": {
+      "tests": 4,
+      "passed": 0,
+      "failed": 4
+    },
+    "afterInitialPatch": {
+      "tests": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    "findings": [
+      "Existing claim bypassed canonical mint-receipt verification and confirmed without transactionHash.",
+      "Existing unrelated saved receipt did not stop false confirmed status.",
+      "A worker losing its lease attempted a second retry write instead of ending its claim."
+    ]
+  },
+  "localIntegration": {
+    "status": "PASSED",
+    "command": "PG_BINDIR=<local PostgreSQL 18 binary directory> node server/scripts/test-passport-delivery.cjs",
+    "postgres": "18.7",
+    "results": [
+      {
+        "node": "20.20.2",
+        "tests": 33,
+        "passed": 33,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "node": "24.22.3",
+        "tests": 33,
+        "passed": 33,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "finalUnitResults": {
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "nodeVersions": [
+        "20.20.2",
+        "24.22.3"
+      ]
+    },
+    "finalCombinedStatus": "PASSED: 33/33 on each Node version, no skips, after independent peer review.",
+    "identityProvider": "Synthetic Para JWT/JWKS and wallet fixtures; not live consent",
+    "chain": "Local Ganache only, chainId46630; no remote transactions",
+    "cleanup": "Synthetic loopback PostgreSQL clusters stopped and removed",
+    "nativeModuleNote": "Ganache on Node24 used its packaged JavaScript uWS fallback; all test assertions passed. No production dependency was changed."
+  },
+  "resumeCheckpointCommit": "138ca6b56057cd5f9b1e1022be8b0e256f41f87f",
+  "peerReview": {
+    "status": "No blocking issue found",
+    "reviewer": "Independent security_review subagent",
+    "scope": "Worker, mint recovery helper, lease fencing, meaningful isolated integration assertions",
+    "remainingLimits": [
+      "Arrival/achievement confirmation behavior unchanged",
+      "Two canonical L2 blocks are not Ethereum finality",
+      "Historical RPC data required to recover a missing saved hash",
+      "Deployment and live minting require separate founder authorization; review and explicitly approve any pending queue resumption"
+    ]
+  },
+  "finalizedAtUtc": "2026-11-28T03:18:11.773147+00:00",
+  "sourceSha256": {
+    "server/antarcticPassportStore.js": "aa12bf73e18d4ff893522271aaab964265eaef91d12d69ed09a646deea8d90d0",
+    "server/antarcticPassportWorker.js": "86dc9c180537b0d480d54697371836c8af4cb97f0139fb74d6746d1c34873ef1",
+    "server/passportMintRecovery.js": "72a08eadbc8187ca59d90fe99b22b9125d4155ac15c33195f2da08022123c8c2",
+    "server/scripts/test-passport-delivery.cjs": "2273dfd25600d273d742530efeae09927958c62a1bc5b48c7761ac3033f499cf",
+    "server/tests/antarctic-passport.test.js": "bd80f7fd29a002e49e8e615f6f8dac9c7703860cfa5d3fa2ed63a9fd2510ff9c",
+    "server/tests/passport-recovery.test.js": "65590a3481ff8b1645435ded2636824e0aed54cfdba1105b731a63c6fcabca9d",
+    "server/tests/passport-recovery-integration.test.js": "bc314ce75a486f2251c46d9f0c0367c2dbd6e569586d3aeeece5cd91876c7dbb"
+  },
+  "privateOperationalEvidence": "Retained in the founder-only handoff; private connected-database observations and SQL are not approved for public repository publication."
+}

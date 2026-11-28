@@ -1,0 +1,109 @@
+{
+  "checkedAt": "2026-11-28T03:17:26Z",
+  "reviewedImplementationBase": "30ab0a5d346bb6087da13ea0322e08c8b24a1a80",
+  "resumeCheckpoint": "138ca6b56057cd5f9b1e1022be8b0e256f41f87f",
+  "branch": "codex/fonso-stabilization-batch-c",
+  "scope": "Local auth, account-link recovery and early-page gate regression tests; read-only scope reconciliation from sibling evidence.",
+  "sourceProvenance": {
+    "frontend/public/early/passport-launch.js": "539a932903a13c78172a50c8dcc4dc090a696973",
+    "frontend/public/early/index.html": "ff36965f56e787e270c1c0e38650c0a5e92f5085",
+    "note": "Exact original Git blobs retrieved from the reviewed implementation base; the HTML remains unchanged. No signed APK payload was edited."
+  },
+  "beforePatch": [
+    {
+      "command": "node --test --test-name-pattern='revocation or deletion racing' server/tests/para-game-wallet.test.js",
+      "failed": 1,
+      "result": "HTTP 200 returned after revocation between the initial linking-session check and the identity mapping write; expected 401."
+    },
+    {
+      "command": "NODE_PATH=./mobile/arctic-play/build-deps/node_modules node --test --test-name-pattern='expired session during|becomes unverified' frontend/tests/early-entry.test.cjs",
+      "failed": 2,
+      "result": "Home remained or became visible after the account session/wallet failed validation; expected the hidden/inert app and visible entry gate."
+    }
+  ],
+  "afterPatch": [
+    {
+      "runtime": "Node 24.22.3",
+      "command": "node --test --test-reporter=dot server/tests/company-service.test.js server/tests/company-account-play.test.js server/tests/para-game-wallet.test.js server/tests/early-signup.test.js",
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0
+    },
+    {
+      "runtime": "Node 24.22.3",
+      "command": "NODE_PATH=./mobile/arctic-play/build-deps/node_modules node --test --test-reporter=dot frontend/tests/early-entry.test.cjs",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0
+    },
+    {
+      "command": "node --check server/companyAuth.js",
+      "exitCode": 0
+    },
+    {
+      "runtime": "Node 20.20.2",
+      "command": "/workspace/scratch/583ceaf5c93c/tools/node20/node_modules/node/bin/node --test --test-reporter=dot server/tests/company-service.test.js server/tests/company-account-play.test.js server/tests/para-game-wallet.test.js server/tests/early-signup.test.js",
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0
+    },
+    {
+      "runtime": "Node 20.20.2",
+      "harness": "jsdom 26.1.0, existing CI pin installed in isolated scratch directory with --ignore-scripts",
+      "command": "NODE_PATH=/workspace/scratch/583ceaf5c93c/tools/entry-tests/node_modules /workspace/scratch/583ceaf5c93c/tools/node20/node_modules/node/bin/node --test --test-reporter=spec frontend/tests/early-entry.test.cjs",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0
+    },
+    {
+      "runtime": "Node 24.22.3",
+      "harness": "jsdom 26.1.0, same isolated dependency tree as Node20",
+      "command": "NODE_PATH=/workspace/scratch/583ceaf5c93c/tools/entry-tests/node_modules node --test --test-reporter=spec frontend/tests/early-entry.test.cjs",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0
+    }
+  ],
+  "harnessCompatibility": {
+    "initialRootAttempt": "Node20 with the pre-existing jsdom30 dependency tree failed before application assertions: undici expected unavailable createZstdDecompress.",
+    "correction": "Used existing repository CI pin jsdom26.1.0 in an isolated directory; no repository dependency or application workaround was added.",
+    "installationCommand": "npm install --prefix /workspace/scratch/583ceaf5c93c/tools/entry-tests --ignore-scripts --no-audit --no-fund jsdom@26.1.0",
+    "result": "15 of 15 DOM tests passed on each Node20.20.2 and Node24.22.3."
+  },
+  "independentReview": {
+    "reviewer": "batch_a_context",
+    "scope": "companyAuth/Para completion, companyStore transaction ordering, expired-link recovery, revoked/deleted target races, same-target retries, finalization outage and stale UI responses",
+    "result": "No concrete authorization bypass or blocking regression found.",
+    "independentChecks": "18 Para backend cases passed on Node20; 15 early-entry DOM cases passed on Node24."
+  },
+  "regressions": [
+    "Revocation and deletion before identity mapping or immediately before final wallet binding reject the link and do not recreate a deleted target.",
+    "Ordinary sign-in cannot use an unfinished explicit-link mapping.",
+    "An expired unbound link recovers to a fresh account, without exposing the target save.",
+    "A wallet binding committed before a finalization outage recovers to the same original account and save.",
+    "A delayed old request cannot bind after the expired reservation has been safely replaced.",
+    "Session expiry during existing-account consent cannot reveal Home.",
+    "A wallet invalidated during refresh closes an already-open app.",
+    "Signing out during an outstanding consent request cannot reopen the old account."
+  ],
+  "relatedEvidence": [
+    "BATCH_C_DELIVERY_EVIDENCE.json",
+    "Private contract-verification review package: BATCH_C_CHAIN_OBSERVATIONS.json",
+    "server/tests/passport-acceptance-network.test.js"
+  ],
+  "liveBoundaries": {
+    "productionDeployed": false,
+    "liveAccountCreated": false,
+    "paraConsentCompleted": false,
+    "liveWalletSignature": false,
+    "liveMint": false,
+    "physicalAndroidAcceptance": false,
+    "renderDatabaseBinding": "Unresolved; connected Neon aggregates are not proof of the active Render binding.",
+    "historicalAttribution": "Blocked by inaccessible historical database endpoint; no raw user records or identities collected."
+  }
+}

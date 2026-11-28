@@ -4,6 +4,7 @@ let session=sessionStorage.getItem(sessionKey),account=null,passport=null,loadin
 function setStatus(message){$('connection-status').textContent=message;}
 function error(message){const box=$($('harbor-app').hidden?'entry-error':'passport-error');box.textContent=String(message||'Please try again.');box.hidden=false;}
 function clearError(){for(const id of ['passport-error','entry-error']){$(id).hidden=true;$(id).textContent='';}}
+function clearSession(){session=null;account=null;passport=null;sessionStorage.removeItem(sessionKey);$('harbor-app').hidden=true;$('harbor-app').setAttribute('inert','');$('entry-gate').hidden=false;$('entry-loading').hidden=true;$('connect-card').hidden=false;$('wallet-card').hidden=true;$('collection-card').hidden=true;}
 function setBusy(value){loading=value;for(const id of ['sign-in','refresh'])$(id).disabled=value||id==='sign-in'&&!ready;}
 const ageKey='ak.first33.adult.v1';
 if('serviceWorker' in navigator)navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.filter(r=>new URL(r.scope).pathname==='/early/').map(r=>r.unregister()))).catch(()=>{});
@@ -41,7 +42,7 @@ function updateTile(kind){const d=delivery(kind),state=$(kind+'-state');state.te
  transactionLink(kind,walletMatches()?d?.transactionHash:null,'View transaction ↗');
 }
 function showAccount(result){account=result.identity;passport=result.passport;const wallet=account?.wallet;
- if(!verifiedWallet()){account=null;session=null;sessionStorage.removeItem(sessionKey);error('Your verified Para wallet is not ready. Sign in again to finish setup.');$('connect-card').hidden=false;$('wallet-card').hidden=true;$('collection-card').hidden=true;return false;}
+ if(!verifiedWallet()){clearSession();error('Your verified Para wallet is not ready. Sign in again to finish setup.');return false;}
  $('connect-card').hidden=true;$('wallet-card').hidden=false;$('created-wallet').textContent=wallet.address;
  const network=networks[wallet.chainId],link=$('wallet-explorer');$('wallet-network').textContent=network?.name||'Network '+wallet.chainId;link.hidden=!network;link.removeAttribute('href');if(network)link.href=network.explorer+'/address/'+wallet.address;
  $('wallet-match').hidden=!passport||walletMatches();$('wallet-match').textContent='Your registered delivery wallet differs from this sign-in. Delivery must be checked before confirming receipt.';
@@ -61,7 +62,7 @@ async function refreshAccount(silent=false){if(!session)return false;const expec
  try{const result=await api('/passport');if(session!==expectedSession)return false;if(!showAccount(result))return false;
  await Promise.all(['visa','egg'].map(kind=>verifyDelivery(kind,expectedSession)));if(session!==expectedSession)return false;
  $('delivery-updated').textContent='Last checked '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · Updates automatically';clearError();return true;
- }catch(e){if(session!==expectedSession)return false;if(e.status===401){session=null;account=null;passport=null;sessionStorage.removeItem(sessionKey);$('harbor-app').hidden=true;$('harbor-app').setAttribute('inert','');$('entry-gate').hidden=false;$('entry-loading').hidden=true;$('connect-card').hidden=false;if(!booting)wake().catch(()=>{});}if(!silent)error(e.message);return false;}
+ }catch(e){if(session!==expectedSession)return false;if(e.status===401){clearSession();if(!booting)wake().catch(()=>{});}if(!silent)error(e.message);return false;}
 }
 function entryLoading(message){$('harbor-app').hidden=true;$('harbor-app').setAttribute('inert','');$('entry-gate').hidden=false;$('entry-loading').hidden=false;$('connect-card').hidden=true;$('entry-retry').hidden=true;$('entry-status').textContent=message;}
 function entrySignIn(){$('entry-loading').hidden=true;$('connect-card').hidden=false;}
@@ -80,7 +81,8 @@ async function boot(){if(booting)return;booting=true;clearError();entryLoading('
  }catch(e){entrySignIn();error(e.message);$('entry-retry').hidden=false;}finally{booting=false;}}
 async function signIn(){if(loading)return;clearError();if(!$('adult-confirm').checked)return error('Confirm that you are at least 18 and accept the signup terms.');sessionStorage.setItem(ageKey,'yes');setBusy(true);const consent={consentVersion:'early-signup-v1',adultConfirmed:true};try{
  if(session&&verifiedWallet()){
-  await api('/early/signup',consent);await refresh();if(account?.needsEarlySignup)throw Error('Your signup is still being saved. Please try again.');$('entry-gate').hidden=true;$('harbor-app').hidden=false;$('harbor-app').removeAttribute('inert');tab('passport',false);return;
+  const expectedSession=session;await api('/early/signup',consent);if(session!==expectedSession)return;
+  if(!await refresh()||session!==expectedSession||!verifiedWallet())throw Error('Sign in again to finish checking your signup.');if(account.needsEarlySignup)throw Error('Your signup is still being saved. Please try again.');$('entry-gate').hidden=true;$('harbor-app').hidden=false;$('harbor-app').removeAttribute('inert');tab('passport',false);return;
  }
  const verifier=base64(crypto.getRandomValues(new Uint8Array(32))),challenge=base64(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))));sessionStorage.setItem(pkceKey,verifier);const result=await api('/auth/para/start',{challenge,platform:'web',returnPath:'/early/',earlySignup:consent},false,35000);const url=new URL(result.url);if(url.origin!=='https://articweb3.onrender.com'||url.pathname!=='/arctic-play/wallet/')throw Error('Unexpected sign-in destination.');location.assign(url.href);
  }catch(e){error(e.message);}finally{setBusy(false);}}

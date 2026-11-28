@@ -1,0 +1,54 @@
+{
+  "checkedAt": "2026-11-28T03:16:55.929Z",
+  "candidate": "Batch C working tree before scoped implementation commit",
+  "sourceSha256": {
+    "server/antarcticPassport.js": "c27492c64bf46aa341254c255d71b51c4abdb45256a724339955d034700494a3",
+    "server/passportMetadataReader.js": "411cc73d6ed7dddf11aeb27959685d9f71b0d4cc9b067fcd4816f150cd50696c"
+  },
+  "environment": "Actual local company HTTP service with empty fixture association store; no account or receipt writes",
+  "transport": "Workspace-native-fetch JsonRpcProvider adapter for read-only official RPC; default ethers HTTPS did not complete in this managed workspace. Production transport acceptance is pending.",
+  "registrationHold": true,
+  "rpcMethods": {
+    "eth_chainId": 10,
+    "eth_getCode": 2,
+    "eth_blockNumber": 2,
+    "eth_getBlockByNumber": 3,
+    "eth_call": 8
+  },
+  "observations": [
+    {
+      "path": "/arctic-play/v3/passport/metadata/46630/3.json",
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "name": "Antarctic Passport #3",
+        "description": "A free account-bound Antarctic Kingdoms passport. Metadata updates with service-verified game achievements. Testnet collectible: no real-world value.",
+        "image": "https://articweb3.onrender.com/arctic-play/app/art/passport-book-v2/company-passport-cover.webp",
+        "external_url": "https://articweb3.onrender.com/arctic-play/app/",
+        "attributes": [
+          {
+            "trait_type": "Network",
+            "value": "Robinhood Chain Testnet"
+          }
+        ],
+        "properties": {
+          "chainId": 46630,
+          "tokenId": "3",
+          "metadata": "mutable",
+          "achievementAuthority": "server-validated match results",
+          "personalData": "excluded"
+        }
+      }
+    },
+    {
+      "path": "/arctic-play/v3/passport/metadata/46630/999.json",
+      "status": 404,
+      "contentType": "application/json",
+      "body": {
+        "error": "This passport does not exist on the reviewed collection."
+      }
+    }
+  ],
+  "chainEvidence": "Private contract-verification review package: BATCH_C_CHAIN_OBSERVATIONS.json (public upload not authorized)",
+  "productionVerification": "PENDING: live intended metadata URL still returned 404 before deployment; local HTTP success is not a production deployment."
+}

@@ -21,17 +21,37 @@ function workerConfig(env=process.env){
 // including recovery after a process died between broadcast and persistence.
 async function deliverOne({store,adapter,now=Date.now}){
  const job=await store.claimJob(now(),adapter.chainId,adapter.supportedKinds);if(!job)return false;
+ const lease={attempts:job.attempts,leaseUntil:job.lease_until};
+ const update=patch=>store.updateJob(job.id,patch,lease);
+ const finish=async minted=>{
+  let confirmed=minted.confirmed===true,errorCode=null;
+  if(confirmed&&['visa','egg'].includes(job.kind)){
+   const verify=job.kind==='visa'?adapter.verifyPassport:adapter.verifyEgg;
+   const valid=proof=>proof?.confirmed===true&&Number(proof.chainId)===job.chain_id&&proof.wallet?.toLowerCase()===job.wallet.toLowerCase()&&String(proof.tokenId)===String(minted.tokenId)&&proof.transactionHash===job.tx_hash;
+   let proof=job.tx_hash&&verify?await verify(job):null;
+   if(!valid(proof)){
+    const recovered=await adapter.recoverMint?.(job,minted);
+    if(recovered&&recovered!==job.tx_hash){
+     // Persist first, even if the following verification is interrupted.
+     await update({status:'submitted',txHash:recovered,errorCode:null});job.tx_hash=recovered;
+    }
+    proof=job.tx_hash&&verify?await verify(job):null;
+   }
+   confirmed=valid(proof);if(!confirmed)errorCode='MINT_RECEIPT_PENDING';
+  }
+  await update({status:confirmed?'confirmed':'submitted',tokenId:minted.tokenId||null,leaseUntil:0,runAfter:now()+30000,errorCode});
+ };
  try{
   if(job.chain_id!==adapter.chainId)throw Object.assign(Error('Wrong network.'),{permanent:true,code:'NETWORK_MISMATCH'});
-  const existing=await adapter.lookup(job);if(existing){if(existing.recipient.toLowerCase()!==job.wallet.toLowerCase()||(job.kind==='achievement'&&String(existing.tokenId)!==String(job.achievement_token_id)))throw Object.assign(Error('Claim recipient mismatch.'),{permanent:true,code:'RECIPIENT_MISMATCH'});await store.updateJob(job.id,{status:existing.confirmed===true?'confirmed':'submitted',tokenId:existing.tokenId||null,leaseUntil:0,runAfter:now()+30000,errorCode:null});return true;}
+  const existing=await adapter.lookup(job);if(existing){if(existing.recipient.toLowerCase()!==job.wallet.toLowerCase()||(job.kind==='achievement'&&String(existing.tokenId)!==String(job.achievement_token_id)))throw Object.assign(Error('Claim recipient mismatch.'),{permanent:true,code:'RECIPIENT_MISMATCH'});await finish(existing);return true;}
   let tx=job.tx_hash;
-  if(!tx){tx=await adapter.send(job);await store.updateJob(job.id,{status:'submitted',txHash:tx,errorCode:null});}
+  if(!tx){tx=await adapter.send(job);await update({status:'submitted',txHash:tx,errorCode:null});job.tx_hash=tx;}
   const receipt=await adapter.receipt(tx);
-  if(!receipt){await store.updateJob(job.id,{status:'submitted',leaseUntil:0,runAfter:now()+30000});return true;}
+  if(!receipt){await update({status:'submitted',leaseUntil:0,runAfter:now()+30000});return true;}
   if(receipt.status!==1)throw Object.assign(Error('Mint reverted.'),{permanent:true,code:'TRANSACTION_REVERTED'});
   const minted=await adapter.lookup(job);if(!minted||minted.recipient.toLowerCase()!==job.wallet.toLowerCase()||(job.kind==='achievement'&&String(minted.tokenId)!==String(job.achievement_token_id)))throw Object.assign(Error('Receipt did not deliver this claim.'),{permanent:true,code:'CLAIM_NOT_DELIVERED'});
-  await store.updateJob(job.id,{status:minted.confirmed===true?'confirmed':'submitted',tokenId:minted.tokenId||null,leaseUntil:0,runAfter:now()+30000,errorCode:null});
- }catch(e){await store.updateJob(job.id,{status:e.permanent?'blocked':'retry',leaseUntil:0,runAfter:now()+Math.min(3600000,30000*2**Math.min(job.attempts||0,6)),errorCode:e.permanent?e.code:'DELIVERY_RETRY'});}
+  await finish(minted);
+ }catch(e){if(e.code==='DELIVERY_LEASE_LOST')return true;try{await update({status:e.permanent?'blocked':'retry',leaseUntil:0,runAfter:now()+Math.min(3600000,30000*2**Math.min(Math.max(0,(job.attempts||1)-1),6)),errorCode:e.permanent?e.code:'DELIVERY_RETRY'});}catch(writeError){if(writeError.code!=='DELIVERY_LEASE_LOST')throw writeError;}}
  return true;
 }
 async function createAdapter(config,{provider:provided}={}){
@@ -76,6 +96,11 @@ async function createAdapter(config,{provider:provided}={}){
    },
    send:async j=>(await (j.kind==='visa'?visa.mintVisa(j.wallet,j.claim_id):j.kind==='egg'?egg.mintEgg(j.wallet,j.claim_id,Number(j.egg_serial)):j.kind==='achievement'?achievements.mintAchievement(j.wallet,j.achievement_token_id,j.claim_id):arrival.mintArrival(j.wallet,j.claim_id))).hash,
    async receipt(hash){const r=await provider.getTransactionReceipt(hash);if(!r||await r.confirmations()<2)return null;const block=await provider.getBlock(r.blockNumber);return block?.hash===r.blockHash?{status:r.status,blockNumber:r.blockNumber,blockHash:r.blockHash,receipt:r}:null;},
+   async recoverMint(job,claim){
+    const collection=job.kind==='visa'?visa:job.kind==='egg'?egg:null;
+    if(!collection||job.chain_id!==config.chainId)return null;
+    return require('./passportMintRecovery').recoverMintTransaction({provider,collection,job,claim});
+   },
    async verifyEgg(j){
     if(!egg)return {confirmed:false,status:'egg_contract_unavailable'};
     const claim=await adapter.lookup(j),r=j.tx_hash?await adapter.receipt(j.tx_hash):null;
