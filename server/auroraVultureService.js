@@ -302,7 +302,7 @@ function createAuroraVultureService(deps) {
         players: summaries
       };
       room.historyEntryIds.push(entry.id);
-      saveHistoryEntry(entry);
+      Promise.resolve(saveHistoryEntry(entry)).catch(() => console.error("[history-db] Match history was not persisted; database recovery is required."));
     });
   }
 

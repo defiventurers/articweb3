@@ -3,6 +3,7 @@
 function createChainEventStore({pool}){
  if(!pool)throw Error('A durable chain event database is required.');
  let initialized;
+ pool.on?.('error',()=>{initialized=null;});
  function init(){return initialized||(initialized=pool.query(`
  CREATE TABLE IF NOT EXISTS ak_chain_index_cursors (
   chain_id INTEGER NOT NULL, contract TEXT NOT NULL, state JSONB NOT NULL,

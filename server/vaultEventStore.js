@@ -1,25 +1,13 @@
 const { Pool } = require("pg");
 
 const DATABASE_URL = process.env.DATABASE_URL || "";
-const DATABASE_SSL = process.env.DATABASE_SSL === "true" || /sslmode=require/i.test(DATABASE_URL);
 const memoryEvents = new Map();
 const memoryState = new Map();
-let pool = null;
-let ready = false;
-let initPromise = null;
-let initError = null;
-
-function getPool() {
-  if (!DATABASE_URL) return null;
-  if (!pool) pool = new Pool(require('./databaseSecurity').databaseOptions(DATABASE_URL));
-  return pool;
-}
+const runtime = require("./databaseRuntime").createStoreRuntime({ databaseUrl: DATABASE_URL, Pool, label: "vault-event-db" });
+const getPool = runtime.getPool;
 
 async function initVaultEventStore() {
-  if (!DATABASE_URL) return false;
-  if (initPromise) return initPromise;
-  initPromise = (async () => {
-    try {
+  return runtime.init(async () => {
       await getPool().query(`
         CREATE TABLE IF NOT EXISTS vault_indexed_events (
           id TEXT PRIMARY KEY,
@@ -47,23 +35,13 @@ async function initVaultEventStore() {
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
       `);
-      ready = true;
-      initError = null;
-      return true;
-    } catch (err) {
-      ready = false;
-      initError = err.message || "Vault event database initialization failed.";
-      console.error(`[vault-event-db] init failed: ${initError}`);
-      return false;
-    }
-  })();
-  return initPromise;
+  });
 }
 
 async function saveIndexedVaultEvent(event) {
   const entry = normalizeEvent(event);
   memoryEvents.set(entry.id, entry);
-  if (!(await initVaultEventStore())) return entry;
+  if (!(await runtime.requireReady(initVaultEventStore))) return entry;
   await getPool().query(
     `INSERT INTO vault_indexed_events (id, contract_address, chain_id, block_number, log_index, tx_hash, event_name, player, match_id, amount_wei, deadline, payload_json, created_at)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW())
@@ -78,7 +56,7 @@ async function getRecentIndexedVaultEvents(options = {}) {
   const player = options.player ? String(options.player).toLowerCase() : "";
   const eventName = options.eventName ? String(options.eventName).trim() : "";
   const matchId = options.matchId ? String(options.matchId).toLowerCase() : "";
-  if (await initVaultEventStore()) {
+  if (await runtime.requireReady(initVaultEventStore)) {
     const filters = [];
     const params = [];
     if (player) { params.push(player); filters.push(`player = $${params.length}`); }
@@ -120,7 +98,7 @@ async function getRecentIndexedVaultEvents(options = {}) {
 
 async function getIndexedVaultEventStats(options = {}) {
   const player = options.player ? String(options.player).toLowerCase() : "";
-  if (await initVaultEventStore()) {
+  if (await runtime.requireReady(initVaultEventStore)) {
     const params = [];
     const where = player ? "WHERE player = $1" : "";
     if (player) params.push(player);
@@ -163,7 +141,7 @@ async function getIndexedVaultEventStats(options = {}) {
 }
 
 async function getLastIndexedBlock(stateKey) {
-  if (await initVaultEventStore()) {
+  if (await runtime.requireReady(initVaultEventStore)) {
     const result = await getPool().query(`SELECT state_value FROM vault_indexer_state WHERE state_key = $1`, [stateKey]);
     return result.rows[0]?.state_value ? Number(result.rows[0].state_value) : null;
   }
@@ -173,7 +151,7 @@ async function getLastIndexedBlock(stateKey) {
 async function setLastIndexedBlock(stateKey, blockNumber) {
   const value = String(blockNumber);
   memoryState.set(stateKey, value);
-  if (!(await initVaultEventStore())) return;
+  if (!(await runtime.requireReady(initVaultEventStore))) return;
   await getPool().query(
     `INSERT INTO vault_indexer_state (state_key, state_value, updated_at)
      VALUES ($1,$2,NOW())
@@ -183,7 +161,7 @@ async function setLastIndexedBlock(stateKey, blockNumber) {
 }
 
 function vaultEventStoreStatus() {
-  return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError ? "Database check pending." : "", memoryEvents: memoryEvents.size };
+  return { ...runtime.status(), memoryEvents: memoryEvents.size };
 }
 
 function normalizeEvent(event) {

@@ -1,23 +1,11 @@
 const { Pool } = require("pg");
 
 const DATABASE_URL = process.env.DATABASE_URL || "";
-const DATABASE_SSL = process.env.DATABASE_SSL === "true" || /sslmode=require/i.test(DATABASE_URL);
-let pool = null;
-let ready = false;
-let initPromise = null;
-let initError = null;
-
-function getPool() {
-  if (!DATABASE_URL) return null;
-  if (!pool) pool = new Pool(require('./databaseSecurity').databaseOptions(DATABASE_URL));
-  return pool;
-}
+const runtime = require("./databaseRuntime").createStoreRuntime({ databaseUrl: DATABASE_URL, Pool, label: "room-db" });
+const getPool = runtime.getPool;
 
 async function initRoomStore() {
-  if (!DATABASE_URL) return false;
-  if (initPromise) return initPromise;
-  initPromise = (async () => {
-    try {
+  return runtime.init(async () => {
       await getPool().query(`
         CREATE TABLE IF NOT EXISTS rooms (
           room_code TEXT PRIMARY KEY,
@@ -46,21 +34,11 @@ async function initRoomStore() {
           PRIMARY KEY (room_code, wallet)
         )
       `);
-      ready = true;
-      initError = null;
-      return true;
-    } catch (err) {
-      ready = false;
-      initError = err.message || "Room database initialization failed.";
-      console.error(`[room-db] init failed: ${initError}`);
-      return false;
-    }
-  })();
-  return initPromise;
+  });
 }
 
 async function saveRoom(room) {
-  if (!room || !(await initRoomStore())) return;
+  if (!room || !(await runtime.requireReady(initRoomStore))) return;
   const serializableRoom = sanitizeRoom(room);
   const roomJson = JSON.stringify(serializableRoom);
   await getPool().query(
@@ -93,14 +71,14 @@ async function saveRoom(room) {
 }
 
 async function loadRooms() {
-  if (!(await initRoomStore())) return [];
+  if (!(await runtime.requireReady(initRoomStore))) return [];
   const result = await getPool().query(`SELECT room_json, created_at FROM rooms WHERE status IN ('waiting','setup','playing','finished','cancelled') ORDER BY updated_at DESC LIMIT 500`);
   return result.rows.map(rowToRoom).filter(Boolean).map(sanitizeRoom);
 }
 
 // Authenticated Android diagnostics read one saved room without loading the lobby.
 async function loadSavedRoom(roomCode) {
-  if (!(await initRoomStore())) return null;
+  if (!(await runtime.requireReady(initRoomStore))) return null;
   const result = await getPool().query(`SELECT room_json, created_at FROM rooms WHERE room_code = $1`, [roomCode]);
   const room = rowToRoom(result.rows[0]);
   return room ? sanitizeRoom(room) : null;
@@ -120,7 +98,7 @@ function sanitizeRoom(room) {
 }
 
 function roomStoreStatus() {
-  return { databaseConfigured: Boolean(DATABASE_URL), databaseReady: ready, databaseError: initError ? "Database check pending." : "" };
+  return { ...runtime.status() };
 }
 
 module.exports = { initRoomStore, saveRoom, loadRooms, loadSavedRoom, roomStoreStatus };

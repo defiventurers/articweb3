@@ -1,0 +1,828 @@
+{
+  "recordedAt": "2026-11-28T02:53:32Z",
+  "reviewedBaseline": "19ceaa6c",
+  "branch": "codex/fonso-stabilization-batch-b",
+  "runtimeBinding": {
+    "status": "BLOCKED BY ACCESS",
+    "reason": "Render connector does not expose environment reads; the observed Free service has no dashboard shell, SSH or one-off jobs. Configured/ready flags and 54 restored rooms do not identify a provider.",
+    "readOnlyOwnerCommand": "DATABASE_URL=\"$FONSO_DATABASE_URL\" node server/scripts/check-database-schema.cjs --scope=application",
+    "ownerProcedure": "In a local candidate checkout, use a hidden Bash read to supply the current service Environment DATABASE_URL privately, including linked environment-group precedence. Record pending saved-only configuration changes and the active deployment commit/time. Do not modify settings or upgrade billing.",
+    "evidenceLimit": "A successful owner-local check establishes the configured target. It does not prove the live process binding if configuration changed after deployment. Active-process identity remains unresolved pending deployment-consistent evidence or an approved private startup diagnostic."
+  },
+  "connectedNeonObservation": {
+    "source": "Connected Neon metadata and catalog-only SELECT statements; no application row queries or mutations.",
+    "project": {
+      "id": "gentle-bar-83101012",
+      "name": "arctic-dominion",
+      "region": "aws-ap-southeast-1",
+      "postgresMajor": 18,
+      "historyRetentionSeconds": 21600
+    },
+    "branch": {
+      "id": "br-flat-bread-azrh4kt2",
+      "name": "production",
+      "default": true,
+      "protected": false
+    },
+    "database": {
+      "name": "neondb",
+      "serverVersion": "18.7 (3190d2f)",
+      "isReadReplica": false
+    },
+    "endpoint": {
+      "id": "ep-restless-hall-azgudkvc",
+      "host": "ep-restless-hall-azgudkvc.c-3.ap-southeast-1.aws.neon.tech",
+      "poolerEnabled": false
+    },
+    "snapshots": {
+      "listedCount": 0,
+      "schedule": []
+    },
+    "listedHistoricalBranches": [
+      {
+        "id": "br-plain-fire-azhj1j59",
+        "name": "recovery-before-signup-reset-20261114"
+      },
+      {
+        "id": "br-delicate-truth-azegik4x",
+        "name": "rehearsal-signup-reset-20261114"
+      }
+    ],
+    "schema": {
+      "scope": "application",
+      "ok": true,
+      "requiredTables": 12,
+      "columnsObserved": 127,
+      "uniqueIndexesObserved": 18,
+      "issues": [],
+      "optionalChainTablesPresent": false,
+      "columns": {
+        "ak_documents.kind": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_documents.id": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_documents.body": {
+          "type": "jsonb",
+          "nullable": false
+        },
+        "ak_launch_passport_checks.chain_id": {
+          "type": "int4",
+          "nullable": false
+        },
+        "ak_launch_passport_checks.contract": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_launch_passport_checks.delivery_id": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_launch_passport_checks.transaction_hash": {
+          "type": "text",
+          "nullable": true
+        },
+        "ak_launch_passport_checks.token_id": {
+          "type": "text",
+          "nullable": true
+        },
+        "ak_launch_passport_checks.verified": {
+          "type": "bool",
+          "nullable": false
+        },
+        "ak_launch_passport_checks.checked_at": {
+          "type": "int8",
+          "nullable": false
+        },
+        "ak_launch_passport_checks.minted_at": {
+          "type": "int8",
+          "nullable": true
+        },
+        "ak_launch_passport_checks.block_number": {
+          "type": "int8",
+          "nullable": true
+        },
+        "ak_launch_passport_checks.block_hash": {
+          "type": "text",
+          "nullable": true
+        },
+        "ak_launch_passport_checks.error_code": {
+          "type": "text",
+          "nullable": true
+        },
+        "ak_launch_visits.day": {
+          "type": "date",
+          "nullable": false
+        },
+        "ak_launch_visits.session_hash": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_launch_visits.first_at": {
+          "type": "int8",
+          "nullable": false
+        },
+        "ak_passport_deliveries.id": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_passport_deliveries.account_id": {
+          "type": "uuid",
+          "nullable": false
+        },
+        "ak_passport_deliveries.kind": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_passport_deliveries.claim_id": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_passport_deliveries.wallet": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_passport_deliveries.chain_id": {
+          "type": "int4",
+          "nullable": false
+        },
+        "ak_passport_deliveries.status": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_passport_deliveries.tx_hash": {
+          "type": "text",
+          "nullable": true
+        },
+        "ak_passport_deliveries.token_id": {
+          "type": "text",
+          "nullable": true
+        },
+        "ak_passport_deliveries.attempts": {
+          "type": "int4",
+          "nullable": false
+        },
+        "ak_passport_deliveries.run_after": {
+          "type": "int8",
+          "nullable": false
+        },
+        "ak_passport_deliveries.lease_until": {
+          "type": "int8",
+          "nullable": false
+        },
+        "ak_passport_deliveries.error_code": {
+          "type": "text",
+          "nullable": true
+        },
+        "ak_passport_deliveries.achievement_code": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_passport_deliveries.achievement_token_id": {
+          "type": "int4",
+          "nullable": true
+        },
+        "ak_passports.account_id": {
+          "type": "uuid",
+          "nullable": false
+        },
+        "ak_passports.id": {
+          "type": "uuid",
+          "nullable": false
+        },
+        "ak_passports.claim_id": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_passports.player_name": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_passports.wallet": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_passports.chain_id": {
+          "type": "int4",
+          "nullable": false
+        },
+        "ak_passports.created_at": {
+          "type": "int8",
+          "nullable": false
+        },
+        "ak_passports.consent_version": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_passports.souvenir": {
+          "type": "bool",
+          "nullable": false
+        },
+        "ak_passports.wallet_provider": {
+          "type": "text",
+          "nullable": false
+        },
+        "ak_passports.achievement_opt_in": {
+          "type": "bool",
+          "nullable": false
+        },
+        "ak_passports.egg_serial": {
+          "type": "int4",
+          "nullable": true
+        },
+        "match_history.id": {
+          "type": "text",
+          "nullable": false
+        },
+        "match_history.wallet": {
+          "type": "text",
+          "nullable": false
+        },
+        "match_history.room_code": {
+          "type": "text",
+          "nullable": false
+        },
+        "match_history.match_id": {
+          "type": "text",
+          "nullable": false
+        },
+        "match_history.contract_match_id": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.room_mode": {
+          "type": "text",
+          "nullable": false
+        },
+        "match_history.currency": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.entry_tier": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.entry_wei": {
+          "type": "text",
+          "nullable": false
+        },
+        "match_history.entry_tx_hash": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.player_name": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.team": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.position": {
+          "type": "int4",
+          "nullable": true
+        },
+        "match_history.won": {
+          "type": "bool",
+          "nullable": false
+        },
+        "match_history.payout_wei": {
+          "type": "text",
+          "nullable": false
+        },
+        "match_history.points": {
+          "type": "int4",
+          "nullable": false
+        },
+        "match_history.settlement_status": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.settlement_tx_hash": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.settlement_error": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.finished_at": {
+          "type": "timestamptz",
+          "nullable": false
+        },
+        "match_history.updated_at": {
+          "type": "timestamptz",
+          "nullable": false
+        },
+        "match_history.players_json": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.final_state_json": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.audit_log_json": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.proof_hash": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.randomness_json": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.withdrawal_tx_hash": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.withdrawal_status": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.game_id": {
+          "type": "text",
+          "nullable": false
+        },
+        "match_history.ruleset_version": {
+          "type": "text",
+          "nullable": true
+        },
+        "match_history.result_json": {
+          "type": "text",
+          "nullable": true
+        },
+        "player_profiles.wallet": {
+          "type": "text",
+          "nullable": false
+        },
+        "player_profiles.name": {
+          "type": "text",
+          "nullable": false
+        },
+        "player_profiles.points": {
+          "type": "int4",
+          "nullable": false
+        },
+        "player_profiles.games_played": {
+          "type": "int4",
+          "nullable": false
+        },
+        "player_profiles.wins": {
+          "type": "int4",
+          "nullable": false
+        },
+        "player_profiles.created_at": {
+          "type": "timestamptz",
+          "nullable": false
+        },
+        "player_profiles.updated_at": {
+          "type": "timestamptz",
+          "nullable": false
+        },
+        "room_players.room_code": {
+          "type": "text",
+          "nullable": false
+        },
+        "room_players.wallet": {
+          "type": "text",
+          "nullable": false
+        },
+        "room_players.team": {
+          "type": "text",
+          "nullable": true
+        },
+        "room_players.entry_locked": {
+          "type": "bool",
+          "nullable": false
+        },
+        "room_players.entry_tx_hash": {
+          "type": "text",
+          "nullable": true
+        },
+        "room_players.joined_at": {
+          "type": "timestamptz",
+          "nullable": false
+        },
+        "rooms.room_code": {
+          "type": "text",
+          "nullable": false
+        },
+        "rooms.room_mode": {
+          "type": "text",
+          "nullable": false
+        },
+        "rooms.status": {
+          "type": "text",
+          "nullable": false
+        },
+        "rooms.match_id": {
+          "type": "text",
+          "nullable": true
+        },
+        "rooms.contract_match_id": {
+          "type": "text",
+          "nullable": true
+        },
+        "rooms.visibility": {
+          "type": "text",
+          "nullable": true
+        },
+        "rooms.created_at": {
+          "type": "timestamptz",
+          "nullable": false
+        },
+        "rooms.updated_at": {
+          "type": "timestamptz",
+          "nullable": false
+        },
+        "rooms.room_json": {
+          "type": "jsonb",
+          "nullable": false
+        },
+        "rooms.game_id": {
+          "type": "text",
+          "nullable": false
+        },
+        "rooms.ruleset_version": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_activity.id": {
+          "type": "text",
+          "nullable": false
+        },
+        "vault_activity.wallet": {
+          "type": "text",
+          "nullable": false
+        },
+        "vault_activity.type": {
+          "type": "text",
+          "nullable": false
+        },
+        "vault_activity.currency": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_activity.amount_wei": {
+          "type": "text",
+          "nullable": false
+        },
+        "vault_activity.room_code": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_activity.match_id": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_activity.contract_match_id": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_activity.tx_hash": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_activity.status": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_activity.note": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_activity.created_at": {
+          "type": "timestamptz",
+          "nullable": false
+        },
+        "vault_indexed_events.id": {
+          "type": "text",
+          "nullable": false
+        },
+        "vault_indexed_events.contract_address": {
+          "type": "text",
+          "nullable": false
+        },
+        "vault_indexed_events.chain_id": {
+          "type": "int4",
+          "nullable": false
+        },
+        "vault_indexed_events.block_number": {
+          "type": "int8",
+          "nullable": false
+        },
+        "vault_indexed_events.log_index": {
+          "type": "int4",
+          "nullable": false
+        },
+        "vault_indexed_events.tx_hash": {
+          "type": "text",
+          "nullable": false
+        },
+        "vault_indexed_events.event_name": {
+          "type": "text",
+          "nullable": false
+        },
+        "vault_indexed_events.player": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_indexed_events.match_id": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_indexed_events.amount_wei": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_indexed_events.deadline": {
+          "type": "text",
+          "nullable": true
+        },
+        "vault_indexed_events.payload_json": {
+          "type": "jsonb",
+          "nullable": true
+        },
+        "vault_indexed_events.created_at": {
+          "type": "timestamptz",
+          "nullable": false
+        },
+        "vault_indexer_state.state_key": {
+          "type": "text",
+          "nullable": false
+        },
+        "vault_indexer_state.state_value": {
+          "type": "text",
+          "nullable": false
+        },
+        "vault_indexer_state.updated_at": {
+          "type": "timestamptz",
+          "nullable": false
+        }
+      },
+      "uniqueIndexes": [
+        {
+          "table_name": "ak_documents",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "kind",
+            "id"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "ak_launch_passport_checks",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "chain_id",
+            "contract",
+            "delivery_id"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "ak_launch_visits",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "day",
+            "session_hash"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "ak_passport_deliveries",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "id"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "ak_passport_deliveries",
+          "is_primary": false,
+          "valid": true,
+          "columns": [
+            "claim_id"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "ak_passport_deliveries",
+          "is_primary": false,
+          "valid": true,
+          "columns": [
+            "account_id",
+            "kind",
+            "achievement_code"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "ak_passports",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "account_id"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "ak_passports",
+          "is_primary": false,
+          "valid": true,
+          "columns": [
+            "id"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "ak_passports",
+          "is_primary": false,
+          "valid": true,
+          "columns": [
+            "claim_id"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "ak_passports",
+          "is_primary": false,
+          "valid": true,
+          "columns": [
+            "wallet"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "ak_passports",
+          "is_primary": false,
+          "valid": true,
+          "columns": [
+            "chain_id",
+            "egg_serial"
+          ],
+          "predicate": "(egg_serial IS NOT NULL)"
+        },
+        {
+          "table_name": "match_history",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "id"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "player_profiles",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "wallet"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "room_players",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "room_code",
+            "wallet"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "rooms",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "room_code"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "vault_activity",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "id"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "vault_indexed_events",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "id"
+          ],
+          "predicate": null
+        },
+        {
+          "table_name": "vault_indexer_state",
+          "is_primary": true,
+          "valid": true,
+          "columns": [
+            "state_key"
+          ],
+          "predicate": null
+        }
+      ]
+    }
+  },
+  "localValidation": {
+    "status": "FIXED AND TESTED LOCALLY",
+    "node": "24.22.3",
+    "unitAndRegressionCommand": "node --test server/tests/database-recovery.test.js server/tests/database-schema.test.js server/tests/two-stones-online.test.js server/tests/polar-tablan-online.test.js server/tests/aurora-vulture-online.test.js server/tests/aurora-ganjifa-online.test.js server/tests/sige-online.test.js server/tests/seven-ice-rings-online.test.js server/tests/company-service.test.js server/tests/launch-metrics.test.js server/tests/security-hardening.test.js",
+    "tests": {
+      "passed": 76,
+      "failed": 0,
+      "skipped": 0,
+      "newB3Cases": 11
+    },
+    "reproduction": {
+      "initialConfiguredOutageCasesFailed": 5,
+      "initialLocalNoDatabaseCasePassed": 1,
+      "symptom": "Configured stores silently returned in-memory reads after failed initialization; the failed Promise also prevented retry.",
+      "baselineInitializerRecovery": {
+        "baseline": "19ceaa6c",
+        "stores": 5,
+        "initialResult": false,
+        "afterConnectivityRestoredResult": false,
+        "queriesPerStore": 1
+      }
+    },
+    "isolatedRestore": {
+      "command": "PG_BINDIR=/absolute/path/to/postgres18/bin node server/scripts/rehearse-database-recovery.cjs",
+      "ok": true,
+      "postgres": "18.7",
+      "fixtureOnly": true,
+      "externalCalls": 0,
+      "productionRowsExported": 0,
+      "tablesCompared": 14,
+      "rowsCompared": 14,
+      "sourceAndRestoreDigestsAgree": true,
+      "outageRecovered": true,
+      "failedWriteReplayed": false,
+      "counterBeforeAndAfterFailedIncrement": 42,
+      "failedIncrement": 99,
+      "roomPlayersUpsertRequiresSelect": true,
+      "healthyReadiness": {
+        "schema": "artic.health.v1",
+        "service": "artic-web3-server",
+        "check": "readiness",
+        "ok": true,
+        "database": "ready",
+        "startup": "ready",
+        "startupNote": "Manual fixture initialization explicitly supplies startupStatus ready; this is a real SQL/schema/privilege probe, not a production bootstrap acceptance claim.",
+        "generatedAt": "2026-11-28T02:53:00.456Z"
+      },
+      "dumpSha256": "4ba559de17c73c3d4fe8d70eef1b649e659968ab8a374c7a61392b669a99ce3d",
+      "cleanup": "Fixture cluster stopped and its data/dump removed after validation.",
+      "tooling": [
+        {
+          "name": "@embedded-postgres/linux-x64",
+          "version": "18.7.0-beta.19",
+          "source": "https://registry.npmjs.org/@embedded-postgres/linux-x64/-/linux-x64-18.7.0-beta.19.tgz",
+          "sha256": "0b7fc353709292f0b24548caf18fc98af0642efdc79ccedd5393c938a1439351",
+          "packageGitHead": "dc246deae052e8abeacda44c90fddd1120951d19",
+          "note": "Pinned native server unpacked outside repository; no install scripts automatically run; reviewed symlink hydration only."
+        },
+        {
+          "name": "postgresql-client-18",
+          "version": "18.7-1.pgdg12+5",
+          "source": "https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-18/postgresql-client-18_18.7-1.pgdg12+5_amd64.deb",
+          "sha256": "196d499b4e965fe379bf7a51c7515c39e3553e839258b335d0ee6859e90742bb",
+          "checksumSource": "https://apt.postgresql.org/pub/repos/apt/dists/bookworm-pgdg/main/binary-amd64/Packages.gz",
+          "note": "Archive checksum matches official package metadata. Extracted only; no system package or dependency change."
+        }
+      ],
+      "existingTableInitializationRequiresSchemaCreate": true,
+      "schemaCreateProbe": "An isolated role with schema USAGE and ak_documents CRUD but no schema CREATE received SQLSTATE42501 for the exact CREATE TABLE IF NOT EXISTS initializer even though the table existed."
+    }
+  },
+  "productionVerification": "PRODUCTION VERIFICATION PENDING",
+  "ownerActions": [
+    "Read the current Render Environment and linked group privately, run the local read-only check, and distinguish the configured target from the live process when saved-only changes exist.",
+    "Approve a deployment/rollout separately.",
+    "Approve the exact isolated Neon recovery target before any cloud restore rehearsal; no branch mutation was performed.",
+    "Choose required recovery point and recovery time objectives; six-hour retained history alone is not a verified backup strategy."
+  ],
+  "officialReferences": [
+    "https://neon.com/docs/postgres/backup-restore/branch-restore",
+    "https://neon.com/docs/postgres/backup-restore/history-window",
+    "https://neon.com/docs/import/migrate-from-postgres",
+    "https://render.com/docs/free",
+    "https://render.com/docs/ssh"
+  ]
+}
