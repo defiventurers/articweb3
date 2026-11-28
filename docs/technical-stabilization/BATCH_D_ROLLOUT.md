@@ -27,6 +27,15 @@ are inspection inputs. The backend candidate must retain every A/B/C safeguard.
    `91fbc8cd0578462511356888e8fab5e6008f9008e555571dbf93473783488f3e`.
    A successful ordinary frontend/mobile-source build does not reproduce either
    binary. Do not substitute one or silently promote the review APK.
+6. Review the separate presentation correction in `BATCH_D_PRESENTATION.md`.
+   Original signed v5.11.1 contains the observed light-control and enlarged-text
+   defects; the opt-in CSS candidate does not update that APK. Its staging report
+   must show only `after/app.css` changed. The existing signed builder still
+   produces the original 5.11.1 and must not be represented as a corrected build.
+   Any subsequent corrected APK requires a separately identified release,
+   reviewed guarded packaging, the compatible original signing identity and
+   refreshed version/cache/asset-size metadata, followed by fresh binary,
+   complete-payload and physical verification before acceptance.
 
 ## Separately approved backend acceptance
 
@@ -58,6 +67,9 @@ verification output in `BATCH_D_ANDROID_EVIDENCE.json`.
 - Complete visual/loading/home, Adventure/All Games, navigation, Chaturanga,
   How-to-Play, local/bot gameplay, existing-save restoration, restart/crash,
   safe-area/back-button, TalkBack and performance checks.
+- Explicitly check light-theme unselected control readability and enlarged-text
+  action/Crown containment. Preserve the original review's failed observations;
+  passing source/browser correction tests is not a pass for that signed APK.
 - Real Para consent/signature remains personal to the founder. A sign-in that
   can initiate collectible delivery requires the separate C approval procedure.
 - Record Android version, WebView version, device model, APK SHA, result per

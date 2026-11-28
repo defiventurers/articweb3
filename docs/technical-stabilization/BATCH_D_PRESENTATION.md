@@ -5,6 +5,11 @@ signed v5.11.1 remains the original, unchanged review artifact. This follow-up
 prepares an opt-in browser candidate; it does not create, sign, publish or
 physically accept a corrected APK.
 
+**Status: FIXED AND VERIFIED IN TEST ENVIRONMENT**, for the separate browser
+candidate. The exact signed v5.11.1 APK remains unchanged and still contains
+the original defects. A corrected signed APK and physical acceptance remain
+**OWNER ACTION REQUIRED**.
+
 ## Reproduced defects
 
 Independent inspection of the [retained-reference CI screenshots](https://github.com/defiventurers/articweb3/actions/runs/46105166782)
@@ -14,12 +19,12 @@ found two presentation defects in the existing guarded review:
    filter and card controls have dark text on dark buttons. The light theme
    changes `--sb-ink` to `#14314a`, while those controls keep their dark
    backgrounds and inherit that text variable.
-2. Enlarging root text to24px makes action labels and Crown copy exceed fixed
-   grid-row heights. At360×800, text overlaps adjacent panels and approaches
+2. Enlarging root text to 24px makes action labels and Crown copy exceed fixed
+   grid-row heights. At 360×800, text overlaps adjacent panels and approaches
    the bottom navigation. The existing large-text rule enables scrolling but
    retains the fixed-height Adventure rows.
 
-The original24 browser check groups passed because they test navigation,
+The original 24 browser check groups passed because they test navigation,
 reachability and Home preservation. They do not establish contrast or the
 absence of text overlap. The failing observations are preserved separately
 from the passing original checks.
@@ -44,6 +49,10 @@ Its report identifies the input variant and the only changed runtime file.
 Original signed review bytes and an original guarded overlay have different
 release literals; the script preserves whichever explicitly accepted input it
 receives. An overlay's version label does not turn it into a signed release.
+The staged browser tree retains the original release, cache and asset-size
+metadata. A future APK packager must update those fields for its distinct release
+and verify the complete expected payload; copying this browser tree into an APK
+without that guarded packaging is not the completed release procedure.
 
 ## Verification procedure
 
@@ -66,11 +75,48 @@ original pixel thresholds. Original, negative and corrected screenshots/results
 are saved separately. Their final run IDs and observations are recorded in the
 combined Batch D evidence; no passing result is inferred from source inspection.
 
-The affected control labels use a4.5:1 contrast target, consistent with
+The affected control labels use a 4.5:1 contrast target, consistent with
 [W3C's ordinary-text criterion](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html).
-These bounded24px-root layout checks do not establish full200% resizing or
+These bounded 24px-root layout checks do not establish full 200% resizing or
 general accessibility conformance; [text resizing](https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html)
 and native accessibility need their own acceptance observations.
+
+## Observed verification results
+
+The [browser job on candidate 5144a1d6](https://github.com/defiventurers/articweb3/actions/runs/46106228547/job/140859484938)
+passed original rendering, the expected negative regression, exact-tree staging,
+candidate navigation and corrected strict rendering. Its overall D workflow
+also exposed a separate Node20 storage-ordering defect; that application defect
+was fixed in `acb88254cb83b6655de8e1e975b3ed75d5c64df5`. The combined final CI
+state is recorded in `BATCH_D_EVIDENCE.json`. The final combined
+[run46106864044](https://github.com/defiventurers/articweb3/actions/runs/46106864044)
+passed both20-test multiplayer jobs and repeated all original/negative/corrected
+browser gates on that final source candidate. Presentation source hashes are
+unchanged between the inspected artifact and this final rerun.
+
+| Bounded browser check | Original review | Corrected candidate |
+| --- | --- | --- |
+| Existing navigation/layout/Home groups |24 completed |24 passed |
+| Additional strict check groups |18 completed |18 passed |
+| Lowest measured affected-control contrast |1.193:1 |5.688:1 |
+| Recorded strict issue observations |121 |0 |
+| Crown overlap/containment observations |44 |0 |
+| Home comparisons within original thresholds |6/6 |6/6 |
+| Page errors |0 |0 |
+
+The 121 observations repeat the two underlying defects across controls and
+viewports; they are not 121 independent application defects. The corrected Home
+comparisons include five pixel-identical pairs and one 360×800 light pair with
+12 pixels differing by one RGB level at the top banner border, under the
+unchanged 58-pixel allowance. No image mask, favorable-frame selection or relaxed
+threshold was used.
+
+The downloaded artifact's SHA-256 and ZIP integrity passed. It contains 108 PNGs
+for the negative and corrected runs, plus their JSON results and staging report.
+Independent visual inspection confirmed readable light controls and separated
+large-text action/Crown panels. The 8 staging regressions and 9 candidate
+navigation scenarios also passed. Exact evidence, hashes and failure samples are
+saved in [BATCH_D_PRESENTATION_EVIDENCE.json](BATCH_D_PRESENTATION_EVIDENCE.json).
 
 ## Release and owner boundary
 

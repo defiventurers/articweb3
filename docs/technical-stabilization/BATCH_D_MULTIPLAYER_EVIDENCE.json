@@ -4,7 +4,7 @@
   "reviewedMainCommit": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
   "branch": "codex/fonso-stabilization-batch-d",
   "pullRequest": "https://github.com/defiventurers/articweb3/pull/125",
-  "status": "FIXED AND TESTED LOCALLY",
+  "status": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
   "scope": "Actual transformed production startup, local native WebSockets, synthetic identities and disposable PostgreSQL only. No live account, wallet operation, production request or chain write.",
   "reproductions": [
     {
@@ -173,5 +173,26 @@
     "server/roomStore.js": "d712bdb062a07c9282ee273b381f3845ba842f649466e9fd62427cff760f2509",
     "server/tests/room-store-ordering.test.js": "3cb400c2b6ef27add72423739a9d2f252943b0022f66cab1d18575df904ec18c"
   },
-  "candidateReference": "Source hashes below; exact published candidate and CI run IDs are in BATCH_D_EVIDENCE.json."
+  "candidateReference": "Source hashes below; exact published candidate and CI run IDs are in BATCH_D_EVIDENCE.json.",
+  "testedCandidate": "acb88254cb83b6655de8e1e975b3ed75d5c64df5",
+  "ci": {
+    "runId": 46106864044,
+    "nodes": [
+      {
+        "node": "20.20.2",
+        "jobId": 140861455750,
+        "passed": 20,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "node": "24.22.3",
+        "jobId": 140861455582,
+        "passed": 20,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "scope": "Completed multiplayer jobs; complete workflow status is recorded separately in BATCH_D_EVIDENCE.json."
+  }
 }

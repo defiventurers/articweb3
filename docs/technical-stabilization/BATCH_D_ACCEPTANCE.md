@@ -14,6 +14,12 @@ rendering is **BLOCKED BY ACCESS**; no Android emulator or physical device was
 run. Production compatibility and deployment remain **PRODUCTION
 VERIFICATION PENDING**.
 
+Independent screenshot inspection also found two real presentation defects in
+the original signed review. A separate CSS-only browser correction now passes
+strict negative/positive regression checks; see
+[BATCH_D_PRESENTATION.md](BATCH_D_PRESENTATION.md). That correction has not been
+packaged or signed into an APK, and the original review remains unchanged.
+
 See [BATCH_D_ANDROID.md](BATCH_D_ANDROID.md) for independent APK integrity,
 signature, package, version and complete payload evidence. This document covers
 runtime observations and the exact outstanding founder test. It does not
@@ -139,8 +145,9 @@ These observations close the stated browser gates only. Independent screenshot
 inspection also found two existing review-presentation defects: light-theme
 unselected controls have dark text on dark buttons, and enlarged text exceeds
 the fixed action/Crown rows and overlaps adjacent content. Neither is covered
-by the old reachability assertion. A separate opt-in correction is being
-prepared; both original APKs and original guarded reproduction stay intact.
+by the old reachability assertion. The separate opt-in correction now passes
+strict regressions; both original APKs and original guarded reproduction stay
+intact. Exact negative/positive results are in `BATCH_D_PRESENTATION_EVIDENCE.json`.
 
 Passing those stated browser gates does not establish
 Android WebView rendering, TalkBack, native Back/intent behavior, real Para

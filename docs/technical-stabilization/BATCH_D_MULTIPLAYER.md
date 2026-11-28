@@ -10,9 +10,9 @@ Verified defects were fixed in socket identity, delayed duplicate handling and r
 
 | Item | Status | Evidence |
 | --- | --- | --- |
-| Wallet-profile impersonation | FIXED AND TESTED LOCALLY | An unsigned socket previously acted as an existing Two Stones wallet; 17 additional reachable wallet-game prefixes also admitted impersonated room creation. All 18 now require the existing signature-bound wallet login. |
-| Delayed Two Stones duplicate | FIXED AND TESTED LOCALLY | A message accepted at ply 5 was accepted again at ply 12 when its move became legal again. Persistent accepted-request hashes now reject it, including after reconnect and PostgreSQL-backed process restart. |
-| Room persistence ordering and snapshot timing | FIXED AND TESTED LOCALLY | A later CI run found the stored row at ply10 after12 acknowledgements. Deterministic tests reproduced older-write overwrite and mutable snapshot capture; per-room FIFO and immediate snapshots fix both. Fresh CI remains separately recorded. |
+| Wallet-profile impersonation | FIXED AND VERIFIED IN TEST ENVIRONMENT | An unsigned socket previously acted as an existing Two Stones wallet; 17 additional reachable wallet-game prefixes also admitted impersonated room creation. All 18 now require the existing signature-bound wallet login. |
+| Delayed Two Stones duplicate | FIXED AND VERIFIED IN TEST ENVIRONMENT | A message accepted at ply 5 was accepted again at ply 12 when its move became legal again. Persistent accepted-request hashes now reject it, including after reconnect and PostgreSQL-backed process restart. |
+| Room persistence ordering and snapshot timing | FIXED AND VERIFIED IN TEST ENVIRONMENT | A later CI run found the stored row at ply 10 after 12 acknowledgements. Deterministic tests reproduced older-write overwrite and mutable snapshot capture; per-room FIFO and immediate snapshots fix both. Both final CI jobs pass 20/20; full workflow identity is recorded separately. |
 | Free Two Stones end-to-end match | FIXED AND VERIFIED IN TEST ENVIRONMENT | Two independent WebSocket clients agree on the authoritative five-ply immobilization result and history; invalid moves and duplicate actions do not advance the board. |
 | Android-protocol free Shogi acceptance | FIXED AND VERIFIED IN TEST ENVIRONMENT | Real account/session checks, seat tokens, signatures, worker validation, database persistence, restart restoration and independent final-proof verification. |
 | Live networks, actual phones and founder accounts | OWNER ACTION REQUIRED | No live account, wallet sign-in, match or physical Android acceptance was performed. |
@@ -55,7 +55,7 @@ The bound is **44** accepted actions: four initial placements plus the existing 
 ### Pooled writes could overwrite a newer room with an older state
 
 The Node20 job on candidate `5144a1d6bfef29ffea11bc38738011cb2ae1e572`
-found PostgreSQL still at Two Stones ply10 after twelve acknowledged actions.
+found PostgreSQL still at Two Stones ply 10 after twelve acknowledged actions.
 The existing test failed before restart; it did not accept stale restoration.
 The same Node24 run passed, which did not negate the ordering defect.
 
@@ -65,10 +65,10 @@ also serialized the live room only after asynchronous initialization, and read
 player fields after another await. Later game mutations could therefore change
 what an earlier save captured or mix room and player snapshots.
 
-The new deterministic regression held a ply10 write while a ply12 write could
+The new deterministic regression held a ply 10 write while a ply 12 write could
 finish, then released the older write. Before the fix, the database fixture
-ended at ply10. A second regression mutated one live room between calls and
-showed both saves capturing ply12. Two of four tests failed before the fix.
+ended at ply 10. A second regression mutated one live room between calls and
+showed both saves capturing ply 12. Two of four tests failed before the fix.
 
 The store now snapshots sanitized JSON before its first await and queues saves
 per room, including the corresponding player writes. Different rooms remain
@@ -117,7 +117,7 @@ FONSO_MULTIPLAYER_TEST_DATABASE_URL=postgresql://fixture@127.0.0.1:5432/postgres
   server/tests/room-store-ordering.test.js
 ```
 
-The final gate contains **20 tests**, including four ordering regressions and the existing rules/transform checks. Node **20.20.2** and **24.22.3** each passed **20/20 with zero skips** against PostgreSQL **18.7** after the storage correction. The shared-store Batch B compatibility/health/recovery gate also passed44/44 on both runtimes. Results and source fingerprints are recorded in `BATCH_D_MULTIPLAYER_EVIDENCE.json`; CI run identities are in the combined evidence. Do not report a database-free run with skipped recovery tests as acceptance. The initial fixture force-drop race was corrected by closing consumers before normal removal; it is separate from the subsequently reproduced application write-ordering defect.
+The final gate contains **20 tests**, including four ordering regressions and the existing rules/transform checks. Node **20.20.2** and **24.22.3** each passed **20/20 with zero skips** against PostgreSQL **18.7** after the storage correction. The shared-store Batch B compatibility/health/recovery gate also passed 44/44 on both runtimes. Results and source fingerprints are recorded in `BATCH_D_MULTIPLAYER_EVIDENCE.json`; CI run identities are in the combined evidence. Do not report a database-free run with skipped recovery tests as acceptance. The initial fixture force-drop race was corrected by closing consumers before normal removal; it is separate from the subsequently reproduced application write-ordering defect.
 
 ## Founder-controlled live continuation
 

@@ -1,7 +1,7 @@
 {
   "batch": "D",
-  "observedAt": "2026-11-28T04:02:03Z",
-  "phase": "presentation-correction-and-storage-ordering-verification-in-progress",
+  "observedAt": "2026-11-28T04:26:08Z",
+  "phase": "implementation-local-and-ci-complete-owner-release-acceptance-pending",
   "reviewedMain": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
   "branch": "codex/fonso-stabilization-batch-d",
   "baseCommit": "75328370f0703ab7907dda9dc833f8aab93c21f9",
@@ -11,7 +11,6 @@
       "state": "open",
       "draft": true,
       "merged": false,
-      "base": "main",
       "baseCommit": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
       "head": "148e319c129d91421c21466c8567ddcc10ec145e",
       "url": "https://github.com/defiventurers/articweb3/pull/121"
@@ -19,7 +18,11 @@
     {
       "number": 122,
       "state": "closed",
+      "draft": false,
       "merged": true,
+      "baseCommit": "19ceaa6c2d66ce726f9050ef1c674c3d06553e19",
+      "head": "6c71981b08c6036a844fa67ed7381f70964a031b",
+      "url": "https://github.com/defiventurers/articweb3/pull/122",
       "mergeCommit": "148e319c129d91421c21466c8567ddcc10ec145e"
     },
     {
@@ -27,7 +30,6 @@
       "state": "open",
       "draft": true,
       "merged": false,
-      "base": "codex/fonso-stabilization-batch-a",
       "baseCommit": "148e319c129d91421c21466c8567ddcc10ec145e",
       "head": "30ab0a5d346bb6087da13ea0322e08c8b24a1a80",
       "url": "https://github.com/defiventurers/articweb3/pull/123"
@@ -37,7 +39,6 @@
       "state": "open",
       "draft": true,
       "merged": false,
-      "base": "codex/fonso-stabilization-batch-b",
       "baseCommit": "30ab0a5d346bb6087da13ea0322e08c8b24a1a80",
       "head": "75328370f0703ab7907dda9dc833f8aab93c21f9",
       "url": "https://github.com/defiventurers/articweb3/pull/124"
@@ -47,10 +48,10 @@
       "state": "open",
       "draft": true,
       "merged": false,
-      "base": "codex/fonso-stabilization-batch-c",
       "baseCommit": "75328370f0703ab7907dda9dc833f8aab93c21f9",
-      "head": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3",
-      "url": "https://github.com/defiventurers/articweb3/pull/125"
+      "head": "acb88254cb83b6655de8e1e975b3ed75d5c64df5",
+      "url": "https://github.com/defiventurers/articweb3/pull/125",
+      "base": "codex/fonso-stabilization-batch-c"
     }
   ],
   "acceptance": {
@@ -62,7 +63,10 @@
     "socketSecurityAndRecovery": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
     "liveParaAndFreeMatch": "OWNER ACTION REQUIRED",
     "localBrowser": "BLOCKED BY ACCESS",
-    "renderedBrowserCi": "FIXED AND VERIFIED IN TEST ENVIRONMENT"
+    "renderedBrowserCi": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+    "reviewPresentationCorrection": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+    "roomPersistenceOrdering": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+    "correctedSignedApk": "OWNER ACTION REQUIRED"
   },
   "environment": {
     "adb": false,
@@ -70,7 +74,8 @@
     "hardwareVirtualization": false,
     "chromium": false,
     "chromiumWrapperOnly": true,
-    "officialBrowserDownload": "403 Site Unavailable; no alternate-host bypass attempted"
+    "officialBrowserDownload": "403 Site Unavailable; no alternate-host bypass attempted",
+    "scope": "Local workspace; successful CI browser execution is reported separately."
   },
   "performed": {
     "productionDeployment": false,
@@ -116,10 +121,17 @@
         "24.22.3"
       ],
       "postgres": "18.7",
-      "passedPerRuntime": 16,
+      "passedPerRuntime": 20,
       "failed": 0,
       "skipped": 0,
-      "parentIndependentRerun": true
+      "includesOrderingRegressions": 4,
+      "independentOrderingReview": {
+        "passedPerRuntime": 4,
+        "nodes": [
+          "20.20.2",
+          "24.22.3"
+        ]
+      }
     },
     {
       "command": "node --test server/tests/funded-access-socket.test.js server/tests/deployment-compatibility.test.js server/tests/security-hardening.test.js server/tests/anti-cheat-transform.test.js",
@@ -148,6 +160,13 @@
       "failed": 0,
       "skipped": 0,
       "after": "Updating only the authenticated direct-service fixture."
+    },
+    {
+      "command": "python3 -m unittest discover -s mobile/arctic-play/tests -p 'test_storybook_accessibility_review.py'",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "parentIndependentRerun": true
     }
   ],
   "reproduced": [
@@ -166,16 +185,192 @@
       "environment": "Final CI guarded reproduction, independently visually inspected",
       "observation": "Light-theme unselected controls use dark text on dark backgrounds; enlarged text exceeds fixed action/Crown rows and overlaps adjacent content. Existing reachability assertions do not cover these defects.",
       "inputsChanged": false,
-      "nextAction": "Add an opt-in corrected browser candidate and explicit negative/preservation regressions without modifying original APKs or original v5.11.1 reproduction."
+      "nextAction": "Review and separately approve guarded corrective-APK packaging/signing and physical acceptance; preserve both original APKs.",
+      "implementationStatus": "FIXED AND VERIFIED IN TEST ENVIRONMENT"
     }
   ],
   "implementationCommits": {
     "apkVerifier": "2505b93f3acb025c6de967c58e8cd99f8501f2c6",
     "socketAuthorizationAndReplay": "3ebb00386208acf3efc6cd529b15610996b45924",
     "acceptanceTestsAndWorkflow": "d72be7c50ee1b0d8619dbd43bd7cc2585a1cdb4a",
-    "authenticatedRecoveryFixtureAndIndependentRenderCaptures": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3"
+    "authenticatedRecoveryFixtureAndIndependentRenderCaptures": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3",
+    "presentationCorrection": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
+    "roomSnapshotAndPooledWriteOrdering": "acb88254cb83b6655de8e1e975b3ed75d5c64df5"
   },
-  "ci": {
+  "limits": [
+    "Physical Android, live Para and live production free-match acceptance were not performed.",
+    "Original v5.10.2 signing checkout remains unresolved. Retained APK workers are unchanged and do not automatically include source A/B/C patches.",
+    "Local actual Chromium executable is absent; official download403. Successful CI rendering uses public baseline plus guarded patch, not private signed APK upload.",
+    "Later-source die-markup UI fixture fails identically on both retained APKs; bounded actual-worker checks pass.",
+    "Pre-upgrade request IDs cannot be reconstructed. Legacy asynchronous room acknowledgment still precedes durable write; tests wait for confirmed stored state before restart.",
+    "Current production database binding and private C publication/transaction approvals remain unresolved.",
+    "The original signed v5.11.1 still contains the observed presentation defects. The corrected CSS is a separately staged browser candidate, not a corrected signed APK.",
+    "Room-save FIFO is local to one backend process and does not coordinate multiple independent writers."
+  ],
+  "reports": [
+    "BATCH_D_ANDROID.md",
+    "BATCH_D_ANDROID_EVIDENCE.json",
+    "BATCH_D_ACCEPTANCE.md",
+    "BATCH_D_ACCEPTANCE_EVIDENCE.json",
+    "BATCH_D_MULTIPLAYER.md",
+    "BATCH_D_MULTIPLAYER_EVIDENCE.json",
+    "BATCH_D_ROLLOUT.md",
+    "BATCH_D_PRESENTATION.md",
+    "BATCH_D_PRESENTATION_EVIDENCE.json"
+  ],
+  "changedFiles": [
+    ".github/workflows/fonso-batch-d.yml",
+    "docs/technical-stabilization/BATCH_D_ACCEPTANCE.md",
+    "docs/technical-stabilization/BATCH_D_ACCEPTANCE_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_D_ANDROID.md",
+    "docs/technical-stabilization/BATCH_D_ANDROID_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_D_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_D_MULTIPLAYER.md",
+    "docs/technical-stabilization/BATCH_D_MULTIPLAYER_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_D_PRESENTATION.md",
+    "docs/technical-stabilization/BATCH_D_PRESENTATION_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_D_ROLLOUT.md",
+    "docs/technical-stabilization/CHECKPOINT.md",
+    "mobile/arctic-play/scripts/prepare-storybook-accessibility-review.py",
+    "mobile/arctic-play/scripts/verify-retained-apks.py",
+    "mobile/arctic-play/src/storybook-accessibility-review.css",
+    "mobile/arctic-play/tests/retained-apk-acceptance.mjs",
+    "mobile/arctic-play/tests/storybook-browser.mjs",
+    "mobile/arctic-play/tests/test_retained_apks.py",
+    "mobile/arctic-play/tests/test_storybook_accessibility_review.py",
+    "server/legacyWalletAccess.js",
+    "server/loadPrizeBackend.js",
+    "server/roomStore.js",
+    "server/scripts/free-multiplayer-smoke.cjs",
+    "server/tests/arctic-play-socket-recovery.test.js",
+    "server/tests/database-recovery.test.js",
+    "server/tests/free-multiplayer-socket.test.js",
+    "server/tests/helpers/free-multiplayer-fixture.cjs",
+    "server/tests/helpers/local-test-database.cjs",
+    "server/tests/room-store-ordering.test.js",
+    "server/tests/two-stones-online.test.js",
+    "server/twoStonesService.js"
+  ],
+  "localCredentialScan": {
+    "scannedTextFiles": 1505,
+    "findings": 0,
+    "scope": "Final sparse working tree; final executable CI full checkout independently scanned1776."
+  },
+  "testedCandidate": "acb88254cb83b6655de8e1e975b3ed75d5c64df5",
+  "testedTree": "d44827b9d99a95f579a712dc958d4831fbea35de",
+  "handoffCommitScope": "Final executable candidate includes the CSS-only opt-in presentation correction and shared room persistence ordering fix. Subsequent handoff edits change documentation only.",
+  "presentationCorrection": {
+    "phase": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+    "guardTests": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "parentIndependentRerun": true
+    },
+    "candidateNavigationScenarioGroups": 9,
+    "stagingReport": {
+      "kind": "opt-in-browser-review-only",
+      "sourceVariant": "original-guarded-presentation-from-v5.10.2",
+      "sourceTreeSha256": {
+        "before": "d1f045ab3635f3e3e104714b06fc9a4dc2ac84d1c18fbfce7febfb89186fd911",
+        "after": "652313defeb61b0d67ac4a1253176456925ce229b32b383c76ac2d5bae8080d5"
+      },
+      "candidateTreeSha256": {
+        "before": "d1f045ab3635f3e3e104714b06fc9a4dc2ac84d1c18fbfce7febfb89186fd911",
+        "after": "ab3a1331a16093f854df8a515df2fef92782870a7292e243a48cb21264a8537d"
+      },
+      "modifiedFiles": [
+        "after/app.css"
+      ],
+      "appJsSha256": "539af253f2a60c10bc6f05cf93b74e08c0442775a3c9537404753160ba516502",
+      "originalCssSha256": "b50756be7173df93e6d51c058375d7fa29660bafba51666f796b7d05c3a1022f",
+      "correctionCssSha256": "0c8406b13feb9afbfba5855aaf8cca185a7d11b0ef44adb0c5871e5ffb87f0a9",
+      "candidateCssSha256": "19b95ee469b9bc1a1239e4c36336b381d5b5d5d2c1a48e2f0a85f2c2f8a7c078",
+      "apkProduced": false,
+      "physicalDeviceAccepted": false
+    },
+    "originalApksAndOriginalPatchPreserved": true,
+    "strictNegativeMustReproduce": [
+      "low-control-contrast",
+      "Crown-targeted large-text containment or overlap"
+    ],
+    "newApkProduced": false,
+    "report": "BATCH_D_PRESENTATION.md",
+    "firstCandidate": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
+    "firstCiRun": "https://github.com/defiventurers/articweb3/actions/runs/46106228547",
+    "detailedEvidence": "BATCH_D_PRESENTATION_EVIDENCE.json",
+    "strictBrowserVerification": {
+      "candidate": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
+      "runId": 46106228547,
+      "jobId": 140859484938,
+      "artifactId": 15247802266,
+      "pngCount": 108,
+      "originalStrictIssues": 121,
+      "correctedStrictIssues": 0,
+      "originalMinimumControlContrast": 1.1931496504198935,
+      "correctedMinimumControlContrast": 5.6883381905361174,
+      "homeComparisonsPassed": 6,
+      "homeThresholdsChanged": false,
+      "boundedRootTextPixels": 24
+    }
+  },
+  "storageOrderingInvestigation": {
+    "status": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+    "observedCandidate": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
+    "runId": 46106228547,
+    "jobId": 140859485147,
+    "node": "20.20.2",
+    "observation": "After twelve acknowledged Two Stones moves, the PostgreSQL row remained at ply10. The test failed before restarting the backend; it did not accept a stale restoration.",
+    "failedAssertion": "server/tests/arctic-play-socket-recovery.test.js:189, persisted.gameState.ply expected12 actual10",
+    "node24Result": "16/16 passed; different timing does not negate the Node20 failure",
+    "nextAction": "Retain process-local ordering and acknowledgment-to-durability limitations during separately approved deployment acceptance.",
+    "rootCause": "Unordered pooled upserts let older snapshots overwrite newer ones; snapshot/player reads occurred after awaits on a mutable room.",
+    "correction": "Call-time sanitized immutable JSON snapshot plus per-room process-local FIFO covering room and player writes.",
+    "deterministicRegressionBefore": {
+      "passed": 2,
+      "failed": 2
+    },
+    "deterministicRegressionAfter": {
+      "passedPerRuntime": 4,
+      "failed": 0,
+      "skipped": 0,
+      "nodes": [
+        "20.20.2",
+        "24.22.3"
+      ]
+    },
+    "fullPostgresqlAfter": {
+      "passedPerRuntime": 20,
+      "failed": 0,
+      "skipped": 0,
+      "nodes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "postgres": "18.7"
+    },
+    "sharedStoreCompatibilityAfter": {
+      "passedPerRuntime": 44,
+      "failed": 0,
+      "skipped": 0,
+      "nodes": [
+        "20.20.2",
+        "24.22.3"
+      ]
+    },
+    "correctedCandidate": "acb88254cb83b6655de8e1e975b3ed75d5c64df5",
+    "finalMultiplayerCi": {
+      "runId": 46106864044,
+      "jobs": [
+        140861455750,
+        140861455582
+      ],
+      "passedPerRuntime": 20,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "retainedReferenceCi": {
     "status": "completed-success",
     "initialCandidate": "d72be7c50ee1b0d8619dbd43bd7cc2585a1cdb4a",
     "initialDRun": "https://github.com/defiventurers/articweb3/actions/runs/46104778405",
@@ -512,147 +707,163 @@
       }
     }
   },
-  "limits": [
-    "Physical Android, live Para and live production free-match acceptance were not performed.",
-    "Original v5.10.2 signing checkout remains unresolved. Retained APK workers are unchanged and do not automatically include source A/B/C patches.",
-    "Local actual Chromium executable is absent; official download403. Successful CI rendering uses public baseline plus guarded patch, not private signed APK upload.",
-    "Later-source die-markup UI fixture fails identically on both retained APKs; bounded actual-worker checks pass.",
-    "Pre-upgrade request IDs cannot be reconstructed. Legacy asynchronous room acknowledgment still precedes durable write; tests wait for confirmed stored state before restart.",
-    "Current production database binding and private C publication/transaction approvals remain unresolved."
-  ],
-  "reports": [
-    "BATCH_D_ANDROID.md",
-    "BATCH_D_ANDROID_EVIDENCE.json",
-    "BATCH_D_ACCEPTANCE.md",
-    "BATCH_D_ACCEPTANCE_EVIDENCE.json",
-    "BATCH_D_MULTIPLAYER.md",
-    "BATCH_D_MULTIPLAYER_EVIDENCE.json",
-    "BATCH_D_ROLLOUT.md",
-    "BATCH_D_PRESENTATION.md"
-  ],
-  "changedFiles": [
-    ".github/workflows/fonso-batch-d.yml",
-    "docs/technical-stabilization/BATCH_D_ACCEPTANCE.md",
-    "docs/technical-stabilization/BATCH_D_ACCEPTANCE_EVIDENCE.json",
-    "docs/technical-stabilization/BATCH_D_ANDROID.md",
-    "docs/technical-stabilization/BATCH_D_ANDROID_EVIDENCE.json",
-    "docs/technical-stabilization/BATCH_D_EVIDENCE.json",
-    "docs/technical-stabilization/BATCH_D_MULTIPLAYER.md",
-    "docs/technical-stabilization/BATCH_D_MULTIPLAYER_EVIDENCE.json",
-    "docs/technical-stabilization/BATCH_D_PRESENTATION.md",
-    "docs/technical-stabilization/BATCH_D_ROLLOUT.md",
-    "docs/technical-stabilization/CHECKPOINT.md",
-    "mobile/arctic-play/scripts/prepare-storybook-accessibility-review.py",
-    "mobile/arctic-play/scripts/verify-retained-apks.py",
-    "mobile/arctic-play/src/storybook-accessibility-review.css",
-    "mobile/arctic-play/tests/retained-apk-acceptance.mjs",
-    "mobile/arctic-play/tests/storybook-browser.mjs",
-    "mobile/arctic-play/tests/test_retained_apks.py",
-    "mobile/arctic-play/tests/test_storybook_accessibility_review.py",
-    "server/legacyWalletAccess.js",
-    "server/loadPrizeBackend.js",
-    "server/roomStore.js",
-    "server/scripts/free-multiplayer-smoke.cjs",
-    "server/tests/arctic-play-socket-recovery.test.js",
-    "server/tests/database-recovery.test.js",
-    "server/tests/free-multiplayer-socket.test.js",
-    "server/tests/helpers/free-multiplayer-fixture.cjs",
-    "server/tests/helpers/local-test-database.cjs",
-    "server/tests/room-store-ordering.test.js",
-    "server/tests/two-stones-online.test.js",
-    "server/twoStonesService.js"
-  ],
-  "localCredentialScan": {
-    "scannedTextFiles": 1499,
-    "findings": 0,
-    "scope": "Current sparse working tree; CI full checkout is separate."
-  },
-  "testedCandidate": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3",
-  "testedTree": "8c82f5ccf882758e8f96ff448a2913ef55c07aaf",
-  "handoffCommitScope": "74dfcea records the passing backend/retained-reference gates. A newly observed presentation correction is tracked separately and requires its own CI evidence.",
-  "presentationCorrection": {
-    "phase": "prepared-locally-rendered-ci-pending",
-    "guardTests": {
-      "passed": 8,
-      "failed": 0,
-      "skipped": 0,
-      "parentIndependentRerun": true
-    },
-    "candidateNavigationScenarioGroups": 9,
-    "stagingReport": {
-      "kind": "opt-in-browser-review-only",
-      "sourceVariant": "original-guarded-presentation-from-v5.10.2",
-      "sourceTreeSha256": {
-        "before": "d1f045ab3635f3e3e104714b06fc9a4dc2ac84d1c18fbfce7febfb89186fd911",
-        "after": "652313defeb61b0d67ac4a1253176456925ce229b32b383c76ac2d5bae8080d5"
+  "ci": {
+    "candidate": "acb88254cb83b6655de8e1e975b3ed75d5c64df5",
+    "candidateTree": "d44827b9d99a95f579a712dc958d4831fbea35de",
+    "status": "completed-success",
+    "workflowCount": 12,
+    "workflows": [
+      {
+        "id": 46106864013,
+        "name": "FONSO runtime compatibility and recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106864013"
       },
-      "candidateTreeSha256": {
-        "before": "d1f045ab3635f3e3e104714b06fc9a4dc2ac84d1c18fbfce7febfb89186fd911",
-        "after": "ab3a1331a16093f854df8a515df2fef92782870a7292e243a48cb21264a8537d"
+      {
+        "id": 46106863973,
+        "name": "Launch And Runtime Evidence Test",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106863973"
       },
-      "modifiedFiles": [
-        "after/app.css"
-      ],
-      "appJsSha256": "539af253f2a60c10bc6f05cf93b74e08c0442775a3c9537404753160ba516502",
-      "originalCssSha256": "b50756be7173df93e6d51c058375d7fa29660bafba51666f796b7d05c3a1022f",
-      "correctionCssSha256": "0c8406b13feb9afbfba5855aaf8cca185a7d11b0ef44adb0c5871e5ffb87f0a9",
-      "candidateCssSha256": "19b95ee469b9bc1a1239e4c36336b381d5b5d5d2c1a48e2f0a85f2c2f8a7c078",
-      "apkProduced": false,
-      "physicalDeviceAccepted": false
-    },
-    "originalApksAndOriginalPatchPreserved": true,
-    "strictNegativeMustReproduce": [
-      "low-control-contrast",
-      "Crown-targeted large-text containment or overlap"
+      {
+        "id": 46106864181,
+        "name": "Prize Policy Evidence Test",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106864181"
+      },
+      {
+        "id": 46106863932,
+        "name": "Security regression checks",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106863932"
+      },
+      {
+        "id": 46106863956,
+        "name": "FONSO security and rules authority",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106863956"
+      },
+      {
+        "id": 46106863957,
+        "name": "Heritage Games Server",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106863957"
+      },
+      {
+        "id": 46106863981,
+        "name": "Launch source and proof checks",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106863981"
+      },
+      {
+        "id": 46106864088,
+        "name": "Shanshui Xiangqi",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106864088"
+      },
+      {
+        "id": 46106864114,
+        "name": "Sanguo Qi",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106864114"
+      },
+      {
+        "id": 46106863908,
+        "name": "FONSO collectible and signup recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106863908"
+      },
+      {
+        "id": 46106864023,
+        "name": "Retained APK Games visual review",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106864023"
+      },
+      {
+        "id": 46106864044,
+        "name": "FONSO retained APK and free multiplayer acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46106864044"
+      }
     ],
-    "newApkProduced": false,
-    "report": "BATCH_D_PRESENTATION.md",
-    "firstCandidate": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
-    "firstCiRun": "https://github.com/defiventurers/articweb3/actions/runs/46106228547"
-  },
-  "storageOrderingInvestigation": {
-    "status": "FIXED AND TESTED LOCALLY",
-    "observedCandidate": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
-    "runId": 46106228547,
-    "jobId": 140859485147,
-    "node": "20.20.2",
-    "observation": "After twelve acknowledged Two Stones moves, the PostgreSQL row remained at ply10. The test failed before restarting the backend; it did not accept a stale restoration.",
-    "failedAssertion": "server/tests/arctic-play-socket-recovery.test.js:189, persisted.gameState.ply expected12 actual10",
-    "node24Result": "16/16 passed; different timing does not negate the Node20 failure",
-    "nextAction": "Run final CI on the published correction; keep process-local and acknowledgment-to-durability limits explicit.",
-    "rootCause": "Unordered pooled upserts let older snapshots overwrite newer ones; snapshot/player reads occurred after awaits on a mutable room.",
-    "correction": "Call-time sanitized immutable JSON snapshot plus per-room process-local FIFO covering room and player writes.",
-    "deterministicRegressionBefore": {
-      "passed": 2,
-      "failed": 2
-    },
-    "deterministicRegressionAfter": {
-      "passedPerRuntime": 4,
-      "failed": 0,
-      "skipped": 0,
-      "nodes": [
-        "20.20.2",
-        "24.22.3"
+    "jobs": [
+      {
+        "id": 140861455582,
+        "name": "free-multiplayer (24.22.3)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 140861455750,
+        "name": "free-multiplayer (20.20.2)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 140861455816,
+        "name": "retained-android-runtime",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": 15248446014,
+        "name": "batch-d-presentation-correction-evidence",
+        "bytes": 30853773,
+        "digest": "sha256:a523d90c02e780dc58989b3ede2a9e5a1ab6abdb86a96f8686353dbf82cc2d8d",
+        "candidate": "acb88254cb83b6655de8e1e975b3ed75d5c64df5"
+      },
+      {
+        "id": 15248181625,
+        "name": "batch-d-guarded-rendered-evidence",
+        "bytes": 15548516,
+        "digest": "sha256:b1d9b1c8ad775dc6bc743788ced2a465da69a252cf88dcb5e76f16f27001d8d4",
+        "candidate": "acb88254cb83b6655de8e1e975b3ed75d5c64df5"
+      }
+    ],
+    "preview": {
+      "scope": "PR preview status only; no production deployment or approval",
+      "statuses": [
+        {
+          "context": "Vercel \u2013 articweb3",
+          "state": "success"
+        }
       ]
     },
-    "fullPostgresqlAfter": {
-      "passedPerRuntime": 20,
-      "failed": 0,
-      "skipped": 0,
-      "nodes": [
-        "20.20.2",
-        "24.22.3"
-      ],
-      "postgres": "18.7"
+    "fullCheckoutCredentialScan": {
+      "scannedTextFiles": 1776,
+      "findings": 0,
+      "runId": 46106864044,
+      "jobId": 140861455582
     },
-    "sharedStoreCompatibilityAfter": {
-      "passedPerRuntime": 44,
-      "failed": 0,
-      "skipped": 0,
-      "nodes": [
-        "20.20.2",
-        "24.22.3"
-      ]
-    }
+    "multiplayerCounts": [
+      {
+        "node": "20.20.2",
+        "jobId": 140861455750,
+        "passed": 20,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "node": "24.22.3",
+        "jobId": 140861455582,
+        "passed": 20,
+        "failed": 0,
+        "skipped": 0
+      }
+    ]
   }
 }

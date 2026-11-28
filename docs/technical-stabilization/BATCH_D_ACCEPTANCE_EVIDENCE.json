@@ -626,5 +626,13 @@
     "imageMaskingOrFavorableFrameSelection": false,
     "realDevice": false,
     "liveAuth": false
+  },
+  "separatePresentationCorrection": {
+    "status": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+    "candidate": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
+    "report": "BATCH_D_PRESENTATION_EVIDENCE.json",
+    "originalSignedApkModified": false,
+    "correctedSignedApkProduced": false,
+    "physicalAcceptance": "OWNER ACTION REQUIRED"
   }
 }
