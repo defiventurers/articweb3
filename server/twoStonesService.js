@@ -11,7 +11,17 @@ function createTwoStonesService(deps) {
   const isRoom = (room) => room?.gameId === GAME_ID;
   const sha256 = (value) => createHash("sha256").update(String(value)).digest("hex");
   function code() { const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let out = ""; for (let i = 0; i < 4; i += 1) out += chars[Math.floor(Math.random() * chars.length)]; return rooms.has(out) ? code() : out; }
-  function requireProfile(ws, requestId, payload) { const wallet = walletOf(payload.wallet); if (!wallet || !profiles.has(wallet)) { fail(ws, requestId, "Create profile first."); return null; } sockets.set(wallet, ws); return wallet; }
+  function requireProfile(ws, requestId, payload) {
+    const wallet = walletOf(payload.wallet);
+    // A profile is shared account data, not proof that this socket owns it.
+    // Check the existing signature-bound login before rebinding broadcasts.
+    if (!ws.authorizedWallet || walletOf(ws.authorizedWallet) !== wallet) {
+      fail(ws, requestId, "Login with this wallet before using this action.");
+      return null;
+    }
+    if (!wallet || !profiles.has(wallet)) { fail(ws, requestId, "Create profile first."); return null; }
+    sockets.set(wallet, ws); return wallet;
+  }
   function findRoom(ws, requestId, payload) { const room = rooms.get(normalizeRoomCode(payload.roomCode)); if (!room || !isRoom(room)) { fail(ws, requestId, "Two Stones room not found."); return null; } return room; }
   function audit(room, event) { room.auditLog = room.auditLog || []; const seq = room.auditLog.length + 1; const previousHash = room.lastAuditHash || room.auditLog.at(-1)?.eventHash || null; const body = { at: Date.now(), seq, previousHash, ...event }; const eventHash = sha256(JSON.stringify({ roomCode: room.roomCode, matchId: room.matchId, event: body })); room.lastAuditHash = eventHash; room.auditLog.push({ ...body, eventHash }); }
   function roomView(room) { const ps = players(room); return { id: room.id, gameId: GAME_ID, rulesetVersion: room.rulesetVersion, roomCode: room.roomCode, roomMode: room.roomMode, visibility: room.visibility, status: room.status, matchId: room.matchId, createdAt: room.createdAt, updatedAt: room.updatedAt || room.createdAt, startedAt: room.startedAt || null, finalizedAt: room.finalizedAt || null, playerCount: ps.length, maxPlayers: 2, gameState: room.gameState, result: room.result || null, proofHash: room.proofHash || null, players: ps.map((player) => ({ wallet: player.wallet, name: profileFor(player.wallet)?.name || "Player", role: player.seat, side: player.seat, joinedAt: player.joinedAt })) }; }
@@ -21,7 +31,34 @@ function createTwoStonesService(deps) {
   function joinRoom(ws, requestId, payload = {}) { const wallet = requireProfile(ws, requestId, payload); if (!wallet) return; const room = findRoom(ws, requestId, payload); if (!room) return; if (room.players[wallet]) return ok(ws, requestId, "ts_room_join_result", { room: roomView(room) }); if (room.status !== "waiting") return fail(ws, requestId, "Room is no longer open."); if (players(room).length >= 2) return fail(ws, requestId, "Room is full."); const occupied = players(room)[0]?.seat || "blue"; const side = oppositeSide(occupied); room.players[wallet] = { wallet, seat: side, joinedAt: Date.now(), entryLocked: true }; room.status = "playing"; room.startedAt = Date.now(); audit(room, { type: "player_joined", wallet, side }); audit(room, { type: "game_started", players: players(room).map((player) => ({ wallet: player.wallet, side: player.seat })) }); ok(ws, requestId, "ts_room_join_result", { room: roomView(room) }); broadcast(room); }
   function getState(ws, requestId, payload = {}) { const wallet = requireProfile(ws, requestId, payload); if (!wallet) return; const room = findRoom(ws, requestId, payload); if (!room) return; if (!room.players[wallet]) return fail(ws, requestId, "Join the room first."); ok(ws, requestId, "ts_game_state_result", { room: roomView(room) }); }
   function legalActions(ws, requestId, payload = {}) { const wallet = requireProfile(ws, requestId, payload); if (!wallet) return; const room = findRoom(ws, requestId, payload); if (!room) return; const player = room.players[wallet]; if (!player) return fail(ws, requestId, "Join the room first."); const actions = room.status === "playing" && player.seat === room.gameState.currentPlayer ? getLegalActions(room.gameState, player.seat) : []; ok(ws, requestId, "ts_legal_actions_result", { actions, room: roomView(room) }); }
-  function action(ws, requestId, payload = {}) { const wallet = requireProfile(ws, requestId, payload); if (!wallet) return; const room = findRoom(ws, requestId, payload); if (!room) return; const player = room.players[wallet]; if (!player) return fail(ws, requestId, "Join the room first."); if (room.status !== "playing") return fail(ws, requestId, room.status === "finished" ? "This Two Stones match has ended." : "Waiting for a second player."); if (player.seat !== room.gameState.currentPlayer) return fail(ws, requestId, "It is not your turn."); const result = applyAction(room.gameState, payload.action, player.seat); if (result.error) return fail(ws, requestId, result.error); room.gameState = result.state; audit(room, { type: "game_action", wallet, side: player.seat, action: payload.action, resolved: room.gameState.lastAction, turn: room.gameState.turn }); if (room.gameState.winner || room.gameState.isDraw) finalize(room); ok(ws, requestId, "ts_game_action_result", { room: roomView(room) }); broadcast(room); }
+  function action(ws, requestId, payload = {}) {
+    const wallet = requireProfile(ws, requestId, payload); if (!wallet) return;
+    const room = findRoom(ws, requestId, payload); if (!room) return;
+    const player = room.players[wallet]; if (!player) return fail(ws, requestId, "Join the room first.");
+    if (room.status !== "playing") return fail(ws, requestId, room.status === "finished" ? "This Two Stones match has ended." : "Waiting for a second player.");
+    // The shipped socket client supplies a distinct req_<time>_<sequence> for
+    // each choice. A replay of that envelope must not become a second move
+    // when the board later makes its old action legal again.
+    const validRequestId = typeof requestId === "string" ? requestId.length > 0 && requestId.length <= 128 : Number.isSafeInteger(requestId);
+    if (!validRequestId) return fail(ws, requestId, "Send a unique request identifier for this move.");
+    const requestHash = sha256(JSON.stringify([room.matchId, wallet, typeof requestId, requestId]));
+    const accepted = room.acceptedActionRequestHashes === undefined ? [] : room.acceptedActionRequestHashes;
+    const limit = TWO_STONES_RULESET.players * TWO_STONES_RULESET.piecesPerPlayer + TWO_STONES_RULESET.movementPlyLimit;
+    if (!Array.isArray(accepted) || accepted.some(value => typeof value !== "string" || !/^[a-f0-9]{64}$/.test(value))) return fail(ws, requestId, "Saved move receipts need review before this match can continue.");
+    if (accepted.includes(requestHash)) return fail(ws, requestId, "This move request was already processed. Refresh the board.");
+    // Four placements plus at most forty movement plies. Never evict a valid
+    // receipt to make room: that would reopen an earlier replay opportunity.
+    if (accepted.length >= limit) return fail(ws, requestId, "This match has reached its recorded move limit.");
+    if (player.seat !== room.gameState.currentPlayer) return fail(ws, requestId, "It is not your turn.");
+    const result = applyAction(room.gameState, payload.action, player.seat); if (result.error) return fail(ws, requestId, result.error);
+    // Optional room metadata is persisted by the existing JSON store, outside
+    // gameState and auditLog. Existing saves without this field remain valid.
+    room.acceptedActionRequestHashes = accepted.concat(requestHash);
+    room.gameState = result.state;
+    audit(room, { type: "game_action", wallet, side: player.seat, action: payload.action, resolved: room.gameState.lastAction, turn: room.gameState.turn });
+    if (room.gameState.winner || room.gameState.isDraw) finalize(room);
+    ok(ws, requestId, "ts_game_action_result", { room: roomView(room) }); broadcast(room);
+  }
   async function history(ws, requestId, payload = {}) { const wallet = requireProfile(ws, requestId, payload); if (!wallet) return; try { ok(ws, requestId, "ts_history_result", { history: await getHistoryForWallet(wallet, GAME_ID) }); } catch (err) { fail(ws, requestId, err.message || "Could not load Two Stones history."); } }
   function myRooms(ws, requestId, payload = {}) { const wallet = requireProfile(ws, requestId, payload); if (!wallet) return; const result = [...rooms.values()].filter(isRoom).filter((room) => room.players?.[wallet]).sort((a,b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0)).map(roomView); ok(ws, requestId, "ts_my_rooms_result", { rooms: result }); }
   function finalize(room) { if (room.finalizedAt) return; room.status = "finished"; room.finalizedAt = Date.now(); const winnerSide = room.gameState.winner; const winnerPlayer = winnerSide ? players(room).find((player) => player.seat === winnerSide) || null : null; room.result = { winner: winnerSide, winnerWallet: winnerPlayer?.wallet || null, draw: Boolean(room.gameState.isDraw), reason: room.gameState.winReason, plies: room.gameState.ply, movementPlies: room.gameState.movementPly }; room.proofHash = sha256(JSON.stringify({ gameId: room.gameId, rulesetVersion: room.rulesetVersion, roomCode: room.roomCode, matchId: room.matchId, gameState: room.gameState, auditLog: room.auditLog })); audit(room, { type: "game_finished", result: room.result, proofHash: room.proofHash }); recordHistory(room); }
