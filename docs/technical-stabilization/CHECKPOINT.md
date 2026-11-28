@@ -1,5 +1,60 @@
 # FONSO technical stabilization checkpoint
 
+Updated: **28 November 2026 (Asia/Kolkata)**. **Batch D in progress.** Resumed
+from the completed C checkpoint after the founder said “Resume”. Finish Android
+artifact/acceptance preparation and free multiplayer verification, then stop.
+
+## Current Batch D review state
+
+- Reviewed main: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`; rechecked remotely at resume.
+- Branch: `codex/fonso-stabilization-batch-d`, based on final C checkpoint
+  `75328370f0703ab7907dda9dc833f8aab93c21f9`.
+- PR #121 remains open/draft toward main. PR #122 is merged into A; documentation
+  PR #123 and C PR #124 remain open/draft. No new main merge or production
+  deployment is authorized by this continuation.
+- Read the C checkpoint/evidence/rollout and current PR states. Completed A/B/C
+  investigations are preserved; their live, owner and publication gates remain.
+- Preserve current rules authority, historical hold, funded access isolation,
+  strict readiness/database failure behavior, pending-link authorization,
+  canonical collectible receipts, saved games and the exact approved v5.10.2 APK.
+
+## Batch D execution checkpoint
+
+- D1: exact retained v5.10.2 APK parts located in Git; reconstruct and verify
+  before claiming acceptance. Signed v5.11.1 recovery and signature/payload
+  comparison are in progress. PR #118/#119 provenance is being checked.
+- Android emulator/adb and hardware virtualization are unavailable in this
+  workspace. Chromium is available for checks on extracted retained assets.
+  Browser evidence will not be presented as Android or physical acceptance.
+- D2: actual production startup and both legacy `ts_*` and Android `ap_*`
+  protocols identified. Reproduce the suspected Two Stones identity gap before
+  any fix; run independent free clients with invalid moves, replay,
+  reconnect/state restoration and final agreement.
+- No production deploy, funded match, live signup/consent/mint, contract change,
+  database operation, source-verification submission or private-package
+  publication has been performed in D.
+- No new patch or passing D result is claimed by this initial checkpoint.
+
+## Owner boundaries
+
+Physical device checks require the founder. Preserve the existing app/save and
+perform upgrade acceptance first; use a separate device/profile for a clean
+installation. The approved v5.10.2 baseline must not be replaced by an unrelated
+frontend/source build. Production deployment and all private-publication/live
+collectible gates still require separate explicit authorization.
+
+## Exact next continuation instruction if interrupted
+
+> Resume Batch D only from `codex/fonso-stabilization-batch-d`. Read this current
+> checkpoint and any `BATCH_D_*` evidence first, inspect the working diff and PR
+> state, then finish the retained APK verification/physical checklist and the
+> independent-client free multiplayer regression. Preserve all A/B/C safeguards
+> and approval gates. Do not restart completed investigations, deploy, mint,
+> publish held private packages or clear the founder's saved game. Stop after D
+> with test evidence, a reviewable PR and exact remaining owner actions.
+
+## Preserved Batch C handoff
+
 Updated: **28 November 2026 (Asia/Kolkata)**. **Batch C code and isolated
 verification complete. Production and live collectible acceptance remain
 pending. Stop after C.**

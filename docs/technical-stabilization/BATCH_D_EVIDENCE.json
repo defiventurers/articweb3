@@ -1,0 +1,62 @@
+{
+  "batch": "D",
+  "observedAt": "2026-11-28T03:39:20.942727+00:00",
+  "phase": "implementation-in-progress",
+  "reviewedMain": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
+  "branch": "codex/fonso-stabilization-batch-d",
+  "baseCommit": "75328370f0703ab7907dda9dc833f8aab93c21f9",
+  "pullRequests": [
+    {
+      "number": 121,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "head": "148e319c129d91421c21466c8567ddcc10ec145e"
+    },
+    {
+      "number": 122,
+      "state": "closed",
+      "merged": true,
+      "mergeCommit": "148e319c129d91421c21466c8567ddcc10ec145e"
+    },
+    {
+      "number": 123,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "head": "30ab0a5d346bb6087da13ea0322e08c8b24a1a80"
+    },
+    {
+      "number": 124,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "head": "75328370f0703ab7907dda9dc833f8aab93c21f9"
+    }
+  ],
+  "acceptance": {
+    "physicalAndroid": "OWNER ACTION REQUIRED",
+    "production": "PRODUCTION VERIFICATION PENDING"
+  },
+  "environment": {
+    "adb": false,
+    "androidEmulator": false,
+    "hardwareVirtualization": false,
+    "chromium": true
+  },
+  "performed": {
+    "productionDeployment": false,
+    "mainMerge": false,
+    "liveAccount": false,
+    "liveMint": false,
+    "fundedMatch": false,
+    "contractChange": false,
+    "privatePackagePublication": false,
+    "productionDatabaseMutation": false
+  },
+  "tests": [],
+  "limitations": [
+    "D tests in progress; no pass claimed by initial checkpoint.",
+    "Browser checks are not physical Android acceptance."
+  ]
+}
