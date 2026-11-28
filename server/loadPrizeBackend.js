@@ -348,6 +348,25 @@ function injectFundedAccessGates(source) {
   return transformed;
 }
 
+function injectStartupReadiness(source) {
+  if (source.includes('const startupReadiness = require("./startupReadiness.js");')) return source;
+  const signature = 'async function boot()';
+  const start = source.indexOf(signature);
+  if (start === -1) throw new Error('Unable to locate boot for readiness.');
+  const bodyStart = source.indexOf('{', start);
+  const end = findFunctionEnd(source, bodyStart);
+  const boot = source.slice(start, end);
+  if (!boot.includes('const [historyReady, profileReady, activityReady, roomReady] = await Promise.all(') || !boot.includes('await loadRooms()')) {
+    throw new Error('Unexpected boot dependencies for readiness.');
+  }
+  const completion = '\nstartupReadiness.complete(!require("./healthStatus").databaseRequired(process.env) || [historyReady, profileReady, activityReady, roomReady].every(Boolean));\n';
+  let transformed = replaceFunctionByName(source, signature, boot.slice(0, -1) + completion + '}');
+  const failure = 'boot().catch((err) => console.error(`[boot] ${err.message}`));';
+  if (!transformed.includes(failure)) throw new Error('Unable to locate boot failure for readiness.');
+  transformed = transformed.replace(failure, 'boot().catch(() => { startupReadiness.fail(); console.error("[boot] Startup restoration pending."); });');
+  return 'const startupReadiness = require("./startupReadiness.js");\n' + transformed;
+}
+
 function transformBackendSource(source) {
   let transformed = injectWalletAuthentication(source);
   transformed = replaceBuildPayoutPlan(transformed);
@@ -360,6 +379,7 @@ function transformBackendSource(source) {
   transformed = replaceSettlementErrorDisclosure(transformed);
   transformed = replaceHighStakesUxStatus(transformed);
   transformed = injectFundedAccessGates(transformed);
+  transformed = injectStartupReadiness(transformed);
   return transformed;
 }
 
@@ -394,6 +414,7 @@ module.exports = {
   replaceSettlementErrorDisclosure,
   replaceHighStakesUxStatus,
   injectFundedAccessGates,
+  injectStartupReadiness,
   transformBackendSource,
   HIGH_STAKES_PAYOUT_MULTIPLIERS,
   HIGH_STAKES_POINTS
