@@ -78,6 +78,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
   function schedule(room) {
     if(bots.has(room.roomCode) || processing.has(room.roomCode)) return;
     if(room.status!=='playing') return;
+    if(fair.continuationBlockReason(room))return;
     const actor=Object.values(room.players).find(p=>p.seat===engine.turn(room.gameState));
     if(!actor?.bot) return;
     const timer=setTimeout(async()=>{
@@ -250,6 +251,7 @@ function createArcticPlayService({rooms,send,ok,fail,saveRoomSafe=async()=>{},lo
   }
   function restoreRoom(room) {
     if(room?.gameId!==ROOM_GAME_ID||room.rulesetVersion!==engine.VERSION)return;
+    if(room.status==='playing'&&fair.continuationBlockReason(room))return;
     if(room.status==='playing'&&!Object.values(room.players).some(p=>!p.bot&&!p.left)&&!engine.result(room.gameState)) {
       room.gameState={...room.gameState,mobileResult:{winner:null,draw:true,reason:'All players left the table.'}};room.status='finished';room.revision++;persist(room);
     }

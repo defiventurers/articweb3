@@ -114,6 +114,7 @@ export async function verifyBundle(bundle,{engine,rulesHash,trustedKeys=[],verif
   const fail=message=>{throw Error(message);}, header=bundle?.header;
   if(!header || header.protocol!==PROTOCOL || !engine || !Array.isArray(bundle.events) || bundle.events.length>4000) fail('This is not a supported match proof.');
   if(header.rulesHash!==rulesHash) fail('This match needs its original published rules build.');
+  if(header.rulesVersion!==engine.VERSION) fail('This match needs its original published rules version.');
   const headerHash=await hashObject(header);
   if(headerHash!==bundle.headerHash || !await verify(header.serverPublicKey,headerMessage(headerHash),bundle.headerSignature)) fail('The match definition or its signature has changed.');
   const signer=await keyId(header.serverPublicKey), trusted=await Promise.all(trustedKeys.map(keyId));

@@ -40,6 +40,29 @@ Node 24.22.3. Existing pinned dependencies installed with `npm ci --ignore-scrip
 
 ## Work remaining and continuation
 
+### Saved implementation progress
+
+A1's current published authority has been recovered and implemented locally;
+see `BATCH_A_FAIR_PLAY.md`. Exact recompilation reproduces 299,733 bytes and the
+unchanged `16d08120…` digest. Independent review identified a third build caller
+and an unsupported-bot retry path; both are fixed and regression tested. Source
+UI copy was compiled and checked for current versus unsupported authorities.
+The old authority and retained signed APK hold remain unchanged.
+
+Existing gameplay verification: 20 Node tests and 77 Vitest tests passed. An
+initial attempt to run three Vitest suites with Node's test runner could not
+load their runner; rerunning with the pinned Vitest 5.0.0 executable passed all
+77 tests. This was a test-command issue, not a gameplay fix.
+
+A2 backend/operator changes pass 28 local tests and independent review. A final
+client-side preflight is being added so standalone deposits and stale cached
+rooms cannot reach a wallet write before fresh server authorization. Keep this
+part marked in progress until its tests and review finish.
+
+The checkpoint is already saved on the remote development branch. HTTPS git
+push has no local credential, so the authenticated GitHub app is used to create
+tree/commit objects on that same branch; no main update or deployment is made.
+
 Finish local reproduction, minimal fixes, regression tests, diff review, and reviewable PR for A1/A2. Update this checkpoint with exact changed paths, commands, results, commit and PR before stopping. No founder action is currently needed for local work. Production rollout remains a separate approval gate.
 
 If interrupted: resume `codex/fonso-stabilization-batch-a`, read this checkpoint and its evidence files, inspect the working tree before editing, and finish Batch A only. Do not repeat completed company setup or start Batch B.
