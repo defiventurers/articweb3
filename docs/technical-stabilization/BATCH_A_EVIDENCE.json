@@ -5,7 +5,7 @@
   "repository": "https://github.com/defiventurers/articweb3",
   "reviewed_main": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
   "branch": "codex/fonso-stabilization-batch-a",
-  "pull_request": null,
+  "pull_request": "https://github.com/defiventurers/articweb3/pull/121",
   "node_version": "24.22.3",
   "status": {
     "A1_current_authority": "FIXED AND TESTED LOCALLY",
@@ -172,8 +172,103 @@
     "All safe local Batch A work is complete; Batch B/C/D are not started."
   ],
   "ci": {
-    "status": "pending PR creation",
-    "workflow": ".github/workflows/fonso-batch-a.yml"
+    "commit": "0fdfe6fda6e4c1a38d0c44f6434f99f89774e224",
+    "checks": [
+      {
+        "name": "Vercel Preview Comments",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/runs/140836504578"
+      },
+      {
+        "name": "batch-a",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098826536/job/140836352990"
+      },
+      {
+        "name": "authoritative-room-tests",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098826304/job/140836352394"
+      },
+      {
+        "name": "smoke",
+        "status": "in_progress",
+        "conclusion": null,
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098826274/job/140836352325"
+      },
+      {
+        "name": "launch-and-runtime",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098826295/job/140836352317"
+      },
+      {
+        "name": "prize-policy",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098826287/job/140836352280"
+      },
+      {
+        "name": "launch",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098826333/job/140836352249"
+      },
+      {
+        "name": "gameplay-and-rooms",
+        "status": "in_progress",
+        "conclusion": null,
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098826321/job/140836352217"
+      },
+      {
+        "name": "security",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098826294/job/140836352127"
+      },
+      {
+        "name": "rules-and-rooms",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098826310/job/140836352070"
+      },
+      {
+        "name": "Server config checks",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098811348/job/140836305299"
+      },
+      {
+        "name": "Frontend checks and builds",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098811348/job/140836305017"
+      },
+      {
+        "name": "launch-and-runtime",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46098811342/job/140836304980"
+      }
+    ],
+    "statuses": [
+      {
+        "context": "Vercel \u2013 articweb3",
+        "state": "success",
+        "target_url": "https://vercel.com/defiouzas-projects/articweb3/CqoDN2XUNLKf9CyHEGcMoSqh28FD"
+      }
+    ],
+    "batch_a_workflow": ".github/workflows/fonso-batch-a.yml",
+    "batch_a_conclusion": "success",
+    "batch_a_run_id": 46098826536,
+    "batch_a_job_id": 140836352990,
+    "full_checkout_credential_scan": {
+      "scanned": 1705,
+      "findings": []
+    },
+    "scope": "Tested implementation commit; subsequent handoff documentation only. Pending unrelated workflow results are not represented as passes."
   },
   "security_scan": {
     "command": "node scripts/security-scan.mjs",
@@ -185,5 +280,6 @@
   "diff_check": {
     "command": "git diff --cached --check",
     "exit_code": 0
-  }
+  },
+  "implementation_commit": "0fdfe6fda6e4c1a38d0c44f6434f99f89774e224"
 }

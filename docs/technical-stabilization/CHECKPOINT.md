@@ -13,7 +13,8 @@ pending; this checkpoint is not launch approval.
 - Reviewed `main`: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`, independently
   checked through Git and the GitHub branch API and rechecked before handoff.
 - Development branch: `codex/fonso-stabilization-batch-a`.
-- Pull request: pending creation; replace this line with its returned URL.
+- Draft pull request: [#121](https://github.com/defiventurers/articweb3/pull/121).
+- Tested implementation commit: `0fdfe6fda6e4c1a38d0c44f6434f99f89774e224`.
 - Earlier saved A1 implementation commit: `f4365ed80206076a62f9106d1aeb792b0fc088e7`.
 - PRs #118 and #119 were read; both are merged. #119 is the reviewed main merge.
 - Company Master Context, portable context, Engineering/Architecture/Backlog,
@@ -113,7 +114,9 @@ Node **24.22.3**, existing lockfiles; dependencies installed using
 | Source UI verification | Changed JSX screens parse/transform; Fair Play status rendering checked |
 | `git diff --check` | PASS |
 | `node scripts/security-scan.mjs` | PASS; 1,431 available tracked text files, zero findings (lightweight scanner) |
-| GitHub CI | Pending PR creation; local passes do not imply CI or production acceptance |
+| GitHub CI | Batch A workflow PASS at the tested implementation commit; 167 tests and full-checkout scanner (1,705 files, zero findings). Other check results are recorded in the evidence snapshot. |
+
+CI evidence: [Batch A workflow](https://github.com/defiventurers/articweb3/actions/runs/46098826536). Existing frontend testnet/mainnet builds and server configuration checks also passed. The existing Vercel integration generated a successful PR preview; it is not a production release. Later commits updating only this handoff do not change the tested code.
 
 Exact commands, log digests, unchanged artifact digests and sanitized observations
 are in `BATCH_A_EVIDENCE.json`. The new workflow reruns these checks. An initial

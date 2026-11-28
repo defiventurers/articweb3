@@ -11,6 +11,8 @@ Branch: `codex/fonso-stabilization-batch-a`.
 client/verifier delivery. The older `63845f4d…` authority is still unavailable
 and remains on hold. The approved v5.10.2 and review v5.11.1 APKs were not rebuilt,
 patched, signed, installed or replaced by this batch.
+The original v5.10.2 signing checkout is still unresolved; recovering this proof
+artifact does not establish that APK's source provenance.
 
 This is an exact artifact recovery, not a changed ruleset or a replacement
 expected hash. The published manifest and both tracked game engines are unchanged.
