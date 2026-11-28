@@ -1,7 +1,7 @@
 {
   "batch": "D",
-  "observedAt": "2026-11-28T03:39:20.942727+00:00",
-  "phase": "implementation-in-progress",
+  "observedAt": "2026-11-28T03:50:02.145701+00:00",
+  "phase": "local-implementation-complete-ci-pending",
   "reviewedMain": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
   "branch": "codex/fonso-stabilization-batch-d",
   "baseCommit": "75328370f0703ab7907dda9dc833f8aab93c21f9",
@@ -32,17 +32,35 @@
       "draft": true,
       "merged": false,
       "head": "75328370f0703ab7907dda9dc833f8aab93c21f9"
+    },
+    {
+      "number": 125,
+      "url": "https://github.com/defiventurers/articweb3/pull/125",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "codex/fonso-stabilization-batch-c",
+      "initialHead": "cac64050f029a4a446556a32948b65b661f12083",
+      "currentHead": "3ebb00386208acf3efc6cd529b15610996b45924"
     }
   ],
   "acceptance": {
     "physicalAndroid": "OWNER ACTION REQUIRED",
-    "production": "PRODUCTION VERIFICATION PENDING"
+    "production": "PRODUCTION VERIFICATION PENDING",
+    "artifactMismatch": "NOT REPRODUCIBLE",
+    "apkVerifier": "FIXED AND TESTED LOCALLY",
+    "retainedRuntimeHarness": "FIXED AND TESTED LOCALLY",
+    "socketSecurityAndRecovery": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+    "liveParaAndFreeMatch": "OWNER ACTION REQUIRED",
+    "localBrowser": "BLOCKED BY ACCESS"
   },
   "environment": {
     "adb": false,
     "androidEmulator": false,
     "hardwareVirtualization": false,
-    "chromium": true
+    "chromium": false,
+    "chromiumWrapperOnly": true,
+    "officialBrowserDownload": "403 Site Unavailable; no alternate-host bypass attempted"
   },
   "performed": {
     "productionDeployment": false,
@@ -54,9 +72,122 @@
     "privatePackagePublication": false,
     "productionDatabaseMutation": false
   },
-  "tests": [],
-  "limitations": [
-    "D tests in progress; no pass claimed by initial checkpoint.",
-    "Browser checks are not physical Android acceptance."
+  "tests": [
+    {
+      "command": "python3 -m unittest discover -s mobile/arctic-play/tests -p 'test_retained_apks.py'",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s mobile/arctic-play/tests -p 'test_apk_layout.py'",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "python3 mobile/arctic-play/scripts/verify-retained-apks.py --baseline <original> --review <original> --build-tools <official35.0.0>",
+      "result": "Both original artifacts passed; parent independently reran; no APK bytes changed."
+    },
+    {
+      "command": "node mobile/arctic-play/tests/retained-apk-acceptance.mjs <original-extracted-assets>",
+      "node": "24.22.3",
+      "scenarioGroupsPassedPerArtifact": 6,
+      "artifacts": [
+        "5.10.2",
+        "5.11.1"
+      ],
+      "notUnitTestCount": true
+    },
+    {
+      "command": "PG_BINDIR=<local-postgresql18-bin> node server/scripts/free-multiplayer-smoke.cjs",
+      "nodes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "postgres": "18.7",
+      "passedPerRuntime": 16,
+      "failed": 0,
+      "skipped": 0,
+      "parentIndependentRerun": true
+    },
+    {
+      "command": "node --test server/tests/funded-access-socket.test.js server/tests/deployment-compatibility.test.js server/tests/security-hardening.test.js server/tests/anti-cheat-transform.test.js",
+      "nodes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "passedPerRuntime": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "node shared/fair-play/check-rules-integrity.mjs",
+      "sourceFilesChecked": 113,
+      "rulesHash": "9fa0be4a43f049957ef407ee73361a0b6a3bb24ed59f487a36190165be82c8cb",
+      "engineHash": "16d08120db2442814631143e6dafbeb88af40bda561f3b00a61c5c0f0cfa4c18",
+      "mismatches": 0
+    }
+  ],
+  "reproduced": [
+    {
+      "issue": "Legacy wallet-profile socket identity",
+      "environment": "local actual startup wrapper",
+      "observation": "An unsigned socket acted for a registered Two Stones wallet. Additional wallet-profile room-create families admitted the same unsigned identity."
+    },
+    {
+      "issue": "Delayed Two Stones action replay",
+      "environment": "local actual startup wrapper",
+      "observation": "A previously accepted action at ply5 was applied again at ply12 with identical requestId and payload when legal again."
+    }
+  ],
+  "implementationCommits": {
+    "apkVerifier": "2505b93f3acb025c6de967c58e8cd99f8501f2c6",
+    "socketAuthorizationAndReplay": "3ebb00386208acf3efc6cd529b15610996b45924"
+  },
+  "ci": {
+    "status": "pending-final-test-commit"
+  },
+  "limits": [
+    "Physical Android, live Para and live production free-match acceptance were not performed.",
+    "Original v5.10.2 signing checkout remains unresolved. Retained APK workers are unchanged and do not automatically include source A/B/C patches.",
+    "Local actual Chromium executable is absent; official download403. Planned CI rendering uses public baseline plus guarded patch, not private signed APK upload.",
+    "Later-source die-markup UI fixture fails identically on both retained APKs; bounded actual-worker checks pass.",
+    "Pre-upgrade request IDs cannot be reconstructed. Legacy asynchronous room acknowledgment still precedes durable write; tests wait for confirmed stored state before restart.",
+    "Current production database binding and private C publication/transaction approvals remain unresolved."
+  ],
+  "reports": [
+    "BATCH_D_ANDROID.md",
+    "BATCH_D_ANDROID_EVIDENCE.json",
+    "BATCH_D_ACCEPTANCE.md",
+    "BATCH_D_ACCEPTANCE_EVIDENCE.json",
+    "BATCH_D_MULTIPLAYER.md",
+    "BATCH_D_MULTIPLAYER_EVIDENCE.json",
+    "BATCH_D_ROLLOUT.md"
+  ],
+  "changedFiles": [
+    ".github/workflows/fonso-batch-d.yml",
+    "docs/technical-stabilization/BATCH_D_ACCEPTANCE.md",
+    "docs/technical-stabilization/BATCH_D_ACCEPTANCE_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_D_ANDROID.md",
+    "docs/technical-stabilization/BATCH_D_ANDROID_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_D_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_D_MULTIPLAYER.md",
+    "docs/technical-stabilization/BATCH_D_MULTIPLAYER_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_D_ROLLOUT.md",
+    "docs/technical-stabilization/CHECKPOINT.md",
+    "mobile/arctic-play/scripts/verify-retained-apks.py",
+    "mobile/arctic-play/tests/retained-apk-acceptance.mjs",
+    "mobile/arctic-play/tests/storybook-browser.mjs",
+    "mobile/arctic-play/tests/test_retained_apks.py",
+    "server/legacyWalletAccess.js",
+    "server/loadPrizeBackend.js",
+    "server/scripts/free-multiplayer-smoke.cjs",
+    "server/tests/arctic-play-socket-recovery.test.js",
+    "server/tests/free-multiplayer-socket.test.js",
+    "server/tests/helpers/free-multiplayer-fixture.cjs",
+    "server/tests/helpers/local-test-database.cjs",
+    "server/tests/two-stones-online.test.js",
+    "server/twoStonesService.js"
   ]
 }

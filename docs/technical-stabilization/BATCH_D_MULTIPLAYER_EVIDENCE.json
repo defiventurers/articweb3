@@ -1,0 +1,139 @@
+{
+  "recordedAtUtc": "2026-11-28T03:49:11.690532+00:00",
+  "reviewedBaseCommit": "75328370f0703ab7907dda9dc833f8aab93c21f9",
+  "reviewedMainCommit": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
+  "branch": "codex/fonso-stabilization-batch-d",
+  "headAtEvidence": "d6feea24e1858abeff22eed18d384c1c5fcc0f26",
+  "pullRequest": "https://github.com/defiventurers/articweb3/pull/125",
+  "status": "FIXED AND TESTED LOCALLY",
+  "scope": "Actual transformed production startup, local native WebSockets, synthetic identities and disposable PostgreSQL only. No live account, wallet operation, production request or chain write.",
+  "reproductions": [
+    {
+      "issue": "Unsigned Two Stones wallet impersonation",
+      "before": "Unsigned third socket received ts_game_action_result for the signed-in host wallet and legal placement.",
+      "initialRegression": {
+        "passed": 0,
+        "failed": 1
+      },
+      "rootCause": "Shared profile existence and payload.wallet were treated as authentication; ts aliases omitted from original protectedTypes."
+    },
+    {
+      "issue": "Other reachable wallet-profile families",
+      "before": "17 additional prefixes accepted unsigned room_create for a globally registered wallet after the narrow Two Stones guard was already applied.",
+      "prefixes": [
+        "nif",
+        "fwh",
+        "fish",
+        "bti",
+        "ih",
+        "siw",
+        "gt",
+        "cr",
+        "fgg",
+        "str",
+        "ir",
+        "ck",
+        "av",
+        "pt",
+        "ag",
+        "sir",
+        "kf"
+      ]
+    },
+    {
+      "issue": "Delayed duplicate action",
+      "before": "The request accepted at ply5 (blue-1 nw to c) was accepted again at ply12 when its exact action became legal.",
+      "rootCause": "Only current turn and move legality were checked; request IDs were ignored."
+    }
+  ],
+  "fixes": {
+    "walletAuthorization": "The 18 reachable wallet-profile prefixes require the existing signature-bound login. Public room lists remain available; independent seat/account protocols are excluded.",
+    "twoStonesDefense": "The normalized payload wallet must match ws.authorizedWallet before the socket receives subscriptions.",
+    "replay": "Persist a SHA-256 fingerprint of match ID, authorized wallet, request ID type and value outside gameState, auditLog and proof inputs. Keep every accepted request up to the 44-action bound. Old absent metadata remains valid; malformed present metadata and identifier-less mutations are rejected."
+  },
+  "naturalMatch": {
+    "protocol": "ts_*",
+    "game": "two-stones",
+    "independentClients": 2,
+    "mode": "open_ice",
+    "plies": 5,
+    "winner": "blue",
+    "reason": "immobilization",
+    "historyEntriesPerPlayer": 1,
+    "entryWei": "0",
+    "payoutWei": "0",
+    "finalBoardAndProofAgreed": true,
+    "disconnectReconnectRestored": true,
+    "invalidAndDuplicateMovesRejected": true
+  },
+  "androidProtocolMatch": {
+    "protocol": "ap_*",
+    "game": "shogi",
+    "independentClients": 2,
+    "identities": "Two synthetic account sessions, seat tokens and ephemeral P256 actor keys",
+    "legalMoves": 4,
+    "completion": "Signed Blue resignation; Red wins",
+    "signedEvents": 5,
+    "proofClosed": true,
+    "proofVerifiedIndependently": true,
+    "tamperedProofRejected": true,
+    "concurrentDuplicateAppliedOnce": true,
+    "websocketReconnectRestored": true,
+    "actualBackendRestartRestoredFromPostgresql": true,
+    "originalSeatsBoardRevisionAndProofRetained": true,
+    "mode": "free",
+    "fundedEnabled": false,
+    "chainAnchoringEnabled": false
+  },
+  "tests": {
+    "command": "PG_BINDIR=<local PostgreSQL 18 binary directory> node server/scripts/free-multiplayer-smoke.cjs",
+    "ciEnvironment": "FONSO_MULTIPLAYER_TEST_DATABASE_URL=postgresql://fixture@127.0.0.1:5432/postgres",
+    "postgresVersion": "18.7",
+    "results": [
+      {
+        "node": "20.20.2",
+        "tests": 16,
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "node": "24.22.3",
+        "tests": 16,
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "diffCheck": "passed",
+    "fixtureFailureResolved": "An initial 13-case run had one force-drop/connection teardown failure. Consumers now close before normal DROP; asynchronous database errors are asserted absent. No application logic changed to bypass a failed assertion.",
+    "fixtureIsolation": "The local PostgreSQL validator rejects query parameters, fragments, non-PostgreSQL schemes and effective-host overrides before opening a Pool. Cleanup is registered before CREATE/init. The runtime environment is allowlisted, environment-file loading and external fetches are disabled, and funded/mint/settlement/indexer/anchor gates are false."
+  },
+  "independentReviews": {
+    "runtime": "No blocking issue found. The limits for prior unrecorded request IDs and asynchronous persistence remain documented.",
+    "infrastructure": "Two concrete fixture findings were corrected and re-reviewed; no remaining blocker was identified."
+  },
+  "limits": [
+    "Pre-upgrade action IDs were not recorded and cannot be retrospectively deduplicated.",
+    "Legacy Two Stones acknowledgment precedes asynchronous persistence. The restart test waits for the actual stored row and does not establish durability for a crash before that save.",
+    "Replay hardening applies to Two Stones. The broader prefix guard establishes authorization, not full gameplay or replay acceptance for every catalogue game.",
+    "The Android-protocol completion is a signed resignation, not checkmate. Local socket clients do not prove physical APK or real-network acceptance.",
+    "No production deployment or live free-game acceptance was performed."
+  ],
+  "ownerActions": [
+    "Review and separately approve the stacked candidate deployment under the Batch D rollout gates.",
+    "Use existing authorized accounts for a controlled two-device free Shogi match; each owner performs any required Para consent or wallet signature.",
+    "Preserve existing app data and record reconnection, final result and proof evidence. Do not create live accounts, mint or enable funded operations without separate authorization."
+  ],
+  "sourceSha256": {
+    "server/loadPrizeBackend.js": "896a65dc757aa11b89951665067d7a7d64d7a4bdcb0bfd95f2064664fa1ad35b",
+    "server/legacyWalletAccess.js": "18531156061063209d1548f371120fcf912e3c1f4c73d78b1975ea20aac8ff1a",
+    "server/twoStonesService.js": "e44f302996563783ef84fe639a6ebb11371c6b37f7461c294694eb6ca0aab225",
+    "server/tests/two-stones-online.test.js": "2b5ff5acc6e6442c8ddc6abfedcb21713135f191276473cb3fa72a455c9d8eb4",
+    "server/tests/free-multiplayer-socket.test.js": "329a4ac7c400af1078a128bdb699281271bc65fcf5eb5fa03eaf134dfcbbb640",
+    "server/tests/arctic-play-socket-recovery.test.js": "1be6e1effbf05234f943a3ba1e9df5d259b2d0967fc3122090341af1d98f9003",
+    "server/tests/helpers/free-multiplayer-fixture.cjs": "9fb286baf750a3359df6a382f86b052a904d371a0955420436800410ffb61273",
+    "server/tests/helpers/local-test-database.cjs": "566865ed38a2171a33dad6fcdaccd460916adaa84e8363b1d8739b9781d00576",
+    "server/scripts/free-multiplayer-smoke.cjs": "874f8d95738193365a394f8fc1be7f2c480c09c17b1a2cb9ae64d26a385f34a8"
+  }
+}

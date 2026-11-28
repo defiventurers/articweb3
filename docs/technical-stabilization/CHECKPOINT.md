@@ -1,57 +1,129 @@
 # FONSO technical stabilization checkpoint
 
-Updated: **28 November 2026 (Asia/Kolkata)**. **Batch D in progress.** Resumed
-from the completed C checkpoint after the founder said “Resume”. Finish Android
-artifact/acceptance preparation and free multiplayer verification, then stop.
+Updated: **28 November 2026 (Asia/Kolkata)**. **Batch D code and local isolated
+verification complete; final CI is pending. Stop after D.** Physical Android,
+live Para/free-network acceptance and production deployment remain owner gates.
 
-## Current Batch D review state
+## Current review state
 
-- Reviewed main: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`; rechecked remotely at resume.
-- Branch: `codex/fonso-stabilization-batch-d`, based on final C checkpoint
-  `75328370f0703ab7907dda9dc833f8aab93c21f9`.
-- PR #121 remains open/draft toward main. PR #122 is merged into A; documentation
-  PR #123 and C PR #124 remain open/draft. No new main merge or production
-  deployment is authorized by this continuation.
-- Read the C checkpoint/evidence/rollout and current PR states. Completed A/B/C
-  investigations are preserved; their live, owner and publication gates remain.
-- Preserve current rules authority, historical hold, funded access isolation,
-  strict readiness/database failure behavior, pending-link authorization,
-  canonical collectible receipts, saved games and the exact approved v5.10.2 APK.
+- Reviewed main: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`.
+- Branch: `codex/fonso-stabilization-batch-d`, based on completed C checkpoint
+  `75328370f0703ab7907dda9dc833f8aab93c21f9`. Resumed the saved D continuation
+  after the founder said “Resume”; completed A/B/C audits were not restarted.
+- [D PR #125](https://github.com/defiventurers/articweb3/pull/125) is open/draft,
+  stacked on C PR #124. PR #121 remains open/draft toward main; #122 is merged
+  into A; #123 and #124 remain open/draft. No main merge was performed.
+- Reviewed commits so far: `2505b93f3acb025c6de967c58e8cd99f8501f2c6`
+  (retained APK verifier) and `3ebb00386208acf3efc6cd529b15610996b45924`
+  (legacy socket authorization and delayed replay correction). Final tested
+  candidate/CI identity will be recorded in `BATCH_D_EVIDENCE.json`.
+- No production deployment, live account, mint, funded match, contract/DNS/billing
+  change, production database operation or held private-package publication.
 
-## Batch D execution checkpoint
+## Batch D outcomes
 
-- D1: exact retained v5.10.2 APK parts located in Git; reconstruct and verify
-  before claiming acceptance. Signed v5.11.1 recovery and signature/payload
-  comparison are in progress. PR #118/#119 provenance is being checked.
-- Android emulator/adb and hardware virtualization are unavailable in this
-  workspace. Chromium is available for checks on extracted retained assets.
-  Browser evidence will not be presented as Android or physical acceptance.
-- D2: actual production startup and both legacy `ts_*` and Android `ap_*`
-  protocols identified. Reproduce the suspected Two Stones identity gap before
-  any fix; run independent free clients with invalid moves, replay,
-  reconnect/state restoration and final agreement.
-- No production deploy, funded match, live signup/consent/mint, contract change,
-  database operation, source-verification submission or private-package
-  publication has been performed in D.
-- No new patch or passing D result is claimed by this initial checkpoint.
+| Item | Status | Evidence / boundary |
+| --- | --- | --- |
+| Retained APK identity/payload mismatch | **NOT REPRODUCIBLE** | Exact v5.10.2 and signed v5.11.1 recovered; original digests, certificates, versions and all expected payload bytes verified. |
+| Repeatable APK verification tooling | **FIXED AND TESTED LOCALLY** | Read-only tool; 11 negative/preservation tests plus 5 existing layout tests pass. A corrupted temporary APK fails digest, signature and CRC checks. |
+| Retained UI/worker acceptance harness | **FIXED AND TESTED LOCALLY** | Six bounded scenario groups pass on each exact APK; existing baseline4/review9 navigation groups also pass. |
+| Local rendered-browser/emulator checks | **BLOCKED BY ACCESS** | Chromium executable missing and official download403; no emulator/adb/KVM. Fresh rendered CI is pending and is not physical acceptance. |
+| Free socket identity and delayed replay | **FIXED AND VERIFIED IN TEST ENVIRONMENT** | 18 legacy wallet families require signature-bound identity; Two Stones retains accepted-request fingerprints outside rules/proof state. |
+| Two independent free clients / database restart | **FIXED AND VERIFIED IN TEST ENVIRONMENT** | Natural five-ply Two Stones win; signed Shogi reconnect/PG restart and resignation agree and independently verify. 16/16 tests on both Node versions, zero skips. |
+| Physical Android, live Para and live free match | **OWNER ACTION REQUIRED** | Existing save must be preserved; v5.11.1 is still a signed review build. |
+| Production acceptance | **PRODUCTION VERIFICATION PENDING** | Exact candidate deployment, active database binding and inherited A/B/C operational gates remain. |
 
-## Owner boundaries
+## Root causes and changes
 
-Physical device checks require the founder. Preserve the existing app/save and
-perform upgrade acceptance first; use a separate device/profile for a clean
-installation. The approved v5.10.2 baseline must not be replaced by an unrelated
-frontend/source build. Production deployment and all private-publication/live
-collectible gates still require separate explicit authorization.
+- The shared wallet-profile map proved that a wallet existed, but not that a
+  socket owned it. The old ingress allowlist omitted 18 reachable prefixed game
+  families. A third unsigned local socket could act as a seated wallet. The
+  shared guard now covers those families while retaining public listings and
+  separate account/seat protocols; Two Stones also rechecks identity before
+  assigning its broadcast socket.
+- Turn validation rejected immediate duplicates but allowed an identical old
+  Two Stones envelope at ply12 after it first succeeded at ply5. Accepted
+  request hashes now bind match, wallet and ID type/value, persist in optional
+  room metadata and remain bounded to all44 possible actions without eviction.
+  Existing rules, proof input and SQL schema are unchanged.
+- Added read-only APK verification, exact retained UI/worker/save/auth fixtures,
+  a loopback-only fresh PostgreSQL runner, actual startup/socket regressions,
+  CI and physical/rollout/rollback instructions. No APK, art or game engine was
+  modified. APK payloads retain their original workers; A/B/C source changes
+  must not be represented as automatically bundled into them.
 
-## Exact next continuation instruction if interrupted
+## Test evidence
 
-> Resume Batch D only from `codex/fonso-stabilization-batch-d`. Read this current
-> checkpoint and any `BATCH_D_*` evidence first, inspect the working diff and PR
-> state, then finish the retained APK verification/physical checklist and the
-> independent-client free multiplayer regression. Preserve all A/B/C safeguards
-> and approval gates. Do not restart completed investigations, deploy, mint,
-> publish held private packages or clear the founder's saved game. Stop after D
-> with test evidence, a reviewable PR and exact remaining owner actions.
+- Exact APKs: v5.10.2/code106 SHA `275cf9bf69aadfa4f4d844ff412e0885d8a5a656539f4bb583af27bfc95e8ecd`;
+  v5.11.1/code111 SHA `91fbc8cd0578462511356888e8fab5e6008f9008e555571dbf93473783488f3e`.
+  Both original v2/v3 signatures and package match; 438/444 payload entries and
+  all416 artwork entries are identical. Six expected changes reproduce exactly.
+- `python3 -m unittest discover -s mobile/arctic-play/tests -p 'test_retained_apks.py'`:
+  11/11; existing `test_apk_layout.py`:5/5. Parent independently reran exact-pair
+  verification and confirmed unchanged original files.
+- Exact retained assets: existing baseline navigation4, review navigation9,
+  new acceptance6 per artifact. These are scenario groups, not unit-test totals;
+  account/native/image fixtures are explicitly distinguished from Android.
+- `PG_BINDIR=/path/to/postgresql18/bin node server/scripts/free-multiplayer-smoke.cjs`:
+  16/16, zero skips, independently rerun on Node20.20.2 and24.22.3 with fresh
+  PostgreSQL18.7. Both configured-database cases ran and the fixture was removed.
+- Existing funded/socket, deployment compatibility, request security and
+  anti-cheat transformation gates:24/24 on each Node version. The rules-integrity
+  check still validates113 published inputs under unchanged authority `9fa0be4a…`.
+- A later-source Chaturanga UI fixture fails identically on both retained APKs
+  because it expects absent newer die markup. This is recorded as a path
+  mismatch, not concealed as a passing check or used to change approved art.
+- Independent runtime and fixture reviews found no remaining concrete blocker.
+  Fixture URL override and teardown defects were corrected and regression-tested.
+  CI and full-checkout scanner results will be recorded after the final test push.
+
+These gates overlap; do not add them as unique tests. See [combined evidence](BATCH_D_EVIDENCE.json),
+[APK verification](BATCH_D_ANDROID.md), [APK evidence](BATCH_D_ANDROID_EVIDENCE.json),
+[retained acceptance/physical checklist](BATCH_D_ACCEPTANCE.md),
+[acceptance evidence](BATCH_D_ACCEPTANCE_EVIDENCE.json),
+[multiplayer](BATCH_D_MULTIPLAYER.md), [multiplayer evidence](BATCH_D_MULTIPLAYER_EVIDENCE.json)
+and [rollout/rollback](BATCH_D_ROLLOUT.md).
+
+## Remaining risks and exact owner actions
+
+1. Review PR #125 with its A/B/C dependency and pin the accepted candidate.
+   Development review/merge does not authorize production; main auto-deploys in
+   the recorded Render configuration.
+2. Preserve the current phone/save. Verify the original signed review hash,
+   perform an approved in-place upgrade and compare the existing save first.
+   Use only a spare device/empty profile for clean installation. Follow the
+   full native/visual/Back/TalkBack/performance/crash checklist and record
+   acceptance or rejection. No uninstall/data clearing or forced downgrade.
+3. Resolve the privately evidenced runtime database binding and separately
+   approve any exact backend-first deployment under B/C/D controls. Senders and
+   funded/settlement gates stay closed unless their actions are explicitly
+   approved. C pending-link reservations prohibit a blind pre-C auth rollback.
+4. Approve and personally perform any real Para consent/signature and live
+   two-device free match, without incidental new accounts or collectible mints.
+   The prepared C private operational and contract-verification packages remain
+   held for explicit publication/transaction approval.
+5. Retain limits: pre-upgrade Two Stones IDs were not recorded; the legacy save
+   path still acknowledges before its asynchronous write. Tests confirm saved
+   restart restoration, not the acknowledgment-to-persistence crash window.
+   The exact original v5.10.2 signing checkout and historical proof artifact
+   remain unresolved; the historical hold was not removed.
+
+## Exact next continuation instruction
+
+> Resume release acceptance only from `codex/fonso-stabilization-batch-d` in
+> `defiventurers/articweb3`. Read this checkpoint, `BATCH_D_EVIDENCE.json`,
+> `BATCH_D_ANDROID.md`, `BATCH_D_ACCEPTANCE.md`, `BATCH_D_MULTIPLAYER.md`,
+> `BATCH_D_ROLLOUT.md` and PR #125 with its A/B/C dependencies. Verify current
+> main/PR/CI states and finish any explicitly recorded pending CI only. Do not
+> restart completed A–D investigations. Preserve the exact v5.10.2 baseline,
+> founder's saved game, current rules authority, historical hold and every
+> authorization/database/receipt safeguard. Guide the founder through the
+> already prepared physical and controlled live acceptance steps only when
+> their prerequisites and explicit approvals are supplied. Do not deploy,
+> merge main, create live accounts, mint, change contracts/DNS/billing, publish
+> held private packages or perform irreversible database operations without
+> separate founder authorization. Record actual observations and remaining
+> gates; never infer physical or production acceptance from automated tests.
 
 ## Preserved Batch C handoff
 
