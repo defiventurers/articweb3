@@ -60,6 +60,13 @@ assertBlocked("testnet mode on mainnet", {
   LOCKED_MATCH_MODE: "testnet"
 }, /cannot run on mainnet/);
 
+for (const unsupportedChain of ["1", "46630", "999999", "invalid"]) {
+  assertBlocked(`testnet mode on unsupported chain ${unsupportedChain}`, {
+    ABSTRACT_CHAIN_ID: unsupportedChain,
+    LOCKED_MATCH_MODE: "testnet"
+  }, /requires Abstract Testnet/);
+}
+
 assertAllowed("internal mode on mainnet", {
   ABSTRACT_CHAIN_ID: "2741",
   LOCKED_MATCH_MODE: "internal"

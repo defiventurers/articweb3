@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { formatEther } from "viem";
 import { useAccount, useBalance, useReadContract } from "wagmi";
 import { useAbstractClient } from "@abstract-foundation/agw-react";
@@ -7,7 +7,8 @@ import { ETH_TARGETS_READY, ETH_VAULT_ADDRESS } from "../config/chainTargets.js"
 import { ethVaultAbi } from "../contracts/abis.js";
 import { ExpiredLockRecovery } from "../components/ExpiredLockRecovery.jsx";
 import { InvitedRoomPanel } from "../components/InvitedRoomPanel.jsx";
-import { confirmEntryLock, createRoom, joinRoom, listRooms } from "../network/socketClient.js";
+import { confirmEntryLock, createRoom, getGameState, joinRoom, listRooms } from "../network/socketClient.js";
+import { depositWithAuthorization, lockWithAuthorization } from "../network/fundedTransactions.js";
 import { FALLBACK_HIGH_STAKES_TIERS, getFallbackTierSnapshot, getHighStakesTiers } from "../network/highStakesTiers.js";
 import "../styles/highStakes.css";
 
@@ -19,8 +20,11 @@ const NETWORK_ETH_COPY = appConfig.isMainnet ? "mainnet ETH" : "testnet ETH";
 const DEFAULT_HIGH_STAKES_TIMEOUT_MS = 2 * 60 * 60 * 1000;
 
 export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, onBack }) {
-  const { address } = useAccount();
+  const { address, chainId } = useAccount();
   const { data: abstractClient } = useAbstractClient();
+  const walletContext = useRef(null), mounted = useRef(false), busyRef = useRef(false);
+  walletContext.current = { address, chainId, profileWallet: profile?.wallet, client: abstractClient };
+  const getWalletContext = () => mounted.current ? walletContext.current : null;
   const [room, setRoom] = useState(null);
   const [publicRooms, setPublicRooms] = useState([]);
   const [roomPage, setRoomPage] = useState(0);
@@ -72,6 +76,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   const tiers = tierSnapshot.tiers?.length ? tierSnapshot.tiers : FALLBACK_TIERS;
 
   useEffect(() => {
+    mounted.current = true;
     refreshRooms();
     refreshTiers();
     const clock = setInterval(() => setNowMs(Date.now()), 1000);
@@ -85,6 +90,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
     };
     window.addEventListener("server-packet", onPacket);
     return () => {
+      mounted.current = false;
       clearInterval(clock);
       clearInterval(roomRefresh);
       window.removeEventListener("server-packet", onPacket);
@@ -153,8 +159,12 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
     if (!abstractClient) return setError("Wallet client is not ready. Reconnect AGW and try again.");
     await run(async () => {
       const value = BigInt(tier.entryWei || tier.fallbackWei || "0");
-      setStatus(`Open AGW to deposit ${formatEntry(value.toString())} ETH for ${tier.label || `$${tier.entryFeeUsd}`} on ${appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"}.`);
-      await abstractClient.writeContract({ address: ETH_VAULT_ADDRESS, abi: ethVaultAbi, functionName: "deposit", value });
+      await depositWithAuthorization({
+        getContext: getWalletContext, expectedChainId: appConfig.chainId, value,
+        authorize: wallet => listRooms({ roomMode: "high_stakes", profile: { wallet }, withAuthorization: true }),
+        contract: { address: ETH_VAULT_ADDRESS, abi: ethVaultAbi },
+        onReady: () => setStatus(`Open AGW to deposit ${formatEntry(value.toString())} ETH for ${tier.label || `$${tier.entryFeeUsd}`} on ${appConfig.isMainnet ? "Abstract Mainnet" : "Abstract Testnet"}.`)
+      });
       setTierPickerMode(null);
       await refreshBalances();
     });
@@ -193,28 +203,24 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
     if (!hasWalletForRoom) return setError(`Not enough wallet ETH for this ${NETWORK_LOCK_COPY}. Fund wallet or choose a smaller room.`);
     if (!abstractClient) return setError("Wallet client is not ready. Reconnect AGW and try again.");
     await run(async () => {
-      const value = BigInt(room.entryWei || "0");
-      if (!room.contractMatchId || value <= 0n) throw new Error("Room data is not ready.");
-      setStatus(`Open AGW and confirm the ${NETWORK_LOCK_COPY}.`);
-      const txHash = await abstractClient.writeContract({
-        address: ETH_VAULT_ADDRESS,
-        abi: ethVaultAbi,
-        functionName: "depositAndLock",
-        args: [room.contractMatchId],
-        value
+      const confirmed = await lockWithAuthorization({
+        getContext: getWalletContext, expectedChainId: appConfig.chainId, room,
+        loadRoom: ({ roomCode, wallet }) => getGameState({ roomCode, profile: { wallet }, withAuthorization: true }),
+        contract: { address: ETH_VAULT_ADDRESS, abi: ethVaultAbi },
+        onReady: fresh => { setRoom(fresh); setStatus(`Open AGW and confirm the ${NETWORK_LOCK_COPY}.`); }
       });
       setStatus("Confirming on server...");
-      const nextRoom = await waitForLock(txHash);
+      const nextRoom = await waitForLock(confirmed.txHash, confirmed.room.roomCode, { wallet: confirmed.wallet });
       setHasCurrentRoomLock(true);
       onRoomReady(nextRoom);
     });
   }
 
-  async function waitForLock(txHash) {
+  async function waitForLock(txHash, roomCode, signedProfile) {
     let lastError;
     for (let attempt = 0; attempt < 18; attempt += 1) {
       try {
-        return await confirmEntryLock({ roomCode: room.roomCode, profile, txHash });
+        return await confirmEntryLock({ roomCode, profile: signedProfile, txHash });
       } catch (err) {
         lastError = err;
         await delay(2500);
@@ -279,7 +285,8 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
   }
 
   async function run(action) {
-    if (busy) return;
+    if (busyRef.current) return;
+    busyRef.current = true;
     try {
       setBusy(true);
       setError("");
@@ -287,6 +294,7 @@ export function HighStakesScreen({ profile, initialRoomCode = "", onRoomReady, o
     } catch (err) {
       setError(err.shortMessage || err.message || "Request failed.");
     } finally {
+      busyRef.current = false;
       setBusy(false);
       setStatus("");
     }

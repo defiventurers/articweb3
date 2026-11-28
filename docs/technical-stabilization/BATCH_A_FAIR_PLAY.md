@@ -145,8 +145,10 @@ node --test \
 
 The worker test compiles browser-targeted code and executes it in a Node VM
 worker harness. Fixtures originate from the native gameplay authority and use
-isolated generated game-signing keys; production trust is not changed. Shogi,
-Shanshui, legacy dice and paired long dice replay independently. Mutated proof
+isolated generated game-signing keys; production trust is not changed. All eight
+tables in `arcticPlayGames.GAME_LIST`, plus the paired long-dice profile, replay
+independently. Co Tu Lenh and Shanshui 2v2 have separate core/service regressions;
+they are not part of this worker fixture list. Mutated proof
 data, unknown signers, altered hash/version and stale replay are rejected.
 This is automated local evidence, not browser, emulator or physical-device
 acceptance. No beacon, chain or wallet request is sent by these worker tests.

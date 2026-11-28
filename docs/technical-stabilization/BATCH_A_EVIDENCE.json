@@ -1,0 +1,189 @@
+{
+  "date": "2026-11-28",
+  "timezone": "Asia/Kolkata",
+  "scope": "Batch A only",
+  "repository": "https://github.com/defiventurers/articweb3",
+  "reviewed_main": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
+  "branch": "codex/fonso-stabilization-batch-a",
+  "pull_request": null,
+  "node_version": "24.22.3",
+  "status": {
+    "A1_current_authority": "FIXED AND TESTED LOCALLY",
+    "A1_production": "PRODUCTION VERIFICATION PENDING",
+    "A1_historical_63845_authority": "OWNER ACTION REQUIRED",
+    "A2_application_isolation": "FIXED AND TESTED LOCALLY",
+    "A2_production": "PRODUCTION VERIFICATION PENDING",
+    "A2_direct_vault_closure": "OWNER ACTION REQUIRED",
+    "Batch_B": "NOT STARTED",
+    "Batch_C": "NOT STARTED",
+    "Batch_D": "NOT STARTED"
+  },
+  "test_runs": [
+    {
+      "name": "fair_play_authority",
+      "command": "node --test shared/fair-play/core.test.mjs shared/fair-play/long-dice.test.mjs shared/fair-play/rules-integrity.test.mjs shared/fair-play/reproduce-rules-authority.test.mjs shared/fair-play/worker.test.mjs server/tests/fair-play-authority.test.js server/tests/launch-fair-play.test.js server/tests/co-tu-lenh-fair-play.test.js",
+      "exit_code": 0,
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0,
+      "environment": "isolated local automated",
+      "log_sha256": "ac73fa87f2347e24a39a3198bd897814f5c20bc83dd5d018c786fcbca9a2390d"
+    },
+    {
+      "name": "funded_access",
+      "command": "node --test server/tests/funded-access.test.js server/tests/funded-access-socket.test.js server/tests/launch-mode.test.js server/tests/anti-cheat-transform.test.js server/tests/server-hardening-phases.test.js server/tests/prize-policy.test.js server/tests/security-hardening.test.js server/tests/shogi-socket.test.js frontend/unit/settlement-operator.node.test.js frontend/unit/funded-transactions.node.test.js",
+      "exit_code": 0,
+      "passed": 34,
+      "failed": 0,
+      "skipped": 0,
+      "environment": "isolated local automated",
+      "log_sha256": "37439de6536c20dac61ddba7bcb6a48a9f0c1a0a841940ec0261ad8a8c22e093"
+    },
+    {
+      "name": "existing_free_gameplay",
+      "command": "node --test server/tests/chaturanga-long-dice.test.js server/tests/arctic-play-socket.test.js server/tests/shanshui-online.test.js frontend/src/games/shanshui-xiangqi/rules.test.js",
+      "exit_code": 0,
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "environment": "isolated local automated",
+      "log_sha256": "fe3a80c9d65964b153c8e314392794d80b897a1fcbddf0ff884cac0189ff8589"
+    },
+    {
+      "name": "existing_three_player_and_shogi_rules",
+      "command": "node mobile/arctic-play/build-deps/node_modules/vitest/vitest.mjs run frontend/src/games/san-you-qi/rules.test.js frontend/src/games/sannin-shogi/rules.test.js frontend/src/games/shogi-frozen-shogunate/rules.test.js",
+      "exit_code": 0,
+      "passed": 77,
+      "failed": 0,
+      "skipped": 0,
+      "environment": "isolated local automated",
+      "log_sha256": "7f5360bcd74e32a632712307ab8bbd1694ee4ec7c95efaa7fee34a0347184cfa"
+    }
+  ],
+  "total_passing_tests": 167,
+  "integrity_command": "node shared/fair-play/check-rules-integrity.mjs",
+  "reproduction_command": "node shared/fair-play/reproduce-rules-authority.mjs",
+  "reproduction": {
+    "exit_code": 0,
+    "compiler": "rolldown 1.2.15",
+    "declared_source_entries": 113,
+    "loaded_modules": 60,
+    "engine_bytes": 299733,
+    "engine_sha256": "16d08120db2442814631143e6dafbeb88af40bda561f3b00a61c5c0f0cfa4c18",
+    "byte_equal_to_published_artifact": true
+  },
+  "preserved_artifacts": {
+    "shared/fair-play/rules-manifest.json": {
+      "sha256": "e1a7effec9213736b51d176ac9b0566c1b50caedddddac1ca64b2662cad2aedf",
+      "bytes": 18642,
+      "unchanged_from_reviewed_main": true
+    },
+    "shared/fair-play/release-readiness.json": {
+      "sha256": "395126d8f0104d6ca0735f51c1ffb4d323236a0c7834225c7c8968222514faa7",
+      "bytes": 787,
+      "unchanged_from_reviewed_main": true
+    },
+    "server/fairPlayEngine.cjs": {
+      "sha256": "16d08120db2442814631143e6dafbeb88af40bda561f3b00a61c5c0f0cfa4c18",
+      "bytes": 299733,
+      "unchanged_from_reviewed_main": true
+    },
+    "server/arcticPlayEngine.cjs": {
+      "sha256": "647c7663c91d1fcc32300379f0d722096a49e456fc22dcda1c9751ef0cf67ebc",
+      "bytes": 235383,
+      "unchanged_from_reviewed_main": true
+    },
+    "mobile/arctic-play/src/dominion.js": {
+      "sha256": "b0580901df46bbcf11f0ef72c309b83c4ec55b049228fb231857f7000f162932",
+      "bytes": 5236,
+      "unchanged_from_reviewed_main": true
+    }
+  },
+  "changed_files": [
+    ".github/workflows/fonso-batch-a.yml",
+    "docs/technical-stabilization/BATCH_A_EVIDENCE.json",
+    "docs/technical-stabilization/BATCH_A_FAIR_PLAY.md",
+    "docs/technical-stabilization/BATCH_A_FUNDED_ACCESS.md",
+    "docs/technical-stabilization/CHECKPOINT.md",
+    "frontend/src/network/fundedTransactions.js",
+    "frontend/src/network/settlementOperator.js",
+    "frontend/src/network/socketClient.js",
+    "frontend/src/screens/HighStakesScreen.jsx",
+    "frontend/src/screens/SettlementAdminScreen.jsx",
+    "frontend/unit/funded-transactions.node.test.js",
+    "frontend/unit/settlement-operator.node.test.js",
+    "mobile/arctic-play/scripts/build-chaturanga-modules.mjs",
+    "mobile/arctic-play/scripts/build-current.mjs",
+    "mobile/arctic-play/scripts/build-fair-rules.mjs",
+    "mobile/arctic-play/scripts/build-web.mjs",
+    "mobile/arctic-play/src/fair.worker.js",
+    "server/.env.example",
+    "server/arcticPlayService.js",
+    "server/fairPlayService.js",
+    "server/fundedAccess.js",
+    "server/launchMode.js",
+    "server/loadPrizeBackend.js",
+    "server/scripts/start-with-indexer.js",
+    "server/tests/fair-play-authority.test.js",
+    "server/tests/funded-access-socket.test.js",
+    "server/tests/funded-access.test.js",
+    "server/tests/launch-mode.test.js",
+    "shared/fair-play/FairPlayPanel.jsx",
+    "shared/fair-play/authorities/9fa0be4a/dominion.js",
+    "shared/fair-play/authorities/9fa0be4a/provenance.json",
+    "shared/fair-play/check-rules-integrity.mjs",
+    "shared/fair-play/core.js",
+    "shared/fair-play/core.test.mjs",
+    "shared/fair-play/reproduce-rules-authority.mjs",
+    "shared/fair-play/reproduce-rules-authority.test.mjs",
+    "shared/fair-play/rules-integrity.test.mjs",
+    "shared/fair-play/worker.test.mjs"
+  ],
+  "reproduced_before_fix": [
+    "Integrity gate exited 1: it selected arcticPlayEngine instead of the manifest-pinned fairPlayEngine; one presentation-only Dominion source also drifted.",
+    "Original worker returned a historical readiness hold for a valid signed current-authority proof.",
+    "Actual localhost transformed WebSocket service accepted a signed outsider funded room-create request in internal mode.",
+    "Header-authenticated local operator CORS preflight omitted Authorization.",
+    "Unsupported chain 1 was treated as Abstract testnet."
+  ],
+  "public_read_only_observations": [
+    {
+      "url": "https://articweb3.onrender.com/arctic-play/v3/fair/config",
+      "http_status": 503,
+      "code": "LAUNCH_RESET_PAUSED",
+      "implication": "Current live rules authority could not be established through this endpoint."
+    },
+    {
+      "url": "https://articweb3.onrender.com/runtime/status",
+      "http_status": 200,
+      "launch_mode": "internal",
+      "chain_id": 2741,
+      "high_stakes_allowed": true,
+      "legal_public_mainnet_approved": false,
+      "implication": "Global status only; no intrusive live access test or deployed-vault conclusion."
+    }
+  ],
+  "limitations": [
+    "No production deployment or environment change; actual live authorization remains pending.",
+    "Older 63845f4d authority and retained APK verifier hold remain unchanged.",
+    "Worker checks execute browser-targeted code in a Node VM; no browser, emulator or physical Android acceptance claimed.",
+    "Contract source permits direct public deposit/lock when unpaused; deployed binding, bytecode and pause state still require owner-controlled review.",
+    "No live wallet signatures, account creation, minting, funded transaction, contract deployment, DNS/billing change or production DB operation.",
+    "All safe local Batch A work is complete; Batch B/C/D are not started."
+  ],
+  "ci": {
+    "status": "pending PR creation",
+    "workflow": ".github/workflows/fonso-batch-a.yml"
+  },
+  "security_scan": {
+    "command": "node scripts/security-scan.mjs",
+    "exit_code": 0,
+    "scanned_local_tracked_text_files": 1431,
+    "findings": [],
+    "scope": "staged candidate in sparse checkout; lightweight repository scanner"
+  },
+  "diff_check": {
+    "command": "git diff --cached --check",
+    "exit_code": 0
+  }
+}

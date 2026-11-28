@@ -329,6 +329,25 @@ function replaceHighStakesUxStatus(source) {
   return injectHighStakesStatusInView(injectHighStakesRoomStatus(source));
 }
 
+function injectFundedAccessGates(source) {
+  let transformed = source;
+  const replaceRequired = (needle, replacement) => {
+    if (!transformed.includes(needle)) throw new Error(`Unable to locate funded-access guard anchor: ${needle}`);
+    transformed = transformed.replace(needle, replacement);
+  };
+  replaceRequired('const sockets = new Map();', 'const sockets = new Map();\nconst fundedAccess = require("./fundedAccess.js");');
+  replaceRequired('const HIGH_STAKES_ENABLED = process.env.HIGH_STAKES_ENABLED === "true" || Boolean(ETH_VAULT_ADDRESS);', 'const HIGH_STAKES_ENABLED = require("./fundedAccess.js").highStakesEnabled();');
+  replaceRequired('const now = Date.now(); const payloadWallet = walletOf(payload.wallet || payload.address);', 'const scalarReason = fundedAccess.scalarBlockReason(payload); if (scalarReason) return fail(ws, requestId, scalarReason); const now = Date.now(); const payloadWallet = walletOf(payload.wallet || payload.address);');
+  replaceRequired('if (type === "profile_auth_challenge") return createAuthChallenge(ws, requestId, payload);', 'const fundedReason = fundedAccess.messageBlockReason(ws, type, payload, rooms); if (fundedReason) return fail(ws, requestId, fundedReason); if (type === "profile_auth_challenge") return createAuthChallenge(ws, requestId, payload);');
+  replaceRequired('return ok(ws, requestId, "room_list_result", { rooms: publicRooms });', 'return ok(ws, requestId, "room_list_result", { rooms: publicRooms, ...(roomMode === ROOM_MODES.HIGH_STAKES ? { fundedAuthorization: fundedAccess.authorizationFor(ws) } : {}) });');
+  replaceRequired('return ok(ws, requestId, "game_state_result", { room: view(room) });', 'return ok(ws, requestId, "game_state_result", { room: view(room), ...(room.roomMode === ROOM_MODES.HIGH_STAKES ? { fundedAuthorization: fundedAccess.authorizationFor(ws) } : {}) });');
+  transformed = replaceFunctionByName(transformed, 'function send(ws, packet)', 'function send(ws, packet) { const permitted = fundedAccess.filterPacket(ws, packet); if (permitted && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(permitted)); }');
+  for (const signature of ['function checkCountdown(room)', 'function checkStart(room)', 'async function settleHighStakesIfPossible(room)']) {
+    replaceRequired(`${signature} {`, `${signature} { if (fundedAccess.roomOperationBlockReason(room)) return;`);
+  }
+  return transformed;
+}
+
 function transformBackendSource(source) {
   let transformed = injectWalletAuthentication(source);
   transformed = replaceBuildPayoutPlan(transformed);
@@ -340,6 +359,7 @@ function transformBackendSource(source) {
   transformed = replaceClientErrorDisclosure(transformed);
   transformed = replaceSettlementErrorDisclosure(transformed);
   transformed = replaceHighStakesUxStatus(transformed);
+  transformed = injectFundedAccessGates(transformed);
   return transformed;
 }
 
@@ -373,6 +393,7 @@ module.exports = {
   replaceClientErrorDisclosure,
   replaceSettlementErrorDisclosure,
   replaceHighStakesUxStatus,
+  injectFundedAccessGates,
   transformBackendSource,
   HIGH_STAKES_PAYOUT_MULTIPLIERS,
   HIGH_STAKES_POINTS

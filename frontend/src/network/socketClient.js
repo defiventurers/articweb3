@@ -48,7 +48,11 @@ export async function createProfile({ address, name, signMessageAsync }) {
   const signature = await signMessageAsync({ message: challenge });
   return (await request("profile_login", { address, name, challenge, signature })).profile;
 }
-export async function listRooms({ roomMode = "open_ice" } = {}) { return (await request("room_list", { roomMode })).rooms || []; }
+export async function listRooms({ roomMode = "open_ice", profile, withAuthorization = false } = {}) {
+  const result = await request("room_list", { roomMode, ...(profile?.wallet ? { wallet: profile.wallet } : {}) });
+  if (result.launchBlocked) throw new Error(result.reason || "Locked Match Mode is unavailable.");
+  return withAuthorization ? result : result.rooms || [];
+}
 export async function getGameHistory({ profile, gameId = null }) { return (await request("game_history", { wallet: profile.wallet, gameId })).history || []; }
 export async function getLeaderboard() { return (await request("leaderboard", {})).leaderboard || []; }
 export async function getMyRooms({ profile }) { return (await request("my_rooms", { wallet: profile.wallet })).rooms || []; }
@@ -60,7 +64,7 @@ export async function joinRoom({ roomCode, profile }) { return (await request("r
 export async function confirmEntryLock({ roomCode, profile, txHash }) { return (await request("room_confirm_entry", { roomCode, wallet: profile.wallet, txHash })).room; }
 export async function selectRoomTeam({ roomCode, profile, team }) { return (await request("room_select_team", { roomCode, wallet: profile.wallet, team })).room; }
 export async function devFillRoom({ roomCode, profile }) { return (await request("dev_fill_room", { roomCode, wallet: profile.wallet })).room; }
-export async function getGameState({ roomCode, profile }) { return (await request("game_state", { roomCode, wallet: profile.wallet })).room; }
+export async function getGameState({ roomCode, profile, withAuthorization = false }) { const result = await request("game_state", { roomCode, wallet: profile.wallet }); return withAuthorization ? result : result.room; }
 export async function rollGameDice({ roomCode, profile }) { return (await request("game_roll_dice", { roomCode, wallet: profile.wallet })).room; }
 export async function selectGameSquare({ roomCode, profile, row, col }) { return (await request("game_select_square", { roomCode, wallet: profile.wallet, row, col })).room; }
 export async function endGameTurn({ roomCode, profile }) { return (await request("game_end_turn", { roomCode, wallet: profile.wallet })).room; }

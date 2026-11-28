@@ -1,68 +1,175 @@
 # FONSO technical stabilization checkpoint
 
-Updated: 2026-11-28 (Asia/Kolkata). Mission: Batch A only, security and fair play.
+Updated: 2026-11-28 (Asia/Kolkata). **Batch A only.**
 
-## Scope and acceptance
+## Outcome and review baseline
 
-- A1: reproduce `RULES_ARTIFACT_MISMATCH`, identify and reproduce the intended rules authority, require independent replay and negative artifact tests; preserve all existing game rules and historical proof identifiers.
-- A2: enforce funded-mode restrictions on the server, demonstrate authorized and unauthorized API/WebSocket behavior locally, and preserve free gameplay.
-- Batches B, C and D: **NOT STARTED**. No deployment, live exploitation, account creation, minting, contract change, DNS/billing change, or production database mutation is authorized by this batch.
-- Preserve the approved v5.10.2 Android binary and artwork. No ordinary source build is represented as reproducing that binary. Physical Android acceptance remains outstanding.
-
-## Reviewed baseline
+A1 and A2 fixes are implemented and tested locally. **167 selected automated
+regression tests passed, with no failures or skips.** Exact reconstruction also
+matches the published proof engine byte for byte. Production verification is
+pending; this checkpoint is not launch approval.
 
 - Repository: `https://github.com/defiventurers/articweb3`.
-- GitHub branch API and `git ls-remote` independently confirmed `main` at `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`.
+- Reviewed `main`: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`, independently
+  checked through Git and the GitHub branch API and rechecked before handoff.
 - Development branch: `codex/fonso-stabilization-batch-a`.
-- PRs #118 and #119 read; both are merged. #119 is the current main merge. APK review evidence was read, not re-run as part of Batch A.
-- Company Master Context, portable context, Engineering/Architecture/Backlog, APK Registry, QA, Infrastructure, Security Risk Register, Launch Readiness and Master Priority Backlog read. `WORKSPACE_SETUP_STATUS.md` revision 1.7 confirmed. Company records are historical context, not current runtime proof.
+- Pull request: pending creation; replace this line with its returned URL.
+- Earlier saved A1 implementation commit: `f4365ed80206076a62f9106d1aeb792b0fc088e7`.
+- PRs #118 and #119 were read; both are merged. #119 is the reviewed main merge.
+- Company Master Context, portable context, Engineering/Architecture/Backlog,
+  APK Registry, QA, Infrastructure, Security Risk Register, Launch Readiness and
+  Master Priority Backlog were read. Setup revision **1.7** was confirmed.
 
-## Incremental evidence
+## Acceptance and status
 
-### A1 — investigation in progress
+| Item | Status | Evidence or remaining boundary |
+| --- | --- | --- |
+| A1: current `9fa0be4a…` authority | **FIXED AND TESTED LOCALLY** | Exact immutable artifact recovery; valid signed fixtures independently replay; altered inputs, rules identifiers/versions, signers and stale replays are rejected. |
+| A1: live client/backend pair | **PRODUCTION VERIFICATION PENDING** | Public fair-config request returned 503 `LAUNCH_RESET_PAUSED`; live authority was not established. |
+| A1: older `63845f4d…` authority | **OWNER ACTION REQUIRED** | Retain its hold. Recover the exact historical build if those historical proofs must be verified; do not repin them. |
+| A2: application/server funded isolation | **FIXED AND TESTED LOCALLY** | Actual local startup wrappers and WebSocket dispatch reject outsiders and forged identities; approved identities succeed; free rooms remain usable. Source wallet writes require fresh server authorization. |
+| A2: deployed backend/environment | **PRODUCTION VERIFICATION PENDING** | No live environment change or intrusive live access test was performed. |
+| A2: direct on-chain vault closure | **OWNER ACTION REQUIRED** | Backend gates cannot prevent direct calls to an unpaused public vault. Active binding, bytecode and pause flags must be independently verified before any funded reopening. |
+| Batches B, C and D | **NOT STARTED** | Continue sequentially only after this Batch A handoff. |
 
-`node shared/fair-play/check-rules-integrity.mjs` reproduced a failing gate on the clean baseline (exit 1). The current manifest is newer than the historical hold:
+## Reproduced causes and implemented fixes
 
-- Current rules identifier: `9fa0be4a43f049957ef407ee73361a0b6a3bb24ed59f487a36190165be82c8cb` (113 source entries).
-- Its expected engine SHA-256 is `16d08120db2442814631143e6dafbeb88af40bda561f3b00a61c5c0f0cfa4c18`.
-- `server/fairPlayEngine.cjs` matches that expected digest exactly.
-- The gate instead reads `server/arcticPlayEngine.cjs`, SHA-256 `647c7663c91d1fcc32300379f0d722096a49e456fc22dcda1c9751ef0cf67ebc`.
-- One declared source also differs: `mobile/arctic-play/src/dominion.js`. Cause and safe resolution still under investigation.
-- The worker's hold records the older rules identifier `63845f4daef97f9721ccecd9cb3c7ef363842835a2566f8f48c7e515863cd952`; no readiness flag or expected digest has been changed.
+### A1 — fair-play authority
 
-### A2 — investigation in progress
+The integrity checker and old core tests selected `arcticPlayEngine.cjs`, while
+the manifest and server proof service select `fairPlayEngine.cjs`. The latter
+already has the correct published digest. A single declared source also drifted:
+Dominion's approved pawn artwork expression and adjacent comment. The worker
+compiled mutable source while applying a hold for a different historical rules
+identifier. The ordinary source build could rewrite the published manifest and
+both engines.
 
-Source review found `internal` launch-mode approval based on chain only. Signature-bound operator membership and all existing-room entry points are being investigated and tested in an isolated local runtime. No live vulnerability claim is made from source review alone.
+The candidate archives the exact original Dominion compilation input, preserves
+its published source hash, compiles under its original module identity and checks
+all 299,733 output bytes against the unchanged engine. The gate uses the correct
+engine and checks declared inputs plus the exact reviewed presentation exception.
+The worker loads that pinned engine, keeps historical/unknown authorities on
+hold and clears replay after failures. Version checks and restored-proof guards
+prevent writing new records under an incompatible authority or key. Unsupported
+restored bot rooms preserve their state without repeatedly trying invalid moves.
 
-## Environment and checks
+Full provenance, digests, changed behavior, reproduction and rollback notes:
+[`BATCH_A_FAIR_PLAY.md`](BATCH_A_FAIR_PLAY.md).
 
-Node 24.22.3. Existing pinned dependencies installed with `npm ci --ignore-scripts --no-audit --no-fund` in `server`, `shared/fair-play` and `mobile/arctic-play/build-deps` (all exit 0). Install lifecycle builds were intentionally not run; the separate approved APK path is unchanged.
+### A2 — funded access
 
-## Work remaining and continuation
+A correctly signed but unapproved local fixture wallet could create an internal
+funded room. The original gate checked only global launch configuration; it did
+not establish participant membership and did not cover all existing-room,
+spectator, background-start or settlement paths. An explicit disabled flag could
+be overridden by a configured vault; unsupported chains could pass as testnet.
 
-### Saved implementation progress
+The candidate defaults internal access to denial unless the existing
+signature-authenticated wallet is in the server-only allowlist. Stored room mode
+controls all ingress aliases, filtered outputs/broadcasts and background actions.
+Explicit disabling wins; the existing Abstract testnet path accepts only 11124.
+Operator requests use header credentials, with the matching protected CORS
+preflight. Source deposits/locks require a fresh wallet/chain-bound policy reply,
+recheck identity after awaiting it and reject stale rooms or an older backend.
+Withdrawals and expired-entry recovery remain available.
 
-A1's current published authority has been recovered and implemented locally;
-see `BATCH_A_FAIR_PLAY.md`. Exact recompilation reproduces 299,733 bytes and the
-unchanged `16d08120…` digest. Independent review identified a third build caller
-and an unsupported-bot retry path; both are fixed and regression tested. Source
-UI copy was compiled and checked for current versus unsupported authorities.
-The old authority and retained signed APK hold remain unchanged.
+Full reproduction, endpoint/protocol coverage, deployment preparation and direct
+contract limitations: [`BATCH_A_FUNDED_ACCESS.md`](BATCH_A_FUNDED_ACCESS.md).
 
-Existing gameplay verification: 20 Node tests and 77 Vitest tests passed. An
-initial attempt to run three Vitest suites with Node's test runner could not
-load their runner; rerunning with the pinned Vitest 5.0.0 executable passed all
-77 tests. This was a test-command issue, not a gameplay fix.
+## Changed files and preserved scope
 
-A2 backend/operator changes pass 28 local tests and independent review. A final
-client-side preflight is being added so standalone deposits and stale cached
-rooms cannot reach a wallet write before fresh server authorization. Keep this
-part marked in progress until its tests and review finish.
+The exact **38 changed paths** are in
+[`BATCH_A_EVIDENCE.json`](BATCH_A_EVIDENCE.json). They comprise:
 
-The checkpoint is already saved on the remote development branch. HTTPS git
-push has no local credential, so the authenticated GitHub app is used to create
-tree/commit objects on that same branch; no main update or deployment is made.
+- Fair-play checker, immutable reproduction utility/archive/provenance, core,
+  source worker/panel, server proof continuation and bot scheduling safeguards.
+- The three source-build entrypoints and their shared authority guard.
+- Funded access policy and production source transformation, launch chain gate,
+  operator CORS, source frontend preflight and header-authenticated operator client.
+- Focused regression tests, `.github/workflows/fonso-batch-a.yml`, `.env.example`
+  documentation and this stabilization documentation directory.
 
-Finish local reproduction, minimal fixes, regression tests, diff review, and reviewable PR for A1/A2. Update this checkpoint with exact changed paths, commands, results, commit and PR before stopping. No founder action is currently needed for local work. Production rollout remains a separate approval gate.
+`rules-manifest.json`, `release-readiness.json`, both tracked CJS game engines and
+the current Dominion presentation source are byte for byte unchanged from main.
+No game rule, catalogue ID, direct game URL, board geometry, approved artwork,
+contract, migration or signed APK was changed. No source build is represented as
+reproducing the approved APK. Historical source/Android delivery differences
+remain for the later Android batch.
 
-If interrupted: resume `codex/fonso-stabilization-batch-a`, read this checkpoint and its evidence files, inspect the working tree before editing, and finish Batch A only. Do not repeat completed company setup or start Batch B.
+## Test evidence
+
+Node **24.22.3**, existing lockfiles; dependencies installed using
+`npm ci --ignore-scripts --no-audit --no-fund` in `server`, `shared/fair-play` and
+`mobile/arctic-play/build-deps`. No install lifecycle build was run.
+
+| Check | Result |
+| --- | --- |
+| `node shared/fair-play/check-rules-integrity.mjs` | PASS; 113 declared sources and the pinned archive checked |
+| `node shared/fair-play/reproduce-rules-authority.mjs` | PASS; Rolldown 1.2.15, 60 loaded modules, 299,733 identical output bytes |
+| A1 proof/artifact/server/worker suite | **36 passed**, 0 failed, 0 skipped |
+| A2 access/launch/operator/frontend/free-socket suite | **34 passed**, 0 failed, 0 skipped |
+| Existing Chaturanga/Arctic Play/Shanshui Node regressions | **20 passed**, 0 failed, 0 skipped |
+| Existing San You Qi/Sannin Shogi/Shogi Vitest suites | **77 passed**, 0 failed, 0 skipped |
+| Source UI verification | Changed JSX screens parse/transform; Fair Play status rendering checked |
+| `git diff --check` | PASS |
+| `node scripts/security-scan.mjs` | PASS; 1,431 available tracked text files, zero findings (lightweight scanner) |
+| GitHub CI | Pending PR creation; local passes do not imply CI or production acceptance |
+
+Exact commands, log digests, unchanged artifact digests and sanitized observations
+are in `BATCH_A_EVIDENCE.json`. The new workflow reruns these checks. An initial
+attempt to run Vitest suites under Node's runner was corrected to use the pinned
+Vitest executable; all 77 cases then passed.
+
+The browser-targeted worker executes in a Node VM with isolated fixture keys.
+Its fixture coverage is the eight tables exposed by `arcticPlayGames.GAME_LIST`
+plus the paired long-dice profile. Co Tu Lenh and Shanshui 2v2 have separate
+core/service coverage. No browser, emulator, physical-device or live-mainnet
+acceptance is claimed. Local socket fixtures use actual production wrappers,
+signature verification and game dispatch; financial calls are mocked/disabled.
+
+Independent reviews checked A1 provenance/worker/build callers and A2
+transformation/alias/authorization paths. Review findings were addressed and the
+final 36- and 34-test suites rerun.
+
+## Accepted decisions and owner-only steps
+
+1. Preserve published authority digests and the current approved presentation.
+   An exact archived source input is allowed only when its full published digest
+   and reproduced engine agree; arbitrary source changes fail closed.
+2. Keep the unsupported historical authority and retained APK hold. No guessed
+   artifact, success override or change to expected hashes is acceptable.
+3. Enforce internal authorization on the server's signed socket identity. A
+   client flag, role, room mode or global launch-status reply grants no access.
+4. Use the repository's supported transformed `npm start` path. Raw
+   `node server/index.js` bypasses existing transformation layers and is not a
+   validated deployment command.
+5. Review the draft PR. Batch B must reconcile actual frontend/backend artifacts
+   and test the candidate pairing before proposing a production rollout.
+6. For an eventual approved rollout, retain `LOCKED_MATCH_MODE=off`,
+   `HIGH_STAKES_ENABLED=false`, `LEGAL_PUBLIC_MAINNET_APPROVED=false` and a blank
+   internal allowlist until a separate funded rehearsal is explicitly approved.
+   No production settings were changed here.
+7. Before any funded reopening, verify the active vault's chain, address, bytecode
+   and deposit/lock/settlement pause flags. Prepare any required owner transaction
+   for separate approval and preserve withdrawals/expired-lock recovery. No
+   contract or wallet action was taken in this batch.
+8. No new infrastructure, production deployment, merge to main, live account,
+   mint, funded match, DNS/billing change or production database operation occurred.
+
+## Exact next continuation instruction
+
+> Execute Batch B only for FONSO from `codex/fonso-stabilization-batch-a` in
+> `defiventurers/articweb3`. Read `docs/technical-stabilization/CHECKPOINT.md`,
+> `BATCH_A_FAIR_PLAY.md`, `BATCH_A_FUNDED_ACCESS.md`, `BATCH_A_EVIDENCE.json` and the
+> linked Batch A PR first. Verify current main and PR state; do not restart the
+> completed Batch A audit. Preserve its current-authority recovery, funded
+> authorization, historical hold and the approved v5.10.2 APK baseline. Implement
+> B1 frontend/backend compatibility, B2 machine-readable health monitoring and B3
+> evidenced database binding/recovery. Reproduce each current issue before fixing
+> it, use scoped reviewable commits and relevant tests, and save checkpoints
+> incrementally. Determine actual Vercel/Render runtime artifacts and source
+> transformations before choosing a deployment candidate. Use only isolated
+> database restore tests. Prepare rollout/rollback and exact owner actions; do
+> not deploy production, change DNS/billing, mint, modify contracts or perform
+> irreversible database operations without separate founder authorization. Stop
+> after Batch B with evidence and the Batch C continuation prompt.

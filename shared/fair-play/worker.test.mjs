@@ -19,6 +19,7 @@ const buildRequire=createRequire(path.join(root,'mobile/arctic-play/build-deps/p
 const {rolldown}=await import(buildRequire.resolve('rolldown'));
 const compiled=await rolldown({
   input:path.join(root,'mobile/arctic-play/src/fair.worker.js'),platform:'browser',external:['node:crypto'],
+  transform:{target:'es2020',define:{'process.env.NODE_ENV':'"production"','import.meta.env':'{}','import.meta.url':'globalThis.location.href'}},
   onwarn(w){throw Error(w.message);},
   plugins:[{name:'isolated-test-public-key',load(id){
     if(id===path.join(root,'shared/fair-play/trust.json'))return {code:JSON.stringify({keys:[server.publicKey]}),moduleType:'json'};
@@ -58,10 +59,10 @@ async function proof(id='shogi',options={}) {
   return {bundle,state};
 }
 
-test('the browser worker verifies the actual published authority, including native Shogi, Shanshui and both dice editions',async()=>{
+test('the browser worker verifies every native mobile table and both dice editions against the published authority',async()=>{
   assert.equal(createHash('sha256').update(await fs.readFile(path.join(root,'server/fairPlayEngine.cjs'))).digest('hex'),manifest.engineHash);
   const w=worker();
-  for(const [id,options] of [['shogi',{}],['shanshui',{}],['dominion',{}],['dominion',{rulesProfile:'chaturanga-long-dice-v1',teamMode:'2v2'}]]){
+  for(const [id,options] of [...gameplay.GAME_LIST.map(game=>[game.id,{}]),['dominion',{rulesProfile:'chaturanga-long-dice-v1',teamMode:'2v2'}]]){
     const f=await proof(id,options),reply=await w.send('verify',{bundle:f.bundle});
     assert.equal(reply.type,'verified',id+': '+reply.error);
     assert.equal(reply.report.moves,1);

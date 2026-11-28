@@ -1,0 +1,65 @@
+name: FONSO security and rules authority
+on:
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'shared/fair-play/**'
+      - 'mobile/arctic-play/src/**'
+      - 'mobile/arctic-play/scripts/**'
+      - 'mobile/arctic-play/build-deps/**'
+      - 'frontend/src/**'
+      - 'frontend/unit/**'
+      - 'scripts/security-scan.mjs'
+      - '.github/workflows/fonso-batch-a.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'shared/fair-play/**'
+      - 'mobile/arctic-play/src/**'
+      - 'mobile/arctic-play/scripts/**'
+      - 'mobile/arctic-play/build-deps/**'
+      - 'frontend/src/**'
+      - 'frontend/unit/**'
+      - 'scripts/security-scan.mjs'
+      - '.github/workflows/fonso-batch-a.yml'
+permissions:
+  contents: read
+jobs:
+  batch-a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Install pinned dependencies without lifecycle builds
+        run: |
+          npm ci --prefix server --ignore-scripts --no-audit --no-fund
+          npm ci --prefix shared/fair-play --ignore-scripts --no-audit --no-fund
+          npm ci --prefix mobile/arctic-play/build-deps --ignore-scripts --no-audit --no-fund
+      - name: Check immutable published artifacts and exact reconstruction
+        run: |
+          node shared/fair-play/check-rules-integrity.mjs
+          node shared/fair-play/reproduce-rules-authority.mjs
+      - name: Verify proof, artifact tamper and isolated worker regressions
+        run: >-
+          node --test shared/fair-play/core.test.mjs shared/fair-play/long-dice.test.mjs
+          shared/fair-play/rules-integrity.test.mjs shared/fair-play/reproduce-rules-authority.test.mjs
+          shared/fair-play/worker.test.mjs server/tests/fair-play-authority.test.js
+          server/tests/launch-fair-play.test.js server/tests/co-tu-lenh-fair-play.test.js
+      - name: Verify funded authorization and free-room compatibility
+        run: >-
+          node --test server/tests/funded-access.test.js server/tests/funded-access-socket.test.js
+          server/tests/launch-mode.test.js server/tests/anti-cheat-transform.test.js
+          server/tests/server-hardening-phases.test.js server/tests/prize-policy.test.js
+          server/tests/security-hardening.test.js server/tests/shogi-socket.test.js
+          frontend/unit/settlement-operator.node.test.js
+          frontend/unit/funded-transactions.node.test.js
+      - name: Check existing free gameplay and rules regressions
+        run: |
+          node --test server/tests/chaturanga-long-dice.test.js server/tests/arctic-play-socket.test.js server/tests/shanshui-online.test.js frontend/src/games/shanshui-xiangqi/rules.test.js
+          node mobile/arctic-play/build-deps/node_modules/vitest/vitest.mjs run frontend/src/games/san-you-qi/rules.test.js frontend/src/games/sannin-shogi/rules.test.js frontend/src/games/shogi-frozen-shogunate/rules.test.js
+      - name: Verify source changes are free of accidental credential literals
+        run: node scripts/security-scan.mjs
