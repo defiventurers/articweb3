@@ -1,8 +1,8 @@
 # FONSO technical stabilization checkpoint
 
 Updated: **28 November 2026 (Asia/Kolkata)**. **Batch D backend/APK verification
-and initial CI complete; a newly observed review-presentation correction is in
-progress. Stop after D.** Physical Android,
+and initial CI complete; newly observed review-presentation and storage-ordering
+corrections are in progress. Stop after D.** Physical Android,
 live Para/free-network acceptance and production deployment remain owner gates.
 
 ## Current review state
@@ -27,6 +27,13 @@ live Para/free-network acceptance and production deployment remain owner gates.
   pass. Original APKs and original patch reproduction stay intact. Strict
   negative/positive CI rendering is pending; see `BATCH_D_PRESENTATION.md`.
   Resume this narrow correction/CI task before the release-acceptance handoff.
+- Candidate `5144a1d6bfef29ffea11bc38738011cb2ae1e572` reran the D matrix.
+  Node20 found the database still at Two Stones ply10 after12 acknowledged moves,
+  before restart; Node24 passed. Shared pooled writes lack per-room ordering.
+  Deterministic regressions confirmed older-write overwrite and snapshot capture
+  after mutation. Immediate snapshots and per-room FIFO now pass4/4 regressions,
+  the unchanged full PostgreSQL gate20/20 and B compatibility44/44 on both Node
+  versions. Final CI on the published correction is pending.
 - No production deployment, live account, mint, funded match, contract/DNS/billing
   change, production database operation or held private-package publication.
 

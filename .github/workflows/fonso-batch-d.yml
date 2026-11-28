@@ -71,6 +71,7 @@ jobs:
           node --test server/tests/free-multiplayer-socket.test.js
           server/tests/arctic-play-socket-recovery.test.js
           server/tests/two-stones-online.test.js
+          server/tests/room-store-ordering.test.js
       - name: Preserve published game authority and scan credential literals
         run: |
           node shared/fair-play/check-rules-integrity.mjs

@@ -1,9 +1,8 @@
 {
-  "recordedAtUtc": "2026-11-28T03:49:11.690532+00:00",
+  "recordedAtUtc": "2026-11-28T04:15:36.315434+00:00",
   "reviewedBaseCommit": "75328370f0703ab7907dda9dc833f8aab93c21f9",
   "reviewedMainCommit": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
   "branch": "codex/fonso-stabilization-batch-d",
-  "headAtEvidence": "d6feea24e1858abeff22eed18d384c1c5fcc0f26",
   "pullRequest": "https://github.com/defiventurers/articweb3/pull/125",
   "status": "FIXED AND TESTED LOCALLY",
   "scope": "Actual transformed production startup, local native WebSockets, synthetic identities and disposable PostgreSQL only. No live account, wallet operation, production request or chain write.",
@@ -44,12 +43,37 @@
       "issue": "Delayed duplicate action",
       "before": "The request accepted at ply5 (blue-1 nw to c) was accepted again at ply12 when its exact action became legal.",
       "rootCause": "Only current turn and move legality were checked; request IDs were ignored."
+    },
+    {
+      "issue": "Out-of-order pooled room saves and mutable snapshot capture",
+      "observedCandidate": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
+      "runId": 46106228547,
+      "jobId": 140859485147,
+      "node": "20.20.2",
+      "before": "The actual PostgreSQL row remained at ply10 after twelve acknowledgements; the test failed before restarting.",
+      "rootCause": "Unordered unconditional pooled upserts and room/player fields read from a mutable object after awaits.",
+      "deterministicPreFix": {
+        "tests": 4,
+        "passed": 2,
+        "failed": 2
+      },
+      "deterministicPostFix": {
+        "tests": 4,
+        "passedPerRuntime": 4,
+        "nodes": [
+          "20.20.2",
+          "24.22.3"
+        ],
+        "failed": 0,
+        "skipped": 0
+      }
     }
   ],
   "fixes": {
     "walletAuthorization": "The 18 reachable wallet-profile prefixes require the existing signature-bound login. Public room lists remain available; independent seat/account protocols are excluded.",
     "twoStonesDefense": "The normalized payload wallet must match ws.authorizedWallet before the socket receives subscriptions.",
-    "replay": "Persist a SHA-256 fingerprint of match ID, authorized wallet, request ID type and value outside gameState, auditLog and proof inputs. Keep every accepted request up to the 44-action bound. Old absent metadata remains valid; malformed present metadata and identifier-less mutations are rejected."
+    "replay": "Persist a SHA-256 fingerprint of match ID, authorized wallet, request ID type and value outside gameState, auditLog and proof inputs. Keep every accepted request up to the 44-action bound. Old absent metadata remains valid; malformed present metadata and identifier-less mutations are rejected.",
+    "persistence": "Capture sanitized JSON synchronously at save call; serialize room/player writes per room with a process-local FIFO, preserve other-room concurrency and caller-visible rejection, and clean pending tails without replay."
   },
   "naturalMatch": {
     "protocol": "ts_*",
@@ -92,33 +116,44 @@
     "results": [
       {
         "node": "20.20.2",
-        "tests": 16,
-        "passed": 16,
+        "tests": 20,
+        "passed": 20,
         "failed": 0,
         "skipped": 0
       },
       {
         "node": "24.22.3",
-        "tests": 16,
-        "passed": 16,
+        "tests": 20,
+        "passed": 20,
         "failed": 0,
         "skipped": 0
       }
     ],
     "diffCheck": "passed",
     "fixtureFailureResolved": "An initial 13-case run had one force-drop/connection teardown failure. Consumers now close before normal DROP; asynchronous database errors are asserted absent. No application logic changed to bypass a failed assertion.",
-    "fixtureIsolation": "The local PostgreSQL validator rejects query parameters, fragments, non-PostgreSQL schemes and effective-host overrides before opening a Pool. Cleanup is registered before CREATE/init. The runtime environment is allowlisted, environment-file loading and external fetches are disabled, and funded/mint/settlement/indexer/anchor gates are false."
+    "fixtureIsolation": "The local PostgreSQL validator rejects query parameters, fragments, non-PostgreSQL schemes and effective-host overrides before opening a Pool. Cleanup is registered before CREATE/init. The runtime environment is allowlisted, environment-file loading and external fetches are disabled, and funded/mint/settlement/indexer/anchor gates are false.",
+    "sharedStoreCompatibility": {
+      "passedPerRuntime": 44,
+      "nodes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "failed": 0,
+      "skipped": 0
+    }
   },
   "independentReviews": {
     "runtime": "No blocking issue found. The limits for prior unrecorded request IDs and asynchronous persistence remain documented.",
-    "infrastructure": "Two concrete fixture findings were corrected and re-reviewed; no remaining blocker was identified."
+    "infrastructure": "Two concrete fixture findings were corrected and re-reviewed; no remaining blocker was identified.",
+    "storage": "No runtime blocker. A separate reviewer reran ordering4/4 on both runtimes; unchanged SQL/schema, original API, sanitization, failure cleanup and independent-room concurrency inspected."
   },
   "limits": [
     "Pre-upgrade action IDs were not recorded and cannot be retrospectively deduplicated.",
     "Legacy Two Stones acknowledgment precedes asynchronous persistence. The restart test waits for the actual stored row and does not establish durability for a crash before that save.",
     "Replay hardening applies to Two Stones. The broader prefix guard establishes authorization, not full gameplay or replay acceptance for every catalogue game.",
     "The Android-protocol completion is a signed resignation, not checkmate. Local socket clients do not prove physical APK or real-network acceptance.",
-    "No production deployment or live free-game acceptance was performed."
+    "No production deployment or live free-game acceptance was performed.",
+    "Per-room write ordering is process-local and does not coordinate multiple independent backend writers."
   ],
   "ownerActions": [
     "Review and separately approve the stacked candidate deployment under the Batch D rollout gates.",
@@ -134,6 +169,9 @@
     "server/tests/arctic-play-socket-recovery.test.js": "1be6e1effbf05234f943a3ba1e9df5d259b2d0967fc3122090341af1d98f9003",
     "server/tests/helpers/free-multiplayer-fixture.cjs": "9fb286baf750a3359df6a382f86b052a904d371a0955420436800410ffb61273",
     "server/tests/helpers/local-test-database.cjs": "566865ed38a2171a33dad6fcdaccd460916adaa84e8363b1d8739b9781d00576",
-    "server/scripts/free-multiplayer-smoke.cjs": "874f8d95738193365a394f8fc1be7f2c480c09c17b1a2cb9ae64d26a385f34a8"
-  }
+    "server/scripts/free-multiplayer-smoke.cjs": "d5c3b8df13f7be51c9b78ff3b7326e4aae38e0278174e78db9071f73d005d920",
+    "server/roomStore.js": "d712bdb062a07c9282ee273b381f3845ba842f649466e9fd62427cff760f2509",
+    "server/tests/room-store-ordering.test.js": "3cb400c2b6ef27add72423739a9d2f252943b0022f66cab1d18575df904ec18c"
+  },
+  "candidateReference": "Source hashes below; exact published candidate and CI run IDs are in BATCH_D_EVIDENCE.json."
 }

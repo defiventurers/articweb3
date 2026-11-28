@@ -3,6 +3,7 @@ const { Pool } = require("pg");
 const DATABASE_URL = process.env.DATABASE_URL || "";
 const runtime = require("./databaseRuntime").createStoreRuntime({ databaseUrl: DATABASE_URL, Pool, label: "room-db" });
 const getPool = runtime.getPool;
+const pendingRoomWrites = new Map();
 
 async function initRoomStore() {
   return runtime.init(async () => {
@@ -38,9 +39,24 @@ async function initRoomStore() {
 }
 
 async function saveRoom(room) {
-  if (!room || !(await runtime.requireReady(initRoomStore))) return;
-  const serializableRoom = sanitizeRoom(room);
-  const roomJson = JSON.stringify(serializableRoom);
+  if (!room || !DATABASE_URL) return;
+  // Capture before the first await: game services keep mutating the live room.
+  // Both the room JSON and player rows must describe this particular save.
+  const roomJson = JSON.stringify(sanitizeRoom(room));
+  const snapshot = JSON.parse(roomJson);
+  const previous = pendingRoomWrites.get(snapshot.roomCode) || Promise.resolve();
+  // Pooled queries can finish out of order. Serialize only this room, including
+  // its player rows, so an older save cannot roll back its board or receipts.
+  // Failed writes remain rejected to their callers and are never replayed.
+  const next = previous.catch(() => {}).then(() => persistRoom(snapshot, roomJson));
+  pendingRoomWrites.set(snapshot.roomCode, next);
+  const clear = () => { if (pendingRoomWrites.get(snapshot.roomCode) === next) pendingRoomWrites.delete(snapshot.roomCode); };
+  next.then(clear, clear);
+  return next;
+}
+
+async function persistRoom(room, roomJson) {
+  if (!(await runtime.requireReady(initRoomStore))) return;
   await getPool().query(
     `INSERT INTO rooms (room_code, room_mode, status, match_id, contract_match_id, visibility, game_id, ruleset_version, room_json, created_at, updated_at)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,to_timestamp($10 / 1000.0),NOW())

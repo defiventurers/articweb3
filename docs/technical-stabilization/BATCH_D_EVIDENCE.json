@@ -1,7 +1,7 @@
 {
   "batch": "D",
   "observedAt": "2026-11-28T04:02:03Z",
-  "phase": "backend-and-retained-verification-complete-presentation-correction-in-progress",
+  "phase": "presentation-correction-and-storage-ordering-verification-in-progress",
   "reviewedMain": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
   "branch": "codex/fonso-stabilization-batch-d",
   "baseCommit": "75328370f0703ab7907dda9dc833f8aab93c21f9",
@@ -551,12 +551,14 @@
     "mobile/arctic-play/tests/test_storybook_accessibility_review.py",
     "server/legacyWalletAccess.js",
     "server/loadPrizeBackend.js",
+    "server/roomStore.js",
     "server/scripts/free-multiplayer-smoke.cjs",
     "server/tests/arctic-play-socket-recovery.test.js",
     "server/tests/database-recovery.test.js",
     "server/tests/free-multiplayer-socket.test.js",
     "server/tests/helpers/free-multiplayer-fixture.cjs",
     "server/tests/helpers/local-test-database.cjs",
+    "server/tests/room-store-ordering.test.js",
     "server/tests/two-stones-online.test.js",
     "server/twoStonesService.js"
   ],
@@ -604,6 +606,53 @@
       "Crown-targeted large-text containment or overlap"
     ],
     "newApkProduced": false,
-    "report": "BATCH_D_PRESENTATION.md"
+    "report": "BATCH_D_PRESENTATION.md",
+    "firstCandidate": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
+    "firstCiRun": "https://github.com/defiventurers/articweb3/actions/runs/46106228547"
+  },
+  "storageOrderingInvestigation": {
+    "status": "FIXED AND TESTED LOCALLY",
+    "observedCandidate": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
+    "runId": 46106228547,
+    "jobId": 140859485147,
+    "node": "20.20.2",
+    "observation": "After twelve acknowledged Two Stones moves, the PostgreSQL row remained at ply10. The test failed before restarting the backend; it did not accept a stale restoration.",
+    "failedAssertion": "server/tests/arctic-play-socket-recovery.test.js:189, persisted.gameState.ply expected12 actual10",
+    "node24Result": "16/16 passed; different timing does not negate the Node20 failure",
+    "nextAction": "Run final CI on the published correction; keep process-local and acknowledgment-to-durability limits explicit.",
+    "rootCause": "Unordered pooled upserts let older snapshots overwrite newer ones; snapshot/player reads occurred after awaits on a mutable room.",
+    "correction": "Call-time sanitized immutable JSON snapshot plus per-room process-local FIFO covering room and player writes.",
+    "deterministicRegressionBefore": {
+      "passed": 2,
+      "failed": 2
+    },
+    "deterministicRegressionAfter": {
+      "passedPerRuntime": 4,
+      "failed": 0,
+      "skipped": 0,
+      "nodes": [
+        "20.20.2",
+        "24.22.3"
+      ]
+    },
+    "fullPostgresqlAfter": {
+      "passedPerRuntime": 20,
+      "failed": 0,
+      "skipped": 0,
+      "nodes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "postgres": "18.7"
+    },
+    "sharedStoreCompatibilityAfter": {
+      "passedPerRuntime": 44,
+      "failed": 0,
+      "skipped": 0,
+      "nodes": [
+        "20.20.2",
+        "24.22.3"
+      ]
+    }
   }
 }

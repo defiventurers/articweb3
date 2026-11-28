@@ -6,12 +6,13 @@ Reviewed base: `75328370f0703ab7907dda9dc833f8aab93c21f9`, on `codex/fonso-stabi
 
 Two independent socket clients completed a natural five-ply **Two Stones / Do-guti** match. Separately, two authenticated account clients played four signed **Shogi** moves through the Android `ap_*` protocol, restored the same seats/board/proof after a backend restart with real PostgreSQL, and agreed on a signed resignation result. The final Shogi proof replayed independently; a tampered event failed verification. These are automated local acceptance results, not physical-phone or live-production acceptance.
 
-Two verified defects were fixed: anonymous impersonation in the older wallet-profile game families and delayed duplicate Two Stones moves. No rules, catalogue IDs, board geometry, URLs, artwork, SQL schema, authentication provider, fair-play authority or proof format changed. Existing funded, indexer, collectible and chain-writing gates stayed disabled in every new acceptance fixture.
+Verified defects were fixed in socket identity, delayed duplicate handling and room persistence ordering. No rules, catalogue IDs, board geometry, URLs, artwork, SQL schema, authentication provider, fair-play authority or proof format changed. Existing funded, indexer, collectible and chain-writing gates stayed disabled in every new acceptance fixture.
 
 | Item | Status | Evidence |
 | --- | --- | --- |
 | Wallet-profile impersonation | FIXED AND TESTED LOCALLY | An unsigned socket previously acted as an existing Two Stones wallet; 17 additional reachable wallet-game prefixes also admitted impersonated room creation. All 18 now require the existing signature-bound wallet login. |
 | Delayed Two Stones duplicate | FIXED AND TESTED LOCALLY | A message accepted at ply 5 was accepted again at ply 12 when its move became legal again. Persistent accepted-request hashes now reject it, including after reconnect and PostgreSQL-backed process restart. |
+| Room persistence ordering and snapshot timing | FIXED AND TESTED LOCALLY | A later CI run found the stored row at ply10 after12 acknowledgements. Deterministic tests reproduced older-write overwrite and mutable snapshot capture; per-room FIFO and immediate snapshots fix both. Fresh CI remains separately recorded. |
 | Free Two Stones end-to-end match | FIXED AND VERIFIED IN TEST ENVIRONMENT | Two independent WebSocket clients agree on the authoritative five-ply immobilization result and history; invalid moves and duplicate actions do not advance the board. |
 | Android-protocol free Shogi acceptance | FIXED AND VERIFIED IN TEST ENVIRONMENT | Real account/session checks, seat tokens, signatures, worker validation, database persistence, restart restoration and independent final-proof verification. |
 | Live networks, actual phones and founder accounts | OWNER ACTION REQUIRED | No live account, wallet sign-in, match or physical Android acceptance was performed. |
@@ -51,6 +52,35 @@ The bound is **44** accepted actions: four initial placements plus the existing 
 
 **Limits:** pre-upgrade request IDs were never recorded, so they cannot be retrospectively deduplicated. The older service still acknowledges before its asynchronous room write completes. The restart test verifies the row was stored before stopping the process; it does not claim durability for a crash between acknowledgment and persistence. A configured-database outage and that persistence window remain governed by the existing recovery/rollout controls. No historical proof or game state is rewritten.
 
+### Pooled writes could overwrite a newer room with an older state
+
+The Node20 job on candidate `5144a1d6bfef29ffea11bc38738011cb2ae1e572`
+found PostgreSQL still at Two Stones ply10 after twelve acknowledged actions.
+The existing test failed before restart; it did not accept stale restoration.
+The same Node24 run passed, which did not negate the ordering defect.
+
+`roomStore.saveRoom` issued unconditional upserts on independently completing
+pool connections. A delayed older write could commit after a newer write. It
+also serialized the live room only after asynchronous initialization, and read
+player fields after another await. Later game mutations could therefore change
+what an earlier save captured or mix room and player snapshots.
+
+The new deterministic regression held a ply10 write while a ply12 write could
+finish, then released the older write. Before the fix, the database fixture
+ended at ply10. A second regression mutated one live room between calls and
+showed both saves capturing ply12. Two of four tests failed before the fix.
+
+The store now snapshots sanitized JSON before its first await and queues saves
+per room, including the corresponding player writes. Different rooms remain
+concurrent. Failure still rejects to the caller, does not replay the failed
+snapshot and does not block later saves. The four regressions pass on both
+runtimes; the unchanged twelve-ply PostgreSQL/restart test also passes. No sleep,
+retry or reduced assertion replaced the failing acceptance check.
+
+This queue operates within one backend process. It does not coordinate multiple
+independent writers or remove the existing acknowledgment-to-durability crash
+window. No deletion API exists in this store; no new deletion behavior was added.
+
 ## Match and recovery evidence
 
 The Two Stones natural-completion sequence uses the existing rules:
@@ -83,10 +113,11 @@ For an existing authorized disposable CI PostgreSQL service:
 FONSO_MULTIPLAYER_TEST_DATABASE_URL=postgresql://fixture@127.0.0.1:5432/postgres \
   node --test server/tests/free-multiplayer-socket.test.js \
   server/tests/arctic-play-socket-recovery.test.js \
-  server/tests/two-stones-online.test.js
+  server/tests/two-stones-online.test.js \
+  server/tests/room-store-ordering.test.js
 ```
 
-The final gate contains **16 tests**, including the existing rules/transform checks. Node **20.20.2** and **24.22.3** each passed **16/16 with zero skips** against PostgreSQL **18.7** after independent runtime and fixture review. Results and source fingerprints are recorded in `BATCH_D_MULTIPLAYER_EVIDENCE.json`. Do not report a database-free run with skipped recovery tests as acceptance. The initial fixture force-drop race was corrected by closing consumers before normal removal; no application behavior was changed to conceal that test-infrastructure failure.
+The final gate contains **20 tests**, including four ordering regressions and the existing rules/transform checks. Node **20.20.2** and **24.22.3** each passed **20/20 with zero skips** against PostgreSQL **18.7** after the storage correction. The shared-store Batch B compatibility/health/recovery gate also passed44/44 on both runtimes. Results and source fingerprints are recorded in `BATCH_D_MULTIPLAYER_EVIDENCE.json`; CI run identities are in the combined evidence. Do not report a database-free run with skipped recovery tests as acceptance. The initial fixture force-drop race was corrected by closing consumers before normal removal; it is separate from the subsequently reproduced application write-ordering defect.
 
 ## Founder-controlled live continuation
 
@@ -99,4 +130,4 @@ The final gate contains **16 tests**, including the existing rules/transform che
 
 ## Changed files
 
-Runtime: `server/loadPrizeBackend.js`, `server/legacyWalletAccess.js`, `server/twoStonesService.js`. Regression/fixture files: `server/tests/two-stones-online.test.js`, `server/tests/free-multiplayer-socket.test.js`, `server/tests/arctic-play-socket-recovery.test.js`, `server/tests/helpers/free-multiplayer-fixture.cjs`, `server/tests/helpers/local-test-database.cjs`. Reproducible runner: `server/scripts/free-multiplayer-smoke.cjs`. No APK or artwork was modified by D2.
+Runtime: `server/loadPrizeBackend.js`, `server/legacyWalletAccess.js`, `server/twoStonesService.js`, `server/roomStore.js`. Regression/fixture files: `server/tests/two-stones-online.test.js`, `server/tests/free-multiplayer-socket.test.js`, `server/tests/arctic-play-socket-recovery.test.js`, `server/tests/room-store-ordering.test.js`, `server/tests/helpers/free-multiplayer-fixture.cjs`, `server/tests/helpers/local-test-database.cjs`. Reproducible runner: `server/scripts/free-multiplayer-smoke.cjs`. No APK or artwork was modified by D2.

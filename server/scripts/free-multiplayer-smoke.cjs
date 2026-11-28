@@ -33,7 +33,7 @@ async function run({ bindir = process.env.PG_BINDIR } = {}) {
     await pg('pg_ctl', ['-D', data, '-l', path.join(dir, 'postgres.log'), '-o', `-h 127.0.0.1 -p ${port} -c unix_socket_directories=''`, '-w', '-t', '15', 'start']);
     started = true;
     console.log(`Isolated free multiplayer fixture: ${version}; ${process.version}; loopback only.`);
-    const tests = ['free-multiplayer-socket', 'arctic-play-socket-recovery', 'two-stones-online'];
+    const tests = ['free-multiplayer-socket', 'arctic-play-socket-recovery', 'two-stones-online', 'room-store-ordering'];
     const exitCode = await new Promise((resolve, reject) => {
       const child = spawn(process.execPath, ['--test', ...tests.map(name => `tests/${name}.test.js`)], {
         cwd: path.resolve(__dirname, '..'), env, stdio: 'inherit', timeout: 180000,
