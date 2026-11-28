@@ -1,25 +1,134 @@
 # FONSO technical stabilization checkpoint
 
-Updated: 2026-11-28 (Asia/Kolkata). **Batch B in progress.**
+Updated: **2026-11-28 (Asia/Kolkata)**. **Batch B implementation and isolated
+verification complete; production acceptance remains pending. Stop after B.**
 
-## Current Batch B checkpoint
+## Current review state
 
-- Reviewed main is unchanged: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`.
-- Batch A PR #121 remains open, draft and unmerged at `19ceaa6c2d66ce726f9050ef1c674c3d06553e19`.
-- Development branch: `codex/fonso-stabilization-batch-b`, created from that exact Batch A head. A separate stacked draft PR will target the Batch A branch while #121 remains unmerged.
-- Acceptance: B1 evidence actual deployment versions and test relevant interface compatibility; B2 strict machine-readable health/readiness and monitoring; B3 evidence actual database binding or explicitly retain the access limitation, fix reproduced recovery defects, and verify recovery only with isolated data.
-- Provider records independently confirm Vercel production `f696f576` and Render live `8324ff30`; the relevant existing interface source files are identical. No incompatibility is inferred solely from these different commits.
-- Current health failure reproduced in the live browser: `/api/health` ends at `/coming-soon.html` with `text/html` and “Coming soon”. Render has an empty HTTP health-check path (TCP default).
-- Runtime reports configured/ready Postgres stores, and Render startup logs confirm initialization. The exact Neon runtime host/branch binding remains unresolved because connected Render tools cannot read environment values. No credentials were retrieved or exposed in repository artifacts.
-- Implementation in progress: read-only compatibility gate and local interface checks; health route/strict monitor/readiness; durable-store failure/recovery regressions and isolated restore procedure.
-- Provider evidence: [`BATCH_B_PROVIDER_EVIDENCE.json`](BATCH_B_PROVIDER_EVIDENCE.json). Per-task evidence and test results will be added before handoff.
-- No production deployment, merge to main, live account/mint/funding, contract, DNS/billing, or production database operation. Batch C and D remain **NOT STARTED**.
+- Reviewed `main`: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`, rechecked before handoff.
+- Batch A [PR #121](https://github.com/defiventurers/articweb3/pull/121) remains open, draft, mergeable and unmerged at `19ceaa6c2d66ce726f9050ef1c674c3d06553e19`.
+- Development branch: `codex/fonso-stabilization-batch-b`, based on that exact A head. The Batch B draft PR is stacked onto the A branch; its link and final commit evidence will be recorded below before handoff.
+- Review/deploy A before B. Retarget B to `main` only after the approved A merge and check the resulting diff. Render automatically deploys `main`, so merging is also a production rollout decision.
+- This batch performed no production deployment, main merge, environment/DNS/billing change, live signup/mint/funding, contract action, production data export or database mutation.
 
-If interrupted, resume this Batch B branch and current working tree; do not rerun Batch A or company setup. Finish B1/B2/B3 and record the PR, tests, limitations and Batch C continuation before stopping.
+## Batch B acceptance and outcome
+
+| Item | Status | Evidence / remaining boundary |
+| --- | --- | --- |
+| B1: historical frontend/backend SHA-skew defect | **NOT REPRODUCIBLE** | Current GitHub/Vercel `f696f576` and Render `8324ff30` have identical relevant server/shared/frontend source trees. Differences alone do not justify a deployment. |
+| B1: candidate compatibility gate | **FIXED AND TESTED LOCALLY** | Read-only contract/identity/policy probe and real transformed startup tests cover API capabilities, saved sessions, Para binding and socket envelopes. |
+| B2: misleading health routes and monitoring | **FIXED AND TESTED LOCALLY** | Exact rewrites, strict JSON monitor, live database/schema/privilege checks and startup-restoration latch. Production route verification remains pending. |
+| B3: durable-store failure recovery | **FIXED AND VERIFIED IN TEST ENVIRONMENT** | Five initialization failures reproduced; retry/failure handling tested. Isolated PostgreSQL 18.7 outage/restart and 14-table/14-record dump/restore passed using synthetic data only. |
+| B3: current Render-to-Neon binding | **BLOCKED BY ACCESS** | Connected Neon catalogs match 12 application tables, but no runtime configuration read proves that Render uses this branch. Owner-local configuration inspection is prepared; it is not automatically active-process proof. |
+| Candidate production acceptance | **PRODUCTION VERIFICATION PENDING** | Backend-first rollout, runtime authority, strict company-domain health and configured DB evidence must pass on the approved deployed pair. |
+| Deployment, configured binding and recovery objectives | **OWNER ACTION REQUIRED** | Exact actions and rollback safeguards are in the task runbooks below. |
+| Batches C and D | **NOT STARTED** | Continue sequentially; no live consent, collectible delivery or physical Android acceptance claimed. |
+
+## Reproduced causes and actual changes
+
+**B1.** Provider deployment IDs and independent runtime commit evidence were
+captured. The SHA difference does not change the relevant interfaces. A bounded
+six-GET probe now distinguishes incompatible contracts, unresolved identity and
+launch-policy holds. Actual startup transformations and build-generation paths
+were traced; no frontend build is represented as the approved APK.
+
+**B2.** The apex `/api/health` returns 307 to the Coming Soon HTML page because
+the host redirect runs before the rewrite. Backend `/readyz` currently hits a
+200/plain text fallback. The candidate exempts only the two intended company
+health paths and serves schema-tagged `/healthz` and `/readyz`. Monitoring rejects
+redirects, HTML, stale/malformed/oversized responses and status disagreement.
+Required persistence failures produce 503. Readiness checks six gameplay tables,
+the operations required by current stores, and completed startup restoration.
+Initial restore failure stays held until a controlled restart.
+
+**B3.** Five stores cached failed initialization forever and silently returned
+memory results despite configured durable storage. They now retry with bounded
+backoff, handle connection failure and reject failed durable operations without
+automatically replaying writes. Idle-error handlers and six history callers were
+hardened. Read-only schema/binding inspection and a fixture-only restore utility
+were added; no application schema migration or lockfile was changed.
+
+## Evidence and tests
+
+- [Deployment compatibility / rollout / rollback](BATCH_B_COMPATIBILITY.md)
+- [Health implementation / strict monitor / founder actions](BATCH_B_HEALTH.md)
+- [Database binding / outage recovery / restore procedure](BATCH_B_DATABASE.md)
+- [Combined commands, test digests and limitations](BATCH_B_EVIDENCE.json)
+- [Provider records and live HTTP reproduction](BATCH_B_PROVIDER_EVIDENCE.json)
+- [Read-only live compatibility observations](BATCH_B_COMPATIBILITY_OBSERVATIONS.json)
+- [Sanitized Neon catalogs and actual isolated restore evidence](BATCH_B_DATABASE_EVIDENCE.json)
+
+**141 selected tests passed on each runtime: Node 20.20.2 (observed Render version)
+and Node 24.22.3.** This comprises 44 infrastructure checks and 97 relevant account,
+free-game, Para, persistence and funded-isolation regressions. The final 16-test
+readiness subset passed again after schema-CREATE checks were tightened. No
+failures/skips remain. Test-only credential fixtures were adjusted after the
+strict repository scanner flagged their dummy URL literals; the scanner was
+preserved and rerun. Exact final reruns and CI evidence are recorded in the JSON.
+
+Published authority integrity and exact reconstruction still pass: 113 declared
+inputs checked, 60 loaded modules and 299,733 identical engine bytes. The immutable
+rules manifest, engine digests, historical hold and approved visual/APK baseline
+are preserved. Batch A source transformations remain in force; B2 adds readiness recording
+after boot. Account/session formats, game rules, catalogue IDs and direct game
+URLs are preserved. Only the two health paths gain routing exceptions. The database rehearsal compared 14 synthetic tables and
+14 records; no production account data was read or exported.
+
+## Remaining risks and exact owner actions
+
+1. **Review the stacked PR and the Batch A dependency.** Keep production changes
+   separately approved. Pin the reviewed candidate SHA and build IDs; control
+   automatic deployments before any merge to `main`.
+2. **Establish database configuration evidence privately.** Follow the hidden
+   local prompt in `BATCH_B_DATABASE.md` using the current Render Environment and
+   linked group. Save only sanitized hostname/database/schema output and deploy
+   metadata. Render Free has no shell/SSH/one-off job; do not upgrade billing for
+   this check. A saved-only configuration change can differ from the live process,
+   so retain that distinction until an approved runtime diagnostic establishes it.
+3. **Approve an exact isolated candidate before rollout.** Keep all sender/indexer
+   workers off, prepare its required account schema, verify role privileges and
+   successful boot-room restoration, and run the compatibility and health CLIs.
+   Failed durable writes are not a queue; an initial restore failure requires a
+   controlled restart. Do not call in-memory progress durably saved during an outage.
+4. **Approve backend-first production rollout separately.** Current live responses
+   still advertise internal funded mode/high stakes and fair-config returns 503
+   `LAUNCH_RESET_PAUSED`. Preserve Batch A authorization and historical holds;
+   prepare funded-off settings for the approved release. The old Render artifact
+   predates A and is not a safe automatic rollback. Do not open funded/registration
+   gates merely to make a probe pass.
+5. **After backend acceptance**, approve the frontend health rewrites and Render
+   health path `/readyz`; verify exact apex JSON with the strict monitor. Render's
+   own status-only check does not replace content validation. Rollback must retain
+   safe code/configuration; an application rollback does not reverse database writes.
+6. **Choose recovery objectives/retention.** Connected Neon reports a six-hour
+   history window and no listed snapshots/schedule. Approve a named isolated cloud
+   recovery target if a real-data rehearsal is required. No production restore,
+   reset, remint or replay is authorized by this checkpoint.
+
+## Exact next continuation instruction
+
+> Execute Batch C only for FONSO from `codex/fonso-stabilization-batch-b` in
+> `defiventurers/articweb3`. Read `docs/technical-stabilization/CHECKPOINT.md`,
+> `BATCH_B_EVIDENCE.json`, `BATCH_B_COMPATIBILITY.md`, `BATCH_B_HEALTH.md`,
+> `BATCH_B_DATABASE.md`, their linked evidence, Batch A PR #121 and the linked
+> Batch B PR first. Verify current main and both PR states; do not restart
+> completed A/B audits. Preserve current-authority recovery, funded authorization,
+> historical hold, strict health/readiness, database failure safeguards and the
+> approved v5.10.2 APK baseline. Implement C1 Passport #3 metadata recovery without
+> changing ownership/supply/artwork; C2 exact provenance and bytecode matching for
+> the three existing Robinhood testnet contracts using current official docs;
+> and C3 Para signup-to-collectible idempotency, eligibility, ownership and failure
+> recovery with isolated automated tests. Reproduce current issues before fixes,
+> use scoped commits/PRs and save checkpoints incrementally. Prepare exact
+> controlled live test and owner actions. Do not create a live account, mint,
+> change/deploy contracts, publish additional source for verification, deploy
+> production, change DNS/billing or perform irreversible database operations
+> without separate founder authorization. Stop after Batch C with evidence and
+> the Batch D continuation prompt.
 
 ## Preserved Batch A handoff
 
-The following records the completed Batch A work; its old continuation instruction is historical while Batch B is in progress.
+The following preserves the completed Batch A evidence. The current Batch B status and Batch C continuation above govern new work.
 
 ## Outcome and review baseline
 
@@ -50,7 +159,7 @@ pending; this checkpoint is not launch approval.
 | A2: application/server funded isolation | **FIXED AND TESTED LOCALLY** | Actual local startup wrappers and WebSocket dispatch reject outsiders and forged identities; approved identities succeed; free rooms remain usable. Source wallet writes require fresh server authorization. |
 | A2: deployed backend/environment | **PRODUCTION VERIFICATION PENDING** | No live environment change or intrusive live access test was performed. |
 | A2: direct on-chain vault closure | **OWNER ACTION REQUIRED** | Backend gates cannot prevent direct calls to an unpaused public vault. Active binding, bytecode and pause flags must be independently verified before any funded reopening. |
-| Batches B, C and D | **NOT STARTED** | Continue sequentially only after this Batch A handoff. |
+| At the Batch A handoff: B, C and D | **NOT STARTED** | Historical status; use the current Batch B section above. |
 
 ## Reproduced causes and implemented fixes
 
@@ -178,20 +287,7 @@ final 36- and 34-test suites rerun.
 8. No new infrastructure, production deployment, merge to main, live account,
    mint, funded match, DNS/billing change or production database operation occurred.
 
-## Exact next continuation instruction
+## Batch A continuation completed
 
-> Execute Batch B only for FONSO from `codex/fonso-stabilization-batch-a` in
-> `defiventurers/articweb3`. Read `docs/technical-stabilization/CHECKPOINT.md`,
-> `BATCH_A_FAIR_PLAY.md`, `BATCH_A_FUNDED_ACCESS.md`, `BATCH_A_EVIDENCE.json` and the
-> linked Batch A PR first. Verify current main and PR state; do not restart the
-> completed Batch A audit. Preserve its current-authority recovery, funded
-> authorization, historical hold and the approved v5.10.2 APK baseline. Implement
-> B1 frontend/backend compatibility, B2 machine-readable health monitoring and B3
-> evidenced database binding/recovery. Reproduce each current issue before fixing
-> it, use scoped reviewable commits and relevant tests, and save checkpoints
-> incrementally. Determine actual Vercel/Render runtime artifacts and source
-> transformations before choosing a deployment candidate. Use only isolated
-> database restore tests. Prepare rollout/rollback and exact owner actions; do
-> not deploy production, change DNS/billing, mint, modify contracts or perform
-> irreversible database operations without separate founder authorization. Stop
-> after Batch B with evidence and the Batch C continuation prompt.
+The former Batch B instruction has been executed. Use the current Batch C
+continuation at the start of this checkpoint; do not restart the Batch A audit.

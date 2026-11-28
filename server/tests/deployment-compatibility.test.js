@@ -102,7 +102,7 @@ test('probe accepts only exact JSON responses and never follows a redirect or se
 
 test('snapshots discard keys, sessions, infrastructure locations and arbitrary errors', () => {
   const privateKey = generateKeyPairSync('ec', { namedCurve: 'prime256v1' }).privateKey.export({ format: 'jwk' });
-  const fields = publicFields('fair', { ...validResponses().fair.body, serverKey: privateKey, apiKey: 'secret-value', session: 'session-value', error: 'postgres://user:password@host/db' });
+  const fields = publicFields('fair', { ...validResponses().fair.body, serverKey: privateKey, apiKey: 'secret-value', session: 'session-value', error: 'postgres://user:password@database.example.test/db' });
   assert.equal(fields.serverKeyId, publicKeyId(privateKey));
   const serialized = JSON.stringify(fields);
   for (const value of [privateKey.d, 'secret-value', 'session-value', 'postgres://']) assert.equal(serialized.includes(value), false);

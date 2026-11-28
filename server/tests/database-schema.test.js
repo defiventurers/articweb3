@@ -38,7 +38,10 @@ test('schema scopes reflect optional chain indexing and permit additive compatib
 });
 
 test('runtime inspection emits sanitized binding metadata and uses an explicitly read-only transaction', async () => {
-  const data = snapshot('core'), sql = [], fixtureUrl = 'postgresql://fixture-user:fixture-secret@ep-fixture-pooler.region.neon.tech/neondb?sslmode=require';
+  const data = snapshot('core'), sql = [];
+  const fixture = new URL('postgresql://ep-fixture-pooler.region.neon.tech/neondb?sslmode=require');
+  fixture.username = 'fixture-user'; fixture.password = 'fixture-secret';
+  const fixtureUrl = fixture.href;
   const client = { async query(text) {
     sql.push(text);
     if (text.includes('current_database')) return { rows: [{ database_name: 'neondb', server_version: '18.7', transaction_read_only: 'on', is_read_replica: false }] };

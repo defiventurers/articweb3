@@ -89,13 +89,38 @@
   },
   "accessLimitations": {
     "renderEnvironmentRead": "Connected Render tools have no read-environment operation; local Render CLI and API credential are absent. No secret retrieval attempted.",
-    "historicalVercelScope": "Historical defiouzas-projects scope returned403. Current authorized project and company alias were independently found under evolving; no access grant or scope change performed."
+    "historicalVercelScope": "Historical defiouzas-projects scope returned403. Current authorized project and company alias were independently found under evolving; no access grant or scope change performed.",
+    "renderShell": "Observed plan is free; official Render docs confirm no dashboard shell, SSH or one-off jobs. Owner-local configured-target inspection is distinct from active-process binding."
   },
   "officialReferences": [
     "https://render.com/docs/deploys",
     "https://render.com/docs/health-checks",
     "https://render.com/docs/rollbacks",
-    "https://vercel.com/docs/deployments/promoting-a-deployment"
+    "https://vercel.com/docs/deployments/promoting-a-deployment",
+    "https://render.com/docs/free",
+    "https://render.com/docs/ssh",
+    "https://render.com/docs/configure-environment-variables"
   ],
-  "mutationsPerformed": "None against production; no deploy, configuration, DNS, database, account, wallet or contract changes."
+  "mutationsPerformed": "None against production; no deploy, configuration, DNS, database, account, wallet or contract changes.",
+  "liveHttpCorroboration": {
+    "method": "Bounded unauthenticated GETs with redirects disabled; corroborated independently by browser navigation",
+    "apexHealth": {
+      "url": "https://antarcticgaming.co/api/health",
+      "status": 307,
+      "location": "/coming-soon.html",
+      "contentType": "text/plain"
+    },
+    "wwwHealth": {
+      "url": "https://www.antarcticgaming.co/api/health",
+      "status": 308,
+      "location": "https://antarcticgaming.co/api/health"
+    },
+    "backendUnknownReadyRoute": {
+      "url": "https://articweb3.onrender.com/readyz",
+      "status": 200,
+      "contentType": "text/plain",
+      "body": "Artic Web3 lobby server running."
+    },
+    "meaning": "The HTML redirect and generic200fallback cannot satisfy the new strict monitor."
+  }
 }
