@@ -6,9 +6,9 @@ verification complete; production acceptance remains pending. Stop after B.**
 ## Current review state
 
 - Reviewed `main`: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`, rechecked before handoff.
-- Batch A [PR #121](https://github.com/defiventurers/articweb3/pull/121) remains open, draft, mergeable and unmerged at `19ceaa6c2d66ce726f9050ef1c674c3d06553e19`.
-- Development branch: `codex/fonso-stabilization-batch-b`, based on that exact A head. Draft [PR #122](https://github.com/defiventurers/articweb3/pull/122) is stacked onto the A branch and is mergeable. Tested implementation/CI commit: `6c71981b08c6036a844fa67ed7381f70964a031b`.
-- Review/deploy A before B. Retarget B to `main` only after the approved A merge and check the resulting diff. Render automatically deploys `main`, so merging is also a production rollout decision.
+- Batch A [PR #121](https://github.com/defiventurers/articweb3/pull/121) remains open, draft and unmerged to main. Its development head is now `148e319c129d91421c21466c8567ddcc10ec145e`, containing the merged Batch B implementation.
+- Development branch: `codex/fonso-stabilization-batch-b`, originally based on A head `19ceaa6c2d66ce726f9050ef1c674c3d06553e19`. Implementation [PR #122](https://github.com/defiventurers/articweb3/pull/122) was merged into the A development branch by `defiventurers` at 2026-11-28T03:02:26Z (08:32:26 IST), during final evidence recording. This session did not perform that merge. Tested implementation/CI commit: `6c71981b08c6036a844fa67ed7381f70964a031b`.
+- Final documentation is collected in [PR #123](https://github.com/defiventurers/articweb3/pull/123), targeting the A branch. The merged A development tree exactly matches tested implementation tree `390b455791013506c8b9707af84fae91f96f2440`; the supplement changes documentation only. PR #121 now carries A and B together toward main. Review that combined candidate before any approved main merge: Render automatically deploys main.
 - This batch performed no production deployment, main merge, environment/DNS/billing change, live signup/mint/funding, contract action, production data export or database mutation.
 
 ## Batch B acceptance and outcome
@@ -84,7 +84,7 @@ URLs are preserved. Only the two health paths gain routing exceptions. The datab
 
 ## Remaining risks and exact owner actions
 
-1. **Review the stacked PR and the Batch A dependency.** Keep production changes
+1. **Review merged implementation PR #122, documentation PR #123 and the combined main-bound PR #121.** Keep production changes
    separately approved. Pin the reviewed candidate SHA and build IDs; control
    automatic deployments before any merge to `main`.
 2. **Establish database configuration evidence privately.** Follow the hidden
@@ -118,7 +118,7 @@ URLs are preserved. Only the two health paths gain routing exceptions. The datab
 > Execute Batch C only for FONSO from `codex/fonso-stabilization-batch-b` in
 > `defiventurers/articweb3`. Read `docs/technical-stabilization/CHECKPOINT.md`,
 > `BATCH_B_EVIDENCE.json`, `BATCH_B_COMPATIBILITY.md`, `BATCH_B_HEALTH.md`,
-> `BATCH_B_DATABASE.md`, their linked evidence, Batch A PR #121 and [Batch B PR #122](https://github.com/defiventurers/articweb3/pull/122) first. Verify current main and both PR states; do not restart
+> `BATCH_B_DATABASE.md`, their linked evidence, PR #121, merged implementation [PR #122](https://github.com/defiventurers/articweb3/pull/122) and documentation [PR #123](https://github.com/defiventurers/articweb3/pull/123) first. Verify current main and all PR states; do not restart
 > completed A/B audits. Preserve current-authority recovery, funded authorization,
 > historical hold, strict health/readiness, database failure safeguards and the
 > approved v5.10.2 APK baseline. Implement C1 Passport #3 metadata recovery without

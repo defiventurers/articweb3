@@ -406,7 +406,7 @@
       "state": "success",
       "statuses": [
         {
-          "context": "Vercel – articweb3",
+          "context": "Vercel \u2013 articweb3",
           "state": "success",
           "description": "Deployment has completed"
         }
@@ -417,11 +417,16 @@
   "pullRequest": {
     "url": "https://github.com/defiventurers/articweb3/pull/122",
     "number": 122,
-    "draft": true,
-    "state": "open",
-    "merged": false,
-    "mergeable": true,
-    "base": "codex/fonso-stabilization-batch-a"
+    "draft": false,
+    "state": "closed",
+    "merged": true,
+    "mergeable": null,
+    "base": "codex/fonso-stabilization-batch-a",
+    "head": "6c71981b08c6036a844fa67ed7381f70964a031b",
+    "mergeCommit": "148e319c129d91421c21466c8567ddcc10ec145e",
+    "mergedBy": "defiventurers",
+    "mergedAt": "2026-11-28T03:02:26Z",
+    "note": "Concurrent external merge into development branch; not performed by this session. Main unchanged."
   },
   "testedImplementationCommit": "6c71981b08c6036a844fa67ed7381f70964a031b",
   "finalMainRecheck": {
@@ -433,9 +438,16 @@
     "state": "open",
     "draft": true,
     "merged": false,
-    "head": "19ceaa6c2d66ce726f9050ef1c674c3d06553e19",
+    "head": "148e319c129d91421c21466c8567ddcc10ec145e",
     "base": "main",
     "mergeable": true,
-    "url": "https://github.com/defiventurers/articweb3/pull/121"
+    "url": "https://github.com/defiventurers/articweb3/pull/121",
+    "note": "Now includes Batch B implementation through merged PR122; exacttree equals tested BatchB tree390b455791013506c8b9707af84fae91f96f2440."
+  },
+  "documentationSupplement": {
+    "url": "https://github.com/defiventurers/articweb3/pull/123",
+    "number": 123,
+    "base": "codex/fonso-stabilization-batch-a",
+    "scope": "Stabilization documentation only; read live PR state when resuming."
   }
 }
