@@ -33,6 +33,13 @@ responses and their evaluation are in
 | Render service | `srv-d8knkism0tmc73ct2t3g`; root `server`; build `npm install`; start `npm start`; automatic deploys from `main` enabled; no configured HTTP health-check path |
 | Runtime corroboration | `/arctic-play/health` returned the same full Render SHA, `arctic-play-1.0.0` and all eight advertised games |
 
+Production Vercel build events independently confirm `npm install`, followed by
+`build:mainnet`: `npm run build:browser-app && npm run check:mainnet && vite build
+--mode mainnet`. The browser step executed `node scripts/build-browser-app.mjs`;
+the provider reported build completion in 24 seconds. These logs were fetched in
+bounded pages because the connector truncates arrays longer than 100 events. No
+environment values were requested or retained.
+
 This identifies the provider deployment and an independently observed runtime
 commit. It does **not** identify every generated runtime byte. Both existing
 builds execute source-generation steps, and the old runtime's fair authority

@@ -50,7 +50,16 @@
       "repo": "defiventurers/articweb3"
     },
     "companyAlias": "antarcticgaming.co",
-    "aliasDeploymentId": "dpl_5o4Gvv6Fq6qPBQ91w3SsnFZVpNfy"
+    "aliasDeploymentId": "dpl_5o4Gvv6Fq6qPBQ91w3SsnFZVpNfy",
+    "observedBuild": {
+      "source": "Provider build events for the confirmed production deployment; fetched in bounded80-event pages to avoid tool truncation.",
+      "installCommand": "npm install",
+      "packageScript": "artic-web3-frontend@0.1.0 build:mainnet",
+      "buildCommand": "npm run build:browser-app && npm run check:mainnet && vite build --mode mainnet",
+      "browserBuildScript": "node scripts/build-browser-app.mjs",
+      "reportedBuildDurationSeconds": 24,
+      "note": "Source commands and completion confirmed; no claim of byte-for-byte live bundle identity or approved APK reproduction."
+    }
   },
   "liveHealthObservation": {
     "method": "Cloud browser navigation and DOM observation",
