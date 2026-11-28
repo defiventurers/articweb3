@@ -1,5 +1,24 @@
 # FONSO technical stabilization checkpoint
 
+Updated: **2026-11-28 (Asia/Kolkata)**. **Batch C in progress.**
+
+## Current Batch C checkpoint
+
+- Founder instruction: “Merged resume from where you left off.” Continue the saved Batch C instruction; do not restart completed A/B audits.
+- Read the attached `MASTER_COMPANY_CONTEXT(1).md`, revision 1.0; retain the approved v5.10.2 runtime/artwork and v5.11.1 review-build distinction.
+- Verified main remains `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`. PR #122 is merged into the A development branch; PR #121 remains open/draft to main at `148e319c129d91421c21466c8567ddcc10ec145e`; documentation PR #123 remains open/draft at this observation. No production deployment is implied by the resume instruction.
+- Branch `codex/fonso-stabilization-batch-c`, based on the final B checkpoint `30ab0a5d346bb6087da13ea0322e08c8b24a1a80`.
+- C1: reproduce Passport #3 metadata failure; recover valid existing-token metadata without minting, reassignment or artwork replacement.
+- C2: recover exact three Robinhood testnet deployment/build artifacts, compare creation/runtime bytecode, prepare correct explorer verification payloads. No verification submission/publication or transaction.
+- C3: trace current Para signup and automatic eligible collectibles; fix reproduced idempotency/ownership/retry defects using isolated fixtures; reconcile dashboard and chain scopes.
+- Current investigation: Passport metadata requires a confirmed backend delivery association. The old contract verification path references missing `compileBundle`; reproducing before repair. Public Robinhood RPC/explorer reads are available.
+- All A/B gates, historical holds, strict health/readiness and database recovery protections remain in force. Runtime Neon binding and production acceptance remain unresolved as previously recorded.
+- No live signup/consent, mint, contract write, production deploy, DNS/billing change or production database write is authorized. Complete safe preparatory work and stop after C with the Batch D continuation.
+
+If interrupted, resume this branch and current working tree. Finish C1/C2/C3, run relevant regressions, record code/evidence/PRs and owner-only actions, then stop. The Batch B handoff below is preserved historical context.
+
+## Preserved Batch B handoff
+
 Updated: **2026-11-28 (Asia/Kolkata)**. **Batch B implementation and isolated
 verification complete; production acceptance remains pending. Stop after B.**
 
