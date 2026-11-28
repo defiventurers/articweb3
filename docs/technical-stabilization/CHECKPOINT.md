@@ -1,6 +1,25 @@
 # FONSO technical stabilization checkpoint
 
-Updated: 2026-11-28 (Asia/Kolkata). **Batch A only.**
+Updated: 2026-11-28 (Asia/Kolkata). **Batch B in progress.**
+
+## Current Batch B checkpoint
+
+- Reviewed main is unchanged: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`.
+- Batch A PR #121 remains open, draft and unmerged at `19ceaa6c2d66ce726f9050ef1c674c3d06553e19`.
+- Development branch: `codex/fonso-stabilization-batch-b`, created from that exact Batch A head. A separate stacked draft PR will target the Batch A branch while #121 remains unmerged.
+- Acceptance: B1 evidence actual deployment versions and test relevant interface compatibility; B2 strict machine-readable health/readiness and monitoring; B3 evidence actual database binding or explicitly retain the access limitation, fix reproduced recovery defects, and verify recovery only with isolated data.
+- Provider records independently confirm Vercel production `f696f576` and Render live `8324ff30`; the relevant existing interface source files are identical. No incompatibility is inferred solely from these different commits.
+- Current health failure reproduced in the live browser: `/api/health` ends at `/coming-soon.html` with `text/html` and “Coming soon”. Render has an empty HTTP health-check path (TCP default).
+- Runtime reports configured/ready Postgres stores, and Render startup logs confirm initialization. The exact Neon runtime host/branch binding remains unresolved because connected Render tools cannot read environment values. No credentials were retrieved or exposed in repository artifacts.
+- Implementation in progress: read-only compatibility gate and local interface checks; health route/strict monitor/readiness; durable-store failure/recovery regressions and isolated restore procedure.
+- Provider evidence: [`BATCH_B_PROVIDER_EVIDENCE.json`](BATCH_B_PROVIDER_EVIDENCE.json). Per-task evidence and test results will be added before handoff.
+- No production deployment, merge to main, live account/mint/funding, contract, DNS/billing, or production database operation. Batch C and D remain **NOT STARTED**.
+
+If interrupted, resume this Batch B branch and current working tree; do not rerun Batch A or company setup. Finish B1/B2/B3 and record the PR, tests, limitations and Batch C continuation before stopping.
+
+## Preserved Batch A handoff
+
+The following records the completed Batch A work; its old continuation instruction is historical while Batch B is in progress.
 
 ## Outcome and review baseline
 
