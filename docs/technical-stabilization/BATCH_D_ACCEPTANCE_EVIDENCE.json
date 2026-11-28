@@ -50,6 +50,39 @@
     "downloadResult": "HTTP 403 SiteUnavailable from official cdn.playwright.dev; installation exited 1",
     "freshLocalScreenshotsProduced": 0
   },
+  "initialCiRenderedDiagnosis": {
+    "candidateShortCommit": "d72be7",
+    "batchD": {
+      "runId": 46104778405,
+      "jobId": 140854963349,
+      "result": "Failed existing Home pixel gate",
+      "viewport": [360, 800],
+      "theme": "dark",
+      "changedPixels": 110,
+      "maxChannelDelta": 2,
+      "outlierPixelsAboveDelta2": 0,
+      "peakHistogram": {"1": 104, "2": 6},
+      "changedBounds": {"minX": 303, "minY": 14, "maxX": 336, "maxY": 47},
+      "otherHomePixelsChanged": 0
+    },
+    "independentExistingStorybookJob": {
+      "runId": 46104778339,
+      "jobId": 140854962737,
+      "result": "Failed same Home pixel gate",
+      "changedPixels": 77,
+      "maxChannelDelta": 7,
+      "outlierPixelsAboveDelta2": 9
+    },
+    "followupFixture": {
+      "freshContextPerVersion": true,
+      "waitForFontsAndVisibleImageDecode": true,
+      "sameVersionReloadControl": true,
+      "incrementalFailureEvidence": true,
+      "originalPixelThresholdsPreserved": true,
+      "imageMaskingOrFavorableFrameSelection": false,
+      "renderedOutcome": "See subsequent CI record in CHECKPOINT.md; not inferred from local syntax checks"
+    }
+  },
   "limits": {
     "actualRetainedJavaScriptAndWorkers": true,
     "pinnedWorkerHashesEnforced": true,

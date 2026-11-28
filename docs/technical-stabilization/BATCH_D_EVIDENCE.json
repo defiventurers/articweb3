@@ -1,6 +1,6 @@
 {
   "batch": "D",
-  "observedAt": "2026-11-28T03:50:02.145701+00:00",
+  "observedAt": "2026-11-28T03:53:47.535044+00:00",
   "phase": "local-implementation-complete-ci-pending",
   "reviewedMain": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
   "branch": "codex/fonso-stabilization-batch-d",
@@ -127,6 +127,17 @@
       "rulesHash": "9fa0be4a43f049957ef407ee73361a0b6a3bb24ed59f487a36190165be82c8cb",
       "engineHash": "16d08120db2442814631143e6dafbeb88af40bda561f3b00a61c5c0f0cfa4c18",
       "mismatches": 0
+    },
+    {
+      "command": "Batch B full first gate (11 existing compatibility/health/database/runtime test files)",
+      "nodes": [
+        "20.20.2",
+        "24.22.3"
+      ],
+      "passedPerRuntime": 44,
+      "failed": 0,
+      "skipped": 0,
+      "after": "Updating only the authenticated direct-service fixture."
     }
   ],
   "reproduced": [
@@ -146,7 +157,53 @@
     "socketAuthorizationAndReplay": "3ebb00386208acf3efc6cd529b15610996b45924"
   },
   "ci": {
-    "status": "pending-final-test-commit"
+    "status": "rerun-pending-authenticated-fixture-and-deterministic-rendering-controls",
+    "initialCandidate": "d72be7c50ee1b0d8619dbd43bd7cc2585a1cdb4a",
+    "initialDRun": "https://github.com/defiventurers/articweb3/actions/runs/46104778405",
+    "initialBRun": "https://github.com/defiventurers/articweb3/actions/runs/46104778553",
+    "freeMultiplayerBothRuntimes": "success",
+    "initialFailures": [
+      {
+        "gate": "Batch B database recovery",
+        "cause": "Existing direct-service test passed an unsigned empty socket, now correctly rejected by Two Stones authorization.",
+        "correction": "Fixture now uses separate authorized blue/coral sockets and fresh IDs; original persistence/error assertions retained.",
+        "localRerun": {
+          "passedPerRuntime": 44,
+          "nodes": [
+            "20.20.2",
+            "24.22.3"
+          ],
+          "failed": 0,
+          "skipped": 0
+        }
+      },
+      {
+        "gate": "Rendered Home comparison",
+        "observation": {
+          "viewport": [
+            360,
+            800
+          ],
+          "theme": "dark",
+          "changedPixels": 110,
+          "maxRGBDelta": 2,
+          "pixelsAtDelta1": 104,
+          "pixelsAtDelta2": 6,
+          "bounds": [
+            303,
+            14,
+            336,
+            47
+          ]
+        },
+        "source": "Downloaded first-run CI screenshots; all changed pixels are in profile portrait; no other Home pixel differs.",
+        "status": "Fresh independent version contexts, decoded fonts/images and same-version reload diagnostics implemented; original pixel thresholds unchanged; awaiting CI."
+      }
+    ],
+    "initialFullCheckoutCredentialScan": {
+      "scannedTextFiles": 1771,
+      "findings": 0
+    }
   },
   "limits": [
     "Physical Android, live Para and live production free-match acceptance were not performed.",
@@ -184,10 +241,16 @@
     "server/loadPrizeBackend.js",
     "server/scripts/free-multiplayer-smoke.cjs",
     "server/tests/arctic-play-socket-recovery.test.js",
+    "server/tests/database-recovery.test.js",
     "server/tests/free-multiplayer-socket.test.js",
     "server/tests/helpers/free-multiplayer-fixture.cjs",
     "server/tests/helpers/local-test-database.cjs",
     "server/tests/two-stones-online.test.js",
     "server/twoStonesService.js"
-  ]
+  ],
+  "localCredentialScan": {
+    "scannedTextFiles": 1499,
+    "findings": 0,
+    "scope": "Current sparse working tree; CI full checkout is separate."
+  }
 }

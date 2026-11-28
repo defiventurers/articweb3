@@ -73,6 +73,12 @@ live Para/free-network acceptance and production deployment remain owner gates.
 - A later-source Chaturanga UI fixture fails identically on both retained APKs
   because it expects absent newer die markup. This is recorded as a path
   mismatch, not concealed as a passing check or used to change approved art.
+- First CI passed the D multiplayer matrix, but exposed an older database
+  fixture without the newly required authorized socket (corrected; full B first
+  gate44/44 on both runtimes) and a rendered Home comparison failure. All110
+  changed pixels differ by at most2 RGB levels inside the profile portrait;
+  the saved screenshots are being used to make capture deterministic while
+  retaining the original comparison threshold. No product bytes were changed.
 - Independent runtime and fixture reviews found no remaining concrete blocker.
   Fixture URL override and teardown defects were corrected and regression-tested.
   CI and full-checkout scanner results will be recorded after the final test push.

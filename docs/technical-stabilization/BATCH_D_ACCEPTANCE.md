@@ -100,6 +100,23 @@ A successful fresh CI rendering run, if recorded in the checkpoint, uses the
 public baseline plus reproduced guarded patch; it must be labelled separately
 from the local tests of the original signed review binary.
 
+The first Batch D rendered CI run on `d72be7` did execute Chromium, but failed
+the existing Home pixel gate. Its 360×800 dark pair differed at 110 pixels,
+all within the profile portrait (`x=303..336`, `y=14..47`); 104 pixels had a
+maximum channel delta of 1 and six a delta of 2. Every other Home pixel was
+identical. An independent existing-storybook job also failed, with 77 changed
+pixels, a maximum delta of 7 and nine pixels exceeding delta 2. These are failed
+render checks, not accepted visual results. The retained avatar is a static
+image; inspection found no avatar animation or timed portrait substitution.
+
+The follow-up fixture isolates each version in a fresh seeded context, awaits
+loaded fonts and decoded visible images, resets the pointer and waits two
+render frames. It also saves a same-version reload control, avatar geometry and
+pixel bounds/histograms before any assertion failure. The original cross-version
+thresholds remain unchanged; no avatar mask, pixel averaging or favorable-frame
+selection was added. Its rendered outcome must be taken from the subsequent CI
+record, not inferred from local syntax checks.
+
 ### Reproduction
 
 Supply unchanged extracted asset directories. The retained harness needs

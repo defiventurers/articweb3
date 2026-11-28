@@ -70,21 +70,25 @@ test('free match completion survives a failed history write and supports synchro
   const { createTwoStonesService } = require('../twoStonesService');
   const { createLockDrill, getLegalActions } = require('../twoStonesRules');
   const originalError = console.error, logs = [];
+  let requestSequence = 0;
+  const nextRequestId = () => `recovery_fixture_${++requestSequence}`;
   console.error = line => logs.push(line);
   try {
     for (const failWrite of [false, true]) {
       const rooms = new Map(), profiles = new Map([['blue', { name: 'Blue Fixture' }], ['coral', { name: 'Coral Fixture' }]]), packets = [];
+      // Model the signature-bound sockets supplied by the real login handler.
+      const blueSocket = { authorizedWallet: 'blue' }, coralSocket = { authorizedWallet: 'coral' };
       const service = createTwoStonesService({ rooms, profiles, sockets: new Map(), send() {},
         ok(_ws, _id, type, payload) { packets.push({ type, payload }); }, fail() { assert.fail('Unexpected game rejection'); },
         walletOf: value => value, profileFor: wallet => profiles.get(wallet), saveRoomSafe() {},
         saveHistoryEntry() { return failWrite ? Promise.reject(Error('private fixture failure')) : undefined; },
         getHistoryForWallet: async () => [] });
-      service.createRoom({}, 'create', { wallet: 'blue' });
+      service.createRoom(blueSocket, nextRequestId(), { wallet: 'blue' });
       const room = [...rooms.values()][0];
-      service.joinRoom({}, 'join', { wallet: 'coral', roomCode: room.roomCode });
+      service.joinRoom(coralSocket, nextRequestId(), { wallet: 'coral', roomCode: room.roomCode });
       room.gameState = createLockDrill();
       const action = getLegalActions(room.gameState, 'blue').find(value => value.from === 'nw' && value.to === 'c');
-      service.action({}, 'win', { wallet: 'blue', roomCode: room.roomCode, action });
+      service.action(blueSocket, nextRequestId(), { wallet: 'blue', roomCode: room.roomCode, action });
       assert.equal(packets.at(-1).payload.room.status, 'finished');
       await new Promise(resolve => setImmediate(resolve));
     }
