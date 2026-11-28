@@ -40,13 +40,12 @@ Independent chain reads establish that the NFT exists:
 | Existing image | HTTP 200, `image/webp`, at the unchanged `company-passport-cover.webp` URL |
 
 Full raw public receipts, canonical block and source/runtime evidence are in
-[BATCH_C_CHAIN_OBSERVATIONS.json](BATCH_C_CHAIN_OBSERVATIONS.json). The connected
-Neon branch has zero confirmed Passport #3 associations. Its 12 confirmed
-Passports are exactly token IDs 9–20; that is a different scope from 20 lifetime
-chain mints. See [delivery evidence](BATCH_C_DELIVERY_EVIDENCE.json). Batch B did
-not prove that Render is bound to this branch. The exact historical event that
-removed or failed to retain the runtime association is **unresolved**; a reset,
-wrong database or lost write is not asserted without evidence.
+[BATCH_C_CHAIN_OBSERVATIONS.json](BATCH_C_CHAIN_OBSERVATIONS.json). The live
+response and source query establish the route's missing-association failure.
+Private connected-database observations are retained separately for the founder,
+not published here. The exact historical event that removed or failed to retain
+the runtime association is **unresolved**; a reset, wrong database or lost write
+is not asserted without evidence. Batch B runtime-binding limits still apply.
 
 ## Implemented behavior
 
