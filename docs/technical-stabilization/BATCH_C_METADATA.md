@@ -39,8 +39,8 @@ Independent chain reads establish that the NFT exists:
 | Collection total issued | 20 at the captured read block |
 | Existing image | HTTP 200, `image/webp`, at the unchanged `company-passport-cover.webp` URL |
 
-Full raw public receipts, canonical block and source/runtime evidence are in
-[BATCH_C_CHAIN_OBSERVATIONS.json](BATCH_C_CHAIN_OBSERVATIONS.json). The live
+Full raw public receipts, canonical block and source/runtime evidence are retained
+in the founder's private contract-verification review package. The live
 response and source query establish the route's missing-association failure.
 Private connected-database observations are retained separately for the founder,
 not published here. The exact historical event that removed or failed to retain

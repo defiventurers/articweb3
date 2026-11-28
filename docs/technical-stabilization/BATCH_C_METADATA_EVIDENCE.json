@@ -49,6 +49,6 @@
       }
     }
   ],
-  "chainEvidence": "BATCH_C_CHAIN_OBSERVATIONS.json",
+  "chainEvidence": "Private contract-verification review package: BATCH_C_CHAIN_OBSERVATIONS.json (public upload not authorized)",
   "productionVerification": "PENDING: live intended metadata URL still returned 404 before deployment; local HTTP success is not a production deployment."
 }

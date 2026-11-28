@@ -93,7 +93,7 @@
   ],
   "relatedEvidence": [
     "BATCH_C_DELIVERY_EVIDENCE.json",
-    "BATCH_C_CHAIN_OBSERVATIONS.json",
+    "Private contract-verification review package: BATCH_C_CHAIN_OBSERVATIONS.json",
     "server/tests/passport-acceptance-network.test.js"
   ],
   "liveBoundaries": {
