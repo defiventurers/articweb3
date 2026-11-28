@@ -1,7 +1,8 @@
 # FONSO technical stabilization checkpoint
 
-Updated: **28 November 2026 (Asia/Kolkata)**. **Batch D code and local isolated
-verification complete; final CI is pending. Stop after D.** Physical Android,
+Updated: **28 November 2026 (Asia/Kolkata)**. **Batch D backend/APK verification
+and initial CI complete; a newly observed review-presentation correction is in
+progress. Stop after D.** Physical Android,
 live Para/free-network acceptance and production deployment remain owner gates.
 
 ## Current review state
@@ -13,10 +14,17 @@ live Para/free-network acceptance and production deployment remain owner gates.
 - [D PR #125](https://github.com/defiventurers/articweb3/pull/125) is open/draft,
   stacked on C PR #124. PR #121 remains open/draft toward main; #122 is merged
   into A; #123 and #124 remain open/draft. No main merge was performed.
-- Reviewed commits so far: `2505b93f3acb025c6de967c58e8cd99f8501f2c6`
-  (retained APK verifier) and `3ebb00386208acf3efc6cd529b15610996b45924`
-  (legacy socket authorization and delayed replay correction). Final tested
-  candidate/CI identity will be recorded in `BATCH_D_EVIDENCE.json`.
+- Tested backend/retained-reference implementation: `74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3`.
+  All 11 CI workflows passed. The newly observed presentation correction below
+  needs a separate candidate and verification;
+  scoped implementation commits, exact test tree, PR states and run links are
+  recorded in `BATCH_D_EVIDENCE.json`.
+- Final screenshot inspection found dark-on-dark light-theme review controls
+  and enlarged-text action/Crown overlap in the existing guarded v5.11.1
+  presentation. The 24 checks establish reachability, not full contrast/layout
+  acceptance. An additive opt-in browser correction and explicit regressions
+  are being prepared; original APKs and original patch reproduction stay intact.
+  Resume this narrow correction/CI task before the release-acceptance handoff.
 - No production deployment, live account, mint, funded match, contract/DNS/billing
   change, production database operation or held private-package publication.
 
@@ -27,7 +35,8 @@ live Para/free-network acceptance and production deployment remain owner gates.
 | Retained APK identity/payload mismatch | **NOT REPRODUCIBLE** | Exact v5.10.2 and signed v5.11.1 recovered; original digests, certificates, versions and all expected payload bytes verified. |
 | Repeatable APK verification tooling | **FIXED AND TESTED LOCALLY** | Read-only tool; 11 negative/preservation tests plus 5 existing layout tests pass. A corrupted temporary APK fails digest, signature and CRC checks. |
 | Retained UI/worker acceptance harness | **FIXED AND TESTED LOCALLY** | Six bounded scenario groups pass on each exact APK; existing baseline4/review9 navigation groups also pass. |
-| Local rendered-browser/emulator checks | **BLOCKED BY ACCESS** | Chromium executable missing and official download403; no emulator/adb/KVM. Fresh rendered CI is pending and is not physical acceptance. |
+| Fresh rendered browser checks | **FIXED AND VERIFIED IN TEST ENVIRONMENT** | CI passed 24 check groups and saved 54 PNGs; six Home comparisons are pixel-identical with original thresholds unchanged. Public retained baseline plus guarded patch, separately checked against the signed original. |
+| Local rendered-browser/emulator checks | **BLOCKED BY ACCESS** | Chromium executable missing and official download403; no emulator/adb/KVM. Successful CI rendering is not physical acceptance. |
 | Free socket identity and delayed replay | **FIXED AND VERIFIED IN TEST ENVIRONMENT** | 18 legacy wallet families require signature-bound identity; Two Stones retains accepted-request fingerprints outside rules/proof state. |
 | Two independent free clients / database restart | **FIXED AND VERIFIED IN TEST ENVIRONMENT** | Natural five-ply Two Stones win; signed Shogi reconnect/PG restart and resignation agree and independently verify. 16/16 tests on both Node versions, zero skips. |
 | Physical Android, live Para and live free match | **OWNER ACTION REQUIRED** | Existing save must be preserved; v5.11.1 is still a signed review build. |
@@ -74,14 +83,21 @@ live Para/free-network acceptance and production deployment remain owner gates.
   because it expects absent newer die markup. This is recorded as a path
   mismatch, not concealed as a passing check or used to change approved art.
 - First CI passed the D multiplayer matrix, but exposed an older database
-  fixture without the newly required authorized socket (corrected; full B first
-  gate44/44 on both runtimes) and a rendered Home comparison failure. All110
-  changed pixels differ by at most2 RGB levels inside the profile portrait;
-  the saved screenshots are being used to make capture deterministic while
-  retaining the original comparison threshold. No product bytes were changed.
+  fixture without the newly required authorized socket and a rendered Home
+  comparison failure. The fixture now uses authenticated clients (full B first
+  gate44/44 on both runtimes). Browser captures now use independent seeded
+  contexts, loaded fonts/decoded images and same-version reload controls.
+  Original thresholds remain unchanged; no product bytes were changed.
+- Retained-reference [D CI](https://github.com/defiventurers/articweb3/actions/runs/46105166782)
+  passed both 16-test multiplayer jobs and retained Android/runtime/rendering.
+  All six Home comparisons (three sizes, dark/light) have zero changed pixels.
+  All 11 workflows, including inherited A/B/C and existing visual checks, passed.
+  Full-checkout credential scan:1,771 text files, zero findings. PR preview
+  succeeded; no production deployment was performed.
 - Independent runtime and fixture reviews found no remaining concrete blocker.
   Fixture URL override and teardown defects were corrected and regression-tested.
-  CI and full-checkout scanner results will be recorded after the final test push.
+  Same-version reload controls preserve their observations: two have11 pixels
+  differing by1 RGB level at a banner border; the other10 are identical.
 
 These gates overlap; do not add them as unique tests. See [combined evidence](BATCH_D_EVIDENCE.json),
 [APK verification](BATCH_D_ANDROID.md), [APK evidence](BATCH_D_ANDROID_EVIDENCE.json),
@@ -120,7 +136,7 @@ and [rollout/rollback](BATCH_D_ROLLOUT.md).
 > `defiventurers/articweb3`. Read this checkpoint, `BATCH_D_EVIDENCE.json`,
 > `BATCH_D_ANDROID.md`, `BATCH_D_ACCEPTANCE.md`, `BATCH_D_MULTIPLAYER.md`,
 > `BATCH_D_ROLLOUT.md` and PR #125 with its A/B/C dependencies. Verify current
-> main/PR/CI states and finish any explicitly recorded pending CI only. Do not
+> main/PR/CI states; the tested implementation's 11 workflows passed. Do not
 > restart completed A–D investigations. Preserve the exact v5.10.2 baseline,
 > founder's saved game, current rules authority, historical hold and every
 > authorization/database/receipt safeguard. Guide the founder through the

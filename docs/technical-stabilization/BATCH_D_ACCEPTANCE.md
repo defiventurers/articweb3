@@ -8,9 +8,10 @@ Reviewed main: `f696f57637ec8a1433bcaeafcd0ebc494fcba96b`. Batch D branch:
 the bounded acceptance scenarios below. A review-only regression in those
 scenarios is **NOT REPRODUCIBLE**. The new test harness is **FIXED AND TESTED
 LOCALLY**; no application defect is called fixed by adding this harness.
-Physical acceptance of v5.11.1 remains **OWNER ACTION REQUIRED**. Fresh local
-Chromium rendering is **BLOCKED BY ACCESS**; no Android emulator or physical
-device was run. Production compatibility and deployment remain **PRODUCTION
+Fresh CI rendering is **FIXED AND VERIFIED IN TEST ENVIRONMENT**. Physical
+acceptance of v5.11.1 remains **OWNER ACTION REQUIRED**. Fresh local Chromium
+rendering is **BLOCKED BY ACCESS**; no Android emulator or physical device was
+run. Production compatibility and deployment remain **PRODUCTION
 VERIFICATION PENDING**.
 
 See [BATCH_D_ANDROID.md](BATCH_D_ANDROID.md) for independent APK integrity,
@@ -96,9 +97,9 @@ The browser harness now accepts an optional `STORYBOOK_REVIEW_ROOT` while
 preserving its existing default. It blocks non-local requests, disables
 WebSockets and blocks service workers during visual fixtures. No app/runtime
 source was changed. Historical PR119 screenshots are historical evidence only.
-A successful fresh CI rendering run, if recorded in the checkpoint, uses the
-public baseline plus reproduced guarded patch; it must be labelled separately
-from the local tests of the original signed review binary.
+The successful fresh CI rendering run below uses the public baseline plus the
+reproduced guarded patch. It is separate from local tests of the original signed
+review binary; the exact-payload verifier independently demonstrates equivalence.
 
 The first Batch D rendered CI run on `d72be7` did execute Chromium, but failed
 the existing Home pixel gate. Its 360×800 dark pair differed at 110 pixels,
@@ -114,8 +115,37 @@ loaded fonts and decoded visible images, resets the pointer and waits two
 render frames. It also saves a same-version reload control, avatar geometry and
 pixel bounds/histograms before any assertion failure. The original cross-version
 thresholds remain unchanged; no avatar mask, pixel averaging or favorable-frame
-selection was added. Its rendered outcome must be taken from the subsequent CI
-record, not inferred from local syntax checks.
+selection was added.
+
+The retained-reference [Batch D CI run](https://github.com/defiventurers/articweb3/actions/runs/46105166782)
+on `74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3` passed all three jobs, including
+fresh rendering on Chromium **158.0.8127.36**. The separately existing
+[visual workflow](https://github.com/defiventurers/articweb3/actions/runs/46105166797)
+also passed. The downloaded D artifact's ZIP CRC passed; it contains **54 PNGs**
+and `results.json` with `complete=true`, no failure and no recorded errors.
+
+- All **24 check groups** passed: Adventure layout/actions; all nine stories and
+  games, search/filter/favorites; large-text action reachability; and Home
+  preservation at360×800,393×852 and393×960, each in dark and light themes.
+- All **six cross-version Home comparisons are pixel-identical**: zero changed
+  pixels, zero channel delta and zero outliers. Original maximum channel delta8,
+  outlier count8 and changed-pixel allowance0.02% were retained.
+- The **12 same-version reload controls** remain diagnostic evidence. Both
+  360×800 dark captures differ at11 pixels by at most1 RGB level on the top
+  banner border; the other10 are identical. These results were not used to
+  substitute frames or relax the cross-version gate.
+
+These observations close the stated browser gates only. Independent screenshot
+inspection also found two existing review-presentation defects: light-theme
+unselected controls have dark text on dark buttons, and enlarged text exceeds
+the fixed action/Crown rows and overlaps adjacent content. Neither is covered
+by the old reachability assertion. A separate opt-in correction is being
+prepared; both original APKs and original guarded reproduction stay intact.
+
+Passing those stated browser gates does not establish
+Android WebView rendering, TalkBack, native Back/intent behavior, real Para
+consent, performance or physical-device acceptance. The raw result summary and
+artifact identity are saved in `BATCH_D_ACCEPTANCE_EVIDENCE.json`.
 
 ### Reproduction
 

@@ -1,7 +1,7 @@
 {
   "batch": "D",
-  "observedAt": "2026-11-28T03:53:47.535044+00:00",
-  "phase": "local-implementation-complete-ci-pending",
+  "observedAt": "2026-11-28T04:02:03Z",
+  "phase": "backend-and-retained-verification-complete-presentation-correction-in-progress",
   "reviewedMain": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
   "branch": "codex/fonso-stabilization-batch-d",
   "baseCommit": "75328370f0703ab7907dda9dc833f8aab93c21f9",
@@ -11,7 +11,10 @@
       "state": "open",
       "draft": true,
       "merged": false,
-      "head": "148e319c129d91421c21466c8567ddcc10ec145e"
+      "base": "main",
+      "baseCommit": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
+      "head": "148e319c129d91421c21466c8567ddcc10ec145e",
+      "url": "https://github.com/defiventurers/articweb3/pull/121"
     },
     {
       "number": 122,
@@ -24,24 +27,30 @@
       "state": "open",
       "draft": true,
       "merged": false,
-      "head": "30ab0a5d346bb6087da13ea0322e08c8b24a1a80"
+      "base": "codex/fonso-stabilization-batch-a",
+      "baseCommit": "148e319c129d91421c21466c8567ddcc10ec145e",
+      "head": "30ab0a5d346bb6087da13ea0322e08c8b24a1a80",
+      "url": "https://github.com/defiventurers/articweb3/pull/123"
     },
     {
       "number": 124,
       "state": "open",
       "draft": true,
       "merged": false,
-      "head": "75328370f0703ab7907dda9dc833f8aab93c21f9"
+      "base": "codex/fonso-stabilization-batch-b",
+      "baseCommit": "30ab0a5d346bb6087da13ea0322e08c8b24a1a80",
+      "head": "75328370f0703ab7907dda9dc833f8aab93c21f9",
+      "url": "https://github.com/defiventurers/articweb3/pull/124"
     },
     {
       "number": 125,
-      "url": "https://github.com/defiventurers/articweb3/pull/125",
       "state": "open",
       "draft": true,
       "merged": false,
       "base": "codex/fonso-stabilization-batch-c",
-      "initialHead": "cac64050f029a4a446556a32948b65b661f12083",
-      "currentHead": "3ebb00386208acf3efc6cd529b15610996b45924"
+      "baseCommit": "75328370f0703ab7907dda9dc833f8aab93c21f9",
+      "head": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3",
+      "url": "https://github.com/defiventurers/articweb3/pull/125"
     }
   ],
   "acceptance": {
@@ -52,7 +61,8 @@
     "retainedRuntimeHarness": "FIXED AND TESTED LOCALLY",
     "socketSecurityAndRecovery": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
     "liveParaAndFreeMatch": "OWNER ACTION REQUIRED",
-    "localBrowser": "BLOCKED BY ACCESS"
+    "localBrowser": "BLOCKED BY ACCESS",
+    "renderedBrowserCi": "FIXED AND VERIFIED IN TEST ENVIRONMENT"
   },
   "environment": {
     "adb": false,
@@ -150,14 +160,23 @@
       "issue": "Delayed Two Stones action replay",
       "environment": "local actual startup wrapper",
       "observation": "A previously accepted action at ply5 was applied again at ply12 with identical requestId and payload when legal again."
+    },
+    {
+      "issue": "Existing signed-review presentation contrast and enlarged-text layout",
+      "environment": "Final CI guarded reproduction, independently visually inspected",
+      "observation": "Light-theme unselected controls use dark text on dark backgrounds; enlarged text exceeds fixed action/Crown rows and overlaps adjacent content. Existing reachability assertions do not cover these defects.",
+      "inputsChanged": false,
+      "nextAction": "Add an opt-in corrected browser candidate and explicit negative/preservation regressions without modifying original APKs or original v5.11.1 reproduction."
     }
   ],
   "implementationCommits": {
     "apkVerifier": "2505b93f3acb025c6de967c58e8cd99f8501f2c6",
-    "socketAuthorizationAndReplay": "3ebb00386208acf3efc6cd529b15610996b45924"
+    "socketAuthorizationAndReplay": "3ebb00386208acf3efc6cd529b15610996b45924",
+    "acceptanceTestsAndWorkflow": "d72be7c50ee1b0d8619dbd43bd7cc2585a1cdb4a",
+    "authenticatedRecoveryFixtureAndIndependentRenderCaptures": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3"
   },
   "ci": {
-    "status": "rerun-pending-authenticated-fixture-and-deterministic-rendering-controls",
+    "status": "completed-success",
     "initialCandidate": "d72be7c50ee1b0d8619dbd43bd7cc2585a1cdb4a",
     "initialDRun": "https://github.com/defiventurers/articweb3/actions/runs/46104778405",
     "initialBRun": "https://github.com/defiventurers/articweb3/actions/runs/46104778553",
@@ -175,7 +194,8 @@
           ],
           "failed": 0,
           "skipped": 0
-        }
+        },
+        "finalCiResult": "Passed in final B compatibility/recovery workflow46105166724."
       },
       {
         "gate": "Rendered Home comparison",
@@ -197,18 +217,305 @@
           ]
         },
         "source": "Downloaded first-run CI screenshots; all changed pixels are in profile portrait; no other Home pixel differs.",
-        "status": "Fresh independent version contexts, decoded fonts/images and same-version reload diagnostics implemented; original pixel thresholds unchanged; awaiting CI."
+        "status": "Closed by controlled captures in final D run46105166782 and existing visual workflow46105166797; all six final cross-version Home pairs are pixel-identical and original thresholds are unchanged."
       }
     ],
     "initialFullCheckoutCredentialScan": {
       "scannedTextFiles": 1771,
       "findings": 0
+    },
+    "candidate": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3",
+    "candidateTree": "8c82f5ccf882758e8f96ff448a2913ef55c07aaf",
+    "workflowCount": 11,
+    "workflows": [
+      {
+        "id": 46105166724,
+        "name": "FONSO runtime compatibility and recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46105166724"
+      },
+      {
+        "id": 46105166794,
+        "name": "Launch And Runtime Evidence Test",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46105166794"
+      },
+      {
+        "id": 46105166699,
+        "name": "Prize Policy Evidence Test",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46105166699"
+      },
+      {
+        "id": 46105166780,
+        "name": "Security regression checks",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46105166780"
+      },
+      {
+        "id": 46105166691,
+        "name": "FONSO security and rules authority",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46105166691"
+      },
+      {
+        "id": 46105166690,
+        "name": "Launch source and proof checks",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46105166690"
+      },
+      {
+        "id": 46105166760,
+        "name": "Heritage Games Server",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46105166760"
+      },
+      {
+        "id": 46105166741,
+        "name": "FONSO collectible and signup recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46105166741"
+      },
+      {
+        "id": 46105166791,
+        "name": "Sanguo Qi",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46105166791"
+      },
+      {
+        "id": 46105166782,
+        "name": "FONSO retained APK and free multiplayer acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46105166782"
+      },
+      {
+        "id": 46105166797,
+        "name": "Retained APK Games visual review",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/defiventurers/articweb3/actions/runs/46105166797"
+      }
+    ],
+    "batchDJobs": [
+      {
+        "id": 140856171166,
+        "name": "free-multiplayer (20.20.2)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 140856171294,
+        "name": "retained-android-runtime",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 140856171335,
+        "name": "free-multiplayer (24.22.3)",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "preview": {
+      "scope": "PR preview only; not production approval or deployment",
+      "statuses": [
+        {
+          "context": "Vercel \u2013 articweb3",
+          "state": "success",
+          "target_url": "https://vercel.com/evolving/articweb3/7LRZM86cYCLQ3DtxGWwv793ZLbti"
+        }
+      ]
+    },
+    "fullCheckoutCredentialScan": {
+      "scannedTextFiles": 1771,
+      "findings": 0,
+      "runId": 46105166782,
+      "jobId": 140856171335
+    },
+    "renderedArtifact": {
+      "status": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+      "candidate": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3",
+      "runId": 46105166782,
+      "runUrl": "https://github.com/defiventurers/articweb3/actions/runs/46105166782",
+      "jobId": 140856171294,
+      "artifact": {
+        "id": 15246873350,
+        "name": "batch-d-guarded-rendered-evidence",
+        "pngCount": 54,
+        "zipArchiveIntegrity": "passed",
+        "resultsSha256": "cca29ca6f0ff0922ce6d799356cf5df423d0091026b9ae747d634affa1dea7fa",
+        "zipSha256": "2f868ed5d94d57d96db3ca085ad443b35a50caeeb272b1836508ec0c8a2fdcef",
+        "zipBytes": 15548250
+      },
+      "inputScope": "Public SHA-pinned retained v5.10.2 baseline plus reproduced guarded patch; original signed v5.11.1 inspected separately and exact payload equivalence verified locally. No private signed APK uploaded.",
+      "browserVersion": "158.0.8127.36",
+      "complete": true,
+      "failure": null,
+      "errors": [],
+      "checkGroups": 24,
+      "originalPixelThresholdsPreserved": true,
+      "maximumChannelDelta": 8,
+      "maximumOutlierPixelsAboveDelta2": 8,
+      "changedPixelLimitFormula": "ceil(width * height * 0.0002)",
+      "imageMaskingOrFavorableFrameSelection": false,
+      "realDevice": false,
+      "liveAuth": false,
+      "homeComparisons": [
+        {
+          "size": [
+            360,
+            800
+          ],
+          "theme": "dark",
+          "homePreserved": true,
+          "maxChannelDelta": 0,
+          "changedChannels": 0,
+          "changedPixels": 0,
+          "outlierPixels": 0,
+          "changedBounds": null,
+          "peakHistogram": {},
+          "pixelLimit": 58
+        },
+        {
+          "size": [
+            360,
+            800
+          ],
+          "theme": "light",
+          "homePreserved": true,
+          "maxChannelDelta": 0,
+          "changedChannels": 0,
+          "changedPixels": 0,
+          "outlierPixels": 0,
+          "changedBounds": null,
+          "peakHistogram": {},
+          "pixelLimit": 58
+        },
+        {
+          "size": [
+            393,
+            852
+          ],
+          "theme": "dark",
+          "homePreserved": true,
+          "maxChannelDelta": 0,
+          "changedChannels": 0,
+          "changedPixels": 0,
+          "outlierPixels": 0,
+          "changedBounds": null,
+          "peakHistogram": {},
+          "pixelLimit": 67
+        },
+        {
+          "size": [
+            393,
+            852
+          ],
+          "theme": "light",
+          "homePreserved": true,
+          "maxChannelDelta": 0,
+          "changedChannels": 0,
+          "changedPixels": 0,
+          "outlierPixels": 0,
+          "changedBounds": null,
+          "peakHistogram": {},
+          "pixelLimit": 67
+        },
+        {
+          "size": [
+            393,
+            960
+          ],
+          "theme": "dark",
+          "homePreserved": true,
+          "maxChannelDelta": 0,
+          "changedChannels": 0,
+          "changedPixels": 0,
+          "outlierPixels": 0,
+          "changedBounds": null,
+          "peakHistogram": {},
+          "pixelLimit": 76
+        },
+        {
+          "size": [
+            393,
+            960
+          ],
+          "theme": "light",
+          "homePreserved": true,
+          "maxChannelDelta": 0,
+          "changedChannels": 0,
+          "changedPixels": 0,
+          "outlierPixels": 0,
+          "changedBounds": null,
+          "peakHistogram": {},
+          "pixelLimit": 76
+        }
+      ],
+      "sameVersionReloadControls": {
+        "count": 12,
+        "zeroDifference": 10,
+        "nonzero": [
+          {
+            "size": [
+              360,
+              800
+            ],
+            "theme": "dark",
+            "version": "before",
+            "changedPixels": 11,
+            "maxChannelDelta": 1,
+            "outlierPixels": 0,
+            "changedBounds": {
+              "minX": 29,
+              "minY": 68,
+              "maxX": 331,
+              "maxY": 69
+            },
+            "peakHistogram": {
+              "1": 11
+            },
+            "pixelLimit": 58
+          },
+          {
+            "size": [
+              360,
+              800
+            ],
+            "theme": "dark",
+            "version": "after",
+            "changedPixels": 11,
+            "maxChannelDelta": 1,
+            "outlierPixels": 0,
+            "changedBounds": {
+              "minX": 29,
+              "minY": 68,
+              "maxX": 331,
+              "maxY": 69
+            },
+            "peakHistogram": {
+              "1": 11
+            },
+            "pixelLimit": 58
+          }
+        ]
+      }
     }
   },
   "limits": [
     "Physical Android, live Para and live production free-match acceptance were not performed.",
     "Original v5.10.2 signing checkout remains unresolved. Retained APK workers are unchanged and do not automatically include source A/B/C patches.",
-    "Local actual Chromium executable is absent; official download403. Planned CI rendering uses public baseline plus guarded patch, not private signed APK upload.",
+    "Local actual Chromium executable is absent; official download403. Successful CI rendering uses public baseline plus guarded patch, not private signed APK upload.",
     "Later-source die-markup UI fixture fails identically on both retained APKs; bounded actual-worker checks pass.",
     "Pre-upgrade request IDs cannot be reconstructed. Legacy asynchronous room acknowledgment still precedes durable write; tests wait for confirmed stored state before restart.",
     "Current production database binding and private C publication/transaction approvals remain unresolved."
@@ -252,5 +559,8 @@
     "scannedTextFiles": 1499,
     "findings": 0,
     "scope": "Current sparse working tree; CI full checkout is separate."
-  }
+  },
+  "testedCandidate": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3",
+  "testedTree": "8c82f5ccf882758e8f96ff448a2913ef55c07aaf",
+  "handoffCommitScope": "74dfcea records the passing backend/retained-reference gates. A newly observed presentation correction is tracked separately and requires its own CI evidence."
 }
