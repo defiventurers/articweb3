@@ -1,0 +1,638 @@
+{
+  "observedDateUtc": "2026-11-28",
+  "reviewedMain": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
+  "batchBase": "75328370f0703ab7907dda9dc833f8aab93c21f9",
+  "nodeVersion": "24.22.3",
+  "inputs": {
+    "5.10.2": {
+      "apkSha256": "275cf9bf69aadfa4f4d844ff412e0885d8a5a656539f4bb583af27bfc95e8ecd",
+      "appJsSha256": "d54a6d6e9d10fccf9b15736d80c2950c4174e75cd8722595ee2b186f94eea826"
+    },
+    "5.11.1": {
+      "apkSha256": "91fbc8cd0578462511356888e8fab5e6008f9008e555571dbf93473783488f3e",
+      "appJsSha256": "982f167b4e4bcd9be7a11366d0ed36893dc9adcfc7595437ab49337e12b12d3e"
+    },
+    "sharedWorkersSha256": {
+      "bot.js": "d59a9487d7e41b4d3b7bd53c28fdbf844d3518fe91af140638c6ba404482336d",
+      "learn.js": "2da2a951aab162694bfb173f2d4c8cc9469d6f941b5194f96673a93d6407f65f"
+    },
+    "modified": false
+  },
+  "checks": [
+    {
+      "command": "node mobile/arctic-play/tests/heritage-runtime-ui.mjs <baseline-assets>/app.js",
+      "inputVersion": "5.10.2",
+      "scenarioGroupsPassed": 4,
+      "exitCode": 0
+    },
+    {
+      "command": "node mobile/arctic-play/tests/storybook-runtime.mjs <review-assets>/app.js",
+      "inputVersion": "5.11.1",
+      "scenarioGroupsPassed": 9,
+      "exitCode": 0
+    },
+    {
+      "command": "node mobile/arctic-play/tests/retained-apk-acceptance.mjs <baseline-assets>",
+      "inputVersion": "5.10.2",
+      "scenarioGroupsPassed": 6,
+      "exitCode": 0
+    },
+    {
+      "command": "node mobile/arctic-play/tests/retained-apk-acceptance.mjs <review-assets>",
+      "inputVersion": "5.11.1",
+      "scenarioGroupsPassed": 6,
+      "exitCode": 0
+    }
+  ],
+  "retainedScenarios": [
+    "Home/setup/Learn/How-to-Play/return",
+    "Four-human local Chaturanga, paired legal dice, worker-authoritative legal move and invented-move rejection",
+    "JavaScript Back closes options, returns Games/Home, fresh-realm save restoration and resume",
+    "Actual bundled bot chooses one legal action; five single-piece practice lessons return legal moves",
+    "Mocked unsigned entry and Para PKCE/native return; duplicate callbacks exchange once",
+    "Unavailable account service keeps Home gated and opens no auth browser"
+  ],
+  "incompatibleSourceFixture": {
+    "command": "node mobile/arctic-play/tests/chaturanga-release-ui.test.mjs <assets>/app.js <assets>/bot.js <assets>/learn.js",
+    "versionsAttempted": [
+      "5.10.2",
+      "5.11.1"
+    ],
+    "result": "Same early assertion failure on both inputs",
+    "expected": ".long-ice-die.dataset.faces === '2,3,4,5'",
+    "actual": "undefined; retained SVG uses its original four-sided-pasa representation",
+    "reviewRegressionEstablished": false,
+    "fixtureOrProductChanged": false
+  },
+  "localRenderedBrowser": {
+    "status": "BLOCKED BY ACCESS",
+    "browserLaunched": false,
+    "configuredChromium": "/usr/bin/chromium",
+    "failure": "Wrapper's /usr/lib/chromium/chromium executable missing; launch exited 127",
+    "officialPlaywrightInstallAttempt": "Chrome headless shell 151.0.7922.34 / Playwright build 1234",
+    "downloadResult": "HTTP 403 SiteUnavailable from official cdn.playwright.dev; installation exited 1",
+    "freshLocalScreenshotsProduced": 0
+  },
+  "initialCiRenderedDiagnosis": {
+    "candidateShortCommit": "d72be7",
+    "batchD": {
+      "runId": 46104778405,
+      "jobId": 140854963349,
+      "result": "Failed existing Home pixel gate",
+      "viewport": [
+        360,
+        800
+      ],
+      "theme": "dark",
+      "changedPixels": 110,
+      "maxChannelDelta": 2,
+      "outlierPixelsAboveDelta2": 0,
+      "peakHistogram": {
+        "1": 104,
+        "2": 6
+      },
+      "changedBounds": {
+        "minX": 303,
+        "minY": 14,
+        "maxX": 336,
+        "maxY": 47
+      },
+      "otherHomePixelsChanged": 0
+    },
+    "independentExistingStorybookJob": {
+      "runId": 46104778339,
+      "jobId": 140854962737,
+      "result": "Failed same Home pixel gate",
+      "changedPixels": 77,
+      "maxChannelDelta": 7,
+      "outlierPixelsAboveDelta2": 9
+    },
+    "followupFixture": {
+      "freshContextPerVersion": true,
+      "waitForFontsAndVisibleImageDecode": true,
+      "sameVersionReloadControl": true,
+      "incrementalFailureEvidence": true,
+      "originalPixelThresholdsPreserved": true,
+      "imageMaskingOrFavorableFrameSelection": false,
+      "renderedOutcome": "Final run46105166782 passed24 check groups; all six cross-version Home comparisons have zero changed pixels. First failures retained below for traceability."
+    }
+  },
+  "limits": {
+    "scope": "These limits describe the exact retained-payload JSDOM/worker tests. CI rendering has the separate scope and observed results above.",
+    "actualRetainedJavaScriptAndWorkers": true,
+    "pinnedWorkerHashesEnforced": true,
+    "imagesDecoded": false,
+    "realRasterLayout": false,
+    "nativeAndroidExecuted": false,
+    "emulatorExecuted": false,
+    "physicalDeviceExecuted": false,
+    "liveParaConsent": false,
+    "liveCollectibleDelivery": false,
+    "fullBotMatch": false,
+    "network": "Fixture responses only; WebSocket and XMLHttpRequest disabled",
+    "originalSigningCheckoutRecovered": false,
+    "futureSourceFixesAssumedBundled": false
+  },
+  "ownerStatus": "OWNER ACTION REQUIRED",
+  "physicalChecklist": "BATCH_D_ACCEPTANCE.md",
+  "testedCandidate": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3",
+  "ciRendered": {
+    "status": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+    "candidate": "74dfcea4bb0f1ef8f09af07f20f3158187d1c8d3",
+    "runId": 46105166782,
+    "runUrl": "https://github.com/defiventurers/articweb3/actions/runs/46105166782",
+    "jobId": 140856171294,
+    "artifact": {
+      "id": 15246873350,
+      "name": "batch-d-guarded-rendered-evidence",
+      "pngCount": 54,
+      "zipArchiveIntegrity": "passed",
+      "resultsSha256": "cca29ca6f0ff0922ce6d799356cf5df423d0091026b9ae747d634affa1dea7fa",
+      "zipSha256": "2f868ed5d94d57d96db3ca085ad443b35a50caeeb272b1836508ec0c8a2fdcef",
+      "zipBytes": 15548250
+    },
+    "inputScope": "Public SHA-pinned retained v5.10.2 baseline plus reproduced guarded patch; original signed v5.11.1 inspected separately and exact payload equivalence verified locally. No private signed APK uploaded.",
+    "browserVersion": "158.0.8127.36",
+    "complete": true,
+    "failure": null,
+    "errors": [],
+    "checkGroups": 24,
+    "checks": [
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 58
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 58
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 67
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 67
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 76
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 76
+      }
+    ],
+    "homeReloadControls": [
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "version": "before",
+        "changedPixels": 11,
+        "maxChannelDelta": 1,
+        "outlierPixels": 0,
+        "changedBounds": {
+          "minX": 29,
+          "minY": 68,
+          "maxX": 331,
+          "maxY": 69
+        },
+        "peakHistogram": {
+          "1": 11
+        },
+        "pixelLimit": 58
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "version": "after",
+        "changedPixels": 11,
+        "maxChannelDelta": 1,
+        "outlierPixels": 0,
+        "changedBounds": {
+          "minX": 29,
+          "minY": 68,
+          "maxX": 331,
+          "maxY": 69
+        },
+        "peakHistogram": {
+          "1": 11
+        },
+        "pixelLimit": 58
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "version": "before",
+        "changedPixels": 0,
+        "maxChannelDelta": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 58
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "version": "after",
+        "changedPixels": 0,
+        "maxChannelDelta": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 58
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "version": "before",
+        "changedPixels": 0,
+        "maxChannelDelta": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 67
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "version": "after",
+        "changedPixels": 0,
+        "maxChannelDelta": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 67
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "version": "before",
+        "changedPixels": 0,
+        "maxChannelDelta": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 67
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "version": "after",
+        "changedPixels": 0,
+        "maxChannelDelta": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 67
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "version": "before",
+        "changedPixels": 0,
+        "maxChannelDelta": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 76
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "version": "after",
+        "changedPixels": 0,
+        "maxChannelDelta": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 76
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "version": "before",
+        "changedPixels": 0,
+        "maxChannelDelta": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 76
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "version": "after",
+        "changedPixels": 0,
+        "maxChannelDelta": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 76
+      }
+    ],
+    "originalPixelThresholdsPreserved": true,
+    "maximumChannelDelta": 8,
+    "maximumOutlierPixelsAboveDelta2": 8,
+    "changedPixelLimitFormula": "ceil(width * height * 0.0002)",
+    "imageMaskingOrFavorableFrameSelection": false,
+    "realDevice": false,
+    "liveAuth": false
+  },
+  "separatePresentationCorrection": {
+    "status": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+    "candidate": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
+    "report": "BATCH_D_PRESENTATION_EVIDENCE.json",
+    "originalSignedApkModified": false,
+    "correctedSignedApkProduced": false,
+    "physicalAcceptance": "OWNER ACTION REQUIRED"
+  }
+}

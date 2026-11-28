@@ -1,0 +1,199 @@
+{
+  "schema": 1,
+  "reviewedMain": "f696f57637ec8a1433bcaeafcd0ebc494fcba96b",
+  "branch": "codex/fonso-stabilization-batch-d",
+  "baseCommit": "75328370f0703ab7907dda9dc833f8aab93c21f9",
+  "artifactMismatchStatus": "NOT REPRODUCIBLE",
+  "physicalAcceptanceStatus": "OWNER ACTION REQUIRED",
+  "verification": {
+    "schema": 1,
+    "observedAt": "2026-11-28T03:44:34.595294+00:00",
+    "artifacts": {
+      "5.10.2": {
+        "package": "xyz.arcticdominion.play",
+        "versionName": "5.10.2",
+        "versionCode": 106,
+        "minSdk": 24,
+        "targetSdk": 35,
+        "permissions": [
+          "android.permission.INTERNET"
+        ],
+        "certificateSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+        "signerCount": 1,
+        "schemes": {
+          "v2": true,
+          "v3": true
+        },
+        "sha256": "275cf9bf69aadfa4f4d844ff412e0885d8a5a656539f4bb583af27bfc95e8ecd",
+        "bytes": 52201720,
+        "zipEntries": 447,
+        "layout": {
+          "resourcesCompression": "stored",
+          "resourcesOffset": 565236,
+          "resourcesAligned": true,
+          "zipIntegrity": "passed"
+        },
+        "zipalignVerified": true
+      },
+      "5.11.1": {
+        "package": "xyz.arcticdominion.play",
+        "versionName": "5.11.1",
+        "versionCode": 111,
+        "minSdk": 24,
+        "targetSdk": 35,
+        "permissions": [
+          "android.permission.INTERNET"
+        ],
+        "certificateSha256": "20d0b3350e4ce0db32b5df678dbaea4967de560ac4da59db0a57154213c7ec37",
+        "signerCount": 1,
+        "schemes": {
+          "v2": true,
+          "v3": true
+        },
+        "sha256": "91fbc8cd0578462511356888e8fab5e6008f9008e555571dbf93473783488f3e",
+        "bytes": 52201720,
+        "zipEntries": 447,
+        "layout": {
+          "resourcesCompression": "stored",
+          "resourcesOffset": 565236,
+          "resourcesAligned": true,
+          "zipIntegrity": "passed"
+        },
+        "zipalignVerified": true
+      }
+    },
+    "comparison": {
+      "payloadEntries": 444,
+      "changedEntries": [
+        "AndroidManifest.xml",
+        "assets/app-version.json",
+        "assets/app.css",
+        "assets/app.js",
+        "assets/game-assets-sw.js",
+        "assets/game-assets.json"
+      ],
+      "unchangedEntries": 438,
+      "identicalArtworkEntries": 416,
+      "exactGuardedReproduction": true,
+      "protectedEntrySha256": {
+        "resources.arsc": "b4fb5348dba2e23ade6d28894d5c5ede22d83e7c85eb5da6509a7d1d5bafbd36",
+        "assets/bot.js": "d59a9487d7e41b4d3b7bd53c28fdbf844d3518fe91af140638c6ba404482336d",
+        "assets/co-tu-lenh-bot.js": "d8e4b288fc0fc66cb4832ad376489c039f625a3f834e53cada11da71b83baccc",
+        "assets/fair-worker.js": "207b1f4776f67b4eae1b9bacecc0d71a19687399274a6e44bede88071d2a619e",
+        "assets/index.html": "60cd5d4f3d26b157cfee95b94a840401f550ba618e6c91295996d0b606289962",
+        "assets/learn.js": "2da2a951aab162694bfb173f2d4c8cc9469d6f941b5194f96673a93d6407f65f",
+        "assets/shanshui-bot.js": "994891da67d3801fe1b7451c557923c1ded11eb5a40b28cf5bba2863d014dd8f",
+        "assets/startup.js": "a1d187c953f6c1689d66d01c3d390c60242af4354a37875f87b2010c888d5fa6",
+        "assets/verifier.js": "d0b2aba3bc94d694a65838708d1cc6435c6e62504844dfe10027df519d96c506",
+        "classes.dex": "40d2d507903e1bd0328bf010d2d289dc50c2d3eff07c7a5d563e3183e10fe54d"
+      },
+      "changedEntrySha256": {
+        "AndroidManifest.xml": {
+          "baseline": "f0b9236758fb7944bc102940356e45235b5ad611935230ae7a06e4bd1671701d",
+          "review": "44728c19433bac88190d839851cc8270ccace524116f7888fdcccf878c4f3cb4"
+        },
+        "assets/app-version.json": {
+          "baseline": "22e3d5abbf1f98b41063ec41a9ddc7804287b5eaccea9590372ecfe3c6582b43",
+          "review": "7c8f0bd4768cbd9a83dd3c64ba2e42df355e9a9a7bdc7c1df8816087e6b42069"
+        },
+        "assets/app.css": {
+          "baseline": "4f41a6b510577553e89c9ae8e951b389dd61e9c2ee020fcf93120ca88a5251ff",
+          "review": "b50756be7173df93e6d51c058375d7fa29660bafba51666f796b7d05c3a1022f"
+        },
+        "assets/app.js": {
+          "baseline": "d54a6d6e9d10fccf9b15736d80c2950c4174e75cd8722595ee2b186f94eea826",
+          "review": "982f167b4e4bcd9be7a11366d0ed36893dc9adcfc7595437ab49337e12b12d3e"
+        },
+        "assets/game-assets-sw.js": {
+          "baseline": "fb7685da18c1ea6840acd6f610fcb2648e205042331824614f5a20e0c0cfab43",
+          "review": "bcfd3424aaa241eea33416c12a72aa9a4e6e4e281583db3471df7aa6024ef270"
+        },
+        "assets/game-assets.json": {
+          "baseline": "71a1380fc63d171798e813b1957c50099583d298df3173ff219f9c409b4841f9",
+          "review": "98e121be44918636aeab6df9a74c363073656ac86ce54f8702cb633be0d324f8"
+        }
+      }
+    },
+    "inputApksUnchanged": true,
+    "guardedPatchSourceSha256": {
+      "mobile/arctic-play/scripts/patch-storybook-v5102.mjs": "e3f01d02b118506c5b89a5dae53fe74d63c1aa050d10f8ed116354e5fd01a178",
+      "mobile/arctic-play/src/storybookGames.js": "82846da8926dd8bf92a3094d7d9a80f8248ba73472ddfb3d837c62a99f323d65",
+      "mobile/arctic-play/src/storybook-games.css": "44326cc69c408be3459493cebc1dd197be24c9c70d61890fc0bf377a4672e83f"
+    },
+    "apkBuiltSignedOrInstalled": false,
+    "emulatorTested": false,
+    "physicalDeviceAccepted": false,
+    "realParaSignInTested": false,
+    "originalBaselineSigningCheckout": "unresolved"
+  },
+  "artifactRecovery": {
+    "baseline": {
+      "source": "Public retained Git download parts",
+      "manifest": "frontend/public/early/downloads/manifest.json",
+      "partsVerified": 7,
+      "partDigestsAndCombinedDigestMatched": true
+    },
+    "review": {
+      "source": "Existing owner-retained signed review artifact",
+      "priorPublicRecord": "docs/reviews/games-storybook/apk-verification.json",
+      "recordedDigestAndSizeMatched": true
+    }
+  },
+  "toolchain": {
+    "python": "3.12.14",
+    "node": "24.22.3",
+    "buildTools": "35.0.0",
+    "source": "https://dl.google.com/android/repository/repository2-1.xml",
+    "archive": "https://dl.google.com/android/repository/build-tools_r35_linux.zip",
+    "archiveBytes": 61958799,
+    "archiveSha1": "2cfaa0bbb2336e9ec18ed3ecea84fa2e2af607bc",
+    "archiveSha256": "bd3a4966912eb8b30ed0d00b0cda6b6543b949d5ffe00bea54c04c81e1561d88",
+    "officialArchiveSizeAndChecksumMatched": true
+  },
+  "regressions": [
+    {
+      "command": "python3 -m unittest discover -s mobile/arctic-play/tests -p 'test_retained_apks.py' -v",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s mobile/arctic-play/tests -p 'test_apk_layout.py' -v",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "actualCorruptionCheck": {
+    "singleByteCorruption": "resources.arsc",
+    "verifierRejected": true,
+    "apksignerRejected": true,
+    "crcRejectedEntry": "resources.arsc",
+    "originalBaselineSha256": "275cf9bf69aadfa4f4d844ff412e0885d8a5a656539f4bb583af27bfc95e8ecd",
+    "originalReviewSha256": "91fbc8cd0578462511356888e8fab5e6008f9008e555571dbf93473783488f3e",
+    "temporaryAlteredCopyDeletedOnExit": true
+  },
+  "environment": {
+    "adbAvailable": false,
+    "androidEmulatorAvailable": false,
+    "kvmAvailable": false,
+    "emulatorInstalledByThisTask": false
+  },
+  "boundaries": {
+    "binaryPublication": false,
+    "newSigning": false,
+    "apkPayloadChanges": false,
+    "emulatorAcceptance": false,
+    "physicalAcceptance": false,
+    "realParaConsent": false,
+    "savedDeviceDataCleared": false,
+    "originalSigningCheckoutRecovered": false
+  },
+  "verificationToolSha256": "265e5d712810a0bef1c36250f72c711378fff635df128f82018dfb76892cacab",
+  "verificationTestsSha256": "aa49f959a40cb03dda52e18d0d05465d92ddbdc901ae07ea2a3480bb3c1ba89b",
+  "signatureMetadataEntries": [
+    "META-INF/ARCTIC-P.SF",
+    "META-INF/ARCTIC-P.RSA",
+    "META-INF/MANIFEST.MF"
+  ]
+}

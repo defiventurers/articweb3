@@ -1,0 +1,1078 @@
+{
+  "observedDateUtc": "2026-11-28",
+  "status": "FIXED AND VERIFIED IN TEST ENVIRONMENT",
+  "candidate": "5144a1d6bfef29ffea11bc38738011cb2ae1e572",
+  "runId": 46106228547,
+  "jobId": 140859484938,
+  "jobConclusion": "success",
+  "wholeWorkflowConclusion": "failure: separate Node20 room persistence issue, subsequently corrected in acb88254cb83b6655de8e1e975b3ed75d5c64df5; final combined CI recorded separately",
+  "artifact": {
+    "id": 15247802266,
+    "name": "batch-d-presentation-correction-evidence",
+    "zipBytes": 30853863,
+    "zipSha256": "a471b15b2089562cce2e040656d31e83c4bcd997c096b4c6ff92f1cec4e27422",
+    "zipIntegrity": "passed",
+    "pngCount": 108
+  },
+  "staging": {
+    "kind": "opt-in-browser-review-only",
+    "sourceVariant": "original-guarded-presentation-from-v5.10.2",
+    "sourceTreeSha256": {
+      "before": "d1f045ab3635f3e3e104714b06fc9a4dc2ac84d1c18fbfce7febfb89186fd911",
+      "after": "652313defeb61b0d67ac4a1253176456925ce229b32b383c76ac2d5bae8080d5"
+    },
+    "candidateTreeSha256": {
+      "before": "d1f045ab3635f3e3e104714b06fc9a4dc2ac84d1c18fbfce7febfb89186fd911",
+      "after": "ab3a1331a16093f854df8a515df2fef92782870a7292e243a48cb21264a8537d"
+    },
+    "modifiedFiles": [
+      "after/app.css"
+    ],
+    "appJsSha256": "539af253f2a60c10bc6f05cf93b74e08c0442775a3c9537404753160ba516502",
+    "originalCssSha256": "b50756be7173df93e6d51c058375d7fa29660bafba51666f796b7d05c3a1022f",
+    "correctionCssSha256": "0c8406b13feb9afbfba5855aaf8cca185a7d11b0ef44adb0c5871e5ffb87f0a9",
+    "candidateCssSha256": "19b95ee469b9bc1a1239e4c36336b381d5b5d5d2c1a48e2f0a85f2c2f8a7c078",
+    "apkProduced": false,
+    "physicalDeviceAccepted": false
+  },
+  "sourceSha256": {
+    "mobile/arctic-play/src/storybook-accessibility-review.css": "0c8406b13feb9afbfba5855aaf8cca185a7d11b0ef44adb0c5871e5ffb87f0a9",
+    "mobile/arctic-play/scripts/prepare-storybook-accessibility-review.py": "d17fed38e3bb345ea73faa35dcb0bf98fb5bd1ee08be05a965ba349bee823bd5",
+    "mobile/arctic-play/tests/storybook-browser.mjs": "9d2c5edc0438024879d069ea25c3dfa524d10724d3886ad80c14871711f4507d",
+    "mobile/arctic-play/tests/test_storybook_accessibility_review.py": "ae5ae6512e2096f431fdccd0a4282539cc42da7da44371b8d04f258a56bb063b"
+  },
+  "limits": [
+    "The exact signed v5.11.1 APK remains unchanged and still contains the original presentation defects.",
+    "The corrected output is an opt-in browser candidate; no corrected APK was built, signed, published or physically accepted.",
+    "The strict checks cover selected control contrast and24px-root Adventure containment/reachability, not complete accessibility conformance or all text scaling.",
+    "The same original Home pixel thresholds remain in force. Sparse1-level border differences were observed and are recorded below.",
+    "The browser candidate keeps original release/cache/asset-size metadata; a future corrected APK needs reviewed packaging that updates these fields and verifies the full payload."
+  ],
+  "originalStrict": {
+    "complete": false,
+    "failure": "Strict storybook presentation checks failed: [\"large-text-overlap\",\"large-text-containment\",\"low-control-contrast\"]\n\n121 !== 0\n",
+    "errors": [],
+    "strictAccessibility": true,
+    "checks": [
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "homePreserved": true,
+        "maxChannelDelta": 1,
+        "changedChannels": 15,
+        "changedPixels": 11,
+        "outlierPixels": 0,
+        "changedBounds": {
+          "minX": 29,
+          "minY": 68,
+          "maxX": 331,
+          "maxY": 69
+        },
+        "peakHistogram": {
+          "1": 11
+        },
+        "pixelLimit": 58
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 58
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 67
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 67
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 76
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 76
+      }
+    ],
+    "strictChecks": [
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 1.1931496504198935
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 1.1931496504198935
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 1.1931496504198935
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 1.1931496504198935
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 1.1931496504198935
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 1.1931496504198935
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      }
+    ],
+    "strictIssueCount": 121,
+    "strictIssueCategories": {
+      "large-text-overlap": 48,
+      "large-text-containment": 28,
+      "low-control-contrast": 45
+    },
+    "crownIssueCount": 44,
+    "representativeIssues": [
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "stage": "large-text",
+        "category": "large-text-overlap",
+        "target": ".sb-crown SMALL",
+        "reason": "Rendered text extends outside its control/panel."
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "stage": "large-text",
+        "category": "large-text-containment",
+        "target": ".sb-crown SMALL",
+        "reason": "Content box extends outside its panel."
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "stage": "adventure",
+        "category": "low-control-contrast",
+        "target": "\u2667 All Games",
+        "contrast": 1.1931496504198935,
+        "color": "rgb(20, 49, 74)",
+        "backgroundImage": "linear-gradient(150deg, rgb(22, 62, 90), rgb(7, 30, 54))"
+      }
+    ],
+    "minimumControlContrast": 1.1931496504198935,
+    "browserVersion": "158.0.8127.36",
+    "resultsSha256": "ce05f88a234ebf0111ecdc93a6050f08ec61a17db7b89b48d77c5f85290cc91b",
+    "homeThresholds": {
+      "maximumChannelDelta": 8,
+      "maximumOutlierPixelsAboveDelta2": 8,
+      "changedPixelLimit": "ceil(width * height * 0.0002)"
+    },
+    "realDevice": false,
+    "liveAuth": false
+  },
+  "correctedStrict": {
+    "complete": true,
+    "failure": null,
+    "errors": [],
+    "strictAccessibility": true,
+    "checks": [
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 58
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "homePreserved": true,
+        "maxChannelDelta": 1,
+        "changedChannels": 22,
+        "changedPixels": 12,
+        "outlierPixels": 0,
+        "changedBounds": {
+          "minX": 29,
+          "minY": 68,
+          "maxX": 329,
+          "maxY": 69
+        },
+        "peakHistogram": {
+          "1": 12
+        },
+        "pixelLimit": 58
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 67
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 67
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 76
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "adventure": {
+          "overflow": false,
+          "scroll": false,
+          "actionsVisible": true
+        }
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "nineStories": true,
+        "nineGamesReachable": true,
+        "searchAndFilters": true,
+        "favoritesPersist": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "largeTextActionsReachable": true
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "homePreserved": true,
+        "maxChannelDelta": 0,
+        "changedChannels": 0,
+        "changedPixels": 0,
+        "outlierPixels": 0,
+        "changedBounds": null,
+        "peakHistogram": {},
+        "pixelLimit": 76
+      }
+    ],
+    "strictChecks": [
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "dark",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          360,
+          800
+        ],
+        "theme": "light",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "dark",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          852
+        ],
+        "theme": "light",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "dark",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "stage": "adventure",
+        "controlCount": 6,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "stage": "catalogue",
+        "controlCount": 17,
+        "minimumContrast": 5.6883381905361174
+      },
+      {
+        "size": [
+          393,
+          960
+        ],
+        "theme": "light",
+        "stage": "large-text",
+        "scrollTargetsChecked": 6
+      }
+    ],
+    "strictIssueCount": 0,
+    "strictIssueCategories": {},
+    "crownIssueCount": 0,
+    "representativeIssues": [],
+    "minimumControlContrast": 5.6883381905361174,
+    "browserVersion": "158.0.8127.36",
+    "resultsSha256": "898be8c3ec425becdee537583a6fac06b3a30ee8db98c465a025ca1275d01f40",
+    "homeThresholds": {
+      "maximumChannelDelta": 8,
+      "maximumOutlierPixelsAboveDelta2": 8,
+      "changedPixelLimit": "ceil(width * height * 0.0002)"
+    },
+    "realDevice": false,
+    "liveAuth": false
+  },
+  "finalCiVerification": {
+    "candidate": "acb88254cb83b6655de8e1e975b3ed75d5c64df5",
+    "runId": 46106864044,
+    "browserJobId": 140861455816,
+    "conclusion": "success",
+    "presentationSourceHashesUnchanged": true,
+    "originalNegativeAndCorrectedPositiveRerun": true,
+    "artifacts": [
+      {
+        "id": 15248446014,
+        "name": "batch-d-presentation-correction-evidence",
+        "bytes": 30853773,
+        "digest": "sha256:a523d90c02e780dc58989b3ede2a9e5a1ab6abdb86a96f8686353dbf82cc2d8d",
+        "candidate": "acb88254cb83b6655de8e1e975b3ed75d5c64df5"
+      },
+      {
+        "id": 15248181625,
+        "name": "batch-d-guarded-rendered-evidence",
+        "bytes": 15548516,
+        "digest": "sha256:b1d9b1c8ad775dc6bc743788ced2a465da69a252cf88dcb5e76f16f27001d8d4",
+        "candidate": "acb88254cb83b6655de8e1e975b3ed75d5c64df5"
+      }
+    ],
+    "scope": "Final metadata retrieved and workflow success verified. Detailed screenshot metrics above were independently inspected from the earlier5144a1d6 artifact with identical presentation source."
+  }
+}

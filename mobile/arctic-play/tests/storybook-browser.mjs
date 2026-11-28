@@ -1,32 +1,115 @@
 import {createRequire} from 'node:module';import fs from 'node:fs';import http from 'node:http';import path from 'node:path';import assert from 'node:assert/strict';
 const require=createRequire(process.env.PLAYWRIGHT_PACKAGE);const{chromium}=require('playwright');
-const root=path.resolve('storybook-review'),evidence=path.join(root,'evidence');fs.mkdirSync(evidence,{recursive:true});
+const root=path.resolve(process.env.STORYBOOK_REVIEW_ROOT||'storybook-review'),evidence=path.resolve(process.env.STORYBOOK_EVIDENCE_ROOT||path.join(root,'evidence'));fs.mkdirSync(evidence,{recursive:true});
 const server=http.createServer((req,res)=>{const p=path.join(root,decodeURIComponent(req.url.split('?')[0]).replace(/^\//,''));let f=p;if(fs.existsSync(p)&&fs.statSync(p).isDirectory())f=path.join(p,'index.html');try{res.setHeader('Content-Type',f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.webp')?'image/webp':f.endsWith('.png')?'image/png':f.endsWith('.svg')?'image/svg+xml':f.endsWith('.jpg')?'image/jpeg':'text/html');res.end(fs.readFileSync(f));}catch{res.writeHead(404);res.end();}});await new Promise(r=>server.listen(8766,'127.0.0.1',r));
-const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||undefined});const checks=[],errors=[];
+const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||undefined});const checks=[],errors=[],homeControls=[],strictIssues=[],strictChecks=[];const strictAccessibility=process.env.STORYBOOK_STRICT_ACCESSIBILITY==='1';let complete=false,failure=null;
+const{PNG}=require('pngjs');
+function pixelDifference(before,after){
+ const b=PNG.sync.read(before),a=PNG.sync.read(after);assert.equal(b.width,a.width);assert.equal(b.height,a.height);
+ let changedChannels=0,maxChannelDelta=0,changedPixels=0,outlierPixels=0,minX=b.width,minY=b.height,maxX=-1,maxY=-1;const peakHistogram={};
+ for(let k=0;k<b.data.length;k+=4){let peak=0;for(let c=0;c<3;c++){const delta=Math.abs(b.data[k+c]-a.data[k+c]);if(delta)changedChannels++;peak=Math.max(peak,delta);}if(peak){changedPixels++;peakHistogram[peak]=(peakHistogram[peak]||0)+1;const p=k/4,x=p%b.width,y=Math.floor(p/b.width);minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}if(peak>2)outlierPixels++;maxChannelDelta=Math.max(maxChannelDelta,peak);}
+ return{maxChannelDelta,changedChannels,changedPixels,outlierPixels,changedBounds:changedPixels?{minX,minY,maxX,maxY}:null,peakHistogram,pixelLimit:Math.ceil(b.width*b.height*0.0002)};
+}
+function recordEvidence(){fs.writeFileSync(path.join(evidence,'results.json'),JSON.stringify({checks,homeControls,strictAccessibility,strictChecks,strictIssues,errors,complete,failure,browserVersion:browser.version(),realDevice:false,liveAuth:false},null,2));}
+async function checkControlContrast(page,size,theme,stage){
+ if(!strictAccessibility)return;
+ const result=await page.evaluate(()=>{
+  const issues=[],controls=[...document.querySelectorAll('.sb-switch>nav button,.sb-actions button,.sb-filters button,.sb-card-actions button,.sb-pager button')].filter(button=>!button.disabled&&button.getBoundingClientRect().width>0);
+  const rgb=value=>{const match=value.match(/^rgba?\(([^)]+)\)$/);if(!match)return null;const values=match[1].split(/[\s,\/]+/).map(Number);return values.length>=3&&values.slice(0,3).every(Number.isFinite)&&(values.length<4||values[3]===1)?values.slice(0,3):null;};
+  const luminance=values=>values.map(value=>{const x=value/255;return x<=0.04045?x/12.92:((x+.055)/1.055)**2.4;}).reduce((sum,value,index)=>sum+value*[.2126,.7152,.0722][index],0);
+  let minimum=Infinity;
+  if(!controls.length)issues.push({category:'unmeasurable-control-contrast',reason:'No expected controls found.'});
+  for(const button of controls){
+   const style=getComputedStyle(button),foreground=rgb(style.color),backgrounds=(style.backgroundImage.match(/rgba?\([^)]+\)/g)||[style.backgroundColor]).map(rgb);
+   const target=button.getAttribute('aria-label')||button.textContent.trim();
+   if(!foreground||!backgrounds.length||backgrounds.some(value=>!value)){issues.push({category:'unmeasurable-control-contrast',target,color:style.color,backgroundImage:style.backgroundImage});continue;}
+   const ratios=backgrounds.map(background=>{const values=[luminance(foreground),luminance(background)].sort((a,b)=>a-b);return(values[1]+.05)/(values[0]+.05);});
+   const contrast=Math.min(...ratios);minimum=Math.min(minimum,contrast);
+   if(contrast<4.5)issues.push({category:'low-control-contrast',target,contrast,color:style.color,backgroundImage:style.backgroundImage});
+  }
+  return{issues,controlCount:controls.length,minimumContrast:Number.isFinite(minimum)?minimum:null};
+ });
+ strictChecks.push({size,theme,stage,controlCount:result.controlCount,minimumContrast:result.minimumContrast});strictIssues.push(...result.issues.map(issue=>({size,theme,stage,...issue})));recordEvidence();
+}
+async function checkLargeText(page,size,theme){
+ if(!strictAccessibility)return;
+ const issues=await page.evaluate(()=>{
+  const issues=[],panel=document.querySelector('.sb-large-text');
+  const bounds=element=>{const r=element.getBoundingClientRect();return{left:r.left,top:r.top,right:r.right,bottom:r.bottom};};
+  const inside=(outer,inner)=>inner.left>=outer.left-1&&inner.right<=outer.right+1&&inner.top>=outer.top-1&&inner.bottom<=outer.bottom+1;
+  if(document.documentElement.scrollWidth>innerWidth+1||panel.scrollWidth>panel.clientWidth+1)issues.push({category:'large-text-containment',target:'Games panel',reason:'Horizontal overflow.'});
+  for(const [containerSelector,contentSelector] of [['.sb-hero','.sb-hero-copy,.sb-enter'],['.sb-actions','button'],['.sb-crown','small,h3,p,button'],['.sb-pager','button,span']]){
+   const container=document.querySelector(containerSelector),outer=bounds(container);
+   for(const element of container.querySelectorAll(contentSelector)){
+    if(!inside(outer,bounds(element)))issues.push({category:'large-text-containment',target:containerSelector+' '+(element.getAttribute('aria-label')||element.tagName),reason:'Content box extends outside its panel.'});
+    const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT);let node;
+    while((node=walker.nextNode())){if(!node.textContent.trim())continue;const range=document.createRange();range.selectNodeContents(node);
+     if([...range.getClientRects()].some(rect=>!inside(outer,rect)||(element.tagName==='BUTTON'&&!inside(bounds(element),rect))))issues.push({category:'large-text-overlap',target:containerSelector+' '+(element.getAttribute('aria-label')||element.tagName),reason:'Rendered text extends outside its control/panel.'});
+    }
+   }
+  }
+  return issues;
+ });
+ const controls=page.locator('.sb-large-text .sb-enter,.sb-large-text .sb-actions button,.sb-large-text .sb-discover,.sb-large-text .sb-pager button:not(:disabled)');
+ const count=await controls.count();
+ for(let i=0;i<count;i++){
+  const control=controls.nth(i);await control.scrollIntoViewIfNeeded();
+  const reachable=await control.evaluate(button=>{const r=button.getBoundingClientRect(),nav=document.querySelector('.bottom-nav').getBoundingClientRect(),at=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return{target:button.getAttribute('aria-label')||button.textContent.trim(),ok:r.top>=0&&r.bottom<=nav.top+1&&r.left>=0&&r.right<=innerWidth+1&&(at===button||button.contains(at))};});
+  if(!reachable.ok)issues.push({category:'large-text-overlap',target:reachable.target,reason:'Control remains clipped or covered after scrolling.'});
+ }
+ strictChecks.push({size,theme,stage:'large-text',scrollTargetsChecked:count});strictIssues.push(...issues.map(issue=>({size,theme,stage:'large-text',...issue})));recordEvidence();
+}
+async function captureHome(page,filename){
+ await page.locator('.home-chaturanga').waitFor();await page.waitForLoadState('networkidle');await page.waitForTimeout(1200);
+ await page.evaluate(async()=>{
+  await document.fonts.ready;
+  const visible=[...document.images].filter(image=>{const rect=image.getBoundingClientRect();return rect.width>0&&rect.height>0&&rect.top<innerHeight&&rect.bottom>0;});
+  await Promise.all(visible.map(async image=>{await image.decode();if(!image.complete||!image.naturalWidth)throw Error('Visible Home image did not decode: '+image.getAttribute('src'));}));
+ });
+ await page.mouse.move(0,0);
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ const state=await page.evaluate(()=>{const image=document.querySelector('.avatar-btn img'),rect=image?.getBoundingClientRect(),style=image&&getComputedStyle(image);return{theme:document.documentElement.dataset.theme,tab:document.querySelector('.app')?.dataset.tab,fontStatus:document.fonts.status,devicePixelRatio,avatar:image?{src:image.getAttribute('src'),complete:image.complete,naturalWidth:image.naturalWidth,naturalHeight:image.naturalHeight,bounds:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},imageRendering:style.imageRendering,transform:style.transform}:null};});
+ await page.screenshot({animations:'disabled',path:path.join(evidence,filename)});return state;
+}
 try{for(const size of [[360,800],[393,852],[393,960]])for(const theme of ['dark','light']){
-const page=await browser.newPage({viewport:{width:size[0],height:size[1]},reducedMotion:'reduce'});page.on('pageerror',e=>errors.push(e.message));
+for(const version of ['before','after']){
+// Each version starts from the same fresh account/theme/context. A previous
+// catalogue visit must not seed the next Home's storage, pointer or image cache.
+const page=await browser.newPage({viewport:{width:size[0],height:size[1]},reducedMotion:'reduce',serviceWorkers:'block'});page.on('pageerror',e=>errors.push(e.message));
+// This is a local rendering fixture, never a production session or socket.
+await page.route('**/*',route=>new URL(route.request().url()).origin==='http://127.0.0.1:8766'?route.continue():route.abort('blockedbyclient'));
+await page.addInitScript(()=>{window.WebSocket=undefined;});
 await page.addInitScript(()=>{const id='11111111-1111-4111-8111-111111111111';const passport={id:'fixture',number:'QA',playerName:'Saved Player',wallet:'0x1234567890123456789012345678901234567890',deliveries:[]};localStorage.setItem('arctic-play.v1.profile',JSON.stringify({id:'review',name:'Explorer',avatar:'red'}));localStorage.setItem('arctic-play.v1.cloud-session',JSON.stringify({accountId:id,session:id+'.'+'q'.repeat(43)}));localStorage.setItem('arctic-play.v1.antarctic-visa.v1.'+id,JSON.stringify(passport));window.Android={appReady(){},setDarkTheme(){}};const old=fetch;window.fetch=async(url,options)=>{if(String(url).includes('onrender.com')){let data={};if(String(url).endsWith('/capabilities'))data={version:2,cloud:true,accountPlay:true};if(String(url).endsWith('/passport'))data={passport,identity:{accountId:id}};if(String(url).endsWith('/play-access'))data={accountId:id,online:true,leaseSeconds:60};if(String(url).endsWith('/progress'))data={progress:{}};if(String(url).endsWith('/account'))data={accountId:id,entitlements:{}};return new Response(JSON.stringify(data),{headers:{'Content-Type':'application/json'}});}return old(url,options);};});
 await page.addInitScript(theme=>localStorage.setItem('arctic-play.v1.theme',JSON.stringify(theme)),theme);
-for(const version of ['before','after']){
-await page.goto('http://127.0.0.1:8766/'+version+'/');await page.locator('.home-chaturanga').waitFor();await page.waitForLoadState('networkidle');await page.waitForTimeout(1200);await page.locator('img').evaluateAll(xs=>Promise.all(xs.filter(i=>i.getBoundingClientRect().top<innerHeight&&i.getBoundingClientRect().bottom>0).map(i=>Promise.race([i.decode().catch(()=>{}),new Promise(r=>setTimeout(r,5000))]))));await page.screenshot({animations:'disabled',path:`${evidence}/${version}-home-${size.join('x')}-${theme}.png`});await page.locator('.bottom-nav button').filter({hasText:/^Games$/}).click();await page.locator(version==='before'?'.exp-hero':'.sb-hero').waitFor();await page.locator('img').evaluateAll(xs=>Promise.all(xs.filter(i=>i.getBoundingClientRect().top<innerHeight&&i.getBoundingClientRect().bottom>0).map(i=>Promise.race([i.decode().catch(()=>{}),new Promise(r=>setTimeout(r,5000))]))));await page.screenshot({animations:'disabled',path:`${evidence}/${version}-adventure-${size.join('x')}-${theme}.png`});
+await page.goto('http://127.0.0.1:8766/'+version+'/');
+const homeFile=`${version}-home-${size.join('x')}-${theme}.png`,controlFile=`${version}-home-control-${size.join('x')}-${theme}.png`;
+const initialState=await captureHome(page,homeFile);
+// Preserve a same-version reload control as diagnostics. Never select a better
+// frame, average pixels, mask the avatar or loosen the cross-version gate.
+await page.reload();const controlState=await captureHome(page,controlFile);
+homeControls.push({size,theme,version,initialState,controlState,...pixelDifference(fs.readFileSync(path.join(evidence,homeFile)),fs.readFileSync(path.join(evidence,controlFile)))});recordEvidence();
+await page.locator('.bottom-nav button').filter({hasText:/^Games$/}).click();await page.locator(version==='before'?'.exp-hero':'.sb-hero').waitFor();await page.locator('img').evaluateAll(xs=>Promise.all(xs.filter(i=>i.getBoundingClientRect().top<innerHeight&&i.getBoundingClientRect().bottom>0).map(i=>Promise.race([i.decode().catch(()=>{}),new Promise(r=>setTimeout(r,5000))]))));await page.screenshot({animations:'disabled',path:`${evidence}/${version}-adventure-${size.join('x')}-${theme}.png`});
 if(version==='before'){await page.locator('.exp-mode-bar button').filter({hasText:/All games/i}).click();await page.locator('.game-discovery').waitFor();await page.locator('img').evaluateAll(xs=>Promise.all(xs.filter(i=>i.getBoundingClientRect().top<innerHeight&&i.getBoundingClientRect().bottom>0).map(i=>Promise.race([i.decode().catch(()=>{}),new Promise(r=>setTimeout(r,5000))]))));await page.screenshot({animations:'disabled',path:`${evidence}/before-catalogue-${size.join('x')}-${theme}.png`});}
 if(version==='after'){
+ await checkControlContrast(page,size,theme,'adventure');
  for(let i=0;i<9;i++){
   assert.equal(await page.locator('.sb-adventure-body').getAttribute('data-expedition-id'),['dominion','xiangqi','shogi','sanguo','sanyou','sannin','yanyi','co-tu-lenh','shanshui'][i]);
   await page.getByRole('button',{name:'▶ Enter the Story',exact:true}).click();await page.locator('.heritage-introduction').waitFor();await page.getByRole('button',{name:'← Back to games',exact:true}).click();await page.locator('.sb-hero').waitFor();if(i<8)await page.getByRole('button',{name:'Next game',exact:true}).click();
  }
  await page.getByRole('button',{name:'Chapter 1: Chaturanga',exact:true}).click();
  const layout=await page.evaluate(()=>{const el=document.querySelector('.lobby-content');const a=document.querySelector('.sb-actions').getBoundingClientRect();const n=document.querySelector('.bottom-nav').getBoundingClientRect();return{overflow:document.documentElement.scrollWidth>innerWidth,scroll:el.scrollHeight>el.clientHeight+2,actionsVisible:a.bottom<=n.top};});assert.equal(layout.overflow,false);assert.equal(layout.scroll,false,JSON.stringify(layout));assert.ok(layout.actionsVisible);checks.push({size,theme,adventure:layout});
- await page.getByRole('button',{name:'♧ All Games',exact:true}).click();await page.locator('img').evaluateAll(xs=>Promise.all(xs.filter(i=>i.getBoundingClientRect().top<innerHeight&&i.getBoundingClientRect().bottom>0).map(i=>Promise.race([i.decode().catch(()=>{}),new Promise(r=>setTimeout(r,5000))]))));await page.screenshot({animations:'disabled',path:`${evidence}/after-catalogue-${size.join('x')}-${theme}.png`});const seen=[];
+ await page.getByRole('button',{name:'♧ All Games',exact:true}).click();await page.locator('img').evaluateAll(xs=>Promise.all(xs.filter(i=>i.getBoundingClientRect().top<innerHeight&&i.getBoundingClientRect().bottom>0).map(i=>Promise.race([i.decode().catch(()=>{}),new Promise(r=>setTimeout(r,5000))]))));await page.screenshot({animations:'disabled',path:`${evidence}/after-catalogue-${size.join('x')}-${theme}.png`});await checkControlContrast(page,size,theme,'catalogue');const seen=[];
  for(let i=0;i<3;i++){seen.push(...await page.locator('.sb-card').evaluateAll(xs=>xs.map(x=>x.dataset.gameId)));assert.equal(await page.locator('.sb-card').evaluateAll(xs=>xs.every(card=>[...card.querySelectorAll('.sb-card-actions button')].every(b=>b.getBoundingClientRect().bottom<=card.getBoundingClientRect().bottom+1))),true,'Card actions clipped');if(i<2)await page.getByRole('button',{name:'Next page',exact:true}).click();}assert.equal(new Set(seen).size,9);
  await page.getByRole('searchbox',{name:'Search games',exact:true}).fill('Vietnam');assert.equal(await page.locator('.sb-card').count(),1);assert.equal(await page.locator('.sb-card').getAttribute('data-game-id'),'co-tu-lenh');
  await page.getByRole('searchbox',{name:'Search games',exact:true}).fill('no-such-game');await page.getByRole('button',{name:'Show all games',exact:true}).click();assert.equal(await page.locator('.sb-card').count(),4);
  await page.getByRole('button',{name:'3 players',exact:true}).click();assert.equal(await page.locator('.sb-card').count(),4);await page.getByRole('button',{name:'All',exact:true}).click();
  await page.getByRole('button',{name:'Favorite Chaturanga',exact:true}).click();await page.getByRole('button',{name:'Favorites',exact:true}).click();assert.equal(await page.locator('.sb-card').count(),1);await page.reload();await page.locator('.bottom-nav button').filter({hasText:/^Games$/}).click();await page.locator('.sb-card').first().waitFor();assert.ok(await page.getByRole('button',{name:'Favorite Chaturanga',exact:true}).getAttribute('aria-pressed')==='true');
  checks.push({size,theme,nineStories:true,nineGamesReachable:true,searchAndFilters:true,favoritesPersist:true});
- await page.evaluate(()=>document.documentElement.style.fontSize='24px');await page.getByRole('button',{name:'✧ Adventure',exact:true}).click();await page.locator('.sb-large-text').waitFor();await page.getByRole('button',{name:'Setup Chaturanga',exact:true}).scrollIntoViewIfNeeded();assert.ok(await page.getByRole('button',{name:'Setup Chaturanga',exact:true}).isVisible());await page.screenshot({animations:'disabled',path:`${evidence}/after-large-text-${size.join('x')}-${theme}.png`});checks.push({size,theme,largeTextActionsReachable:true});
+ await page.evaluate(()=>document.documentElement.style.fontSize='24px');await page.getByRole('button',{name:'✧ Adventure',exact:true}).click();await page.locator('.sb-large-text').waitFor();await checkLargeText(page,size,theme);await page.getByRole('button',{name:'Setup Chaturanga',exact:true}).scrollIntoViewIfNeeded();assert.ok(await page.getByRole('button',{name:'Setup Chaturanga',exact:true}).isVisible());await page.screenshot({animations:'disabled',path:`${evidence}/after-large-text-${size.join('x')}-${theme}.png`});checks.push({size,theme,largeTextActionsReachable:true});
 }
+await page.close();
 }
-const b=fs.readFileSync(`${evidence}/before-home-${size.join('x')}-${theme}.png`),a=fs.readFileSync(`${evidence}/after-home-${size.join('x')}-${theme}.png`);const{PNG}=require('pngjs'),pb=PNG.sync.read(b),pa=PNG.sync.read(a);assert.equal(pb.width,pa.width);assert.equal(pb.height,pa.height);let changed=0,maxDelta=0,changedPixels=0,outlierPixels=0;for(let k=0;k<pb.data.length;k+=4){let peak=0;for(let c=0;c<3;c++){const d=Math.abs(pb.data[k+c]-pa.data[k+c]);if(d)changed++;peak=Math.max(peak,d);}if(peak)changedPixels++;if(peak>2)outlierPixels++;maxDelta=Math.max(maxDelta,peak);}assert.ok(maxDelta<=8&&outlierPixels<=8&&changedPixels<=Math.ceil(pb.width*pb.height*0.0002),'Home changed beyond sparse border rasterization tolerance: '+JSON.stringify({maxDelta,outlierPixels,changedPixels}));checks.push({size,theme,homePreserved:true,maxChannelDelta:maxDelta,changedChannels:changed,changedPixels,outlierPixels});await page.close();}
-assert.deepEqual(errors,[]);fs.writeFileSync(path.join(evidence,'results.json'),JSON.stringify({checks,errors,realDevice:false,liveAuth:false},null,2));
-}finally{await browser.close();server.close();}
+const difference=pixelDifference(fs.readFileSync(`${evidence}/before-home-${size.join('x')}-${theme}.png`),fs.readFileSync(`${evidence}/after-home-${size.join('x')}-${theme}.png`));const preserved=difference.maxChannelDelta<=8&&difference.outlierPixels<=8&&difference.changedPixels<=difference.pixelLimit;
+checks.push({size,theme,homePreserved:preserved,...difference});recordEvidence();assert.ok(preserved,'Home changed beyond sparse border rasterization tolerance: '+JSON.stringify(difference));}
+assert.deepEqual(errors,[]);assert.equal(strictIssues.length,0,'Strict storybook presentation checks failed: '+JSON.stringify([...new Set(strictIssues.map(issue=>issue.category))]));complete=true;
+}catch(error){failure=error.message;throw error;}finally{recordEvidence();await browser.close();server.close();}
